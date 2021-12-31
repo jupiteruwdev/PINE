@@ -4,11 +4,11 @@ import Web3 from "web3"
 import config from "./vars.conf"
 const app = express()
 app.use(cors())
-const web3 = new Web3(config.ethRPC)
-app.get( "/balances", async ( req, res ) => {
+app.get( "/eth-balance", async ( req, res ) => {
+  const web3 = new Web3((config.ethRPC as any)[Number(req.query.network_id)])
     res.json( {
-        ETH: await web3.eth.getBalance(config.ethPoolAddress) |> web3.utils.fromWei |> Number,
-        SOL: 0
+        eth_balance: await web3.eth.getBalance(req.query.pool_address as string) |> web3.utils.fromWei |> Number,
+        block_number: await web3.eth.getBlockNumber()
     } )
 } );
 
