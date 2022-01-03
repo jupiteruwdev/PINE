@@ -4,7 +4,9 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "start": "babel --extensions .ts --keep-file-extension src/ -d output/ && tsc && node dist/index.js",
+    "build": "babel --extensions .ts --keep-file-extension src/ -d output/ && tsc ",
+    "start": "node dist/index.js",
+    "dev-start": "babel --extensions .ts --keep-file-extension src/ -d output/ && tsc && node dist/index.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
@@ -21,6 +23,7 @@
     "@babel/cli": "^7.16.0",
     "@babel/core": "^7.16.0",
     "@babel/plugin-proposal-pipeline-operator": "^7.16.0",
+    "axios": "^0.24.0",
     "cors": "^2.8.5",
     "dotenv": "^10.0.0",
     "express": "^4.17.1",
