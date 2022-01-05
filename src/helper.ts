@@ -14,3 +14,8 @@ export const getAllV1LoanEvents = (web3: Web3, address: string) => {
   {fromBlock: 0,
     toBlock: 'latest'})
 }
+
+export const getLoan = (web3: Web3, address: string, nftId: number) => {
+  const poolContract = new web3.eth.Contract(ETHLending as any, address)
+  return poolContract.methods._loans(nftId).call()
+}
