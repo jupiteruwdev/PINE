@@ -7,10 +7,22 @@ const app = express()
 app.use(cors())
 app.get( "/eth-balance", async ( req, res ) => {
   const web3 = new Web3((config.ethRPC as any)[Number(req.query.network_id)])
-    res.json( {
-        eth_balance: await web3.eth.getBalance(req.query.pool_address as string) ,
-        block_number: await web3.eth.getBlockNumber()
-    } )
+  const poolAddress = req.query.pool_address as string
+  const loanIDs = await getAllV1LoanEvents(web3, poolAddress) |> (e => e.map(x => (x as any).returnValues.nftID) |> (x => new Set(x)))
+  let ethUtilization = 0
+  await Promise.all(Array.from(loanIDs).map(async (e: number) => {
+      const loan = await getLoan(web3, poolAddress, e)
+      ethUtilization += ((loan.borrowedWei  |> web3.utils.fromWei |> Number) - (loan.returnedWei  |> web3.utils.fromWei |> Number) )
+    }
+  ))
+  const ethCapacity = await web3.eth.getBalance(poolAddress)  |> web3.utils.fromWei |> Number
+  res.json( {
+      eth_tvl: ethCapacity + ethUtilization,
+      eth_capacity: ethCapacity,
+      eth_current_utilization: ethUtilization,
+      utilization_ratio: ethUtilization / (ethCapacity + ethUtilization),
+      block_number: await web3.eth.getBlockNumber()
+  } )
 } );
 
 app.get( "/global-stats", async ( req, res ) => {
@@ -25,7 +37,7 @@ app.get( "/global-stats", async ( req, res ) => {
   for (const idx in config.v1pools) {
     await Promise.all(Array.from(loanIDs[idx]).map(async (e: number) => {
         const loan = await getLoan(web3, config.v1pools[idx], e)
-        ethUtilization += (loan.borrowedWei - loan.returnedWei)
+        ethUtilization += ((loan.borrowedWei  |> web3.utils.fromWei |> Number )- (loan.returnedWei  |> web3.utils.fromWei |> Number))
       }
     ))
   }
