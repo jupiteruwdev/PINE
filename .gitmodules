@@ -1,3 +1,3 @@
 [submodule "smart-contract-abis"]
 	path = smart-contract-abis
-	url = https://github.com/pineprotocol/smart-contract-abis
+	url = https://github.com/pinedefi/smart-contract-abis
