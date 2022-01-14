@@ -9,9 +9,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - name: Checkout
-      uses: actions/checkout@master
-    - name: Update submodules
-      run: git submodule update --init --recursive
+        uses: actions/checkout@v2
+        with:
+          submodules: 'recursive'
     # Setup gcloud CLI
     - uses: google-github-actions/setup-gcloud@master
       with:
