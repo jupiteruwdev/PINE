@@ -11,8 +11,8 @@ export const getCryptoPrice = async (crypto: string) => {
 export const getAllV1LoanEvents = (web3: Web3, address: string) => {
   const poolContract = new web3.eth.Contract(ETHLending as any, address)
   return poolContract.getPastEvents('LoanInitiated',
-  {fromBlock: 0,
-    toBlock: 'latest'})
+    { fromBlock: 0,
+      toBlock: 'latest' })
 }
 
 export const getLoan = (web3: Web3, address: string, nftId: number) => {
