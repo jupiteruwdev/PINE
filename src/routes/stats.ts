@@ -11,7 +11,7 @@ const router = Router()
 
 router.get('/global', async (req, res) => {
   const networkId = _.toNumber(req.query['network_id'] ?? EthNetwork.MAIN)
-  const poolAddresses = appConf.v1pools
+  const poolAddresses = appConf.v1Pools
 
   const blockNumber = await getEthBlockNumber()
   const ethPriceUSD = await getEthPriceUSD()

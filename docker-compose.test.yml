@@ -1,0 +1,8 @@
+version: "3.8"
+services:
+  app:
+    image: ${IMAGE_NAME:-treasury-service}:${IMAGE_TAG:-test}
+    container_name: treasury-service
+    command: npm test
+    ports:
+      - 8080:8080

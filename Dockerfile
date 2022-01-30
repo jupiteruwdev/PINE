@@ -5,10 +5,11 @@ WORKDIR /var/app
 
 COPY package*.json ./
 
-RUN echo "//npm.pkg.github.com/:_authToken=\${GH_ACCESS_TOKEN}" > ~/.npmrc
-RUN --mount=type=secret,id=GH_ACCESS_TOKEN GH_ACCESS_TOKEN=$(cat /run/secrets/GH_ACCESS_TOKEN) npm install
+RUN npm install
 
 COPY src ./src
+COPY ts*.json ./
+COPY .eslintrc ./
 
 RUN npm run build
 

@@ -1,12 +1,12 @@
-name: CI
+name: CD
 on:
   push:
-    branches-ignore: ['main']
+    branches: ['main']
 env:
   IMAGE_NAME: gcr.io/${{ secrets.GCP_PROJECT }}/${{ secrets.GCP_APPLICATION }}
 jobs:
-  build:
-    name: Build/Test
+  deploy:
+    name: Build/Test/Deploy
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -36,14 +36,23 @@ jobs:
           target: test
       - name: Run tests
         run: IMAGE_TAG=test docker-compose -f docker-compose.test.yml up --exit-code-from app
+      - name: Deploy
+        run: |
+          gcloud config set project ${{ secrets.GCP_PROJECT }}
+          gcloud builds submit --tag ${{ env.IMAGE_NAME }}
+          gcloud config set run/region us-central1
+          gcloud run deploy ${{ secrets.GCP_APPLICATION }} --image ${{ env.IMAGE_NAME }} \
+            --platform managed \
+            --allow-unauthenticated \
+            --memory 512M
   notify:
     name: Notify
-    needs: [build]
+    needs: [deploy]
     if: ${{ always() }}
     runs-on: ubuntu-latest
     steps:
       - uses: andrewscwei/slack-action@v1.0.0
         with:
           success-prefix: 🌲
-          success: ${{ needs.build.result == 'success' }}
+          success: ${{ needs.deploy.result == 'success' }}
           webhook-url: ${{ secrets.SLACK_DEVOPS_WEBHOOK_URL }}

@@ -6,7 +6,7 @@ import appConf from '../app.conf'
 
 describe('routes/balances', () => {
   it('can get ETH balances on Mainnet', async () => {
-    const poolAddress = appConf.v1pools
+    const poolAddress = appConf.v1Pools
 
     const { body: res } = await request(app).get('/balances/eth')
       .query({
