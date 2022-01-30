@@ -1,5 +1,3 @@
-import dotenv from 'dotenv'
-dotenv.config()
 export default {
   ethPoolAddress: process.env.ETH_POOL || '0xBF439a8337B9805Ca0BFCCaCEc08E3B0292F5143',
   ethRPC: {
