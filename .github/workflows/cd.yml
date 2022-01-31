@@ -3,6 +3,8 @@ on:
   push:
     branches: ['main']
 env:
+  CONTAINER_REGISTRY: gcr.io
+  GCE_PROJECT: pinedefi
   IMAGE_NAME: gcr.io/${{ secrets.GCP_PROJECT }}/${{ secrets.GCP_APPLICATION }}
 jobs:
   deploy:
