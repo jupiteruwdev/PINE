@@ -15,7 +15,7 @@ jobs:
           submodules: recursive
           token: ${{ secrets.GH_ACCESS_TOKEN }}
       - name: Authenticate Google Cloud
-        uses: google-github-actions/auto@v0
+        uses: google-github-actions/auth@v0
         with:
           workload_identity_provider: ${{ secrets.GCP_WORKLOAD_IDENTITY_PROVIDER }}
           service_account: ${{ secrets.GCP_SERVICE_ACC }}
