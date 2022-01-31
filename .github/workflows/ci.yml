@@ -12,7 +12,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v2
         with:
-          submodules: 'recursive'
+          submodules: recursive
           token: ${{ secrets.GH_ACCESS_TOKEN }}
       - name: Authenticate Google Cloud
         uses: google-github-actions/setup-gcloud@v0
@@ -36,6 +36,28 @@ jobs:
           target: test
       - name: Run tests
         run: IMAGE_TAG=test docker-compose -f docker-compose.test.yml up --exit-code-from app
+      - name: Set metadata
+        id: meta
+        uses: docker/metadata-action@v3
+        with:
+          images: ${{ env.IMAGE_NAME }}
+          flavor: latest=true
+          tags: |
+            type=ref,event=branch
+            type=ref,event=pr
+            type=semver,pattern={{version}}
+            type=sha,prefix=,format=short,priority=1000
+      - name: Build release target
+        uses: docker/build-push-action@v2
+        with:
+          cache-from: type=gha,scope=${{ github.workflow }}
+          cache-to: type=gha,scope=${{ github.workflow }},mode=max
+          context: .
+          labels: ${{ steps.meta.outputs.labels }}
+          load: true
+          push: false
+          tags: ${{ steps.meta.outputs.tags }}
+          target: release
   notify:
     name: Notify
     needs: [build]
