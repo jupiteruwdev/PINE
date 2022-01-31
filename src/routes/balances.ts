@@ -7,7 +7,7 @@ import { EthNetwork, getEthBlockNumber } from '../utils/ethereum'
 
 const router = Router()
 
-router.get('/eth', async (req, res) => {
+router.get('/', async (req, res) => {
   const networkId = _.toNumber(req.query.network_id ?? EthNetwork.MAIN)
   const poolAddress = _.toString(req.query.pool_address)
 

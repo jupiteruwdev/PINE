@@ -8,7 +8,7 @@ describe('routes/balances', () => {
   it('can get ETH balances on Mainnet', async () => {
     const poolAddress = appConf.v1Pools
 
-    const { body: res } = await request(app).get('/balances/eth')
+    const { body: res } = await request(app).get('/eth-balance')
       .query({
         'network_id': 1,
         'pool_address': poolAddress[0],

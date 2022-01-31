@@ -5,7 +5,7 @@ import app from '../'
 
 describe('routes/stats', () => {
   it('can get global stats', async () => {
-    const { body: res } = await request(app).get('/stats/global')
+    const { body: res } = await request(app).get('/global-stats')
       .expect('Content-Type', /json/)
       .expect(200)
 
