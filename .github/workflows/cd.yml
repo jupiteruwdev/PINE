@@ -3,9 +3,7 @@ on:
   push:
     branches: ['main']
 env:
-  CONTAINER_REGISTRY: gcr.io
-  GCE_PROJECT: pinedefi
-  IMAGE_NAME: gcr.io/${{ secrets.GCP_PROJECT }}/${{ secrets.GCP_APPLICATION }}
+  IMAGE_NAME: gcr.io/pinedefi/treasury-service
 jobs:
   deploy:
     name: Build/Test/Deploy
@@ -22,9 +20,10 @@ jobs:
       - name: Authenticate Google Cloud
         uses: google-github-actions/setup-gcloud@v0
         with:
-          service_account_email: ${{ secrets.GCP_EMAIL }}
-          service_account_key: ${{ secrets.GCP_CREDENTIALS }}
-          export_default_credentials: true
+          workload_identity_provider: ${{ secrets.GCP_WORKLOAD_IDENTITY_PROVIDER }}
+          service_account: ${{ secrets.GCP_SERVICE_ACC }}
+      - name: Set up Cloud SDK
+        uses: 'google-github-actions/setup-gcloud@v0'
       - name: Authenticate Docker
         run: gcloud auth configure-docker
       - name: Set up Docker Buildx
@@ -59,8 +58,7 @@ jobs:
           cache-to: type=gha,scope=${{ github.workflow }},mode=max
           context: .
           labels: ${{ steps.meta.outputs.labels }}
-          load: true
-          push: false
+          push: true
           tags: ${{ steps.meta.outputs.tags }}
           target: release
       - name: Deploy
