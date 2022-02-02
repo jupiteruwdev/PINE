@@ -1,17 +1,16 @@
 import { expect } from 'chai'
 import { describe, it } from 'mocha'
 import request from 'supertest'
-import app from '../'
-import appConf from '../app.conf'
+import app from '../../app'
+import appConf from '../../app.conf'
 
-describe('routes/balances', () => {
-  it('can get ETH balances on Mainnet', async () => {
-    const poolAddress = appConf.v1Pools
+describe('routes/pools', () => {
+  it('can get Ethereum loan pool on Mainnet', async () => {
+    const poolAddress = appConf.v1Pools[0]
 
-    const { body: res } = await request(app).get('/eth-balance')
+    const { body: res } = await request(app).get(`/pools/eth/${poolAddress}`)
       .query({
         'network_id': 1,
-        'pool_address': poolAddress[0],
       })
       .expect('Content-Type', /json/)
       .expect(200)

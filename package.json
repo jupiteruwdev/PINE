@@ -2,12 +2,11 @@
   "name": "treasury-service",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
   "scripts": {
-    "start": "node build",
+    "start": "node build/app",
     "clean": "rimraf build",
     "prebuild": "npm run lint",
-    "dev": "nodemon --exec \"ts-node --files -r dotenv/config\" --verbose --watch src --ext ts,json src",
+    "dev": "nodemon --exec \"ts-node --files -r dotenv/config\" --verbose --watch src --ext ts,json src/app",
     "build": "npm run clean && tsc",
     "build:test": "npm run clean && tsc --project tsconfig.test.json",
     "test": "mocha -r dotenv/config -b -c --timeout 10000 --extension spec.js --recursive --exit \"build/$npm_config_files\"",
@@ -31,6 +30,7 @@
     "@types/chai": "^4.3.0",
     "@types/cors": "^2.8.12",
     "@types/express": "^4.17.13",
+    "@types/ip": "^1.1.0",
     "@types/lodash": "^4.14.178",
     "@types/mocha": "^9.1.0",
     "@types/node": "^17.0.13",
@@ -51,6 +51,7 @@
     "axios": "^0.24.0",
     "cors": "^2.8.5",
     "express": "^4.17.1",
+    "ip": "^1.1.5",
     "lodash": "^4.17.21",
     "web3": "^1.6.0"
   }
