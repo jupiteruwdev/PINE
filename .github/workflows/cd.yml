@@ -19,7 +19,7 @@ jobs:
           token: ${{ secrets.GH_ACCESS_TOKEN }}
       - name: Authenticate Google Cloud
         id: gcloud
-        uses: google-github-actions/setup-gcloud@v0
+        uses: google-github-actions/auth@v0
         with:
           token_format: access_token
           workload_identity_provider: ${{ secrets.GCP_WORKLOAD_IDENTITY_PROVIDER }}
@@ -32,7 +32,6 @@ jobs:
           registry: gcr.io
           username: oauth2accesstoken
           password: ${{ steps.gcloud.outputs.access_token }}
-
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v1
       - name: Build test target
