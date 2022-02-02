@@ -74,7 +74,7 @@ jobs:
           services=$(gcloud run services list --platform managed --filter="metadata.labels.ref=${{ github.ref_name }}" | awk 'NR >= 2 {print $2}' | sed -n -e 'H;${x;s/\n/,/g;s/^,//;p;}')
           for service in $(echo $services | sed "s/,/ /g")
           do
-            local region=$(gcloud run services list --platform managed --filter=metadata.name=$service | awk 'NR == 2 {print $3}')
+            region=$(gcloud run services list --platform managed --filter=metadata.name=$service | awk 'NR == 2 {print $3}')
             gcloud run deploy $service --image ${{ fromJSON(steps.meta.outputs.json).tags[0] }} --platform managed --region $region
           done
   notify:
