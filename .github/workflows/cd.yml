@@ -3,7 +3,7 @@ on:
   push:
     branches: ['main']
 env:
-  IMAGE_NAME: gcr.io/pinedefi/treasury-service
+  IMAGE_NAME: gcr.io/pinedefi/core
 jobs:
   deploy:
     name: Build/Test/Deploy

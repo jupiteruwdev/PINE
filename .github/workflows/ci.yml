@@ -3,7 +3,7 @@ on:
   push:
     branches-ignore: ['main']
 env:
-  IMAGE_NAME: gcr.io/pinedefi/treasury-service
+  IMAGE_NAME: gcr.io/pinedefi/core-service
 jobs:
   build:
     name: Build/Test
@@ -51,12 +51,12 @@ jobs:
         uses: docker/metadata-action@v3
         with:
           images: ${{ env.IMAGE_NAME }}
-          flavor: latest=true
           tags: |
             type=ref,event=branch
             type=ref,event=pr
             type=semver,pattern={{version}}
-            type=sha,prefix=,format=short,priority=1000
+            type=sha,prefix=,format=short,suffix=${{ ${{ endsWith(github.ref, github.event.repository.default_branch) }} && '' || format('-{0}', github.ref_name) }},priority=1000
+            type=raw,value=latest,enable=${{ endsWith(github.ref, github.event.repository.default_branch) }}
       - name: Build release target
         uses: docker/build-push-action@v2
         with:
