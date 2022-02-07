@@ -1,7 +1,7 @@
 name: CI
 on:
   push:
-    branches-ignore: [main]
+    branches-ignore: [staging, main]
 env:
   IMAGE_NAME: gcr.io/${{ secrets.GCP_PROJECT }}/core-service
 jobs:
