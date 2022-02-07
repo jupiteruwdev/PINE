@@ -1,12 +1,14 @@
-# Pine Treasury Service
+# Pine Core Service
+
+This is Pine's core web service/API gateway.
 
 ## Usage
 
 ```sh
-# Run in dev
-$ npm run dev
+# Run in dev in port 8000
+$ PORT=8000 npm run dev
 
-# Run tests in TypeScirpt
+# Run tests in TypeScript
 $ npm run test:ts
 
 # Build for production and run tests
