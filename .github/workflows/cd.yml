@@ -1,7 +1,7 @@
 name: CD
 on:
   push:
-    branches: ['main', 'staging']
+    branches: [main]
 env:
   IMAGE_NAME: gcr.io/${{ secrets.GCP_PROJECT }}/core-service
 jobs:
@@ -9,8 +9,7 @@ jobs:
     name: Build/Test/Deploy
     runs-on: ubuntu-latest
     permissions:
-      contents: 'read'
-      id-token: 'write'
+      id-token: write
     steps:
       - name: Checkout
         uses: actions/checkout@v2
@@ -51,13 +50,9 @@ jobs:
         uses: docker/metadata-action@v3
         with:
           images: ${{ env.IMAGE_NAME }}
-          flavor: latest=true
           tags: |
-            type=ref,event=branch
-            type=ref,event=pr
-            type=semver,pattern={{version}}
-            type=sha,prefix=,format=short,suffix=${{ endsWith(github.ref, github.event.repository.default_branch) && '' || format('-{0}', github.ref_name) }},priority=1000
-            type=raw,value=latest,enable=${{ endsWith(github.ref, github.event.repository.default_branch) }}
+            type=sha,prefix=,format=short,priority=1000,suffix=${{ endsWith(github.ref, github.event.repository.default_branch) && '' || format('-{0}', github.ref_name) }}
+            type=raw,value=latest,suffix=${{ endsWith(github.ref, github.event.repository.default_branch) && '' || format('-{0}', github.ref_name) }}
       - name: Build release target
         uses: docker/build-push-action@v2
         with:

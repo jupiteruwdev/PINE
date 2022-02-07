@@ -2,10 +2,10 @@ version: "3.8"
 services:
   app:
     command: npm start
-    container_name: treasury-service
+    container_name: core-service
     environment:
       NODE_ENV: production
-    image: ${IMAGE_NAME:-treasury-service}:${IMAGE_TAG:-latest}
+    image: ${IMAGE_NAME:-core-service}:${IMAGE_TAG:-latest}
     restart: always
     ports:
       - 8080:8080
