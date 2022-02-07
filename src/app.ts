@@ -6,6 +6,7 @@ import http from 'http'
 import ip from 'ip'
 import appConf from './app.conf'
 import routes from './routes'
+import logger from './utils/logger'
 
 const app = express()
 
@@ -16,10 +17,10 @@ http
   .createServer(app)
   .listen(appConf.port)
   .on('error', (error: NodeJS.ErrnoException) => {
-    console.error(error)
+    logger.error(error)
   })
   .on('listening', () => {
-    console.log(`Starting service on ${ip.address()}:${appConf.port}... OK`)
+    logger.info(`Starting service on ${ip.address()}:${appConf.port}... OK`)
   })
 
 export default app

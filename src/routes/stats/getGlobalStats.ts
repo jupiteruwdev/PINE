@@ -7,11 +7,14 @@ import getPoolCollaterals from '../../core/getPoolCollaterals'
 import getPoolLent from '../../core/getPoolLent'
 import GlobalStats from '../../entities/GlobalStats'
 import { EthNetwork, getEthBlockNumber, getEthPriceUSD } from '../../utils/ethereum'
+import logger from '../../utils/logger'
 
 export default function getGlobalStats(): RequestHandler {
   return async (req, res) => {
     const networkId = _.toNumber(req.query['network_id'] ?? EthNetwork.MAIN)
     const poolAddresses = appConf.v1Pools
+
+    logger.info('Fetching global stats...')
 
     const blockNumber = await getEthBlockNumber()
     const ethPriceUSD = await getEthPriceUSD()
@@ -33,6 +36,8 @@ export default function getGlobalStats(): RequestHandler {
     const totalLentUSD = _.sum(lentPerPool) * ethPriceUSD
     const totalUtilizationUSD = totalUtilizationEth * ethPriceUSD
     const tvlUSD =  totalUtilizationUSD + totalCapacityUSD
+
+    logger.info('Fetching global stats... OK')
 
     const payload: GlobalStats = {
       'block_number': blockNumber,
