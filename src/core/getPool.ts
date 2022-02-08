@@ -1,5 +1,5 @@
 import _ from 'lodash'
-import Blockchain from '../entities/Blockchain'
+import { EthBlockchain } from '../entities/Blockchain'
 import Pool from '../entities/Pool'
 import { EthNetwork, Web3Options } from '../utils/ethereum'
 import getCollateralOutstanding from './getCollateralOutstanding'
@@ -12,15 +12,10 @@ export default async function getPool(poolAddress: string, options: Web3Options 
   const valueLent = _.sum(await Promise.all(nftIds.map(nftId => getCollateralOutstanding(nftId, poolAddress, options))))
   const valueLocked = capacity + valueLent
 
-  const blockchain: Blockchain = {
-    'network': 'ethereum',
-    'network_id': (options.networkId ?? EthNetwork.MAIN).toString(),
-  }
-
   return {
     'address': poolAddress,
     'currency': {
-      blockchain,
+      'blockchain': EthBlockchain(options.networkId ?? EthNetwork.MAIN),
       'name': 'ether',
     },
     'value_lent': valueLent,
