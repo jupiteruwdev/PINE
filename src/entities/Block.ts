@@ -1,3 +1,5 @@
+/* eslint-disable id-blacklist */
+
 type Block = {
   number: number
   timestamp: number

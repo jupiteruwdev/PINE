@@ -23,18 +23,18 @@ export default function getEthPool(): RequestHandler {
     logger.info(`Fetching ETH loan pool for address <${poolAddress}> on network <${networkId}>... OK`)
 
     const blockchain: Blockchain = {
-      network: 'ethereum',
-      network_id: networkId.toString(),
+      'network': 'ethereum',
+      'network_id': networkId.toString(),
     }
 
     const payload: Pool = {
-      address: poolAddress,
-      currency: {
+      'address': poolAddress,
+      'currency': {
         blockchain,
-        name: 'ether',
+        'name': 'ether',
       },
-      value_lent: valueLent,
-      value_locked: valueLocked,
+      'value_lent': valueLent,
+      'value_locked': valueLocked,
     }
 
     res.status(200).json(payload)

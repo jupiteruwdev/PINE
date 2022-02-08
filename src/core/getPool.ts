@@ -13,17 +13,17 @@ export default async function getPool(poolAddress: string, options: Web3Options 
   const valueLocked = capacity + valueLent
 
   const blockchain: Blockchain = {
-    network: 'ethereum',
-    network_id: (options.networkId ?? EthNetwork.MAIN).toString(),
+    'network': 'ethereum',
+    'network_id': (options.networkId ?? EthNetwork.MAIN).toString(),
   }
 
   return {
-    address: poolAddress,
-    currency: {
+    'address': poolAddress,
+    'currency': {
       blockchain,
-      name: 'ether',
+      'name': 'ether',
     },
-    value_lent: valueLent,
-    value_locked: valueLocked,
+    'value_lent': valueLent,
+    'value_locked': valueLocked,
   }
 }

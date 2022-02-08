@@ -6,6 +6,6 @@ type Collection = {
   id: string // slug
   image_url: string
   name: string
- }
+}
 
- export default Collection
+export default Collection
