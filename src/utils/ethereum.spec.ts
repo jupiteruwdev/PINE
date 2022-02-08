@@ -5,19 +5,19 @@ import { EthNetwork, getEthBlockNumber, getEthPriceUSD, getWeb3 } from './ethere
 
 describe('utils/ethereum', () => {
   it('can create Web3 object for Mainnet', async () => {
-    assert(getWeb3({ networkId: EthNetwork.MAIN }))
+    assert(getWeb3(EthNetwork.MAIN))
   })
 
   it('can create Web3 object for Rinkeby', async () => {
-    assert(getWeb3({ networkId: EthNetwork.RINKEBY }))
+    assert(getWeb3(EthNetwork.RINKEBY))
   })
 
   it('can get current block number on Mainnet', async () => {
-    assert(_.isNumber(await getEthBlockNumber({ networkId: EthNetwork.MAIN })))
+    assert(_.isNumber(await getEthBlockNumber(EthNetwork.MAIN)))
   })
 
   it('can get current block number on Rinkeby', async () => {
-    assert(_.isNumber(await getEthBlockNumber({ networkId: EthNetwork.RINKEBY })))
+    assert(_.isNumber(await getEthBlockNumber(EthNetwork.RINKEBY)))
   })
 
   it('can get current ETH price', async () => {

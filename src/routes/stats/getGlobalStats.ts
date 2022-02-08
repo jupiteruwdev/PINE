@@ -5,6 +5,7 @@ import getCollateralOutstanding from '../../core/getCollateralOutstanding'
 import getPoolCapacity from '../../core/getPoolCapacity'
 import getPoolCollaterals from '../../core/getPoolCollaterals'
 import getPoolLent from '../../core/getPoolLent'
+import { EthBlockchain } from '../../entities/Blockchain'
 import GlobalStats from '../../entities/GlobalStats'
 import { EthNetwork, getEthBlockNumber, getEthPriceUSD } from '../../utils/ethereum'
 import logger from '../../utils/logger'
@@ -18,16 +19,17 @@ export default function getGlobalStats(): RequestHandler {
 
     const blockNumber = await getEthBlockNumber()
     const ethPriceUSD = await getEthPriceUSD()
-    const capacityPerPool = await Promise.all(poolAddresses.map(poolAddress => getPoolCapacity(poolAddress, { networkId })))
-    const lentPerPool = await Promise.all(poolAddresses.map(poolAddress => getPoolLent(poolAddress, { networkId })))
-    const collateralsPerPool = await Promise.all(poolAddresses.map(poolAddress => getPoolCollaterals(poolAddress, { networkId })))
+    const ethBlockchain = EthBlockchain(networkId)
+    const capacityPerPool = await Promise.all(poolAddresses.map(poolAddress => getPoolCapacity(poolAddress, ethBlockchain)))
+    const lentPerPool = await Promise.all(poolAddresses.map(poolAddress => getPoolLent(poolAddress, ethBlockchain)))
+    const collateralsPerPool = await Promise.all(poolAddresses.map(poolAddress => getPoolCollaterals(poolAddress, ethBlockchain)))
 
     let totalUtilizationEth = 0
 
     for (let i = 0, n = poolAddresses.length; i < n; i++) {
       const poolAddress = poolAddresses[i]
       const collaterals = collateralsPerPool[i]
-      const utilizationPerCollateral = await Promise.all(collaterals.map(nftId => getCollateralOutstanding(nftId, poolAddress, { networkId })))
+      const utilizationPerCollateral = await Promise.all(collaterals.map(nftId => getCollateralOutstanding(nftId, poolAddress, ethBlockchain)))
 
       totalUtilizationEth += _.sum(utilizationPerCollateral)
     }

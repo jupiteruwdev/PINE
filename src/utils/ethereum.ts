@@ -4,18 +4,14 @@ import Web3 from 'web3'
 import appConf from '../app.conf'
 
 export enum EthNetwork {
-  MAIN = 1,
-  ROPSTEN = 3,
-  RINKEBY = 4,
-  GOERLI = 5,
-  KOVAN = 42,
+  MAIN = '1',
+  ROPSTEN = '3',
+  RINKEBY = '4',
+  GOERLI = '5',
+  KOVAN = '42',
 }
 
-export type Web3Options = {
-  networkId?: EthNetwork
-}
-
-const web3s: Record<EthNetwork, Web3 | undefined> = {
+const web3s: Record<string, Web3 | undefined> = {
   [EthNetwork.MAIN]: undefined,
   [EthNetwork.ROPSTEN]: undefined,
   [EthNetwork.RINKEBY]: undefined,
@@ -23,7 +19,7 @@ const web3s: Record<EthNetwork, Web3 | undefined> = {
   [EthNetwork.KOVAN]: undefined,
 }
 
-export function getWeb3({ networkId = EthNetwork.MAIN }: Web3Options = {}): Web3 {
+export function getWeb3(networkId: string = EthNetwork.MAIN): Web3 {
   if (web3s[networkId] !== undefined) return web3s[networkId] as Web3
 
   const rpc = _.get(appConf.ethRPC, networkId)
@@ -49,8 +45,8 @@ export async function getEthPriceUSDTrend(): Promise<Record<string, any>> {
   return data
 }
 
-export async function getEthBlockNumber(options: Web3Options = {}): Promise<number> {
-  const web3 = getWeb3(options)
+export async function getEthBlockNumber(networkId: string = EthNetwork.MAIN): Promise<number> {
+  const web3 = getWeb3(networkId)
   const blockNumber = await web3.eth.getBlockNumber()
 
   return blockNumber

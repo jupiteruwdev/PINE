@@ -1,8 +1,8 @@
 import { Router } from 'express'
-import getEthLoanPool from './getEthLoanPool'
+import getEthPool from './getEthPool'
 
 const router = Router()
 
-router.get('/eth/:address', getEthLoanPool())
+router.get('/eth/:address', getEthPool())
 
 export default router
