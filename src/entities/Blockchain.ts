@@ -8,7 +8,7 @@ type Blockchain = {
 export function EthBlockchain(networkId: string | number = EthNetwork.MAIN): Blockchain {
   return {
     'network': 'ethereum',
-    'network_id': networkId.toString()
+    'network_id': networkId.toString(),
   }
 }
 
