@@ -13,6 +13,7 @@ export default function getPoolContract({ poolAddress }: Params, blockchain: Blo
     const contract = new web3.eth.Contract(ERC721LendingABI as any, poolAddress)
     return contract
   }
-  default: throw Error(`Unsupported blockchain <${blockchain.network}>`)
+  default:
+    throw Error(`Unsupported blockchain <${blockchain.network}>`)
   }
 }

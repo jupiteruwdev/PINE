@@ -1,8 +1,8 @@
 import { expect } from 'chai'
 import { describe, it } from 'mocha'
 import request from 'supertest'
-import app from '../../app'
-import appConf from '../../app.conf'
+import app from '../app'
+import appConf from '../app.conf'
 
 describe('routes/pools', () => {
   it('can get all Ethereum loan pools on Mainnet', async () => {

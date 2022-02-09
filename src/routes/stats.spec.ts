@@ -1,7 +1,7 @@
 import { expect } from 'chai'
 import { describe, it } from 'mocha'
 import request from 'supertest'
-import app from '../../app'
+import app from '../app'
 
 describe('routes/stats', () => {
   it('can get global stats', async () => {

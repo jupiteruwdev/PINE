@@ -5,14 +5,14 @@ import Currency from './Currency'
  */
 type Valuation = {
   collection_id: string
-  currency_usd_24hr: number
-  currency_usd: number
+  currency_price_usd_24hr: number
+  currency_price_usd: number
   currency: Currency
   updated_at: Date
-  valuation_24hr: number
-  valuation_usd_24hr: number
-  valuation_usd: number
-  valuation: number
+  value_24hr: number
+  value_usd_24hr: number
+  value_usd: number
+  value: number
 }
 
 export default Valuation

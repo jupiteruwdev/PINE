@@ -6,7 +6,7 @@ type Params = {
   poolAddress: string
 }
 
-export default async function getPoolCollaterals({ poolAddress }: Params, blockchain: Blockchain = EthBlockchain()): Promise<number[]> {
+export default async function getPoolCollaterals({ poolAddress }: Params, blockchain: Blockchain = EthBlockchain()) {
   const events = await getPoolLoanEvents({ poolAddress }, blockchain)
   const nftIds = _.uniq(events.map(event => event.returnValues.nftID))
   return nftIds

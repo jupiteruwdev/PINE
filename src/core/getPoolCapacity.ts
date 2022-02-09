@@ -1,12 +1,12 @@
 import Blockchain, { EthBlockchain } from '../entities/Blockchain'
-import Currency, { $ETH } from '../entities/Currency'
+import { $ETH } from '../entities/Currency'
 import { getWeb3 } from '../utils/ethereum'
 
 type Params = {
   poolAddress: string
 }
 
-export default async function getPoolCapacity({ poolAddress }: Params, blockchain: Blockchain = EthBlockchain()): Promise<{ value: number; currency: Currency }> {
+export default async function getPoolCapacity({ poolAddress }: Params, blockchain: Blockchain = EthBlockchain()) {
   switch (blockchain.network) {
   case 'ethereum': {
     const web3 = getWeb3(blockchain.network_id)
@@ -18,6 +18,7 @@ export default async function getPoolCapacity({ poolAddress }: Params, blockchai
       currency: $ETH(blockchain.network_id),
     }
   }
-  default: throw Error(`Unsupported blockchain <${blockchain.network}>`)
+  default:
+    throw Error(`Unsupported blockchain <${blockchain.network}>`)
   }
 }

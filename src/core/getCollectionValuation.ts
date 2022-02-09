@@ -5,13 +5,16 @@ import appConf from '../app.conf'
 import { $ETH } from '../entities/Currency'
 import Valuation from '../entities/Valuation'
 import { getEthPriceUSD, getEthPriceUSD24Hr } from '../utils/ethereum'
+import logger from '../utils/logger'
 
 type Params = {
   venue: string
   collectionId: string
 }
 
-export default async function getCollectionValuation({ venue, collectionId }: Params): Promise<Valuation> {
+export default async function getCollectionValuation({ venue, collectionId }: Params) {
+  logger.info(`Fetching valuation for collection ID <${collectionId}> from venue <${venue}>...`)
+
   switch (venue) {
   case 'opensea':
     const apiKey = appConf.openseaAPIKey
@@ -32,20 +35,24 @@ export default async function getCollectionValuation({ venue, collectionId }: Pa
       }),
     ])
 
-    const valuation24Hr = _.get(collectionData, 'stats.floor_price', NaN)
-    const valuation = valuation24Hr > _.get(collectionData, 'stats.one_day_average_price', NaN) ? _.get(collectionData, 'stats.one_day_average_price', NaN) : valuation24Hr
-
-    return {
+    const value24Hr = _.get(collectionData, 'stats.floor_price', NaN)
+    const value = value24Hr > _.get(collectionData, 'stats.one_day_average_price', NaN) ? _.get(collectionData, 'stats.one_day_average_price', NaN) : value24Hr
+    const valuation: Valuation = {
       'collection_id': collectionId,
-      'currency_usd_24hr': ethPriceUSD24Hr,
-      'currency_usd': ethPriceUSD,
+      'currency_price_usd_24hr': ethPriceUSD24Hr,
+      'currency_price_usd': ethPriceUSD,
       'currency': $ETH(),
       'updated_at': new Date(),
-      'valuation_24hr': valuation24Hr,
-      'valuation_usd_24hr': valuation24Hr * ethPriceUSD24Hr,
-      'valuation_usd': valuation * ethPriceUSD,
-      valuation,
+      'value_24hr': value24Hr,
+      'value_usd_24hr': value24Hr * ethPriceUSD24Hr,
+      'value_usd': value * ethPriceUSD,
+      value,
     }
-  default: throw new SuperError(`Venue <${venue}> is not supported`, 'VENUE-NOT-SUPPORTED')
+
+    logger.info(`Fetching valuation for collection ID <${collectionId}> from venue <${venue}>... OK`, valuation)
+
+    return valuation
+  default:
+    throw new SuperError(`Venue <${venue}> is not supported`, 'VENUE-NOT-SUPPORTED')
   }
 }

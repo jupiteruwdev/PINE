@@ -16,6 +16,7 @@ export async function getPoolLoanEvents({ poolAddress }: Params, blockchain: Blo
 
     return events
   }
-  default: throw Error(`Unsupported blockchain <${blockchain.network}>`)
+  default:
+    throw Error(`Unsupported blockchain <${blockchain.network}>`)
   }
 }

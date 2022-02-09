@@ -1,6 +1,6 @@
 import _ from 'lodash'
 import Blockchain, { EthBlockchain } from '../entities/Blockchain'
-import Currency, { $ETH } from '../entities/Currency'
+import { $ETH } from '../entities/Currency'
 import { getWeb3 } from '../utils/ethereum'
 import { getPoolLoanEvents } from './getPoolLoanEvents'
 
@@ -16,7 +16,7 @@ type Params = {
  *
  * @returns - See {@link Output}.
  */
-export default async function getPoolUtilization({ poolAddress }: Params, blockchain: Blockchain = EthBlockchain()): Promise<{ value: number; currency: Currency }> {
+export default async function getPoolUtilization({ poolAddress }: Params, blockchain: Blockchain = EthBlockchain()) {
   switch (blockchain.network) {
   case 'ethereum': {
     const events = await getPoolLoanEvents({ poolAddress }, blockchain)
@@ -29,6 +29,7 @@ export default async function getPoolUtilization({ poolAddress }: Params, blockc
       value: totalLentEth,
     }
   }
-  default: throw Error(`Unsupported blockchain <${blockchain.network}>`)
+  default:
+    throw Error(`Unsupported blockchain <${blockchain.network}>`)
   }
 }
