@@ -12,6 +12,9 @@ type Params = {
   collectionId: string
 }
 
+/**
+ * @todo Use `Collection` instead of `collectionId`.
+ */
 export default async function getCollectionValuation({ venue, collectionId }: Params) {
   logger.info(`Fetching valuation for collection ID <${collectionId}> from venue <${venue}>...`)
 

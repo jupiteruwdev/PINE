@@ -1,6 +1,6 @@
 import Blockchain, { EthBlockchain } from '../entities/Blockchain'
 import { $ETH } from '../entities/Currency'
-import { getWeb3 } from '../utils/ethereum'
+import { getEthWeb3 } from '../utils/ethereum'
 import getCollateralLoanPosition from './getCollateralLoanPosition'
 
 type Params = {
@@ -11,7 +11,7 @@ type Params = {
 export default async function getCollateralOutstanding({ nftId, poolAddress }: Params, blockchain: Blockchain = EthBlockchain()) {
   switch (blockchain.network) {
   case 'ethereum': {
-    const web3 = getWeb3(blockchain.network_id)
+    const web3 = getEthWeb3(blockchain.network_id)
     const loanPosition = await getCollateralLoanPosition({ nftId, poolAddress }, blockchain)
     const borrowedEth = parseFloat(web3.utils.fromWei(loanPosition.borrowedWei))
     const returnedEth = parseFloat(web3.utils.fromWei(loanPosition.returnedWei))

@@ -1,15 +1,15 @@
 import { assert, expect } from 'chai'
 import _ from 'lodash'
 import { describe, it } from 'mocha'
-import { EthNetwork, getEthBlockNumber, getEthPriceUSD, getWeb3 } from './ethereum'
+import { EthNetwork, getEthBlockNumber, getEthPriceUSD, getEthWeb3 } from './ethereum'
 
 describe('utils/ethereum', () => {
   it('can create Web3 object for Mainnet', async () => {
-    assert(getWeb3(EthNetwork.MAIN))
+    assert(getEthWeb3(EthNetwork.MAIN))
   })
 
   it('can create Web3 object for Rinkeby', async () => {
-    assert(getWeb3(EthNetwork.RINKEBY))
+    assert(getEthWeb3(EthNetwork.RINKEBY))
   })
 
   it('can get current block number on Mainnet', async () => {

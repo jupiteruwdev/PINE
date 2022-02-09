@@ -19,7 +19,7 @@ const web3s: Record<string, Web3 | undefined> = {
   [EthNetwork.KOVAN]: undefined,
 }
 
-export function getWeb3(networkId: string = EthNetwork.MAIN): Web3 {
+export function getEthWeb3(networkId: string = EthNetwork.MAIN): Web3 {
   if (web3s[networkId] !== undefined) return web3s[networkId] as Web3
 
   const rpc = _.get(appConf.ethRPC, networkId)
@@ -32,22 +32,22 @@ export function getWeb3(networkId: string = EthNetwork.MAIN): Web3 {
   return web3
 }
 
-export async function getEthPriceUSD(): Promise<number> {
+export async function getEthPriceUSD(eth = 1): Promise<number> {
   const { data } = await axios.get('https://api.binance.com/api/v3/ticker/price?symbol=ETHUSDT')
   const price = _.toNumber(_.get(data, 'price'))
 
-  return price
+  return eth * price
 }
 
-export async function getEthPriceUSD24Hr(): Promise<number> {
+export async function getEthPriceUSD24Hr(eth = 1): Promise<number> {
   const { data } = await axios.get('https://api.binance.com/api/v3/ticker/24hr?symbol=ETHUSDT')
   const price = _.toNumber(_.get(data, 'prevClosePrice'))
 
-  return price
+  return eth * price
 }
 
 export async function getEthBlockNumber(networkId: string = EthNetwork.MAIN): Promise<number> {
-  const web3 = getWeb3(networkId)
+  const web3 = getEthWeb3(networkId)
   const blockNumber = await web3.eth.getBlockNumber()
 
   return blockNumber

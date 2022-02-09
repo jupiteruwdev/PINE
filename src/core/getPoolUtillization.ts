@@ -1,7 +1,7 @@
 import _ from 'lodash'
 import Blockchain, { EthBlockchain } from '../entities/Blockchain'
 import { $ETH } from '../entities/Currency'
-import { getWeb3 } from '../utils/ethereum'
+import { getEthWeb3 } from '../utils/ethereum'
 import { getPoolLoanEvents } from './getPoolLoanEvents'
 
 type Params = {
@@ -20,7 +20,7 @@ export default async function getPoolUtilization({ poolAddress }: Params, blockc
   switch (blockchain.network) {
   case 'ethereum': {
     const events = await getPoolLoanEvents({ poolAddress }, blockchain)
-    const web3 = getWeb3(blockchain.network_id)
+    const web3 = getEthWeb3(blockchain.network_id)
     const lentEthPerEvent = events.map(event => parseFloat(web3.utils.fromWei(event.returnValues.loan[4])))
     const totalLentEth = _.sum(lentEthPerEvent)
 
