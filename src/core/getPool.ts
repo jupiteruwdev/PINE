@@ -13,9 +13,14 @@ type Params = {
 export default async function getPool({ poolAddress }: Params, blockchain: Blockchain = EthBlockchain()): Promise<Pool> {
   switch (blockchain.network) {
   case 'ethereum': {
-    const nftIds = await getPoolCollaterals({ poolAddress }, blockchain)
-    const { value: capacityEth } = await getPoolCapacity({ poolAddress }, blockchain)
-    const valueLentEth = _.sumBy(await Promise.all(nftIds.map(nftId => getCollateralOutstanding({ nftId, poolAddress }, blockchain))), 'value')
+    const [
+      lentEthPerCollateral,
+      { value: capacityEth },
+    ] = await Promise.all([
+      getPoolCollaterals({ poolAddress }, blockchain).then(nftIds => Promise.all(nftIds.map(nftId => getCollateralOutstanding({ nftId, poolAddress }, blockchain)))),
+      getPoolCapacity({ poolAddress }, blockchain),
+    ])
+    const valueLentEth = _.sumBy(lentEthPerCollateral, 'value')
     const valueLockedEth = capacityEth + valueLentEth
 
     return {
