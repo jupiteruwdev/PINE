@@ -22,7 +22,7 @@ export default function getValuation(): RequestHandler {
 
       res.status(200).json(payload)
     }
-    catch(err) {
+    catch (err) {
       logger.info(`Fetching valuation for collection ID <${collectionId}> from venue <${venue}>... ERR: ${err}`)
 
       next(failure('VALUATION_FAILURE', err))
