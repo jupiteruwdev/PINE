@@ -3,7 +3,7 @@ import Blockchain from './Blockchain'
 type Collection = {
   address: string
   blockchain: Blockchain
-  id: string // slug
+  id: string // Slug
   image_url: string
   name: string
 }

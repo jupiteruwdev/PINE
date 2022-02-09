@@ -33,16 +33,17 @@ export function getWeb3(networkId: string = EthNetwork.MAIN): Web3 {
 }
 
 export async function getEthPriceUSD(): Promise<number> {
-  const { data: res } = await axios.get('https://api.binance.com/api/v3/ticker/price?symbol=ETHUSDT')
-  const price = _.toNumber(_.get(res, 'price'))
+  const { data } = await axios.get('https://api.binance.com/api/v3/ticker/price?symbol=ETHUSDT')
+  const price = _.toNumber(_.get(data, 'price'))
 
   return price
 }
 
-export async function getEthPriceUSDTrend(): Promise<Record<string, any>> {
+export async function getEthPriceUSD24Hr(): Promise<number> {
   const { data } = await axios.get('https://api.binance.com/api/v3/ticker/24hr?symbol=ETHUSDT')
+  const price = _.toNumber(_.get(data, 'prevClosePrice'))
 
-  return data
+  return price
 }
 
 export async function getEthBlockNumber(networkId: string = EthNetwork.MAIN): Promise<number> {
