@@ -1,4 +1,5 @@
 export default {
+  env: process.env.NODE_ENV ?? 'development',
   port: process.env.PORT ?? 8080,
   openseaAPIKey: process.env.OPENSEA_API_KEY,
   ethRPC: {

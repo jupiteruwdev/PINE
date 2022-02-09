@@ -1,4 +1,5 @@
 import winston from 'winston'
+import appConf from '../app.conf'
 
 const logger = winston.createLogger({
   exitOnError: false,
@@ -6,7 +7,7 @@ const logger = winston.createLogger({
   levels: winston.config.syslog.levels,
 })
 
-if (process.env.NODE_ENV === 'production') {
+if (appConf.env === 'production') {
   logger.add(new winston.transports.Console({
     format: winston.format.combine(
       winston.format.json(),
