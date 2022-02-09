@@ -27,10 +27,10 @@ app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
   res.setHeader('Content-Type', 'application/json')
 
   if (status === 404) {
-    logger.error(err.message)
+    logger.warn('Handling 404 error... SKIP', err)
   }
   else {
-    logger.error(`[${status}] ${err.stack}`)
+    logger.error('Handling 500 error... OK', err)
 
     res.status(status).json({
       error: SuperError.serialize(err),
