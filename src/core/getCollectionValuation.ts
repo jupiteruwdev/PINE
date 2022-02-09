@@ -12,23 +12,28 @@ type Params = {
 }
 
 export default async function getCollectionValuation({ venue, collectionId }: Params): Promise<Valuation> {
-  const ethPriceUSD = await getEthPriceUSD()
-  const ethPriceUSD24Hr = await getEthPriceUSD24Hr()
-
   switch (venue) {
   case 'opensea':
     const apiKey = appConf.openseaAPIKey
 
     if (!apiKey) throw new SuperError(undefined, 'MISSING_API_KEY')
 
-    const { data } = await axios.get(`https://api.opensea.io/api/v1/collection/${collectionId}/stats`, {
-      headers: {
-        'X-API-KEY': apiKey,
-      },
-    })
+    const [
+      ethPriceUSD,
+      ethPriceUSD24Hr,
+      { data: collectionData },
+    ] = await Promise.all([
+      getEthPriceUSD(),
+      getEthPriceUSD24Hr(),
+      axios.get(`https://api.opensea.io/api/v1/collection/${collectionId}/stats`, {
+        headers: {
+          'X-API-KEY': apiKey,
+        },
+      }),
+    ])
 
-    const valuation24Hr = _.get(data, 'stats.floor_price', NaN)
-    const valuation = valuation24Hr > _.get(data, 'stats.one_day_average_price', NaN) ? _.get(data, 'stats.one_day_average_price', NaN) : valuation24Hr
+    const valuation24Hr = _.get(collectionData, 'stats.floor_price', NaN)
+    const valuation = valuation24Hr > _.get(collectionData, 'stats.one_day_average_price', NaN) ? _.get(collectionData, 'stats.one_day_average_price', NaN) : valuation24Hr
 
     return {
       'collection_id': collectionId,
