@@ -1,9 +1,11 @@
 /* eslint-disable no-console */
 
+import SuperError from '@andrewscwei/super-error'
 import cors from 'cors'
-import express from 'express'
+import express, { NextFunction, Request, Response } from 'express'
 import http from 'http'
 import ip from 'ip'
+import _ from 'lodash'
 import appConf from './app.conf'
 import routes from './routes'
 import logger from './utils/logger'
@@ -12,6 +14,29 @@ const app = express()
 
 app.use(cors())
 app.use('/', routes)
+
+app.use('*', (req, res, next) => {
+  const error = new Error(`Handling path <${req.baseUrl}>... ERR: Not found and silently ignored, requester IP is ${req.ip}`)
+  _.set(error, 'status', 404)
+  next(error)
+})
+
+app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
+  const status = (err as any).status ?? 500
+
+  res.setHeader('Content-Type', 'application/json')
+
+  if (status === 404) {
+    logger.error(err.message)
+  }
+  else {
+    logger.error(`[${status}] ${err.stack}`)
+
+    res.status(status).json({
+      error: SuperError.serialize(err),
+    })
+  }
+})
 
 http
   .createServer(app)
