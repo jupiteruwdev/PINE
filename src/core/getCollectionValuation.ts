@@ -2,9 +2,9 @@ import SuperError from '@andrewscwei/super-error'
 import axios from 'axios'
 import _ from 'lodash'
 import appConf from '../app.conf'
-import { $ETH } from '../entities/Currency'
 import Valuation from '../entities/Valuation'
-import { getEthPriceUSD, getEthPriceUSD24Hr } from '../utils/ethereum'
+import { $ETH, $USD } from '../entities/Value'
+import { getEthValueUSD, getEthValueUSD24Hr } from '../utils/ethereum'
 import logger from '../utils/logger'
 
 type Params = {
@@ -25,12 +25,12 @@ export default async function getCollectionValuation({ venue, collectionId }: Pa
     if (!apiKey) throw new SuperError(undefined, 'MISSING_API_KEY')
 
     const [
-      ethPriceUSD,
-      ethPriceUSD24Hr,
+      ethValueUSD,
+      ethValueUSD24Hr,
       { data: collectionData },
     ] = await Promise.all([
-      getEthPriceUSD(),
-      getEthPriceUSD24Hr(),
+      getEthValueUSD(),
+      getEthValueUSD24Hr(),
       axios.get(`https://api.opensea.io/api/v1/collection/${collectionId}/stats`, {
         headers: {
           'X-API-KEY': apiKey,
@@ -38,18 +38,15 @@ export default async function getCollectionValuation({ venue, collectionId }: Pa
       }),
     ])
 
-    const value24Hr = _.get(collectionData, 'stats.floor_price', NaN)
-    const value = value24Hr > _.get(collectionData, 'stats.one_day_average_price', NaN) ? _.get(collectionData, 'stats.one_day_average_price', NaN) : value24Hr
-    const valuation: Valuation = {
+    const valueEth24Hr: number = _.get(collectionData, 'stats.floor_price', NaN)
+    const valueEth: number = valueEth24Hr > _.get(collectionData, 'stats.one_day_average_price', NaN) ? _.get(collectionData, 'stats.one_day_average_price', NaN) : valueEth24Hr
+    const valuation: Valuation<'ETH'> = {
       'collection_id': collectionId,
-      'currency_price_usd_24hr': ethPriceUSD24Hr,
-      'currency_price_usd': ethPriceUSD,
-      'currency': $ETH(),
       'updated_at': new Date(),
-      'value_24hr': value24Hr,
-      'value_usd_24hr': value24Hr * ethPriceUSD24Hr,
-      'value_usd': value * ethPriceUSD,
-      value,
+      'value_24hr': $ETH(valueEth24Hr),
+      'value_usd_24hr': $USD(valueEth24Hr * ethValueUSD24Hr.amount),
+      'value_usd': $USD(valueEth * ethValueUSD.amount),
+      'value': $ETH(valueEth),
     }
 
     logger.info(`Fetching valuation for collection ID <${collectionId}> from venue <${venue}>... OK`, valuation)

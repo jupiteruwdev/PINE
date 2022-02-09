@@ -1,17 +1,11 @@
-import { EthNetwork } from '../utils/ethereum'
-import Blockchain, { EthBlockchain } from './Blockchain'
+import Blockchain from './Blockchain'
 
-type Currency = {
+export type AnyCurrency = 'ETH' | 'USD'
+
+type Currency<T extends AnyCurrency = AnyCurrency> = {
   address?: string
-  blockchain: Blockchain
-  name: 'ETH' | 'USDT'
-}
-
-export function $ETH(networkId: string | number = EthNetwork.MAIN): Currency {
-  return {
-    'blockchain': EthBlockchain(networkId),
-    'name': 'ETH',
-  }
+  blockchain?: Blockchain
+  name: T
 }
 
 export default Currency

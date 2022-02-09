@@ -1,7 +1,7 @@
 import { assert, expect } from 'chai'
 import _ from 'lodash'
 import { describe, it } from 'mocha'
-import { EthNetwork, getEthBlockNumber, getEthPriceUSD, getEthWeb3 } from './ethereum'
+import { EthNetwork, getEthBlockNumber, getEthValueUSD, getEthWeb3 } from './ethereum'
 
 describe('utils/ethereum', () => {
   it('can create Web3 object for Mainnet', async () => {
@@ -21,8 +21,9 @@ describe('utils/ethereum', () => {
   })
 
   it('can get current ETH price', async () => {
-    const price = await getEthPriceUSD()
-    expect(price).to.be.a('number')
-    expect(price).is.not.NaN
+    const valueUSD = await getEthValueUSD()
+    expect(valueUSD).to.be.an('object')
+    expect(valueUSD.amount).to.be.a('number')
+    expect(valueUSD.amount).is.not.NaN
   })
 })

@@ -15,7 +15,6 @@ describe('routes/pools', () => {
         .expect(200)
 
       expect(res).to.have.property('address')
-      expect(res).to.have.property('currency')
       expect(res).to.have.property('value_lent')
       expect(res).to.have.property('value_locked')
     }))

@@ -1,5 +1,5 @@
 import Blockchain, { EthBlockchain } from '../entities/Blockchain'
-import { $ETH } from '../entities/Currency'
+import { $ETH } from '../entities/Value'
 import { getEthWeb3 } from '../utils/ethereum'
 
 type Params = {
@@ -13,10 +13,7 @@ export default async function getPoolCapacity({ poolAddress }: Params, blockchai
     const balanceWei = await web3.eth.getBalance(poolAddress)
     const balanceEth = parseFloat(web3.utils.fromWei(balanceWei))
 
-    return {
-      value: balanceEth,
-      currency: $ETH(blockchain.network_id),
-    }
+    return $ETH(balanceEth)
   }
   default:
     throw Error(`Unsupported blockchain <${blockchain.network}>`)

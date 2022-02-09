@@ -1,6 +1,6 @@
 import _ from 'lodash'
 import Blockchain, { EthBlockchain } from '../entities/Blockchain'
-import { $ETH } from '../entities/Currency'
+import { $ETH } from '../entities/Value'
 import { getEthWeb3 } from '../utils/ethereum'
 import { getPoolLoanEvents } from './getPoolLoanEvents'
 
@@ -24,10 +24,7 @@ export default async function getPoolUtilization({ poolAddress }: Params, blockc
     const lentEthPerEvent = events.map(event => parseFloat(web3.utils.fromWei(event.returnValues.loan[4])))
     const totalLentEth = _.sum(lentEthPerEvent)
 
-    return {
-      currency: $ETH(blockchain.network_id),
-      value: totalLentEth,
-    }
+    return $ETH(totalLentEth)
   }
   default:
     throw Error(`Unsupported blockchain <${blockchain.network}>`)

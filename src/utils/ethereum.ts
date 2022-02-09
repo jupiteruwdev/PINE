@@ -2,6 +2,7 @@ import axios from 'axios'
 import _ from 'lodash'
 import Web3 from 'web3'
 import appConf from '../app.conf'
+import { $USD } from '../entities/Value'
 
 export enum EthNetwork {
   MAIN = '1',
@@ -19,7 +20,7 @@ const web3s: Record<string, Web3 | undefined> = {
   [EthNetwork.KOVAN]: undefined,
 }
 
-export function getEthWeb3(networkId: string = EthNetwork.MAIN): Web3 {
+export function getEthWeb3(networkId: string = EthNetwork.MAIN) {
   if (web3s[networkId] !== undefined) return web3s[networkId] as Web3
 
   const rpc = _.get(appConf.ethRPC, networkId)
@@ -32,18 +33,18 @@ export function getEthWeb3(networkId: string = EthNetwork.MAIN): Web3 {
   return web3
 }
 
-export async function getEthPriceUSD(eth = 1): Promise<number> {
+export async function getEthValueUSD(amountEth = 1) {
   const { data } = await axios.get('https://api.binance.com/api/v3/ticker/price?symbol=ETHUSDT')
   const price = _.toNumber(_.get(data, 'price'))
 
-  return eth * price
+  return $USD(amountEth * price)
 }
 
-export async function getEthPriceUSD24Hr(eth = 1): Promise<number> {
+export async function getEthValueUSD24Hr(amountEth = 1) {
   const { data } = await axios.get('https://api.binance.com/api/v3/ticker/24hr?symbol=ETHUSDT')
   const price = _.toNumber(_.get(data, 'prevClosePrice'))
 
-  return eth * price
+  return $USD(amountEth * price)
 }
 
 export async function getEthBlockNumber(networkId: string = EthNetwork.MAIN): Promise<number> {

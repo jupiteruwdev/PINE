@@ -1,7 +1,7 @@
 import _ from 'lodash'
 import Blockchain, { EthBlockchain } from '../entities/Blockchain'
-import { $ETH } from '../entities/Currency'
 import Pool from '../entities/Pool'
+import { $ETH } from '../entities/Value'
 import getCollateralOutstanding from './getCollateralOutstanding'
 import getPoolCapacity from './getPoolCapacity'
 import getPoolCollaterals from './getPoolCollaterals'
@@ -15,19 +15,18 @@ export default async function getPool({ poolAddress }: Params, blockchain: Block
   case 'ethereum': {
     const [
       lentEthPerCollateral,
-      { value: capacityEth },
+      { amount: capacityEth },
     ] = await Promise.all([
       getPoolCollaterals({ poolAddress }, blockchain).then(nftIds => Promise.all(nftIds.map(nftId => getCollateralOutstanding({ nftId, poolAddress }, blockchain)))),
       getPoolCapacity({ poolAddress }, blockchain),
     ])
-    const valueLentEth = _.sumBy(lentEthPerCollateral, 'value')
+    const valueLentEth = _.sumBy(lentEthPerCollateral, t => t.amount)
     const valueLockedEth = capacityEth + valueLentEth
 
     return {
       'address': poolAddress,
-      'currency': $ETH(blockchain.network_id),
-      'value_lent': valueLentEth,
-      'value_locked': valueLockedEth,
+      'value_lent': $ETH(valueLentEth),
+      'value_locked': $ETH(valueLockedEth),
     }
   }
   default: throw Error(`Unsupported blockchain <${blockchain.network}>`)
