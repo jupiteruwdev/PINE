@@ -1,16 +1,25 @@
 import Blockchain, { EthBlockchain } from '../entities/Blockchain'
+import Currency, { $ETH } from '../entities/Currency'
 import { getWeb3 } from '../utils/ethereum'
 import getCollateralLoanPosition from './getCollateralLoanPosition'
 
-export default async function getCollateralOutstanding(nftId: number, poolAddress: string, blockchain: Blockchain = EthBlockchain()) {
+type Params = {
+  nftId: number
+  poolAddress: string
+}
+
+export default async function getCollateralOutstanding({ nftId, poolAddress }: Params, blockchain: Blockchain = EthBlockchain()): Promise<{ value: number; currency: Currency }> {
   switch (blockchain.network) {
   case 'ethereum': {
     const web3 = getWeb3(blockchain.network_id)
-    const loanPosition = await getCollateralLoanPosition(nftId, poolAddress, blockchain)
+    const loanPosition = await getCollateralLoanPosition({ nftId, poolAddress }, blockchain)
     const borrowedEth = parseFloat(web3.utils.fromWei(loanPosition.borrowedWei))
     const returnedEth = parseFloat(web3.utils.fromWei(loanPosition.returnedWei))
 
-    return borrowedEth - returnedEth
+    return {
+      value: borrowedEth - returnedEth,
+      currency: $ETH(blockchain.network_id),
+    }
   }
   default: throw Error(`Unsupported blockchain <${blockchain.network}>`)
   }

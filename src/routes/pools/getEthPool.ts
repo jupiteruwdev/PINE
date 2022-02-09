@@ -12,7 +12,7 @@ export default function getEthPool(): RequestHandler {
 
     logger.info(`Fetching ETH loan pool for address <${poolAddress}> on network <${networkId}>...`)
 
-    const pool = await getPool(poolAddress, EthBlockchain(networkId))
+    const pool = await getPool({ poolAddress }, EthBlockchain(networkId))
 
     logger.info(`Fetching ETH loan pool for address <${poolAddress}> on network <${networkId}>... OK`)
 
