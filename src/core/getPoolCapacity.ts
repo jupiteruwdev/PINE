@@ -6,7 +6,7 @@ type Params = {
   poolAddress: string
 }
 
-export default async function getPoolCapacity({ poolAddress }: Params, blockchain: Blockchain = EthBlockchain()): Promise<{ value: number, currency: Currency }> {
+export default async function getPoolCapacity({ poolAddress }: Params, blockchain: Blockchain = EthBlockchain()): Promise<{ value: number; currency: Currency }> {
   switch (blockchain.network) {
   case 'ethereum': {
     const web3 = getWeb3(blockchain.network_id)

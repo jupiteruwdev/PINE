@@ -8,7 +8,7 @@ type Params = {
   poolAddress: string
 }
 
-export default async function getCollateralOutstanding({ nftId, poolAddress }: Params, blockchain: Blockchain = EthBlockchain()): Promise<{ value: number, currency: Currency }> {
+export default async function getCollateralOutstanding({ nftId, poolAddress }: Params, blockchain: Blockchain = EthBlockchain()): Promise<{ value: number; currency: Currency }> {
   switch (blockchain.network) {
   case 'ethereum': {
     const web3 = getWeb3(blockchain.network_id)
@@ -18,7 +18,7 @@ export default async function getCollateralOutstanding({ nftId, poolAddress }: P
 
     return {
       value: borrowedEth - returnedEth,
-      currency: $ETH(blockchain.network_id)
+      currency: $ETH(blockchain.network_id),
     }
   }
   default: throw Error(`Unsupported blockchain <${blockchain.network}>`)

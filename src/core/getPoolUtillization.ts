@@ -16,7 +16,7 @@ type Params = {
  *
  * @returns - See {@link Output}.
  */
-export default async function getPoolUtilization({ poolAddress }: Params, blockchain: Blockchain = EthBlockchain()): Promise<{ value: number, currency: Currency }> {
+export default async function getPoolUtilization({ poolAddress }: Params, blockchain: Blockchain = EthBlockchain()): Promise<{ value: number; currency: Currency }> {
   switch (blockchain.network) {
   case 'ethereum': {
     const events = await getPoolLoanEvents({ poolAddress }, blockchain)
