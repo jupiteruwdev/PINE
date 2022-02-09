@@ -1,8 +1,13 @@
 import Blockchain, { EthBlockchain } from '../entities/Blockchain'
 import getPoolContract from './getPoolContract'
 
-export default async function getCollateralLoanPosition(nftId: number, poolAddress: string, blockchain: Blockchain = EthBlockchain()) {
-  const contract = getPoolContract(poolAddress, blockchain)
+type Params = {
+  nftId: number
+  poolAddress: string
+}
+
+export default async function getCollateralLoanPosition({ nftId, poolAddress }: Params, blockchain: Blockchain = EthBlockchain()) {
+  const contract = getPoolContract({ poolAddress }, blockchain)
   const func = '_loans'
   const params = [nftId]
   const position = await contract.methods[func].apply(undefined, params).call()
