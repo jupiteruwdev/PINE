@@ -17,12 +17,21 @@ export default function getGlobalStats(): RequestHandler {
 
     logger.info('Fetching global stats...')
 
-    const blockNumber = await getEthBlockNumber()
-    const ethPriceUSD = await getEthPriceUSD()
     const ethBlockchain = EthBlockchain(networkId)
-    const capacityPerPool = await Promise.all(poolAddresses.map(poolAddress => getPoolCapacity({ poolAddress }, ethBlockchain)))
-    const lentPerPool = await Promise.all(poolAddresses.map(poolAddress => getPoolUtilization({ poolAddress }, ethBlockchain)))
-    const collateralsPerPool = await Promise.all(poolAddresses.map(poolAddress => getPoolCollaterals({ poolAddress }, ethBlockchain)))
+
+    const [
+      blockNumber,
+      ethPriceUSD,
+      capacityPerPool,
+      lentPerPool,
+      collateralsPerPool,
+    ] = await Promise.all([
+      getEthBlockNumber(),
+      getEthPriceUSD(),
+      Promise.all(poolAddresses.map(poolAddress => getPoolCapacity({ poolAddress }, ethBlockchain))),
+      Promise.all(poolAddresses.map(poolAddress => getPoolUtilization({ poolAddress }, ethBlockchain))),
+      Promise.all(poolAddresses.map(poolAddress => getPoolCollaterals({ poolAddress }, ethBlockchain))),
+    ])
 
     let totalUtilizationEth = 0
 
