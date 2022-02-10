@@ -27,10 +27,17 @@ app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
   res.setHeader('Content-Type', 'application/json')
 
   if (status === 404) {
-    logger.warn('Handling 404 error... SKIP', err)
+    logger.warning('Handling 404 error... SKIP', err)
   }
   else {
-    logger.error('Handling 500 error... OK', err)
+    if (appConf.env === 'production') {
+      logger.error('Handling 500 error... OK', err)
+    }
+    else {
+      logger.error('Handling 500 error... OK')
+      /* eslint-disable-next-line no-console */
+      console.error(err)
+    }
 
     res.status(status).json({
       error: SuperError.serialize(err),
