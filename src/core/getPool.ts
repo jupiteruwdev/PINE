@@ -24,9 +24,9 @@ export default async function getPool({ poolAddress }: Params, blockchain: Block
     const valueLockedEth = capacityEth + valueLentEth
 
     return {
-      'address': poolAddress,
-      'value_lent': $ETH(valueLentEth),
-      'value_locked': $ETH(valueLockedEth),
+      address: poolAddress,
+      valueLent: $ETH(valueLentEth),
+      valueLocked: $ETH(valueLockedEth),
     }
   }
   default: throw Error(`Unsupported blockchain <${blockchain.network}>`)

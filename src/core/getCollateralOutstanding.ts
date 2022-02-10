@@ -12,7 +12,7 @@ type Params = {
 export default async function getCollateralOutstanding({ nftId, poolAddress }: Params, blockchain: Blockchain = EthBlockchain()): Promise<Value<AnyCurrency>> {
   switch (blockchain.network) {
   case 'ethereum': {
-    const web3 = getEthWeb3(blockchain.network_id)
+    const web3 = getEthWeb3(blockchain.networkId)
     const loanPosition = await getCollateralLoanPosition({ nftId, poolAddress }, blockchain)
     const borrowedEth = parseFloat(web3.utils.fromWei(loanPosition.borrowedWei))
     const returnedEth = parseFloat(web3.utils.fromWei(loanPosition.returnedWei))

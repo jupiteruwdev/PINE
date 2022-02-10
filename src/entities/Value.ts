@@ -11,8 +11,8 @@ export default Value
 export function $USD(amount: number): Value<'USD'> {
   return {
     amount,
-    'currency': {
-      'name': 'USD',
+    currency: {
+      name: 'USD',
     },
   }
 }
@@ -20,9 +20,9 @@ export function $USD(amount: number): Value<'USD'> {
 export function $ETH(amount: number): Value<'ETH'> {
   return {
     amount,
-    'currency': {
-      'blockchain': EthBlockchain(),
-      'name': 'ETH',
+    currency: {
+      blockchain: EthBlockchain(),
+      name: 'ETH',
     },
   }
 }

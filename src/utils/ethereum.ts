@@ -53,3 +53,7 @@ export async function getEthBlockNumber(networkId: string = EthNetwork.MAIN): Pr
 
   return blockNumber
 }
+
+export function parseEthNetworkId(value: any): string {
+  return _.toString(_.toNumber(value))
+}

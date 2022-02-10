@@ -2,10 +2,10 @@ import Value from './Value'
 
 type GlobalStats = {
   capacity: Value<'USD'>
-  total_lent_historical: Value<'USD'>
-  total_value_locked: Value<'USD'>
-  utilization_ratio: number
+  totalValueLentHistorical: Value<'USD'>
+  totalValueLocked: Value<'USD'>
   utilization: Value<'USD'>
+  utilizationRatio: number
 }
 
 export default GlobalStats

@@ -9,7 +9,7 @@ type Params = {
 export default function getPoolContract({ poolAddress }: Params, blockchain: Blockchain = EthBlockchain()) {
   switch (blockchain.network) {
   case 'ethereum': {
-    const web3 = getEthWeb3(blockchain.network_id)
+    const web3 = getEthWeb3(blockchain.networkId)
     const contract = new web3.eth.Contract(ERC721LendingABI as any, poolAddress)
     return contract
   }

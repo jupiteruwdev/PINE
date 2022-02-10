@@ -9,7 +9,7 @@ type Params = {
 export default async function getPoolCapacity({ poolAddress }: Params, blockchain: Blockchain = EthBlockchain()) {
   switch (blockchain.network) {
   case 'ethereum': {
-    const web3 = getEthWeb3(blockchain.network_id)
+    const web3 = getEthWeb3(blockchain.networkId)
     const balanceWei = await web3.eth.getBalance(poolAddress)
     const balanceEth = parseFloat(web3.utils.fromWei(balanceWei))
 

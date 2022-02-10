@@ -10,9 +10,9 @@ describe('routes/stats', () => {
       .expect(200)
 
     expect(res).to.have.property('capacity')
-    expect(res).to.have.property('total_lent_historical')
-    expect(res).to.have.property('total_value_locked')
-    expect(res).to.have.property('utilization_ratio')
+    expect(res).to.have.property('totalValueLentHistorical')
+    expect(res).to.have.property('totalValueLocked')
+    expect(res).to.have.property('utilizationRatio')
     expect(res).to.have.property('utilization')
   })
 })

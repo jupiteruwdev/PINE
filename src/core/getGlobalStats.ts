@@ -33,11 +33,11 @@ export default async function getGlobalStats() {
   const tvlUSD =  totalUtilizationUSD + totalCapacityUSD
 
   const globalStats: GlobalStats = {
-    'capacity': $USD(totalCapacityUSD),
-    'total_lent_historical': $USD(totalLentUSD),
-    'total_value_locked': $USD(tvlUSD),
-    'utilization_ratio': totalUtilizationUSD / tvlUSD,
-    'utilization': $USD(totalUtilizationUSD),
+    capacity: $USD(totalCapacityUSD),
+    totalValueLentHistorical: $USD(totalLentUSD),
+    totalValueLocked: $USD(tvlUSD),
+    utilization: $USD(totalUtilizationUSD),
+    utilizationRatio: totalUtilizationUSD / tvlUSD,
   }
 
   logger.info('Fetching global stats... OK', globalStats)

@@ -34,10 +34,10 @@ export default async function getCollectionValuation({ collectionId }: Params) {
     const valueEth24Hr: number = _.get(collectionData, 'stats.floor_price', NaN)
     const valueEth: number = valueEth24Hr > _.get(collectionData, 'stats.one_day_average_price', NaN) ? _.get(collectionData, 'stats.one_day_average_price', NaN) : valueEth24Hr
     const valuation: Valuation<'ETH'> = {
-      'collection_id': collectionId,
-      'updated_at': new Date(),
-      'value_24hr': $ETH(valueEth24Hr),
-      'value': $ETH(valueEth),
+      collectionId,
+      updatedAt: new Date(),
+      value: $ETH(valueEth),
+      value24Hr: $ETH(valueEth24Hr),
     }
 
     logger.info(`Fetching valuation for collection ID <${collectionId}>... OK`, valuation)

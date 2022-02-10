@@ -9,14 +9,14 @@ describe('routes/pools', () => {
     await Promise.all(appConf.v1Pools.map(async poolAddress => {
       const { body: res } = await request(app).get(`/pools/eth/${poolAddress}`)
         .query({
-          'network_id': 1,
+          'networkId': 1,
         })
         .expect('Content-Type', /json/)
         .expect(200)
 
       expect(res).to.have.property('address')
-      expect(res).to.have.property('value_lent')
-      expect(res).to.have.property('value_locked')
+      expect(res).to.have.property('valueLent')
+      expect(res).to.have.property('valueLocked')
     }))
   })
 })

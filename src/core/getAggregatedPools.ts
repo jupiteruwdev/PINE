@@ -14,7 +14,7 @@ export default async function getAggregatedPools(blockchains: Blockchain[] = [])
 
   const ethValueUSD = await getEthValueUSD()
   const ethBlockchain = blockchains.find(blockchain => blockchain.network === 'ethereum') ?? EthBlockchain()
-  const collectionIds = Object.keys(supportedCollections).filter(collectionId => supportedCollections[collectionId].networkId === Number(ethBlockchain.network_id))
+  const collectionIds = Object.keys(supportedCollections).filter(collectionId => supportedCollections[collectionId].networkId === Number(ethBlockchain.networkId))
   const aggregatedPoolRequests = collectionIds.map<Promise<AggregatedPool>>(async collectionId => {
     const collectionData = supportedCollections[collectionId]
     const poolAddress = collectionData.lendingPool.address
@@ -32,24 +32,24 @@ export default async function getAggregatedPools(blockchains: Blockchain[] = [])
     }
 
     const defaultPool: Pool = {
-      'address': poolAddress,
+      address: poolAddress,
       collection,
       // @todo Shouldn't need to map this
-      'loan_options': collectionData.lendingPool.loan_options.map((loanOption: any) => ({
+      loanOptions: collectionData.lendingPool.loan_options.map((loanOption: any) => ({
         ...loanOption,
         'interest_bps_per_block_override': loanOption.interest_bps_block_override,
         'interest_bps_per_block': loanOption.interest_bps_block,
         'loan_duration_seconds': loanOption.loan_duration_second,
       })),
-      'value_locked': $ETH(capacity.amount + utilization.amount),
-      'value_lent': utilization,
+      valueLocked: $ETH(capacity.amount + utilization.amount),
+      valueLent: utilization,
     }
 
     return {
       collection,
-      'pools': [defaultPool],
-      'total_value_lent': $USD(defaultPool.value_lent.amount * ethValueUSD.amount),
-      'total_value_locked': $USD(defaultPool.value_locked.amount * ethValueUSD.amount),
+      pools: [defaultPool],
+      totalValueLent: $USD((defaultPool.valueLent?.amount ?? NaN) * ethValueUSD.amount),
+      totalValueLocked: $USD((defaultPool.valueLocked?.amount ?? NaN) * ethValueUSD.amount),
     }
   })
 

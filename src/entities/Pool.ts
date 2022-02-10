@@ -6,9 +6,9 @@ import Value from './Value'
 type Pool<T extends AnyCurrency = AnyCurrency> = {
   address: string
   collection?: Collection
-  loan_options?: LoanOption[]
-  value_lent: Value<T>
-  value_locked: Value<T>
+  loanOptions?: LoanOption[]
+  valueLent?: Value<T>
+  valueLocked?: Value<T>
 }
 
 export default Pool

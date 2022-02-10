@@ -11,7 +11,7 @@ type Params = {
 export default async function getPoolLent({ poolAddress }: Params, blockchain: Blockchain = EthBlockchain()) {
   switch (blockchain.network) {
   case 'ethereum': {
-    const web3 = getEthWeb3(blockchain.network_id)
+    const web3 = getEthWeb3(blockchain.networkId)
     const events = await getPoolLoanEvents({ poolAddress }, blockchain)
     const lentEthPerEvent = events.map(event => parseFloat(web3.utils.fromWei(event.returnValues.loan[4])))
     const totalLentEth = _.sum(lentEthPerEvent)
