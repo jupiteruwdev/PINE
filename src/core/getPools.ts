@@ -9,8 +9,8 @@ import getPool from './getPool'
  * Fetches all existing pools.
  *
  * @param blockchains - Blockchains to filter for the returned pools. If unspecified, all
- *                      blockchains with default network ID will be used. Otherwise pass in an array
- *                      of {@link Blockchain} to only include pools in those blockchains.
+ *                      blockchains with default network ID will be used. Otherwise, pass in an
+ *                      array of {@link Blockchain} to only include pools in those blockchains.
  *
  * @returns An array of {@link Pool}.
  */

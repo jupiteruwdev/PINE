@@ -7,8 +7,9 @@ import { parseEthNetworkId } from '../utils/ethereum'
  * Fetches all NFT collections supported by the platform.
  *
  * @param blockchains - Blockchains to filter for the returned collections. If unspecified, all
- *                      blockchains with default network ID will be used. Otherwise pass in an array
- *                      of {@link Blockchain} to only include collections in those blockchains.
+ *                      blockchains with default network ID will be used. Otherwise, pass in an
+ *                      array of {@link Blockchain} to only include collections in those
+ *                      blockchains.
  *
  * @returns An array of {@link Collection}.
  */

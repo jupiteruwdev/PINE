@@ -8,6 +8,16 @@ type Params = {
   poolAddress: string
 }
 
+/**
+ * Fetches the total value lent for the pool at the provided address. Note the difference between
+ * lent value and utilization value ({@link getPoolUtilization}): lent refers to the initial loan
+ * amount and utilization refers to the current outstanding loan amount.
+ *
+ * @param param - See {@link Params}.
+ * @param blockchain - The blockchain of which the pool resides.
+ *
+ * @returns The total value lent for the pool.
+ */
 export default async function getPoolLent({ poolAddress }: Params, blockchain: Blockchain = EthBlockchain()) {
   switch (blockchain.network) {
   case 'ethereum': {
