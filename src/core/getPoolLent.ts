@@ -8,19 +8,11 @@ type Params = {
   poolAddress: string
 }
 
-/**
- * Fetches the total utilization (a.k.a. total amount lent out) of a pool.
- *
- * @param params - See {@link Params}.
- * @param blockchain - The blockchain of which the pool resides in.
- *
- * @returns - See {@link Output}.
- */
-export default async function getPoolUtilization({ poolAddress }: Params, blockchain: Blockchain = EthBlockchain()) {
+export default async function getPoolLent({ poolAddress }: Params, blockchain: Blockchain = EthBlockchain()) {
   switch (blockchain.network) {
   case 'ethereum': {
-    const events = await getPoolLoanEvents({ poolAddress }, blockchain)
     const web3 = getEthWeb3(blockchain.network_id)
+    const events = await getPoolLoanEvents({ poolAddress }, blockchain)
     const lentEthPerEvent = events.map(event => parseFloat(web3.utils.fromWei(event.returnValues.loan[4])))
     const totalLentEth = _.sum(lentEthPerEvent)
 

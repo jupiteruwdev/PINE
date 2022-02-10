@@ -5,10 +5,9 @@ import GlobalStats from '../entities/GlobalStats'
 import { $USD } from '../entities/Value'
 import { getEthValueUSD } from '../utils/ethereum'
 import logger from '../utils/logger'
-import getCollateralOutstanding from './getCollateralOutstanding'
 import getPoolCapacity from './getPoolCapacity'
-import getPoolCollaterals from './getPoolCollaterals'
-import getPoolUtilization from './getPoolUtillization'
+import getPoolLent from './getPoolLent'
+import getPoolUtilization from './getPoolUtilization'
 
 export default async function getGlobalStats() {
   logger.info('Fetching global stats...')
@@ -20,27 +19,17 @@ export default async function getGlobalStats() {
     ethValueUSD,
     capacityPerPool,
     lentPerPool,
-    collateralsPerPool,
+    utilizationPerPool,
   ] = await Promise.all([
     getEthValueUSD(),
     Promise.all(poolAddresses.map(poolAddress => getPoolCapacity({ poolAddress }, ethBlockchain))),
+    Promise.all(poolAddresses.map(poolAddress => getPoolLent({ poolAddress }, ethBlockchain))),
     Promise.all(poolAddresses.map(poolAddress => getPoolUtilization({ poolAddress }, ethBlockchain))),
-    Promise.all(poolAddresses.map(poolAddress => getPoolCollaterals({ poolAddress }, ethBlockchain))),
   ])
-
-  let totalUtilizationEth = 0
-
-  for (let i = 0, n = poolAddresses.length; i < n; i++) {
-    const poolAddress = poolAddresses[i]
-    const collaterals = collateralsPerPool[i]
-    const utilizationPerCollateral = await Promise.all(collaterals.map(nftId => getCollateralOutstanding({ nftId, poolAddress }, ethBlockchain)))
-
-    totalUtilizationEth += _.sumBy(utilizationPerCollateral, t => t.amount)
-  }
 
   const totalCapacityUSD = _.sumBy(capacityPerPool, t => t.amount) * ethValueUSD.amount
   const totalLentUSD = _.sumBy(lentPerPool, t => t.amount) * ethValueUSD.amount
-  const totalUtilizationUSD = totalUtilizationEth * ethValueUSD.amount
+  const totalUtilizationUSD = _.sumBy(utilizationPerPool, t => t.amount) * ethValueUSD.amount
   const tvlUSD =  totalUtilizationUSD + totalCapacityUSD
 
   const globalStats: GlobalStats = {
