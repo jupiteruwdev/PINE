@@ -1,40 +1,35 @@
 import _ from 'lodash'
-import appConf from '../app.conf'
-import { EthBlockchain } from '../entities/Blockchain'
+import Blockchain, { EthBlockchain } from '../entities/Blockchain'
 import GlobalStats from '../entities/GlobalStats'
 import { $USD } from '../entities/Value'
 import { getEthValueUSD } from '../utils/ethereum'
 import logger from '../utils/logger'
-import getPoolCapacity from './getPoolCapacity'
 import getPoolLent from './getPoolLent'
-import getPoolUtilization from './getPoolUtilization'
+import getPools from './getPools'
 
-export default async function getGlobalStats() {
+export default async function getGlobalStats(blockchains?: Blockchain[]) {
   logger.info('Fetching global stats...')
 
-  const ethBlockchain = EthBlockchain()
-  const poolAddresses = appConf.v1Pools
+  const ethBlockchain = blockchains?.find(blockchain => blockchain.network === 'ethereum') ?? EthBlockchain()
 
   const [
     ethValueUSD,
-    capacityPerPool,
-    lentPerPool,
-    utilizationPerPool,
+    pools,
   ] = await Promise.all([
     getEthValueUSD(),
-    Promise.all(poolAddresses.map(poolAddress => getPoolCapacity({ poolAddress }, ethBlockchain))),
-    Promise.all(poolAddresses.map(poolAddress => getPoolLent({ poolAddress }, ethBlockchain))),
-    Promise.all(poolAddresses.map(poolAddress => getPoolUtilization({ poolAddress }, ethBlockchain))),
+    getPools([ethBlockchain]),
   ])
 
-  const totalCapacityUSD = _.sumBy(capacityPerPool, t => t.amount) * ethValueUSD.amount
-  const totalLentUSD = _.sumBy(lentPerPool, t => t.amount) * ethValueUSD.amount
-  const totalUtilizationUSD = _.sumBy(utilizationPerPool, t => t.amount) * ethValueUSD.amount
+  const totalCapacityUSD = _.sumBy(pools, t => (t.valueLocked?.amount ?? NaN) - (t.utilization?.amount ?? NaN)) * ethValueUSD.amount
+  const totalUtilizationUSD = _.sumBy(pools, t => t.utilization?.amount ?? NaN) * ethValueUSD.amount
   const tvlUSD =  totalUtilizationUSD + totalCapacityUSD
+
+  const lentPerPool = await Promise.all(pools.map(pool => getPoolLent({ poolAddress: pool.address }, ethBlockchain)))
+  const totalLentlUSD = _.sumBy(lentPerPool, t => t.amount) * ethValueUSD.amount
 
   const globalStats: GlobalStats = {
     capacity: $USD(totalCapacityUSD),
-    totalValueLentHistorical: $USD(totalLentUSD),
+    totalValueLentHistorical: $USD(totalLentlUSD),
     totalValueLocked: $USD(tvlUSD),
     utilization: $USD(totalUtilizationUSD),
     utilizationRatio: totalUtilizationUSD / tvlUSD,

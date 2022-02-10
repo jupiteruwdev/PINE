@@ -1,12 +1,15 @@
 import { expect } from 'chai'
+import _ from 'lodash'
 import { describe, it } from 'mocha'
 import request from 'supertest'
 import app from '../app'
-import appConf from '../app.conf'
+import { supportedCollections } from '../config/supportedCollecitons'
 
 describe('routes/pools', () => {
   it('can get all Ethereum loan pools on Mainnet', async () => {
-    await Promise.all(appConf.v1Pools.map(async poolAddress => {
+    const poolAddresses = _.map(supportedCollections, data => data.lendingPool.address)
+
+    await Promise.all(poolAddresses.map(async poolAddress => {
       const { body: res } = await request(app).get(`/pools/eth/${poolAddress}`)
         .query({
           'networkId': 1,
