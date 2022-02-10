@@ -4,7 +4,7 @@ type Collection = {
   address: string
   blockchain: Blockchain
   id: string // Slug
-  image_url: string
+  imageUrl: string
   name: string
 }
 

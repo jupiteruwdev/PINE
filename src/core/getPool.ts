@@ -1,10 +1,10 @@
-import _ from 'lodash'
 import Blockchain, { EthBlockchain } from '../entities/Blockchain'
 import Pool from '../entities/Pool'
 import { $ETH } from '../entities/Value'
-import getCollateralOutstanding from './getCollateralOutstanding'
 import getPoolCapacity from './getPoolCapacity'
-import getPoolCollaterals from './getPoolCollaterals'
+import getPoolCollection from './getPoolCollection'
+import getPoolLoanOptions from './getPoolLoanOptions'
+import getPoolUtilization from './getPoolUtilization'
 
 type Params = {
   poolAddress: string
@@ -14,18 +14,22 @@ export default async function getPool({ poolAddress }: Params, blockchain: Block
   switch (blockchain.network) {
   case 'ethereum': {
     const [
-      lentEthPerCollateral,
+      { amount: utilizationEth },
       { amount: capacityEth },
     ] = await Promise.all([
-      getPoolCollaterals({ poolAddress }, blockchain).then(nftIds => Promise.all(nftIds.map(nftId => getCollateralOutstanding({ nftId, poolAddress }, blockchain)))),
+      getPoolUtilization({ poolAddress }, blockchain),
       getPoolCapacity({ poolAddress }, blockchain),
     ])
-    const valueLentEth = _.sumBy(lentEthPerCollateral, t => t.amount)
-    const valueLockedEth = capacityEth + valueLentEth
+
+    const collection = getPoolCollection({ poolAddress }, blockchain)
+    const loanOptions = getPoolLoanOptions({ poolAddress }, blockchain)
+    const valueLockedEth = capacityEth + utilizationEth
 
     return {
       address: poolAddress,
-      valueLent: $ETH(valueLentEth),
+      collection,
+      loanOptions,
+      utilization: $ETH(utilizationEth),
       valueLocked: $ETH(valueLockedEth),
     }
   }

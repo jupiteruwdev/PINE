@@ -7,7 +7,7 @@ type Pool<T extends AnyCurrency = AnyCurrency> = {
   address: string
   collection?: Collection
   loanOptions?: LoanOption[]
-  valueLent?: Value<T>
+  utilization?: Value<T>
   valueLocked?: Value<T>
 }
 

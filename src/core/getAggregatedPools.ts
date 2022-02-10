@@ -1,59 +1,26 @@
-import { supportedCollections } from '../config/supportedCollecitons'
+import _ from 'lodash'
 import AggregatedPool from '../entities/AggregatedPool'
-import Blockchain, { EthBlockchain } from '../entities/Blockchain'
-import Collection from '../entities/Collection'
-import Pool from '../entities/Pool'
-import { $ETH, $USD } from '../entities/Value'
+import Blockchain from '../entities/Blockchain'
+import { $USD } from '../entities/Value'
 import { getEthValueUSD } from '../utils/ethereum'
 import logger from '../utils/logger'
-import getPoolCapacity from './getPoolCapacity'
-import getPoolUtilization from './getPoolUtilization'
+import getPools from './getPools'
 
-export default async function getAggregatedPools(blockchains: Blockchain[] = []) {
+export default async function getAggregatedPools(blockchains?: Blockchain[]) {
   logger.info('Fetching aggregated pools...')
 
-  const ethValueUSD = await getEthValueUSD()
-  const ethBlockchain = blockchains.find(blockchain => blockchain.network === 'ethereum') ?? EthBlockchain()
-  const collectionIds = Object.keys(supportedCollections).filter(collectionId => supportedCollections[collectionId].networkId === Number(ethBlockchain.networkId))
-  const aggregatedPoolRequests = collectionIds.map<Promise<AggregatedPool>>(async collectionId => {
-    const collectionData = supportedCollections[collectionId]
-    const poolAddress = collectionData.lendingPool.address
-    const [utilization, capacity] = await Promise.all([
-      getPoolUtilization({ poolAddress }, ethBlockchain),
-      getPoolCapacity({ poolAddress }, ethBlockchain),
-    ])
+  const [ethValueUSD, pools] = await Promise.all([getEthValueUSD(), getPools(blockchains)])
 
-    const collection: Collection = {
-      'address': collectionData.address,
-      'blockchain': ethBlockchain,
-      'id': collectionId,
-      'image_url': collectionData.image_url,
-      'name': collectionData.display_name,
+  const aggregatedPools: AggregatedPool[] = _.compact(pools.map(pool => {
+    if (!pool.collection) return undefined
+
+    return  {
+      collection: pool.collection,
+      pools: [pool],
+      totalValueLent: $USD((pool.utilization?.amount ?? NaN) * ethValueUSD.amount),
+      totalValueLocked: $USD((pool.valueLocked?.amount ?? NaN) * ethValueUSD.amount),
     }
-
-    const defaultPool: Pool = {
-      address: poolAddress,
-      collection,
-      // @todo Shouldn't need to map this
-      loanOptions: collectionData.lendingPool.loan_options.map((loanOption: any) => ({
-        ...loanOption,
-        'interest_bps_per_block_override': loanOption.interest_bps_block_override,
-        'interest_bps_per_block': loanOption.interest_bps_block,
-        'loan_duration_seconds': loanOption.loan_duration_second,
-      })),
-      valueLocked: $ETH(capacity.amount + utilization.amount),
-      valueLent: utilization,
-    }
-
-    return {
-      collection,
-      pools: [defaultPool],
-      totalValueLent: $USD((defaultPool.valueLent?.amount ?? NaN) * ethValueUSD.amount),
-      totalValueLocked: $USD((defaultPool.valueLocked?.amount ?? NaN) * ethValueUSD.amount),
-    }
-  })
-
-  const aggregatedPools = await Promise.all(aggregatedPoolRequests)
+  }))
 
   logger.info('Fetching aggregated pools... OK', aggregatedPools)
 
