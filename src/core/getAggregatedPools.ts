@@ -14,9 +14,8 @@ export default async function getAggregatedPools(blockchains: Blockchain[] = [])
 
   const ethValueUSD = await getEthValueUSD()
   const ethBlockchain = blockchains.find(blockchain => blockchain.network === 'ethereum') ?? EthBlockchain()
-  const aggregatedPoolRequests = Object.keys(supportedCollections)
-    .filter(collectionId => supportedCollections[collectionId].networkId === Number(ethBlockchain.network_id))
-    .map<Promise<AggregatedPool>>(async collectionId => {
+  const collectionIds = Object.keys(supportedCollections).filter(collectionId => supportedCollections[collectionId].networkId === Number(ethBlockchain.network_id))
+  const aggregatedPoolRequests = collectionIds.map<Promise<AggregatedPool>>(async collectionId => {
     const collectionData = supportedCollections[collectionId]
     const poolAddress = collectionData.lendingPool.address
     const [utilization, capacity] = await Promise.all([
@@ -47,6 +46,7 @@ export default async function getAggregatedPools(blockchains: Blockchain[] = [])
     }
 
     return {
+      collection,
       'pools': [defaultPool],
       'total_value_lent': $USD(defaultPool.value_lent.amount * ethValueUSD.amount),
       'total_value_locked': $USD(defaultPool.value_locked.amount * ethValueUSD.amount),

@@ -7,8 +7,6 @@ import Value from './Value'
 type Valuation<T extends AnyCurrency = AnyCurrency> = {
   collection_id: string
   value_24hr: Value<T>
-  value_usd_24hr: Value<'USD'>
-  value_usd: Value<'USD'>
   value: Value<T>
   updated_at: Date
 }
