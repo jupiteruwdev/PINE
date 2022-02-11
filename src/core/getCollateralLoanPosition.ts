@@ -2,7 +2,7 @@ import Blockchain, { EthBlockchain } from '../entities/Blockchain'
 import getPoolContract from './getPoolContract'
 
 type Params = {
-  nftId: number
+  nftId: string
   poolAddress: string
 }
 

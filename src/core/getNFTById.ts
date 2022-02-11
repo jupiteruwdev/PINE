@@ -8,7 +8,8 @@ import getSupportedCollectionByAddress from './getSupportedCollection'
 type Params = {
   collectionAddress: string
   id: string
-  ownerAddress?: string
+  ownerAddress: string
+  populateMetadata?: boolean
 }
 
 /**
@@ -19,7 +20,7 @@ function normalizeUri(uri: string) {
   return uri.replace('ipfs://', 'https://tempus.mypinata.cloud/ipfs/')
 }
 
-export default async function getNFTById({ id, collectionAddress, ownerAddress }: Params, blockchain: Blockchain = EthBlockchain()): Promise<NFT> {
+export default async function getNFTById({ id, collectionAddress, ownerAddress, populateMetadata = false }: Params, blockchain: Blockchain = EthBlockchain()): Promise<NFT> {
   switch (blockchain.network) {
   case 'ethereum': {
     const collection = getSupportedCollectionByAddress({ collectionAddress }, blockchain)
@@ -28,16 +29,26 @@ export default async function getNFTById({ id, collectionAddress, ownerAddress }
 
     const web3 = getEthWeb3(blockchain.networkId)
     const contract = new web3.eth.Contract(ERC721EnumerableABI as any, collectionAddress)
-    const uri = await contract.methods.tokenURI(id).call()
 
-    const { data: metadata } = await axios.get(normalizeUri(uri))
+    if (populateMetadata) {
+      const uri = await contract.methods.tokenURI(id).call()
 
-    return {
-      collection,
-      id,
-      imageUrl: normalizeUri(metadata.image),
-      name: metadata.name ?? `#${metadata.id ?? id}`,
-      ownerAddress,
+      const { data: metadata } = await axios.get(normalizeUri(uri))
+
+      return {
+        collection,
+        id,
+        imageUrl: normalizeUri(metadata.image),
+        name: metadata.name ?? `#${metadata.id ?? id}`,
+        ownerAddress,
+      }
+    }
+    else {
+      return {
+        collection,
+        id,
+        ownerAddress,
+      }
     }
   }
   default:
