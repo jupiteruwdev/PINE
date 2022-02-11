@@ -1,11 +1,15 @@
 import { EthNetwork } from '../utils/ethereum'
 
-type Blockchain = {
-  network: 'ethereum'
+export type AnyBlockchain = 'ethereum'
+
+export type BlockchainDict = { [K in AnyBlockchain]: Blockchain<K> }
+
+type Blockchain<T extends AnyBlockchain = AnyBlockchain> = {
+  network: T
   networkId: string
 }
 
-export function EthBlockchain(networkId: string | number = EthNetwork.MAIN): Blockchain {
+export function EthBlockchain(networkId: string | number = EthNetwork.MAIN): Blockchain<'ethereum'> {
   return {
     network: 'ethereum',
     networkId: networkId.toString(),

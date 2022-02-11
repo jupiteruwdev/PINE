@@ -17,7 +17,7 @@ export default async function getGlobalStats(blockchains?: Blockchain[]) {
     pools,
   ] = await Promise.all([
     getEthValueUSD(),
-    getPools([ethBlockchain]),
+    getPools({ ethereum: ethBlockchain }),
   ])
 
   const totalCapacityUSD = _.sumBy(pools, t => (t.valueLocked?.amount ?? NaN) - (t.utilization?.amount ?? NaN)) * ethValueUSD.amount

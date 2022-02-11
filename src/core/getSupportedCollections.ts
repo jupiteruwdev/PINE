@@ -1,21 +1,21 @@
 import { supportedCollections } from '../config/supportedCollecitons'
-import Blockchain, { EthBlockchain } from '../entities/Blockchain'
+import { BlockchainDict } from '../entities/Blockchain'
 import Collection from '../entities/Collection'
 import { parseEthNetworkId } from '../utils/ethereum'
+import { parseBlockchains } from '../utils/params'
 
 /**
  * Fetches all NFT collections supported by the platform.
  *
- * @param blockchains - Blockchains to filter for the returned collections. If unspecified, all
- *                      blockchains with default network ID will be used. Otherwise, pass in an
- *                      array of {@link Blockchain} to only include collections in those
- *                      blockchains.
+ * @param blockchainFilter - Blockchains to filter for the returned pools. If unspecified, all
+ *                           blockchains with default network ID will be used. Only blockchains that
+ *                           appear in this dict will be included in the returned results.
  *
  * @returns An array of {@link Collection}.
  */
-export default function getSupportedCollections(blockchains?: Blockchain[]) {
+export default function getSupportedCollections(blockchainFilter: Partial<BlockchainDict> = parseBlockchains()) {
   const rawData = supportedCollections
-  const ethBlockchain = blockchains === undefined ? EthBlockchain() : blockchains.find(blockchain => blockchain.network === 'ethereum')
+  const ethBlockchain = blockchainFilter.ethereum
 
   let collections: Collection[] = []
 

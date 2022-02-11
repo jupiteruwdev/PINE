@@ -1,23 +1,23 @@
 import _ from 'lodash'
 import { supportedCollections } from '../config/supportedCollecitons'
-import Blockchain, { EthBlockchain } from '../entities/Blockchain'
+import { BlockchainDict } from '../entities/Blockchain'
 import Pool from '../entities/Pool'
 import { parseEthNetworkId } from '../utils/ethereum'
+import { parseBlockchains } from '../utils/params'
 import getPool from './getPool'
 
 /**
  * Fetches all existing pools.
  *
- * @param blockchains - Blockchains to filter for the returned pools. If unspecified, all
- *                      blockchains with default network ID will be used. Otherwise, pass in an
- *                      array of {@link Blockchain} to only include pools in those blockchains.
+ * @param blockchainFilter - Blockchains to filter for the returned pools. If unspecified, all
+ *                           blockchains with default network ID will be used. Only blockchains that
+ *                           appear in this dict will be included in the returned results.
  *
  * @returns An array of {@link Pool}.
  */
-export default async function getPools(blockchains: Blockchain[] = []) {
+export default async function getPools(blockchainFilter: Partial<BlockchainDict> = parseBlockchains()): Promise<Pool[]> {
   const rawData = supportedCollections
-  const ethBlockchain = blockchains === undefined ? EthBlockchain() : blockchains.find(blockchain => blockchain.network === 'ethereum')
-
+  const ethBlockchain = blockchainFilter.ethereum
   const requests: Promise<Pool[]>[] = []
 
   if (ethBlockchain) {

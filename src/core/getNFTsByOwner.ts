@@ -33,7 +33,7 @@ type Params = {
  * @returns An array of {@link NFT}.
  */
 export default async function getNFTsByOwner({ ownerAddress, collectionAddress, populateMetadata = false }: Params, blockchain: Blockchain = EthBlockchain()): Promise<NFT[]> {
-  const collections = getSupportedCollections([blockchain])
+  const collections = getSupportedCollections({ [blockchain.network]: blockchain })
 
   if (collectionAddress) {
     const collection = collections.find(t => t.address === collectionAddress)

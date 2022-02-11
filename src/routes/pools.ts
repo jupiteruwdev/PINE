@@ -2,15 +2,16 @@ import { Router } from 'express'
 import _ from 'lodash'
 import getAggregatedPools from '../core/getAggregatedPools'
 import getPool from '../core/getPool'
-import Blockchain, { EthBlockchain } from '../entities/Blockchain'
-import { EthNetwork, parseEthNetworkId } from '../utils/ethereum'
+import { EthBlockchain } from '../entities/Blockchain'
+import { EthNetwork } from '../utils/ethereum'
 import failure from '../utils/failure'
+import { parseBlockchains } from '../utils/params'
 
 const router = Router()
 
 router.get('/', async (req, res, next) => {
   try {
-    const blockchains: Blockchain[] = Object.keys(req.query).map((network: any) => ({ network, networkId: parseEthNetworkId(req.query.network ?? EthNetwork.MAIN) }))
+    const blockchains = parseBlockchains(req.query)
     const payload = await getAggregatedPools(blockchains)
     res.status(200).json(payload)
   }

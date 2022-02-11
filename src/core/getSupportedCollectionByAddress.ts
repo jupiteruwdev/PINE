@@ -7,7 +7,7 @@ type Params = {
 }
 
 export default function getSupportedCollectionByAddress({ collectionAddress }: Params, blockchain: Blockchain = EthBlockchain()): Collection | undefined {
-  const collections = getSupportedCollections([blockchain])
+  const collections = getSupportedCollections({ [blockchain.network]: blockchain })
   const collection = collections.find(t => t.address === collectionAddress)
 
   return collection

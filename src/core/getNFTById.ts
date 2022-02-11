@@ -3,7 +3,7 @@ import ERC721EnumerableABI from '../abis/ERC721Enumerable.json'
 import Blockchain, { EthBlockchain } from '../entities/Blockchain'
 import NFT from '../entities/NFT'
 import { getEthWeb3 } from '../utils/ethereum'
-import getSupportedCollectionByAddress from './getSupportedCollection'
+import getSupportedCollectionByAddress from './getSupportedCollectionByAddress'
 
 type Params = {
   collectionAddress: string
