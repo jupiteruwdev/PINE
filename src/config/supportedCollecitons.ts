@@ -67,6 +67,39 @@ export const supportedCollections: { [key: string]: any } = {
       ],
     },
   },
+  'opensea:chromie-squiggle-by-snowfro': {
+    display_name: 'Chromie Squiggle by Snowfro',
+    address: '0x059edd72cd353df5106d2b9cc5ab83a52287ac3a',
+    networkType: 'ethereum',
+    networkId: 1,
+    image_url: 'https://lh3.googleusercontent.com/m_MpnLUjOsNcpuFavS7NNjA3nWSS08Kv1IIJMHv46Jg_RLtjhuqClN-7MtwezbbdA26F9i50PDG63IyQ_HN7cFRXm4Pl9s0sAA6_=s130',
+    lendingPool: {
+      address: '0x6Eefb40e8E12036Cca2547f445EaeD58B315b856',
+      loan_options: [
+        {
+          loan_duration_block: 18513,
+          loan_duration_second: 259200,
+          interest_bps_block: 0.001469,
+          interest_bps_block_override: 0,
+          max_ltv_bps: 3369
+        },
+        {
+          loan_duration_block: 43194,
+          loan_duration_second: 604800,
+          interest_bps_block: 0.00143,
+          interest_bps_block_override: 0.000164,
+          max_ltv_bps: 3169
+        },
+        {
+          loan_duration_block: 86388,
+          loan_duration_second: 1209600,
+          interest_bps_block: 0.00138,
+          interest_bps_block_override: 0.000155,
+          max_ltv_bps: 2869
+        },
+      ]
+    }
+  },
   'opensea:irenedao': {
     display_name: 'IreneDAO',
     address: '0x13015585932752a8e6dc24be6c07c420381af53d',
