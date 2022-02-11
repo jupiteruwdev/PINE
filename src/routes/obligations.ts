@@ -1,5 +1,5 @@
 import { Router } from 'express'
-import getNFTsByOwner from '../core/getNFTsByOwner'
+import getObligations from '../core/getObligations'
 import { EthBlockchain } from '../entities/Blockchain'
 import { parseEthNetworkId } from '../utils/ethereum'
 import failure from '../utils/failure'
@@ -8,17 +8,17 @@ const router = Router()
 
 router.get('/', async (req, res, next) => {
   try {
-    const ownerAddress = req.query.owner?.toString()
+    const borrowerAddress = req.query.owner?.toString()
     const networkId = parseEthNetworkId(req.query.networkId)
 
-    if (!ownerAddress) throw Error('Invalid owner address')
+    if (!borrowerAddress) throw Error('Invalid owner address')
 
-    const payload = await getNFTsByOwner({ ownerAddress, populateMetadata: true }, EthBlockchain(networkId))
+    const payload = await getObligations({ borrowerAddress }, EthBlockchain(networkId))
 
     res.status(200).json(payload)
   }
   catch (err) {
-    next(failure('FETCH_COLLATERALS_FAILURE', err))
+    next(failure('FETCH_OBLIGATIONS_FAILURE', err))
   }
 })
 

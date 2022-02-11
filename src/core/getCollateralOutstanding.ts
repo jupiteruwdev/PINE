@@ -5,7 +5,7 @@ import { getEthWeb3 } from '../utils/ethereum'
 import getCollateralLoanPosition from './getCollateralLoanPosition'
 
 type Params = {
-  nftId: number
+  nftId: string
   poolAddress: string
 }
 
