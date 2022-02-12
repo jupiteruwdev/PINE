@@ -11,11 +11,16 @@ type Params = {
 export default async function getPoolCapacity({ blockchain, poolAddress }: Params): Promise<Value> {
   switch (blockchain.network) {
   case 'ethereum': {
-    const web3 = getEthWeb3(blockchain.networkId)
-    const balanceWei = await web3.eth.getBalance(poolAddress)
-    const balanceEth = parseFloat(web3.utils.fromWei(balanceWei))
+    try {
+      const web3 = getEthWeb3(blockchain.networkId)
+      const balanceWei = await web3.eth.getBalance(poolAddress)
+      const balanceEth = parseFloat(web3.utils.fromWei(balanceWei))
 
-    return $ETH(balanceEth)
+      return $ETH(balanceEth)
+    }
+    catch (err) {
+      throw failure('FETCH_ETH_BALANCE_FAILURE', err)
+    }
   }
   default:
     throw failure('UNSUPPORTED_BLOCKCHAIN')

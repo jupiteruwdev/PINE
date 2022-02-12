@@ -27,11 +27,11 @@ app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
   res.setHeader('Content-Type', 'application/json')
 
   if (status === 404) {
-    logger.warning('Handling 404 error... SKIP', err)
+    logger.warning(`Handling 404 error... SKIP: ${JSON.stringify(err, undefined, 0)}`)
   }
   else {
     if (appConf.env === 'production') {
-      logger.error('Handling 500 error... OK', err)
+      logger.error(`Handling 500 error... OK: ${JSON.stringify(err, undefined, 0)}`)
     }
     else {
       logger.error('Handling 500 error... OK')

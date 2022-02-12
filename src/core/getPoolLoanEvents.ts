@@ -10,13 +10,18 @@ type Params = {
 export async function getPoolLoanEvents({ blockchain, poolAddress }: Params) {
   switch (blockchain.network) {
   case 'ethereum': {
-    const poolContract = getPoolContract({ blockchain, poolAddress })
-    const events = await poolContract.getPastEvents('LoanInitiated', {
-      fromBlock: 0,
-      toBlock: 'latest',
-    })
+    try {
+      const poolContract = getPoolContract({ blockchain, poolAddress })
+      const events = await poolContract.getPastEvents('LoanInitiated', {
+        fromBlock: 0,
+        toBlock: 'latest',
+      })
 
-    return events
+      return events
+    }
+    catch (err) {
+      throw failure('FETCH_POOL_EVENTS_FAILURE', err)
+    }
   }
   default:
     throw failure('UNSUPPORTED_BLOCKCHAIN')

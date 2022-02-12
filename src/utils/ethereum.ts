@@ -3,6 +3,7 @@ import _ from 'lodash'
 import Web3 from 'web3'
 import appConf from '../app.conf'
 import { $USD } from '../entities/Value'
+import failure from './failure'
 
 export enum EthNetwork {
   MAIN = '1',
@@ -34,14 +35,14 @@ export function getEthWeb3(networkId: string = EthNetwork.MAIN) {
 }
 
 export async function getEthValueUSD(amountEth = 1) {
-  const { data } = await axios.get('https://api.binance.com/api/v3/ticker/price?symbol=ETHUSDT')
+  const { data } = await axios.get('https://api.binance.com/api/v3/ticker/price?symbol=ETHUSDT').catch(err => { throw failure('FETCH_PRICE_FAILURE', err) })
   const price = _.toNumber(_.get(data, 'price'))
 
   return $USD(amountEth * price)
 }
 
 export async function getEthValueUSD24Hr(amountEth = 1) {
-  const { data } = await axios.get('https://api.binance.com/api/v3/ticker/24hr?symbol=ETHUSDT')
+  const { data } = await axios.get('https://api.binance.com/api/v3/ticker/24hr?symbol=ETHUSDT').catch(err => { throw failure('FETCH_24HR_PRICE_FAILURE', err) })
   const price = _.toNumber(_.get(data, 'prevClosePrice'))
 
   return $USD(amountEth * price)
