@@ -2,6 +2,7 @@ import Blockchain, { EthBlockchain } from '../entities/Blockchain'
 import { AnyCurrency } from '../entities/Currency'
 import Value, { $ETH } from '../entities/Value'
 import { getEthWeb3 } from '../utils/ethereum'
+import failure from '../utils/failure'
 import getCollateralLoanPosition from './getCollateralLoanPosition'
 
 type Params = {
@@ -20,6 +21,6 @@ export default async function getCollateralOutstanding({ nftId, poolAddress }: P
     return $ETH(borrowedEth - returnedEth)
   }
   default:
-    throw Error(`Unsupported blockchain <${blockchain.network}>`)
+    throw failure('UNSUPPORTED_BLOCKCHAIN')
   }
 }

@@ -1,23 +1,23 @@
 import _ from 'lodash'
-import Blockchain, { EthBlockchain } from '../entities/Blockchain'
+import { AnyBlockchain, EthBlockchain } from '../entities/Blockchain'
 import GlobalStats from '../entities/GlobalStats'
 import { $USD } from '../entities/Value'
-import { getEthValueUSD } from '../utils/ethereum'
+import { EthNetwork, getEthValueUSD } from '../utils/ethereum'
 import logger from '../utils/logger'
 import getPoolLent from './getPoolLent'
 import getPools from './getPools'
 
-export default async function getGlobalStats(blockchains?: Blockchain[]) {
+export default async function getGlobalStats(blockchains?: { [K in AnyBlockchain]?: string }) {
   logger.info('Fetching global stats...')
 
-  const ethBlockchain = blockchains?.find(blockchain => blockchain.network === 'ethereum') ?? EthBlockchain()
+  const ethBlockchain = EthBlockchain(blockchains?.ethereum ?? EthNetwork.MAIN)
 
   const [
     ethValueUSD,
     pools,
   ] = await Promise.all([
     getEthValueUSD(),
-    getPools({ ethereum: ethBlockchain }),
+    getPools({ ethereum: ethBlockchain.networkId }),
   ])
 
   const totalCapacityUSD = _.sumBy(pools, t => (t.valueLocked?.amount ?? NaN) - (t.utilization?.amount ?? NaN)) * ethValueUSD.amount

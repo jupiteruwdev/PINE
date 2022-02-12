@@ -1,8 +1,8 @@
 import _ from 'lodash'
-import { supportedCollections } from '../config/supportedCollecitons'
+import { findAll as findAllPools } from '../db/pools'
 import Blockchain, { EthBlockchain } from '../entities/Blockchain'
 import getCollateralLoanPosition from './getCollateralLoanPosition'
-import getNFTById from './getNFTById'
+import getNFTMetadata from './getNFTMetadata'
 import getNFTsByOwner from './getNFTsByOwner'
 
 type Params = {
@@ -10,11 +10,20 @@ type Params = {
 }
 
 export default async function getObligations({ borrowerAddress }: Params, blockchain: Blockchain = EthBlockchain()) {
-  const poolAddresses = _.map(supportedCollections, data => data.lendingPool.address)
-  const allCollaterals = _.flatten(await Promise.all(poolAddresses.map(poolAddress => getNFTsByOwner({ ownerAddress: poolAddress, populateMetadata: false }, blockchain))))
+  const pools = await findAllPools({ blockchains: { [blockchain.network]: blockchain.networkId } })
+  const allCollaterals = _.flatten(await Promise.all(pools.map(pool => getNFTsByOwner({ ownerAddress: pool.address, populateMetadata: false }, blockchain))))
   const allLoanPositions = await Promise.all(allCollaterals.map(collateral => getCollateralLoanPosition({ nftId: collateral.id, poolAddress: collateral.ownerAddress }, blockchain)))
-  const obligations = _.compact(allLoanPositions.map((position, idx) => borrowerAddress.toLowerCase() !== _.get(position, 'borrower')?.toLowerCase() ? undefined : allCollaterals[idx]))
-  const obligationsWithMetadata = await Promise.all(obligations.map(obligation => getNFTById({ id: obligation.id, collectionAddress: obligation.collection.address, ownerAddress: obligation.ownerAddress, populateMetadata: true }, blockchain)))
 
-  return obligationsWithMetadata
+  const nfts = _.compact(allLoanPositions.map((loanPosition, idx) => borrowerAddress.toLowerCase() !== _.get(loanPosition, 'borrower')?.toLowerCase() ? undefined : allCollaterals[idx]))
+
+  // TODO: Optimize this. Currently doing this in series to avoid 429 for some API calls.
+  for (let i = 0, n = nfts.length; i < n; i++) {
+    const metadata = await getNFTMetadata({ id: nfts[i].id, collectionAddress: nfts[i].collection.address }, blockchain)
+    nfts[i] = {
+      ...nfts[i],
+      ...metadata,
+    }
+  }
+
+  return nfts
 }

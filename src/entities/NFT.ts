@@ -1,10 +1,13 @@
 import Collection from './Collection'
 
-type NFT = {
+export type NFTMetadata = {
+  imageUrl: string
+  name: string
+}
+
+type NFT = Partial<NFTMetadata> & {
   collection: Collection
   id: string
-  imageUrl?: string
-  name?: string
   ownerAddress: string
 }
 

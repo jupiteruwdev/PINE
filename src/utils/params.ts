@@ -1,11 +1,11 @@
 import _ from 'lodash'
-import { BlockchainDict, EthBlockchain } from '../entities/Blockchain'
+import { AnyBlockchain } from '../entities/Blockchain'
 import { EthNetwork, parseEthNetworkId } from './ethereum'
 
-export function parseBlockchains(params?: Record<string, any>): BlockchainDict {
-  const ethereumNetworkId = parseEthNetworkId(_.get(params, 'ethereum', EthNetwork.MAIN))
+export function parseBlockchainFilterFromQuery(query?: Record<string, any>): { [K in AnyBlockchain]: string } {
+  const ethereumNetworkId = parseEthNetworkId(_.get(query, 'ethereum', EthNetwork.MAIN))
 
   return {
-    ethereum: EthBlockchain(ethereumNetworkId),
+    ethereum: ethereumNetworkId,
   }
 }

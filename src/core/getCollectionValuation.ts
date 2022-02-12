@@ -1,9 +1,9 @@
-import SuperError from '@andrewscwei/super-error'
 import axios from 'axios'
 import _ from 'lodash'
 import appConf from '../app.conf'
 import Valuation from '../entities/Valuation'
 import { $ETH } from '../entities/Value'
+import failure from '../utils/failure'
 import logger from '../utils/logger'
 
 type Params = {
@@ -17,13 +17,13 @@ export default async function getCollectionValuation({ collectionId }: Params) {
   const venue = matches?.[1]
   const id = matches?.[2]
 
-  if (!venue || !id) throw new SuperError('Unable to parse colleciton ID')
+  if (!venue || !id) throw failure('INVALID_COLLECTION_ID')
 
   switch (venue) {
   case 'opensea':
     const apiKey = appConf.openseaAPIKey
 
-    if (!apiKey) throw new SuperError(undefined, 'MISSING_API_KEY')
+    if (!apiKey) throw failure('MISSING_API_KEY')
 
     const { data: collectionData } = await axios.get(`https://api.opensea.io/api/v1/collection/${id}/stats`, {
       headers: {
@@ -44,6 +44,6 @@ export default async function getCollectionValuation({ collectionId }: Params) {
 
     return valuation
   default:
-    throw new SuperError(`Venue <${venue}> is not supported`, 'VENUE-NOT-SUPPORTED')
+    throw failure('UNSUPPORTED_VENU')
   }
 }

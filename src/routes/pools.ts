@@ -5,14 +5,13 @@ import getPool from '../core/getPool'
 import { EthBlockchain } from '../entities/Blockchain'
 import { EthNetwork } from '../utils/ethereum'
 import failure from '../utils/failure'
-import { parseBlockchains } from '../utils/params'
+import { parseBlockchainFilterFromQuery } from '../utils/params'
 
 const router = Router()
 
 router.get('/', async (req, res, next) => {
   try {
-    const blockchains = parseBlockchains(req.query)
-    const payload = await getAggregatedPools(blockchains)
+    const payload = await getAggregatedPools(parseBlockchainFilterFromQuery(req.query))
     res.status(200).json(payload)
   }
   catch (err) {

@@ -1,4 +1,5 @@
 import Blockchain, { EthBlockchain } from '../entities/Blockchain'
+import failure from '../utils/failure'
 import getPoolContract from './getPoolContract'
 
 type Params = {
@@ -17,6 +18,6 @@ export async function getPoolLoanEvents({ poolAddress }: Params, blockchain: Blo
     return events
   }
   default:
-    throw Error(`Unsupported blockchain <${blockchain.network}>`)
+    throw failure('UNSUPPORTED_BLOCKCHAIN')
   }
 }

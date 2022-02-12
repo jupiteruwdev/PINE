@@ -1,16 +1,18 @@
 import _ from 'lodash'
 import ERC721EnumerableABI from '../abis/ERC721Enumerable.json'
+import { findAll as findAllCollections, findOne as findOneCollection } from '../db/collections'
 import Blockchain, { EthBlockchain } from '../entities/Blockchain'
+import Collection from '../entities/Collection'
 import NFT from '../entities/NFT'
 import { getEthWeb3 } from '../utils/ethereum'
-import getNFTById from './getNFTById'
-import getSupportedCollections from './getSupportedCollections'
+import failure from '../utils/failure'
+import getNFTMetadata from './getNFTMetadata'
 
 type Params = {
   /**
-   * If provided, the returned NFTs will only include those belonging to this collection address.
+   * If provided, the returned NFTs will only include those belonging to this collection.
    */
-  collectionAddress?: string
+  collectionOrCollectionAddress?: Collection | string
 
   /**
    * The address of the owner of the NFTs to look up.
@@ -32,36 +34,41 @@ type Params = {
  *
  * @returns An array of {@link NFT}.
  */
-export default async function getNFTsByOwner({ ownerAddress, collectionAddress, populateMetadata = false }: Params, blockchain: Blockchain = EthBlockchain()): Promise<NFT[]> {
-  const collections = getSupportedCollections({ [blockchain.network]: blockchain })
-
-  if (collectionAddress) {
-    const collection = collections.find(t => t.address === collectionAddress)
+export default async function getNFTsByOwner({ ownerAddress, collectionOrCollectionAddress, populateMetadata = false }: Params, blockchain: Blockchain = EthBlockchain()): Promise<NFT[]> {
+  if (collectionOrCollectionAddress) {
+    const collection = _.isString(collectionOrCollectionAddress) ? await findOneCollection({ address: collectionOrCollectionAddress, blockchain }) : collectionOrCollectionAddress
 
     if (!collection) return []
 
     switch (blockchain.network) {
     case 'ethereum': {
       const web3 = getEthWeb3(blockchain.networkId)
-      const contract = new web3.eth.Contract(ERC721EnumerableABI as any, collectionAddress)
+      const contract = new web3.eth.Contract(ERC721EnumerableABI as any, collection.address)
       const count = _.toNumber(await contract.methods.balanceOf(ownerAddress).call())
       const nftIds = await Promise.all([...Array(count)].map((val, idx) => contract.methods.tokenOfOwnerByIndex(ownerAddress, idx).call()))
       const nfts: NFT[] = []
 
       // TODO: Optimize this. Currently doing this in series to avoid 429 for some API calls.
       for (const nftId of nftIds) {
-        const nft = await getNFTById({ id: nftId, collectionAddress, ownerAddress, populateMetadata }, blockchain)
-        nfts.push(nft)
+        const metadata = populateMetadata === false ? {} : await getNFTMetadata({ id: nftId, collectionAddress: collection.address }, blockchain)
+
+        nfts.push({
+          ...metadata,
+          collection,
+          id: nftId,
+          ownerAddress,
+        })
       }
 
       return nfts
     }
     default:
-      throw Error(`Unsupported blockchain <${blockchain.network}>`)
+      throw failure('UNSUPPORTED_BLOCKCHAIN')
     }
   }
   else {
-    const nftsPerCollection = await Promise.all(collections.map(collection => getNFTsByOwner({ ownerAddress, collectionAddress: collection.address, populateMetadata }, blockchain)))
+    const collections = await findAllCollections({ blockchains: { [blockchain.network]: blockchain.networkId } })
+    const nftsPerCollection = await Promise.all(collections.map(collection => getNFTsByOwner({ ownerAddress, collectionOrCollectionAddress: collection, populateMetadata }, blockchain)))
 
     return _.flatten(nftsPerCollection)
   }

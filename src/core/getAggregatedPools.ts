@@ -1,16 +1,15 @@
 import _ from 'lodash'
 import AggregatedPool from '../entities/AggregatedPool'
-import { BlockchainDict } from '../entities/Blockchain'
+import { AnyBlockchain } from '../entities/Blockchain'
 import { $USD } from '../entities/Value'
 import { getEthValueUSD } from '../utils/ethereum'
 import logger from '../utils/logger'
-import { parseBlockchains } from '../utils/params'
 import getPools from './getPools'
 
-export default async function getAggregatedPools(blockchains: BlockchainDict = parseBlockchains()) {
-  logger.info('Fetching aggregated pools...')
+export default async function getAggregatedPools(blockchainFilter?: { [K in AnyBlockchain]?: string }) {
+  logger.info(`Fetching aggregated pools with blockchain filter <${JSON.stringify(blockchainFilter)}>...`)
 
-  const [ethValueUSD, pools] = await Promise.all([getEthValueUSD(), getPools(blockchains)])
+  const [ethValueUSD, pools] = await Promise.all([getEthValueUSD(), getPools(blockchainFilter)])
 
   const aggregatedPools: AggregatedPool[] = _.compact(pools.map(pool => {
     if (!pool.collection) return undefined

@@ -1,6 +1,7 @@
 import ERC721LendingABI from '../abis/ERC721Lending.json'
 import Blockchain, { EthBlockchain } from '../entities/Blockchain'
 import { getEthWeb3 } from '../utils/ethereum'
+import failure from '../utils/failure'
 
 type Params = {
   poolAddress: string
@@ -14,6 +15,6 @@ export default function getPoolContract({ poolAddress }: Params, blockchain: Blo
     return contract
   }
   default:
-    throw Error(`Unsupported blockchain <${blockchain.network}>`)
+    throw failure('UNSUPPORTED_BLOCKCHAIN')
   }
 }

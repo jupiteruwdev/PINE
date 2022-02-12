@@ -1,6 +1,7 @@
 import _ from 'lodash'
 import Blockchain, { EthBlockchain } from '../entities/Blockchain'
 import { $ETH } from '../entities/Value'
+import failure from '../utils/failure'
 import getCollateralOutstanding from './getCollateralOutstanding'
 import getPoolCollaterals from './getPoolCollaterals'
 
@@ -28,6 +29,6 @@ export default async function getPoolUtilization({ poolAddress }: Params, blockc
     return $ETH(totalUtilization)
   }
   default:
-    throw Error(`Unsupported blockchain <${blockchain.network}>`)
+    throw failure('UNSUPPORTED_BLOCKCHAIN')
   }
 }

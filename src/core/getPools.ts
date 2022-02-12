@@ -1,36 +1,40 @@
-import _ from 'lodash'
-import { supportedCollections } from '../config/supportedCollecitons'
-import { BlockchainDict } from '../entities/Blockchain'
+import { findAll as findAllPools } from '../db/pools'
+import { AnyBlockchain } from '../entities/Blockchain'
 import Pool from '../entities/Pool'
-import { parseEthNetworkId } from '../utils/ethereum'
-import { parseBlockchains } from '../utils/params'
-import getPool from './getPool'
+import { $ETH } from '../entities/Value'
+import getPoolCapacity from './getPoolCapacity'
+import getPoolUtilization from './getPoolUtilization'
 
 /**
- * Fetches all existing pools.
+ * Fetches all existing pools with their usage stats.
  *
  * @param blockchainFilter - Blockchains to filter for the returned pools. If unspecified, all
- *                           blockchains with default network ID will be used. Only blockchains that
- *                           appear in this dict will be included in the returned results.
+ *                           blockchains with default network ID will be used. If specified,  only
+ *                           blockchains that appear in this dict will be included in the returned
+ *                           results.
  *
- * @returns An array of {@link Pool}.
+ * @returns An array of {@link Pool} with usage stats included.
  */
-export default async function getPools(blockchainFilter: Partial<BlockchainDict> = parseBlockchains()): Promise<Pool[]> {
-  const rawData = supportedCollections
-  const ethBlockchain = blockchainFilter.ethereum
-  const requests: Promise<Pool[]>[] = []
+export default async function getPools(blockchainFilter?: { [K in AnyBlockchain]?: string }): Promise<Required<Pool>[]> {
+  const pools = await findAllPools({ blockchains: blockchainFilter })
 
-  if (ethBlockchain) {
-    const collectionIds = Object.keys(rawData).filter(collectionId => parseEthNetworkId(rawData[collectionId].networkId) === ethBlockchain.networkId)
+  const poolsWithStats = await Promise.all(pools.map(async pool => {
+    const [
+      { amount: utilizationEth },
+      { amount: capacityEth },
+    ] = await Promise.all([
+      getPoolUtilization({ poolAddress: pool.address }, pool.blockchain),
+      getPoolCapacity({ poolAddress: pool.address }, pool.blockchain),
+    ])
 
-    requests.push(Promise.all(collectionIds.map(async collectionId => {
-      const collectionData = rawData[collectionId]
-      const poolAddress = collectionData.lendingPool.address
-      return getPool({ poolAddress }, ethBlockchain)
-    })))
-  }
+    const valueLockedEth = capacityEth + utilizationEth
 
-  const pools = _.flatten(await Promise.all(requests))
+    return {
+      ...pool,
+      utilization: $ETH(utilizationEth),
+      valueLocked: $ETH(valueLockedEth),
+    }
+  }))
 
-  return pools
+  return poolsWithStats
 }
