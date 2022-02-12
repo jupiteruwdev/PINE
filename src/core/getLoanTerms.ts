@@ -24,7 +24,7 @@ export default async function getLoanTerms({ nftId, collectionId }: Params, bloc
     const pool = await findOnePool({ collectionAddress: collection.address, blockchain })
     if (!pool) throw failure('NO_POOLS_AVAILABLE')
 
-    const valuation = await getCollectionValuation({ collectionId })
+    const valuation = await getCollectionValuation({ collectionId }, blockchain)
     const { signature, issuedAtBlock, expiresAtBlock } = await signValuation({ nftId, collectionAddress: collection.address, poolAddress: pool.address, valuation }, blockchain)
 
     const loanTerms: LoanTerms = {
