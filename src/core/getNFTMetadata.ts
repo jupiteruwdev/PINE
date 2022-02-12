@@ -1,15 +1,15 @@
 import axios from 'axios'
 import ERC721EnumerableABI from '../abis/ERC721Enumerable.json'
 import { findOne } from '../db/collections'
-import Blockchain, { EthBlockchain } from '../entities/Blockchain'
+import Blockchain from '../entities/Blockchain'
 import { NFTMetadata } from '../entities/NFT'
 import { getEthWeb3 } from '../utils/ethereum'
 import failure from '../utils/failure'
 
 type Params = {
+  blockchain: Blockchain
   collectionAddress: string
-  id: string
-  populateMetadata?: boolean
+  nftId: string
 }
 
 /**
@@ -20,7 +20,7 @@ function normalizeUri(uri: string) {
   return uri.replace('ipfs://', 'https://tempus.mypinata.cloud/ipfs/')
 }
 
-export default async function getNFTMetadata({ id, collectionAddress }: Params, blockchain: Blockchain = EthBlockchain()): Promise<NFTMetadata> {
+export default async function getNFTMetadata({ blockchain, collectionAddress, nftId }: Params): Promise<NFTMetadata> {
   switch (blockchain.network) {
   case 'ethereum': {
     const collection = await findOne({ address: collectionAddress, blockchain })
@@ -29,13 +29,13 @@ export default async function getNFTMetadata({ id, collectionAddress }: Params, 
 
     const web3 = getEthWeb3(blockchain.networkId)
     const contract = new web3.eth.Contract(ERC721EnumerableABI as any, collectionAddress)
-    const uri = await contract.methods.tokenURI(id).call()
+    const uri = await contract.methods.tokenURI(nftId).call()
 
     const { data: metadata } = await axios.get(normalizeUri(uri))
 
     return {
       imageUrl: normalizeUri(metadata.image),
-      name: metadata.name ?? `#${metadata.id ?? id}`,
+      name: metadata.name ?? `#${metadata.id ?? nftId}`,
     }
   }
   default:

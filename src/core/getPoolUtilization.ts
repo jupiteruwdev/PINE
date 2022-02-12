@@ -1,11 +1,12 @@
 import _ from 'lodash'
-import Blockchain, { EthBlockchain } from '../entities/Blockchain'
+import Blockchain from '../entities/Blockchain'
 import { $ETH } from '../entities/Value'
 import failure from '../utils/failure'
 import getCollateralOutstanding from './getCollateralOutstanding'
 import getPoolCollaterals from './getPoolCollaterals'
 
 type Params = {
+  blockchain: Blockchain
   poolAddress: string
 }
 
@@ -14,16 +15,15 @@ type Params = {
  * lent value ({@link getPoolLent}) and utilization value: lent refers to the initial loan
  * amount and utilization refers to the current outstanding loan amount.
  *
- * @param param - See {@link Params}.
- * @param blockchain - The blockchain of which the pool resides.
+ * @param params - See {@link Params}.
  *
  * @returns The current utilization for the pool.
  */
-export default async function getPoolUtilization({ poolAddress }: Params, blockchain: Blockchain = EthBlockchain()) {
+export default async function getPoolUtilization({ blockchain, poolAddress }: Params) {
   switch (blockchain.network) {
   case 'ethereum': {
-    const collaterals = await getPoolCollaterals({ poolAddress }, blockchain)
-    const utilizationPerCollateral = await Promise.all(collaterals.map(nftId => getCollateralOutstanding({ nftId, poolAddress }, blockchain)))
+    const collaterals = await getPoolCollaterals({ blockchain, poolAddress })
+    const utilizationPerCollateral = await Promise.all(collaterals.map(nftId => getCollateralOutstanding({ blockchain, nftId, poolAddress })))
     const totalUtilization = _.sumBy(utilizationPerCollateral, t => t.amount)
 
     return $ETH(totalUtilization)

@@ -1,12 +1,13 @@
 import _ from 'lodash'
 import appConf from '../app.conf'
-import Blockchain, { EthBlockchain } from '../entities/Blockchain'
+import Blockchain from '../entities/Blockchain'
 import Valuation from '../entities/Valuation'
 import { getEthBlockNumber, getEthWeb3 } from '../utils/ethereum'
 import failure from '../utils/failure'
 import getPoolContract from './getPoolContract'
 
 type Params = {
+  blockchain: Blockchain
   collectionAddress: string
   nftId: string
   poolAddress: string
@@ -19,14 +20,14 @@ type Output = {
   signature: string
 }
 
-export default async function signValuation({ nftId, poolAddress, collectionAddress, valuation }: Params, blockchain: Blockchain = EthBlockchain()): Promise<Output> {
+export default async function signValuation({ blockchain, nftId, poolAddress, collectionAddress, valuation }: Params): Promise<Output> {
   switch (blockchain.network) {
   case 'ethereum': {
     const web3 = getEthWeb3(blockchain.networkId)
     const blockNumber = await getEthBlockNumber(blockchain.networkId)
     const expiresAtBlock = blockNumber + appConf.ethValuationExpiryBlocks
 
-    const contract = getPoolContract({ poolAddress }, blockchain)
+    const contract = getPoolContract({ blockchain, poolAddress })
     const contractFunc = 'getMessageHash'
     const contractParams = [
       collectionAddress,

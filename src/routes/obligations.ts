@@ -13,7 +13,7 @@ router.get('/', async (req, res, next) => {
 
     if (!borrowerAddress) throw Error('Invalid owner address')
 
-    const payload = await getObligations({ borrowerAddress }, EthBlockchain(networkId))
+    const payload = await getObligations({ blockchain: EthBlockchain(networkId), borrowerAddress })
 
     res.status(200).json(payload)
   }

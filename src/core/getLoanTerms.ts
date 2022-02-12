@@ -1,6 +1,6 @@
 import { findOne as findOneCollection } from '../db/collections'
 import { findOne as findOnePool } from '../db/pools'
-import Blockchain, { EthBlockchain } from '../entities/Blockchain'
+import Blockchain from '../entities/Blockchain'
 import LoanTerms from '../entities/LoanTerms'
 import { $ETH } from '../entities/Value'
 import failure from '../utils/failure'
@@ -9,11 +9,12 @@ import getCollectionValuation from './getCollectionValuation'
 import signValuation from './signValuation'
 
 type Params = {
-  nftId: string
+  blockchain: Blockchain
   collectionId: string
+  nftId: string
 }
 
-export default async function getLoanTerms({ nftId, collectionId }: Params, blockchain: Blockchain = EthBlockchain()): Promise<LoanTerms> {
+export default async function getLoanTerms({ blockchain, collectionId, nftId }: Params): Promise<LoanTerms> {
   logger.info(`Fetching loan terms for NFT ID <${nftId}> and collection ID <${collectionId}> on blockchain <${JSON.stringify(blockchain)}>...`)
 
   switch (blockchain.network) {
@@ -24,8 +25,8 @@ export default async function getLoanTerms({ nftId, collectionId }: Params, bloc
     const pool = await findOnePool({ collectionAddress: collection.address, blockchain })
     if (!pool) throw failure('NO_POOLS_AVAILABLE')
 
-    const valuation = await getCollectionValuation({ collectionId }, blockchain)
-    const { signature, issuedAtBlock, expiresAtBlock } = await signValuation({ nftId, collectionAddress: collection.address, poolAddress: pool.address, valuation }, blockchain)
+    const valuation = await getCollectionValuation({ blockchain, collectionId })
+    const { signature, issuedAtBlock, expiresAtBlock } = await signValuation({ blockchain, nftId, collectionAddress: collection.address, poolAddress: pool.address, valuation })
 
     const loanTerms: LoanTerms = {
       collection,

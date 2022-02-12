@@ -2,7 +2,7 @@ import axios from 'axios'
 import _ from 'lodash'
 import appConf from '../app.conf'
 import { findOne as findOneCollection } from '../db/collections'
-import Blockchain, { EthBlockchain } from '../entities/Blockchain'
+import Blockchain from '../entities/Blockchain'
 import Valuation from '../entities/Valuation'
 import { $ETH } from '../entities/Value'
 import failure from '../utils/failure'
@@ -10,9 +10,10 @@ import logger from '../utils/logger'
 
 type Params = {
   collectionId: string
+  blockchain: Blockchain
 }
 
-export default async function getCollectionValuation({ collectionId }: Params, blockchain: Blockchain = EthBlockchain()): Promise<Valuation> {
+export default async function getCollectionValuation({ blockchain, collectionId }: Params): Promise<Valuation> {
   logger.info(`Fetching valuation for collection ID <${collectionId}>...`)
 
   const matches = collectionId.match(/(.*):(.*)/)

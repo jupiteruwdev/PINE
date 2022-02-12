@@ -5,13 +5,13 @@ import getPool from '../core/getPool'
 import { EthBlockchain } from '../entities/Blockchain'
 import { EthNetwork } from '../utils/ethereum'
 import failure from '../utils/failure'
-import { parseBlockchainFilterFromQuery } from '../utils/params'
+import mapBlockchainFilterToDict from '../utils/mapBlockchainFilterToDict'
 
 const router = Router()
 
 router.get('/', async (req, res, next) => {
   try {
-    const payload = await getAggregatedPools(parseBlockchainFilterFromQuery(req.query))
+    const payload = await getAggregatedPools({ blockchains: _.mapValues(mapBlockchainFilterToDict(req.query, true), t => t.networkId) })
     res.status(200).json(payload)
   }
   catch (err) {
@@ -24,7 +24,7 @@ router.get('/eth/:address', async (req, res, next) => {
   const poolAddress = req.params.address
 
   try {
-    const payload = await getPool({ poolAddress }, EthBlockchain(networkId))
+    const payload = await getPool({ blockchain: EthBlockchain(networkId), poolAddress })
     res.status(200).json(payload)
   }
   catch (err) {

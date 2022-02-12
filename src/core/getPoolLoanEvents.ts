@@ -1,15 +1,16 @@
-import Blockchain, { EthBlockchain } from '../entities/Blockchain'
+import Blockchain from '../entities/Blockchain'
 import failure from '../utils/failure'
 import getPoolContract from './getPoolContract'
 
 type Params = {
+  blockchain: Blockchain
   poolAddress: string
 }
 
-export async function getPoolLoanEvents({ poolAddress }: Params, blockchain: Blockchain = EthBlockchain()) {
+export async function getPoolLoanEvents({ blockchain, poolAddress }: Params) {
   switch (blockchain.network) {
   case 'ethereum': {
-    const poolContract = getPoolContract({ poolAddress }, blockchain)
+    const poolContract = getPoolContract({ blockchain, poolAddress })
     const events = await poolContract.getPastEvents('LoanInitiated', {
       fromBlock: 0,
       toBlock: 'latest',

@@ -2,8 +2,6 @@ import { EthNetwork } from '../utils/ethereum'
 
 export type AnyBlockchain = 'ethereum'
 
-export type BlockchainDict = { [K in AnyBlockchain]: Blockchain<K> }
-
 type Blockchain<T extends AnyBlockchain = AnyBlockchain> = {
   network: T
   networkId: string

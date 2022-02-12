@@ -3,6 +3,7 @@ import { supportedCollections } from '../config/supportedCollections'
 import Blockchain, { AnyBlockchain, EthBlockchain } from '../entities/Blockchain'
 import LoanOption from '../entities/LoanOption'
 import Pool from '../entities/Pool'
+import mapBlockchainFilterToDict from '../utils/mapBlockchainFilterToDict'
 import * as collections from './collections'
 
 type FindOneFilter = {
@@ -94,8 +95,9 @@ export async function findOne({ address, collectionAddress, collectionId, blockc
 }
 
 /**
- * Finds all pools on the platform. If no filters are provided, all pools will be returned in the
- * default networks of all blockchains.
+ * Finds all pools on the platform. If the blockchains filter is specified, only pools residing in
+ * the mapped blockchains will be returned. Otherwise if unspecified (i.e. `filter.blockchains` ===
+ * `undefined`), all pools of all blockchains in their default network IDs will be returned.
  *
  * @param filter - See {@link FindAllFilter}.
  *
@@ -103,11 +105,11 @@ export async function findOne({ address, collectionAddress, collectionId, blockc
  */
 export async function findAll({ collectionAddress, collectionId, blockchains }: FindAllFilter = {}): Promise<Pool[]> {
   const rawData = supportedCollections
-  const ethBlockchain = blockchains ? (blockchains.ethereum ? EthBlockchain(blockchains.ethereum) : undefined) : EthBlockchain()
 
+  const blockchainDict = blockchains === undefined ? mapBlockchainFilterToDict({}, true) : mapBlockchainFilterToDict(blockchains, false)
   const pools: Pool[] = []
 
-  if (ethBlockchain) {
+  if (blockchainDict.ethereum) {
     for (const key in rawData) {
       if (!rawData.hasOwnProperty(key)) continue
 
@@ -115,8 +117,8 @@ export async function findAll({ collectionAddress, collectionId, blockchains }: 
 
       const data = rawData[key]
 
-      if (_.get(data, 'networkType') !== ethBlockchain.network) continue
-      if (_.toString(_.get(data, 'networkId')) !== ethBlockchain.networkId) continue
+      if (_.get(data, 'networkType') !== blockchainDict.ethereum.network) continue
+      if (_.toString(_.get(data, 'networkId')) !== blockchainDict.ethereum.networkId) continue
 
       const collection = collections.mapCollection({
         ...data,
@@ -128,7 +130,7 @@ export async function findAll({ collectionAddress, collectionId, blockchains }: 
       pools.push(mapPool({
         ..._.get(data, 'lendingPool', {}),
         collection,
-        blockchain: ethBlockchain,
+        blockchain: blockchainDict.ethereum,
       }))
     }
   }

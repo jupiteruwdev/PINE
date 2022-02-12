@@ -14,7 +14,7 @@ router.get('/', async (req, res, next) => {
     if (!nftId || !collectionId) throw failure('INVALID_PARAMS')
 
     const networkId = parseEthNetworkId(req.query.networkId)
-    const payload = await getLoanTerms({ nftId, collectionId }, EthBlockchain(networkId))
+    const payload = await getLoanTerms({ blockchain: EthBlockchain(networkId), nftId, collectionId })
 
     res.status(200).json(payload)
   }

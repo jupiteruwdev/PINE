@@ -1,7 +1,7 @@
 import _ from 'lodash'
 import ERC721EnumerableABI from '../abis/ERC721Enumerable.json'
 import { findAll as findAllCollections, findOne as findOneCollection } from '../db/collections'
-import Blockchain, { EthBlockchain } from '../entities/Blockchain'
+import Blockchain from '../entities/Blockchain'
 import Collection from '../entities/Collection'
 import NFT from '../entities/NFT'
 import { getEthWeb3 } from '../utils/ethereum'
@@ -9,6 +9,11 @@ import failure from '../utils/failure'
 import getNFTMetadata from './getNFTMetadata'
 
 type Params = {
+  /**
+   * The blockchain of which the NFTs and the owner reside.
+   */
+  blockchain: Blockchain
+
   /**
    * If provided, the returned NFTs will only include those belonging to this collection.
    */
@@ -23,7 +28,7 @@ type Params = {
    * Specifies if NFT metadata should be included, defaults to false. The operation is faster if
    * metadata is not fetched.
    */
-  populateMetadata?: boolean
+  populateMetadata: boolean
 }
 
 /**
@@ -34,7 +39,7 @@ type Params = {
  *
  * @returns An array of {@link NFT}.
  */
-export default async function getNFTsByOwner({ ownerAddress, collectionOrCollectionAddress, populateMetadata = false }: Params, blockchain: Blockchain = EthBlockchain()): Promise<NFT[]> {
+export default async function getNFTsByOwner({ blockchain, collectionOrCollectionAddress, ownerAddress, populateMetadata }: Params): Promise<NFT[]> {
   if (collectionOrCollectionAddress) {
     const collection = _.isString(collectionOrCollectionAddress) ? await findOneCollection({ address: collectionOrCollectionAddress, blockchain }) : collectionOrCollectionAddress
 
@@ -50,7 +55,7 @@ export default async function getNFTsByOwner({ ownerAddress, collectionOrCollect
 
       // TODO: Optimize this. Currently doing this in series to avoid 429 for some API calls.
       for (const nftId of nftIds) {
-        const metadata = populateMetadata === false ? {} : await getNFTMetadata({ id: nftId, collectionAddress: collection.address }, blockchain)
+        const metadata = populateMetadata === false ? {} : await getNFTMetadata({ blockchain, collectionAddress: collection.address, nftId })
 
         nfts.push({
           ...metadata,
@@ -68,7 +73,7 @@ export default async function getNFTsByOwner({ ownerAddress, collectionOrCollect
   }
   else {
     const collections = await findAllCollections({ blockchains: { [blockchain.network]: blockchain.networkId } })
-    const nftsPerCollection = await Promise.all(collections.map(collection => getNFTsByOwner({ ownerAddress, collectionOrCollectionAddress: collection, populateMetadata }, blockchain)))
+    const nftsPerCollection = await Promise.all(collections.map(collection => getNFTsByOwner({ blockchain, ownerAddress, collectionOrCollectionAddress: collection, populateMetadata })))
 
     return _.flatten(nftsPerCollection)
   }
