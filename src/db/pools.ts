@@ -32,11 +32,11 @@ function mapLoanOption(data: Record<string, any>): LoanOption {
   if (!_.isNumber(maxLTVBPS)) throw TypeError('Failed to map key "maxLTVBPS"')
 
   return {
-    'interest_bps_per_block_override': interestBPSPerBlockOverride,
-    'interest_bps_per_block': interestBPSPerBlock,
-    'loan_duration_block': loanDurationBlocks,
-    'loan_duration_seconds': loanDurationSeconds,
-    'max_ltv_bps': maxLTVBPS,
+    interestBPSPerBlockOverride,
+    interestBPSPerBlock,
+    loanDurationBlocks,
+    loanDurationSeconds,
+    maxLTVBPS,
   }
 }
 

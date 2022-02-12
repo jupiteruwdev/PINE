@@ -1,5 +1,6 @@
 import { Router } from 'express'
 import collateralsRouter from './collaterals'
+import loanTermsRouter from './loanTerms'
 import obligationsRouter from './obligations'
 import poolsRouter from './pools'
 import statsRouter from './stats'
@@ -12,5 +13,6 @@ router.use('/pools', poolsRouter)
 router.use('/valuation', valuationRouter)
 router.use('/collaterals', collateralsRouter)
 router.use('/obligations', obligationsRouter)
+router.use('/loan-terms', loanTermsRouter)
 
 export default router

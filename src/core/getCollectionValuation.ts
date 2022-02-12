@@ -1,6 +1,8 @@
 import axios from 'axios'
 import _ from 'lodash'
 import appConf from '../app.conf'
+import { findOne as findOneCollection } from '../db/collections'
+import Blockchain, { EthBlockchain } from '../entities/Blockchain'
 import Valuation from '../entities/Valuation'
 import { $ETH } from '../entities/Value'
 import failure from '../utils/failure'
@@ -10,14 +12,28 @@ type Params = {
   collectionId: string
 }
 
-export default async function getCollectionValuation({ collectionId }: Params) {
+export default async function getCollectionValuation({ collectionId }: Params, blockchain: Blockchain = EthBlockchain()): Promise<Valuation> {
   logger.info(`Fetching valuation for collection ID <${collectionId}>...`)
 
   const matches = collectionId.match(/(.*):(.*)/)
   const venue = matches?.[1]
   const id = matches?.[2]
 
-  if (!venue || !id) throw failure('INVALID_COLLECTION_ID')
+  const collection = await findOneCollection({ id: collectionId, blockchain })
+
+  if (!collection) throw failure('UNSUPPORTED_COLLECTION')
+
+  // TODO: This is a hack
+  if (collectionId === 'testing') {
+    return {
+      collection,
+      updatedAt: new Date(),
+      value: $ETH(0.028),
+      value24Hr: $ETH(1),
+    }
+  }
+
+  if (!venue || !id) throw failure('UNSUPPORTED_COLLECTION')
 
   switch (venue) {
   case 'opensea':
@@ -34,7 +50,7 @@ export default async function getCollectionValuation({ collectionId }: Params) {
     const valueEth24Hr: number = _.get(collectionData, 'stats.floor_price', NaN)
     const valueEth: number = valueEth24Hr > _.get(collectionData, 'stats.one_day_average_price', NaN) ? _.get(collectionData, 'stats.one_day_average_price', NaN) : valueEth24Hr
     const valuation: Valuation<'ETH'> = {
-      collectionId,
+      collection,
       updatedAt: new Date(),
       value: $ETH(valueEth),
       value24Hr: $ETH(valueEth24Hr),
