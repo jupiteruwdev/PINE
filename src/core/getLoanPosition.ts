@@ -1,4 +1,5 @@
 import BN from 'bn.js'
+import _ from 'lodash'
 import { findOne as findOneCollection } from '../db/collections'
 import { findOne as findOnePool } from '../db/pools'
 import Blockchain from '../entities/Blockchain'
@@ -55,9 +56,9 @@ export default async function getLoanPosition({ blockchain, collectionId, nftId,
       borrowed: $WEI(event.borrowedWei),
       borrowerAddress: event.borrower,
       expiresAt: event.loanExpireTimestamp,
-      interestBPSPerBlock: new BN(event.interestBPS1000000XBlock).div(new BN(1_000_000)).toNumber(),
+      interestBPSPerBlock: _.toNumber(event.interestBPS1000000XBlock) / 1_000_000,
       loanStartBlock: event.loanStartBlock,
-      maxLTVBPS: new BN(event.maxLTVBPS).toNumber(),
+      maxLTVBPS: _.toNumber(event.maxLTVBPS),
       nft,
       outstanding: $WEI(new BN(outstandingWithInterestWei.toString().replace(/.{0,13}$/, '') + '0000000000000').add(new BN('10000000000000')).toNumber()),
       poolAddress: pool.address,
