@@ -5,7 +5,7 @@ const router = Router()
 
 router.get('/global', async (req, res, next) => {
   try {
-    const payload = await getGlobalStats()
+    const payload = await getGlobalStats({ blockchains: req.query })
     res.status(200).json(payload)
   }
   catch (err) {

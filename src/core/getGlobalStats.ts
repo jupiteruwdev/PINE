@@ -19,9 +19,9 @@ type Params = {
 
 export default async function getGlobalStats({ blockchains }: Params = {}): Promise<GlobalStats> {
   try {
-    logger.info('Fetching global stats...')
-
     const blockchainDict = mapBlockchainFilterToDict(blockchains ?? {}, true)
+
+    logger.info(`Fetching global stats for blockchains <${JSON.stringify(blockchainDict)}>...`)
 
     const [
       ethValueUSD,
