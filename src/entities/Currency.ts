@@ -1,6 +1,6 @@
 import Blockchain from './Blockchain'
 
-export type AnyCurrency = 'ETH' | 'USD'
+export type AnyCurrency = 'ETH' | 'USD' | 'WEI'
 
 type Currency<T extends AnyCurrency = AnyCurrency> = {
   address?: string

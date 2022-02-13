@@ -8,7 +8,7 @@ export type NFTMetadata = {
 type NFT = Partial<NFTMetadata> & {
   collection: Collection
   id: string
-  ownerAddress: string
+  ownerAddress?: string
 }
 
 export default NFT

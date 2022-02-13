@@ -2,10 +2,12 @@ import { findOne as findOneCollection } from '../db/collections'
 import { findOne as findOnePool } from '../db/pools'
 import Blockchain from '../entities/Blockchain'
 import LoanTerms from '../entities/LoanTerms'
+import NFT from '../entities/NFT'
 import { $ETH } from '../entities/Value'
 import failure from '../utils/failure'
 import logger from '../utils/logger'
 import getCollectionValuation from './getCollectionValuation'
+import getNFTMetadata from './getNFTMetadata'
 import signValuation from './signValuation'
 
 type Params = {
@@ -25,17 +27,24 @@ export default async function getLoanTerms({ blockchain, collectionId, nftId }: 
     const pool = await findOnePool({ collectionAddress: collection.address, blockchain })
     if (!pool) throw failure('NO_POOLS_AVAILABLE')
 
+    const nft: NFT = {
+      collection,
+      id: nftId,
+      ...await getNFTMetadata({ blockchain, collectionAddress: collection.address, nftId }),
+    }
+
     const valuation = await getCollectionValuation({ blockchain, collectionId })
     const { signature, issuedAtBlock, expiresAtBlock } = await signValuation({ blockchain, nftId, collectionAddress: collection.address, poolAddress: pool.address, valuation })
 
     const loanTerms: LoanTerms = {
-      collection,
-      contractAddress: pool.address,
-      expiresAtBlock,
-      issuedAtBlock,
-      options: pool.loanOptions,
-      signature,
       valuation,
+      signature,
+      options: pool.loanOptions,
+      nft,
+      issuedAtBlock,
+      expiresAtBlock,
+      contractAddress: pool.address,
+      collection,
     }
 
     loanTerms.options.map(option => {
