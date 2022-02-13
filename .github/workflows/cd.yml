@@ -43,8 +43,8 @@ jobs:
           push: false
           tags: ${{ env.IMAGE_NAME }}:test
           target: test
-      # - name: Run tests
-      #   run: IMAGE_TAG=test docker-compose -f docker-compose.test.yml up --exit-code-from app
+      - name: Run tests
+        run: IMAGE_TAG=test docker-compose -f docker-compose.test.yml up --exit-code-from app
       - name: Set metadata
         id: meta
         uses: docker/metadata-action@v3
