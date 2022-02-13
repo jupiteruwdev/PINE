@@ -6,3 +6,6 @@ services:
     command: npm test
     ports:
       - 8080:8080
+    environment:
+      ETH_RPC_RINKEBY: ${ETH_RPC_RINKEBY}
+      ETH_RPC_MAINNET: ${ETH_RPC_MAINNET}

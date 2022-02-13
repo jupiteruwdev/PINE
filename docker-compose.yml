@@ -3,9 +3,12 @@ services:
   app:
     command: npm start
     container_name: core-service
-    environment:
-      NODE_ENV: production
+    env_file: .env
     image: ${IMAGE_NAME:-core-service}:${IMAGE_TAG:-latest}
     restart: always
     ports:
       - 8080:8080
+    environment:
+      NODE_ENV: production
+      ETH_RPC_RINKEBY: ${ETH_RPC_RINKEBY}
+      ETH_RPC_MAINNET: ${ETH_RPC_MAINNET}
