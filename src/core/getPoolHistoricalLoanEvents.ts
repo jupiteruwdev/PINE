@@ -7,7 +7,7 @@ type Params = {
   poolAddress: string
 }
 
-export async function getPoolLoanEvents({ blockchain, poolAddress }: Params) {
+export async function getPoolHistoricalLoanEvents({ blockchain, poolAddress }: Params) {
   switch (blockchain.network) {
   case 'ethereum': {
     try {

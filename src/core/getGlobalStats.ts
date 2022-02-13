@@ -6,7 +6,7 @@ import { getEthValueUSD } from '../utils/ethereum'
 import failure from '../utils/failure'
 import logger from '../utils/logger'
 import mapBlockchainFilterToDict from '../utils/mapBlockchainFilterToDict'
-import getPoolLent from './getPoolLent'
+import getPoolHistoricalLent from './getPoolHistoricalLent'
 import getPools from './getPools'
 
 type Params = {
@@ -35,7 +35,7 @@ export default async function getGlobalStats({ blockchains }: Params = {}): Prom
     const totalUtilizationUSD = _.sumBy(pools, t => t.utilization?.amount ?? NaN) * ethValueUSD.amount
     const tvlUSD =  totalUtilizationUSD + totalCapacityUSD
 
-    const lentPerPool = await Promise.all(pools.map(pool => getPoolLent({ blockchain: blockchainDict.ethereum, poolAddress: pool.address })))
+    const lentPerPool = await Promise.all(pools.map(pool => getPoolHistoricalLent({ blockchain: blockchainDict.ethereum, poolAddress: pool.address })))
     const totalLentlUSD = _.sumBy(lentPerPool, t => t.amount) * ethValueUSD.amount
 
     const globalStats: GlobalStats = {

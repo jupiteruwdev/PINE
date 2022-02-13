@@ -8,7 +8,7 @@ type Params = {
   poolAddress: string
 }
 
-export default async function getCollateralLoanPosition({ blockchain, nftId, poolAddress }: Params) {
+export default async function getLoanEvent({ blockchain, nftId, poolAddress }: Params) {
   try {
     const contract = getPoolContract({ blockchain, poolAddress })
     const func = '_loans'
@@ -18,6 +18,6 @@ export default async function getCollateralLoanPosition({ blockchain, nftId, poo
     return position
   }
   catch (err) {
-    throw failure('FETCH_LOAN_FAILURE', err)
+    throw failure('FETCH_ACTIVE_LOAN_EVENT_FAILURE', err)
   }
 }
