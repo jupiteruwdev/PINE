@@ -4,6 +4,8 @@ on:
     branches: [staging, main]
 env:
   IMAGE_NAME: gcr.io/${{ secrets.GCP_PROJECT }}/core-service
+  ETH_RPC_MAINNET: ${{ secrets.ETH_RPC_MAINNET }}
+  ETH_RPC_RINKEBY: ${{ secrets.ETH_RPC_RINKEBY }}
 jobs:
   deploy:
     name: Build/Test/Deploy
