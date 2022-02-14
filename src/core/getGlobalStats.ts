@@ -33,7 +33,7 @@ export default async function getGlobalStats({ blockchains }: Params = {}): Prom
 
     const totalCapacityUSD = _.sumBy(pools, t => (t.valueLocked?.amount ?? NaN) - (t.utilization?.amount ?? NaN)) * ethValueUSD.amount
     const totalUtilizationUSD = _.sumBy(pools, t => t.utilization?.amount ?? NaN) * ethValueUSD.amount
-    const tvlUSD =  totalUtilizationUSD + totalCapacityUSD
+    const tvlUSD = totalUtilizationUSD + totalCapacityUSD
 
     const lentPerPool = await Promise.all(pools.map(pool => getPoolHistoricalLent({ blockchain: blockchainDict.ethereum, poolAddress: pool.address })))
     const totalLentlUSD = _.sumBy(lentPerPool, t => t.amount) * ethValueUSD.amount

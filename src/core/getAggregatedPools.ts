@@ -23,7 +23,7 @@ export default async function getAggregatedPools({ blockchains }: Params) {
   const aggregatedPools: AggregatedPool[] = _.compact(pools.map(pool => {
     if (!pool.collection) return undefined
 
-    return  {
+    return {
       collection: pool.collection,
       pools: [pool],
       totalValueLent: $USD((pool.utilization?.amount ?? NaN) * ethValueUSD.amount),
