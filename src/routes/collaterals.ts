@@ -1,6 +1,6 @@
 import { Router } from 'express'
 import getNFTsByOwner from '../core/getNFTsByOwner'
-import { EthBlockchain } from '../entities/Blockchain'
+import { EthBlockchain } from '../entities/lib/Blockchain'
 import { parseEthNetworkId } from '../utils/ethereum'
 import failure from '../utils/failure'
 

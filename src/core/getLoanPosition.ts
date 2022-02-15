@@ -1,10 +1,9 @@
-import BN from 'bn.js'
-import _ from 'lodash'
+import BigNumber from 'bignumber.js'
 import { findOne as findOneCollection } from '../db/collections'
 import { findOne as findOnePool } from '../db/pools'
-import Blockchain from '../entities/Blockchain'
-import LoanPosition from '../entities/LoanPosition'
-import { $WEI } from '../entities/Value'
+import Blockchain from '../entities/lib/Blockchain'
+import LoanPosition from '../entities/lib/LoanPosition'
+import { $WEI } from '../entities/lib/Value'
 import failure from '../utils/failure'
 import logger from '../utils/logger'
 import getCollectionValuation from './getCollectionValuation'
@@ -34,15 +33,15 @@ export default async function getLoanPosition({ blockchain, collectionId, nftId,
 
     const contract = getPoolContract({ blockchain, poolAddress: pool.address })
     const event = await getLoanEvent({ blockchain, nftId, poolAddress: pool.address })
-    const outstandingWei = new BN(await contract.methods.outstanding(nftId).call())
+    const outstandingWei = new BigNumber(await contract.methods.outstanding(nftId).call())
 
     // Early exit if loan is fully repaid.
-    if (outstandingWei.lte(new BN(0))) return undefined
+    if (outstandingWei.lte(new BigNumber(0))) return undefined
 
     // Give X blocks time for the loan to repay, extra ETH will be returned to user.
-    const interestRate = new BN(event.interestBPS1000000XBlock).div(new BN(10_000_000_000)).mul(new BN(txSpeedBlocks))
-    const interestWei = outstandingWei.mul(interestRate)
-    const outstandingWithInterestWei = outstandingWei.add(interestWei)
+    const interestRate = new BigNumber(event.interestBPS1000000XBlock).div(new BigNumber(10_000_000_000)).times(new BigNumber(txSpeedBlocks))
+    const interestWei = outstandingWei.times(interestRate)
+    const outstandingWithInterestWei = outstandingWei.plus(interestWei)
 
     const nft = {
       collection,
@@ -56,11 +55,11 @@ export default async function getLoanPosition({ blockchain, collectionId, nftId,
       borrowed: $WEI(event.borrowedWei),
       borrowerAddress: event.borrower,
       expiresAt: event.loanExpireTimestamp,
-      interestBPSPerBlock: _.toNumber(event.interestBPS1000000XBlock) / 1_000_000,
+      interestBPSPerBlock: new BigNumber(event.interestBPS1000000XBlock).dividedBy(new BigNumber(1_000_000)).toFixed(),
       loanStartBlock: event.loanStartBlock,
-      maxLTVBPS: _.toNumber(event.maxLTVBPS),
+      maxLTVBPS: new BigNumber(event.maxLTVBPS).toFixed(),
       nft,
-      outstanding: $WEI(new BN(outstandingWithInterestWei.toString().replace(/.{0,13}$/, '') + '0000000000000').add(new BN('10000000000000')).toString()),
+      outstanding: $WEI(outstandingWithInterestWei),
       poolAddress: pool.address,
       repaidInterest: $WEI(event.repaidInterestWei),
       returned: $WEI(event.returnedWei),

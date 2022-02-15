@@ -1,6 +1,6 @@
 import { Router } from 'express'
 import getCollectionValuation from '../core/getCollectionValuation'
-import { EthBlockchain } from '../entities/Blockchain'
+import { EthBlockchain } from '../entities/lib/Blockchain'
 import { EthNetwork, parseEthNetworkId } from '../utils/ethereum'
 import failure from '../utils/failure'
 

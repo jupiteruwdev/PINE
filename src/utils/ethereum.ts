@@ -1,8 +1,9 @@
 import axios from 'axios'
+import BigNumber from 'bignumber.js'
 import _ from 'lodash'
 import Web3 from 'web3'
 import appConf from '../app.conf'
-import { $USD } from '../entities/Value'
+import Value, { $USD, isValue } from '../entities/lib/Value'
 import failure from './failure'
 
 export enum EthNetwork {
@@ -34,18 +35,30 @@ export function getEthWeb3(networkId: string = EthNetwork.MAIN) {
   return web3
 }
 
-export async function getEthValueUSD(amountEth = 1) {
-  const { data } = await axios.get('https://api.binance.com/api/v3/ticker/price?symbol=ETHUSDT').catch(err => { throw failure('FETCH_PRICE_FAILURE', err) })
-  const price = _.toNumber(_.get(data, 'price'))
+export async function getEthValueUSD(amountEth: number | string | BigNumber | Value<'ETH'> = 1) {
+  try {
+    const { data } = await axios.get('https://api.binance.com/api/v3/ticker/price?symbol=ETHUSDT')
+    const amount = new BigNumber(isValue(amountEth) ? amountEth.amount : amountEth)
+    const price = new BigNumber(_.get(data, 'price'))
 
-  return $USD(amountEth * price)
+    return $USD(amount.times(price))
+  }
+  catch (err) {
+    throw failure('FETCH_ETH_USD_PRICE_FAILURE', err)
+  }
 }
 
-export async function getEthValueUSD24Hr(amountEth = 1) {
-  const { data } = await axios.get('https://api.binance.com/api/v3/ticker/24hr?symbol=ETHUSDT').catch(err => { throw failure('FETCH_24HR_PRICE_FAILURE', err) })
-  const price = _.toNumber(_.get(data, 'prevClosePrice'))
+export async function getEthValueUSD24Hr(amountEth: number | string | BigNumber | Value<'ETH'> = 1) {
+  try {
+    const { data } = await axios.get('https://api.binance.com/api/v3/ticker/24hr?symbol=ETHUSDT')
+    const amount = new BigNumber(isValue(amountEth) ? amountEth.amount : amountEth)
+    const price = new BigNumber(_.get(data, 'prevClosePrice'))
 
-  return $USD(amountEth * price)
+    return $USD(amount.times(price))
+  }
+  catch (err) {
+    throw failure('FETCH_ETH_USD_24HR_PRICE_FAILURE', err)
+  }
 }
 
 export async function getEthBlockNumber(networkId: string = EthNetwork.MAIN): Promise<number> {

@@ -1,3 +1,4 @@
+import BigNumber from 'bignumber.js'
 import { assert, expect } from 'chai'
 import _ from 'lodash'
 import { describe, it } from 'mocha'
@@ -23,7 +24,7 @@ describe('utils/ethereum', () => {
   it('can get current ETH price', async () => {
     const valueUSD = await getEthValueUSD()
     expect(valueUSD).to.be.an('object')
-    expect(valueUSD.amount).to.be.a('number')
-    expect(valueUSD.amount).is.not.NaN
+    expect(valueUSD.amount).to.be.a('string')
+    assert.isFalse(new BigNumber(valueUSD.amount).isNaN())
   })
 })

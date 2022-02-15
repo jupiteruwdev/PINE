@@ -1,6 +1,6 @@
-import _ from 'lodash'
-import Blockchain from '../entities/Blockchain'
-import Value, { $ETH } from '../entities/Value'
+import BigNumber from 'bignumber.js'
+import Blockchain from '../entities/lib/Blockchain'
+import Value, { $ETH } from '../entities/lib/Value'
 import { getEthWeb3 } from '../utils/ethereum'
 import failure from '../utils/failure'
 import { getPoolHistoricalLoanEvents } from './getPoolHistoricalLoanEvents'
@@ -15,8 +15,9 @@ export default async function getPoolHistoricalLent({ blockchain, poolAddress }:
   case 'ethereum': {
     const web3 = getEthWeb3(blockchain.networkId)
     const events = await getPoolHistoricalLoanEvents({ blockchain, poolAddress })
-    const lentEthPerEvent = events.map(event => parseFloat(web3.utils.fromWei(event.returnValues.loan[4])))
-    const totalLentEth = _.sum(lentEthPerEvent)
+    const lentWeiPerEvent = events.map(event => new BigNumber(event.returnValues.loan[4]))
+    const totalLentWei = lentWeiPerEvent.reduce((p, c) => p.plus(c), new BigNumber(0))
+    const totalLentEth = web3.utils.fromWei(totalLentWei.toFixed())
 
     return $ETH(totalLentEth)
   }

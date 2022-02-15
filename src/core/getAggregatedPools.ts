@@ -1,7 +1,8 @@
+import BigNumber from 'bignumber.js'
 import _ from 'lodash'
-import AggregatedPool from '../entities/AggregatedPool'
-import { AnyBlockchain } from '../entities/Blockchain'
-import { $USD } from '../entities/Value'
+import AggregatedPool from '../entities/lib/AggregatedPool'
+import { AnyBlockchain } from '../entities/lib/Blockchain'
+import { $USD } from '../entities/lib/Value'
 import { getEthValueUSD } from '../utils/ethereum'
 import logger from '../utils/logger'
 import getPools from './getPools'
@@ -19,6 +20,7 @@ export default async function getAggregatedPools({ blockchains }: Params) {
   logger.info(`Fetching aggregated pools with blockchain filter <${JSON.stringify(blockchains)}>...`)
 
   const [ethValueUSD, pools] = await Promise.all([getEthValueUSD(), getPools({ blockchains })])
+  const valueUSD = new BigNumber(ethValueUSD.amount)
 
   const aggregatedPools: AggregatedPool[] = _.compact(pools.map(pool => {
     if (!pool.collection) return undefined
@@ -26,8 +28,8 @@ export default async function getAggregatedPools({ blockchains }: Params) {
     return {
       collection: pool.collection,
       pools: [pool],
-      totalValueLent: $USD((pool.utilization?.amount ?? NaN) * ethValueUSD.amount),
-      totalValueLocked: $USD((pool.valueLocked?.amount ?? NaN) * ethValueUSD.amount),
+      totalValueLent: $USD(new BigNumber(pool.utilization.amount).times(valueUSD)),
+      totalValueLocked: $USD(new BigNumber(pool.valueLocked.amount).times(valueUSD)),
     }
   }))
 
