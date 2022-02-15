@@ -1,6 +1,7 @@
 import { Router } from 'express'
 import getObligations from '../core/getObligations'
 import { EthBlockchain } from '../entities/lib/Blockchain'
+import { serializeNFTs } from '../entities/lib/NFT'
 import { parseEthNetworkId } from '../utils/ethereum'
 import failure from '../utils/failure'
 
@@ -13,7 +14,8 @@ router.get('/', async (req, res, next) => {
 
     if (!borrowerAddress) throw Error('Invalid owner address')
 
-    const payload = await getObligations({ blockchain: EthBlockchain(networkId), borrowerAddress })
+    const obligations = await getObligations({ blockchain: EthBlockchain(networkId), borrowerAddress })
+    const payload = serializeNFTs(obligations)
 
     res.status(200).json(payload)
   }

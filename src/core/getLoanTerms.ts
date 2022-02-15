@@ -1,4 +1,3 @@
-import BigNumber from 'bignumber.js'
 import { findOne as findOneCollection } from '../db/collections'
 import { findOne as findOnePool } from '../db/pools'
 import Blockchain from '../entities/lib/Blockchain'
@@ -49,7 +48,7 @@ export default async function getLoanTerms({ blockchain, collectionId, nftId }: 
     }
 
     loanTerms.options.map(option => {
-      option.maxBorrow = $ETH(new BigNumber(option.maxLTVBPS).times(new BigNumber(loanTerms.valuation.value.amount)))
+      option.maxBorrow = $ETH(option.maxLTVBPS.div(10_000).times(loanTerms.valuation.value.amount))
     })
 
     logger.info(`Fetching loan terms for NFT ID <${nftId}> and collection ID <${collectionId}> on blockchain <${JSON.stringify(blockchain)}>... OK`, loanTerms)

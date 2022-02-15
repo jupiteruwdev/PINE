@@ -1,4 +1,3 @@
-import BigNumber from 'bignumber.js'
 import _ from 'lodash'
 import AggregatedPool from '../entities/lib/AggregatedPool'
 import { AnyBlockchain } from '../entities/lib/Blockchain'
@@ -20,7 +19,6 @@ export default async function getAggregatedPools({ blockchains }: Params) {
   logger.info(`Fetching aggregated pools with blockchain filter <${JSON.stringify(blockchains)}>...`)
 
   const [ethValueUSD, pools] = await Promise.all([getEthValueUSD(), getPools({ blockchains })])
-  const valueUSD = new BigNumber(ethValueUSD.amount)
 
   const aggregatedPools: AggregatedPool[] = _.compact(pools.map(pool => {
     if (!pool.collection) return undefined
@@ -28,8 +26,8 @@ export default async function getAggregatedPools({ blockchains }: Params) {
     return {
       collection: pool.collection,
       pools: [pool],
-      totalValueLent: $USD(new BigNumber(pool.utilization.amount).times(valueUSD)),
-      totalValueLocked: $USD(new BigNumber(pool.valueLocked.amount).times(valueUSD)),
+      totalValueLent: $USD(pool.utilization.amount.times(ethValueUSD.amount)),
+      totalValueLocked: $USD(pool.valueLocked.amount.times(ethValueUSD.amount)),
     }
   }))
 

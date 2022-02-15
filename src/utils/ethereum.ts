@@ -3,26 +3,19 @@ import BigNumber from 'bignumber.js'
 import _ from 'lodash'
 import Web3 from 'web3'
 import appConf from '../app.conf'
+import EthereumNetwork from '../entities/lib/EthereumNetwork'
 import Value, { $USD, isValue } from '../entities/lib/Value'
 import failure from './failure'
 
-export enum EthNetwork {
-  MAIN = '1',
-  ROPSTEN = '3',
-  RINKEBY = '4',
-  GOERLI = '5',
-  KOVAN = '42',
-}
-
 const web3s: Record<string, Web3 | undefined> = {
-  [EthNetwork.MAIN]: undefined,
-  [EthNetwork.ROPSTEN]: undefined,
-  [EthNetwork.RINKEBY]: undefined,
-  [EthNetwork.GOERLI]: undefined,
-  [EthNetwork.KOVAN]: undefined,
+  [EthereumNetwork.MAIN]: undefined,
+  [EthereumNetwork.ROPSTEN]: undefined,
+  [EthereumNetwork.RINKEBY]: undefined,
+  [EthereumNetwork.GOERLI]: undefined,
+  [EthereumNetwork.KOVAN]: undefined,
 }
 
-export function getEthWeb3(networkId: string = EthNetwork.MAIN) {
+export function getEthWeb3(networkId: string = EthereumNetwork.MAIN) {
   if (web3s[networkId] !== undefined) return web3s[networkId] as Web3
 
   const rpc = _.get(appConf.ethRPC, networkId)
@@ -61,7 +54,7 @@ export async function getEthValueUSD24Hr(amountEth: number | string | BigNumber 
   }
 }
 
-export async function getEthBlockNumber(networkId: string = EthNetwork.MAIN): Promise<number> {
+export async function getEthBlockNumber(networkId: string = EthereumNetwork.MAIN): Promise<number> {
   const web3 = getEthWeb3(networkId)
   const blockNumber = await web3.eth.getBlockNumber()
 

@@ -1,6 +1,7 @@
 import { Router } from 'express'
 import getNFTsByOwner from '../core/getNFTsByOwner'
 import { EthBlockchain } from '../entities/lib/Blockchain'
+import { serializeNFTs } from '../entities/lib/NFT'
 import { parseEthNetworkId } from '../utils/ethereum'
 import failure from '../utils/failure'
 
@@ -13,7 +14,8 @@ router.get('/', async (req, res, next) => {
 
     if (!ownerAddress) throw Error('Invalid owner address')
 
-    const payload = await getNFTsByOwner({ blockchain: EthBlockchain(networkId), ownerAddress, populateMetadata: true })
+    const collaterals = await getNFTsByOwner({ blockchain: EthBlockchain(networkId), ownerAddress, populateMetadata: true })
+    const payload = serializeNFTs(collaterals)
 
     res.status(200).json(payload)
   }

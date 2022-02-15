@@ -1,4 +1,3 @@
-import BigNumber from 'bignumber.js'
 import { findOne as findOnePool } from '../db/pools'
 import Blockchain from '../entities/lib/Blockchain'
 import Pool from '../entities/lib/Pool'
@@ -32,7 +31,7 @@ export default async function getPool({ blockchain, poolAddress }: Params): Prom
     getPoolCapacity({ blockchain, poolAddress }),
   ])
 
-  const valueLockedEth = new BigNumber(capacityEth).plus(new BigNumber(utilizationEth))
+  const valueLockedEth = capacityEth.plus(utilizationEth)
 
   return {
     ...pool,

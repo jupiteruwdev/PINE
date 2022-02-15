@@ -1,4 +1,3 @@
-import BigNumber from 'bignumber.js'
 import { findAll as findAllPools } from '../db/pools'
 import { AnyBlockchain } from '../entities/lib/Blockchain'
 import Pool from '../entities/lib/Pool'
@@ -34,7 +33,7 @@ export default async function getPools({ blockchains }: Params): Promise<Require
       getPoolCapacity({ blockchain: pool.blockchain, poolAddress: pool.address }),
     ])
 
-    const valueLockedEth = new BigNumber(capacityEth).plus(new BigNumber(utilizationEth))
+    const valueLockedEth = capacityEth.plus(utilizationEth)
 
     return {
       ...pool,

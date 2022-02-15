@@ -23,11 +23,11 @@ type FindAllFilter = {
 
 function mapLoanOption(data: Record<string, any>): LoanOption {
   try {
-    const interestBPSPerBlock = new BigNumber(_.get(data, 'interest_bps_block')).toFixed()
-    const interestBPSPerBlockOverride = _.get(data, 'interest_bps_block_override') ? new BigNumber(_.get(data, 'interest_bps_block_override')).toFixed() : undefined
+    const interestBPSPerBlock = new BigNumber(_.get(data, 'interest_bps_block'))
+    const interestBPSPerBlockOverride = _.get(data, 'interest_bps_block_override') === undefined ? undefined : new BigNumber(_.get(data, 'interest_bps_block_override'))
     const loanDurationBlocks = _.toNumber(_.get(data, 'loan_duration_block'))
     const loanDurationSeconds = _.toNumber(_.get(data, 'loan_duration_second'))
-    const maxLTVBPS = new BigNumber(_.get(data, 'max_ltv_bps')).toFixed()
+    const maxLTVBPS = new BigNumber(_.get(data, 'max_ltv_bps'))
 
     return {
       interestBPSPerBlockOverride,

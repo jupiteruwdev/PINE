@@ -32,21 +32,19 @@ export default async function getGlobalStats({ blockchains }: Params = {}): Prom
       getPools({ blockchains: _.mapValues(blockchainDict, blockchain => blockchain.networkId) }),
     ])
 
-    const valueUSD = new BigNumber(ethValueUSD.amount)
-
-    const totalUtilizationUSD = pools.reduce((p, c) => p.plus(new BigNumber(c.utilization.amount)), new BigNumber(0)).times(valueUSD)
-    const totalValueLockedUSD = pools.reduce((p, c) => p.plus(new BigNumber(c.valueLocked.amount)), new BigNumber(0)).times(valueUSD)
+    const totalUtilizationUSD = pools.reduce((p, c) => p.plus(c.utilization.amount), new BigNumber(0)).times(ethValueUSD.amount)
+    const totalValueLockedUSD = pools.reduce((p, c) => p.plus(c.valueLocked.amount), new BigNumber(0)).times(ethValueUSD.amount)
     const totalCapacityUSD = totalValueLockedUSD.minus(totalUtilizationUSD)
 
     const lentEthPerPool = await Promise.all(pools.map(pool => getPoolHistoricalLent({ blockchain: blockchainDict.ethereum, poolAddress: pool.address })))
-    const totalLentlUSD = lentEthPerPool.reduce((p, c) => p.plus(new BigNumber(c.amount)), new BigNumber(0)).times(valueUSD)
+    const totalLentlUSD = lentEthPerPool.reduce((p, c) => p.plus(c.amount), new BigNumber(0)).times(ethValueUSD.amount)
 
     const globalStats: GlobalStats = {
       capacity: $USD(totalCapacityUSD),
       totalValueLentHistorical: $USD(totalLentlUSD),
       totalValueLocked: $USD(totalValueLockedUSD),
       utilization: $USD(totalUtilizationUSD),
-      utilizationRatio: totalUtilizationUSD.div(totalValueLockedUSD).toFixed(),
+      utilizationRatio: totalUtilizationUSD.div(totalValueLockedUSD),
     }
 
     logger.info('Fetching global stats... OK', globalStats)
