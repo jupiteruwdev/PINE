@@ -1,5 +1,5 @@
-import Blockchain from '../entities/Blockchain'
-import Value, { $ETH } from '../entities/Value'
+import Blockchain from '../entities/lib/Blockchain'
+import Value, { $ETH } from '../entities/lib/Value'
 import { getEthWeb3 } from '../utils/ethereum'
 import failure from '../utils/failure'
 
@@ -14,7 +14,7 @@ export default async function getPoolCapacity({ blockchain, poolAddress }: Param
     try {
       const web3 = getEthWeb3(blockchain.networkId)
       const balanceWei = await web3.eth.getBalance(poolAddress)
-      const balanceEth = parseFloat(web3.utils.fromWei(balanceWei))
+      const balanceEth = web3.utils.fromWei(balanceWei)
 
       return $ETH(balanceEth)
     }

@@ -1,6 +1,6 @@
 import _ from 'lodash'
 import { findAll as findAllPools } from '../db/pools'
-import Blockchain from '../entities/Blockchain'
+import Blockchain from '../entities/lib/Blockchain'
 import failure from '../utils/failure'
 import getLoanEvent from './getLoanEvent'
 import getNFTMetadata from './getNFTMetadata'

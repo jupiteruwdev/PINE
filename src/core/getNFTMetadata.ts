@@ -1,8 +1,8 @@
 import axios from 'axios'
 import ERC721EnumerableABI from '../abis/ERC721Enumerable.json'
 import { findOne } from '../db/collections'
-import Blockchain from '../entities/Blockchain'
-import { NFTMetadata } from '../entities/NFT'
+import Blockchain from '../entities/lib/Blockchain'
+import { NFTMetadata } from '../entities/lib/NFT'
 import { getEthWeb3 } from '../utils/ethereum'
 import failure from '../utils/failure'
 

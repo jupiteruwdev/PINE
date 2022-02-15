@@ -1,3 +1,6 @@
 [submodule "src/abis"]
 	path = src/abis
 	url = https://github.com/pinedefi/smart-contract-abis
+[submodule "src/entities"]
+	path = src/entities
+	url = https://github.com/pinedefi/entities

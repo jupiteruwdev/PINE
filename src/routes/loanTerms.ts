@@ -1,6 +1,7 @@
 import { Router } from 'express'
 import getLoanTerms from '../core/getLoanTerms'
-import { EthBlockchain } from '../entities/Blockchain'
+import { EthBlockchain } from '../entities/lib/Blockchain'
+import { serializeLoanTerms } from '../entities/lib/LoanTerms'
 import { parseEthNetworkId } from '../utils/ethereum'
 import failure from '../utils/failure'
 
@@ -14,7 +15,8 @@ router.get('/', async (req, res, next) => {
     if (!nftId || !collectionId) throw failure('INVALID_PARAMS')
 
     const networkId = parseEthNetworkId(req.query.networkId)
-    const payload = await getLoanTerms({ blockchain: EthBlockchain(networkId), nftId, collectionId })
+    const loanTerms = await getLoanTerms({ blockchain: EthBlockchain(networkId), nftId, collectionId })
+    const payload = serializeLoanTerms(loanTerms)
 
     res.status(200).json(payload)
   }

@@ -1,6 +1,6 @@
-import _ from 'lodash'
-import Blockchain from '../entities/Blockchain'
-import { $ETH } from '../entities/Value'
+import BigNumber from 'bignumber.js'
+import Blockchain from '../entities/lib/Blockchain'
+import Value, { $ETH } from '../entities/lib/Value'
 import { getEthWeb3 } from '../utils/ethereum'
 import failure from '../utils/failure'
 import getLoanEvent from './getLoanEvent'
@@ -11,21 +11,22 @@ type Params = {
   poolAddress: string
 }
 
-export default async function getPoolUtilization({ blockchain, poolAddress }: Params) {
+export default async function getPoolUtilization({ blockchain, poolAddress }: Params): Promise<Value> {
   switch (blockchain.network) {
   case 'ethereum': {
     const collaterals = await getPoolHistoricalCollateralIds({ blockchain, poolAddress })
     const web3 = getEthWeb3(blockchain.networkId)
 
-    const utilizationPerCollateral = await Promise.all(collaterals.map(async nftId => {
+    const utilizationWeiPerCollateral = await Promise.all(collaterals.map(async nftId => {
       const event = await getLoanEvent({ blockchain, nftId, poolAddress })
-      const borrowedEth = parseFloat(web3.utils.fromWei(event.borrowedWei))
-      const returnedEth = parseFloat(web3.utils.fromWei(event.returnedWei))
+      const borrowedWei = new BigNumber(event.borrowedWei)
+      const returnedWei = new BigNumber(event.returnedWei)
 
-      return borrowedEth - returnedEth
+      return borrowedWei.minus(returnedWei)
     }))
 
-    const totalUtilizationEth = _.sum(utilizationPerCollateral)
+    const totalUtilizationWei = utilizationWeiPerCollateral.reduce((p, c) => p.plus(c), new BigNumber(0))
+    const totalUtilizationEth = web3.utils.fromWei(totalUtilizationWei.toFixed())
 
     return $ETH(totalUtilizationEth)
   }

@@ -1,4 +1,4 @@
-import Blockchain from '../entities/Blockchain'
+import Blockchain from '../entities/lib/Blockchain'
 import failure from '../utils/failure'
 import getPoolContract from './getPoolContract'
 

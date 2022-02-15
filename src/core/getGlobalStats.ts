@@ -1,7 +1,8 @@
+import BigNumber from 'bignumber.js'
 import _ from 'lodash'
-import { AnyBlockchain } from '../entities/Blockchain'
-import GlobalStats from '../entities/GlobalStats'
-import { $USD } from '../entities/Value'
+import { AnyBlockchain } from '../entities/lib/Blockchain'
+import GlobalStats from '../entities/lib/GlobalStats'
+import { $USD } from '../entities/lib/Value'
 import { getEthValueUSD } from '../utils/ethereum'
 import failure from '../utils/failure'
 import logger from '../utils/logger'
@@ -31,19 +32,19 @@ export default async function getGlobalStats({ blockchains }: Params = {}): Prom
       getPools({ blockchains: _.mapValues(blockchainDict, blockchain => blockchain.networkId) }),
     ])
 
-    const totalCapacityUSD = _.sumBy(pools, t => (t.valueLocked?.amount ?? NaN) - (t.utilization?.amount ?? NaN)) * ethValueUSD.amount
-    const totalUtilizationUSD = _.sumBy(pools, t => t.utilization?.amount ?? NaN) * ethValueUSD.amount
-    const tvlUSD = totalUtilizationUSD + totalCapacityUSD
+    const totalUtilizationUSD = pools.reduce((p, c) => p.plus(c.utilization.amount), new BigNumber(0)).times(ethValueUSD.amount)
+    const totalValueLockedUSD = pools.reduce((p, c) => p.plus(c.valueLocked.amount), new BigNumber(0)).times(ethValueUSD.amount)
+    const totalCapacityUSD = totalValueLockedUSD.minus(totalUtilizationUSD)
 
-    const lentPerPool = await Promise.all(pools.map(pool => getPoolHistoricalLent({ blockchain: blockchainDict.ethereum, poolAddress: pool.address })))
-    const totalLentlUSD = _.sumBy(lentPerPool, t => t.amount) * ethValueUSD.amount
+    const lentEthPerPool = await Promise.all(pools.map(pool => getPoolHistoricalLent({ blockchain: blockchainDict.ethereum, poolAddress: pool.address })))
+    const totalLentlUSD = lentEthPerPool.reduce((p, c) => p.plus(c.amount), new BigNumber(0)).times(ethValueUSD.amount)
 
     const globalStats: GlobalStats = {
       capacity: $USD(totalCapacityUSD),
       totalValueLentHistorical: $USD(totalLentlUSD),
-      totalValueLocked: $USD(tvlUSD),
+      totalValueLocked: $USD(totalValueLockedUSD),
       utilization: $USD(totalUtilizationUSD),
-      utilizationRatio: totalUtilizationUSD / tvlUSD,
+      utilizationRatio: totalUtilizationUSD.div(totalValueLockedUSD),
     }
 
     logger.info('Fetching global stats... OK', globalStats)

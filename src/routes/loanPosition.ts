@@ -1,7 +1,8 @@
 import { Router } from 'express'
 import _ from 'lodash'
 import getLoanPosition from '../core/getLoanPosition'
-import { EthBlockchain } from '../entities/Blockchain'
+import { EthBlockchain } from '../entities/lib/Blockchain'
+import { serializeLoanPosition } from '../entities/lib/LoanPosition'
 import { parseEthNetworkId } from '../utils/ethereum'
 import failure from '../utils/failure'
 
@@ -16,7 +17,8 @@ router.get('/', async (req, res, next) => {
 
     const txSpeedBlocks = _.toNumber(req.query.txSpeedBlocks ?? 0)
     const networkId = parseEthNetworkId(req.query.networkId)
-    const payload = await getLoanPosition({ blockchain: EthBlockchain(networkId), nftId, collectionId, txSpeedBlocks })
+    const loanPosition = await getLoanPosition({ blockchain: EthBlockchain(networkId), nftId, collectionId, txSpeedBlocks })
+    const payload = serializeLoanPosition(loanPosition)
 
     res.status(200).json(payload)
   }
