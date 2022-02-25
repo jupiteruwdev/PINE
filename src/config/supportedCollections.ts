@@ -34,6 +34,65 @@ export const supportedCollections: { [key: string]: any } = {
       ],
     },
   },
+  'opensea:onchainmonkey': {
+    display_name: 'OnChainMonkey',
+    address: '0x960b7a6bcd451c9968473f7bbfd9be826efd549a',
+    networkType: 'ethereum',
+    networkId: 1,
+    image_url: 'https://lh3.googleusercontent.com/DiZDS55tz4x8hmupgiNQxHHq1kuts0n83RNwpytSpNJ90IKyNxRzDLMVPtCQOBd5IlEjE5nlvwXISh065KHXfOS7F5tS-Dvdh-dTMis=s130',
+    lendingPool: {
+      address: '0x96007fc943c0A53e21746aD637eEd6Ce0AFA810f',
+      loan_options: [
+        {
+          loan_duration_block: 18513,
+          loan_duration_second: 259200,
+          interest_bps_block: 0.00156,
+          interest_bps_block_override: 0.000209,
+          max_ltv_bps: 3469,
+        },
+        {
+          loan_duration_block: 43194,
+          loan_duration_second: 604800,
+          interest_bps_block: 0.00143,
+          interest_bps_block_override: 0.000195,
+          max_ltv_bps: 3169,
+        },
+        {
+          loan_duration_block: 86388,
+          loan_duration_second: 1209600,
+          interest_bps_block: 0.00138,
+          interest_bps_block_override: 0.000191,
+          max_ltv_bps: 2888,
+        },
+      ],
+    },
+  },
+  'opensea:invisiblefriends': {
+    display_name: 'Invisible Friends',
+    address: '0x59468516a8259058bad1ca5f8f4bff190d30e066',
+    networkType: 'ethereum',
+    networkId: 1,
+    image_url: 'https://lh3.googleusercontent.com/lW22aEwUE0IqGaYm5HRiMS8DwkDwsdjPpprEqYnBqo2s7gSR-JqcYOjU9LM6p32ujG_YAEd72aDyox-pdCVK10G-u1qZ3zAsn2r9=s130',
+    lendingPool: {
+      address: '0xCF7ED018Ce445141730Eb3Bca43198621eDB660b',
+      loan_options: [
+        {
+          loan_duration_block: 18513,
+          loan_duration_second: 259200,
+          interest_bps_block: 0.00156,
+          interest_bps_block_override: 0.000209,
+          max_ltv_bps: 3000,
+        },
+        {
+          loan_duration_block: 43194,
+          loan_duration_second: 604800,
+          interest_bps_block: 0.00143,
+          interest_bps_block_override: 0.000191,
+          max_ltv_bps: 2869,
+        },
+      ],
+    },
+  },
   'opensea:azuki': {
     display_name: 'Azuki',
     address: '0xed5af388653567af2f388e6224dc7c4b3241c544',
