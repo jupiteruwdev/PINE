@@ -1,7 +1,7 @@
 import { findAll as findAllPools } from '../db/pools'
-import { AnyBlockchain } from '../entities/Blockchain'
-import Pool from '../entities/Pool'
-import { $ETH } from '../entities/Value'
+import { AnyBlockchain } from '../entities/lib/Blockchain'
+import Pool from '../entities/lib/Pool'
+import { $ETH } from '../entities/lib/Value'
 import getPoolCapacity from './getPoolCapacity'
 import getPoolUtilization from './getPoolUtilization'
 
@@ -33,7 +33,7 @@ export default async function getPools({ blockchains }: Params): Promise<Require
       getPoolCapacity({ blockchain: pool.blockchain, poolAddress: pool.address }),
     ])
 
-    const valueLockedEth = capacityEth + utilizationEth
+    const valueLockedEth = capacityEth.plus(utilizationEth)
 
     return {
       ...pool,

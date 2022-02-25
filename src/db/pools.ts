@@ -1,8 +1,10 @@
+import BigNumber from 'bignumber.js'
 import _ from 'lodash'
 import { supportedCollections } from '../config/supportedCollections'
-import Blockchain, { AnyBlockchain, EthBlockchain } from '../entities/Blockchain'
-import LoanOption from '../entities/LoanOption'
-import Pool from '../entities/Pool'
+import Blockchain, { AnyBlockchain, EthBlockchain } from '../entities/lib/Blockchain'
+import LoanOption from '../entities/lib/LoanOption'
+import Pool from '../entities/lib/Pool'
+import failure from '../utils/failure'
 import mapBlockchainFilterToDict from '../utils/mapBlockchainFilterToDict'
 import * as collections from './collections'
 
@@ -20,24 +22,23 @@ type FindAllFilter = {
 }
 
 function mapLoanOption(data: Record<string, any>): LoanOption {
-  const interestBPSPerBlock = _.get(data, 'interest_bps_block')
-  const interestBPSPerBlockOverride = _.get(data, 'interest_bps_block_override')
-  const loanDurationBlocks = _.get(data, 'loan_duration_block')
-  const loanDurationSeconds = _.get(data, 'loan_duration_second')
-  const maxLTVBPS = _.get(data, 'max_ltv_bps')
+  try {
+    const interestBPSPerBlock = new BigNumber(_.get(data, 'interest_bps_block'))
+    const interestBPSPerBlockOverride = _.get(data, 'interest_bps_block_override') === undefined ? undefined : new BigNumber(_.get(data, 'interest_bps_block_override'))
+    const loanDurationBlocks = _.toNumber(_.get(data, 'loan_duration_block'))
+    const loanDurationSeconds = _.toNumber(_.get(data, 'loan_duration_second'))
+    const maxLTVBPS = new BigNumber(_.get(data, 'max_ltv_bps'))
 
-  if (!_.isNumber(interestBPSPerBlock)) throw TypeError('Failed to map key "interestBPSPerBlock"')
-  if (interestBPSPerBlockOverride !== undefined && !_.isNumber(interestBPSPerBlockOverride)) throw TypeError('Failed to map key "interestBPSPerBlockOverride"')
-  if (!_.isNumber(loanDurationBlocks)) throw TypeError('Failed to map key "loanDurationBlocks"')
-  if (!_.isNumber(loanDurationSeconds)) throw TypeError('Failed to map key "loanDurationSeconds"')
-  if (!_.isNumber(maxLTVBPS)) throw TypeError('Failed to map key "maxLTVBPS"')
-
-  return {
-    interestBPSPerBlockOverride,
-    interestBPSPerBlock,
-    loanDurationBlocks,
-    loanDurationSeconds,
-    maxLTVBPS,
+    return {
+      interestBPSPerBlockOverride,
+      interestBPSPerBlock,
+      loanDurationBlocks,
+      loanDurationSeconds,
+      maxLTVBPS,
+    }
+  }
+  catch (err) {
+    throw failure('PARSE_LOAN_OPTION_FAILURE', err)
   }
 }
 

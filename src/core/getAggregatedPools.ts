@@ -1,7 +1,7 @@
 import _ from 'lodash'
-import AggregatedPool from '../entities/AggregatedPool'
-import { AnyBlockchain } from '../entities/Blockchain'
-import { $USD } from '../entities/Value'
+import AggregatedPool from '../entities/lib/AggregatedPool'
+import { AnyBlockchain } from '../entities/lib/Blockchain'
+import { $USD } from '../entities/lib/Value'
 import { getEthValueUSD } from '../utils/ethereum'
 import logger from '../utils/logger'
 import getPools from './getPools'
@@ -23,11 +23,11 @@ export default async function getAggregatedPools({ blockchains }: Params) {
   const aggregatedPools: AggregatedPool[] = _.compact(pools.map(pool => {
     if (!pool.collection) return undefined
 
-    return  {
+    return {
       collection: pool.collection,
       pools: [pool],
-      totalValueLent: $USD((pool.utilization?.amount ?? NaN) * ethValueUSD.amount),
-      totalValueLocked: $USD((pool.valueLocked?.amount ?? NaN) * ethValueUSD.amount),
+      totalValueLent: $USD(pool.utilization.amount.times(ethValueUSD.amount)),
+      totalValueLocked: $USD(pool.valueLocked.amount.times(ethValueUSD.amount)),
     }
   }))
 

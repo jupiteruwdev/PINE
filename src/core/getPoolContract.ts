@@ -1,5 +1,5 @@
 import ERC721LendingABI from '../abis/ERC721Lending.json'
-import Blockchain from '../entities/Blockchain'
+import Blockchain from '../entities/lib/Blockchain'
 import { getEthWeb3 } from '../utils/ethereum'
 import failure from '../utils/failure'
 

@@ -1,4 +1,4 @@
-import Blockchain, { AnyBlockchain, EthBlockchain } from '../entities/Blockchain'
+import Blockchain, { AnyBlockchain, EthBlockchain } from '../entities/lib/Blockchain'
 import { parseEthNetworkId } from './ethereum'
 
 export type BlockchainDict = { [K in AnyBlockchain]?: Blockchain<K> }

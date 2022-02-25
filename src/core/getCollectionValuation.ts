@@ -1,10 +1,11 @@
 import axios from 'axios'
+import BigNumber from 'bignumber.js'
 import _ from 'lodash'
 import appConf from '../app.conf'
 import { findOne as findOneCollection } from '../db/collections'
-import Blockchain from '../entities/Blockchain'
-import Valuation from '../entities/Valuation'
-import { $ETH } from '../entities/Value'
+import Blockchain from '../entities/lib/Blockchain'
+import Valuation from '../entities/lib/Valuation'
+import { $ETH } from '../entities/lib/Value'
 import failure from '../utils/failure'
 import logger from '../utils/logger'
 
@@ -38,29 +39,35 @@ export default async function getCollectionValuation({ blockchain, collectionId 
 
   switch (venue) {
   case 'opensea':
-    const apiKey = appConf.openseaAPIKey
+    try {
+      const apiKey = appConf.openseaAPIKey
 
-    if (!apiKey) throw failure('MISSING_API_KEY')
+      if (!apiKey) throw failure('MISSING_API_KEY')
 
-    const { data: collectionData } = await axios.get(`https://api.opensea.io/api/v1/collection/${id}/stats`, {
-      headers: {
-        'X-API-KEY': apiKey,
-      },
-    })
+      const { data: collectionData } = await axios.get(`https://api.opensea.io/api/v1/collection/${id}/stats`, {
+        headers: {
+          'X-API-KEY': apiKey,
+        },
+      })
 
-    const valueEth24Hr: number = _.get(collectionData, 'stats.floor_price', NaN)
-    const valueEth: number = valueEth24Hr > _.get(collectionData, 'stats.one_day_average_price', NaN) ? _.get(collectionData, 'stats.one_day_average_price', NaN) : valueEth24Hr
-    const valuation: Valuation<'ETH'> = {
-      collection,
-      updatedAt: new Date(),
-      value: $ETH(valueEth),
-      value24Hr: $ETH(valueEth24Hr),
+      const floorPriceEth = new BigNumber(_.get(collectionData, 'stats.floor_price'))
+      const average24HrPriceEth = new BigNumber(_.get(collectionData, 'stats.one_day_average_price'))
+      const valueEth = floorPriceEth.gt(average24HrPriceEth) ? average24HrPriceEth : floorPriceEth
+      const valuation: Valuation<'ETH'> = {
+        collection,
+        updatedAt: new Date(),
+        value: $ETH(valueEth),
+        value24Hr: $ETH(average24HrPriceEth),
+      }
+
+      logger.info(`Fetching valuation for collection ID <${collectionId}>... OK`, valuation)
+
+      return valuation
     }
-
-    logger.info(`Fetching valuation for collection ID <${collectionId}>... OK`, valuation)
-
-    return valuation
+    catch (err) {
+      throw failure('FETCH_OPENSEA_VALUATION_FAILURE', err)
+    }
   default:
-    throw failure('UNSUPPORTED_VENU')
+    throw failure('UNSUPPORTED_VENUE')
   }
 }

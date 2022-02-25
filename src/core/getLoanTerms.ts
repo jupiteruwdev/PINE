@@ -1,9 +1,9 @@
 import { findOne as findOneCollection } from '../db/collections'
 import { findOne as findOnePool } from '../db/pools'
-import Blockchain from '../entities/Blockchain'
-import LoanTerms from '../entities/LoanTerms'
-import NFT from '../entities/NFT'
-import { $ETH } from '../entities/Value'
+import Blockchain from '../entities/lib/Blockchain'
+import LoanTerms from '../entities/lib/LoanTerms'
+import NFT from '../entities/lib/NFT'
+import { $ETH } from '../entities/lib/Value'
 import failure from '../utils/failure'
 import logger from '../utils/logger'
 import getCollectionValuation from './getCollectionValuation'
@@ -48,7 +48,7 @@ export default async function getLoanTerms({ blockchain, collectionId, nftId }: 
     }
 
     loanTerms.options.map(option => {
-      option.maxBorrow = $ETH(Math.floor(option.maxLTVBPS * loanTerms.valuation.value.amount) / 10_000)
+      option.maxBorrow = $ETH(option.maxLTVBPS.div(10_000).times(loanTerms.valuation.value.amount))
     })
 
     logger.info(`Fetching loan terms for NFT ID <${nftId}> and collection ID <${collectionId}> on blockchain <${JSON.stringify(blockchain)}>... OK`, loanTerms)
