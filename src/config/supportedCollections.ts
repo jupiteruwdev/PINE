@@ -317,32 +317,6 @@ export const supportedCollections: { [key: string]: any } = {
       ],
     },
   },
-  'opensea:phantabear': {
-    display_name: 'PhantaBear',
-    address: '0x67d9417c9c3c250f61a83c7e8658dac487b56b09',
-    networkType: 'ethereum',
-    networkId: 1,
-    image_url: 'https://lh3.googleusercontent.com/1wTnxFx6paNeV1lv_ht10OFpDucUhg-fL6IZbPrai3Jf_3pHS5dSazhpU_UBn2BVQBUEffYAeoo2iVbCu9LPeUDhmwZwt_7J4xpdrQ=s130',
-    lendingPool: {
-      address: '0xf02A3a0D4098Ae9183ad84CdA79314ed8661b702',
-      loan_options: [
-        {
-          loan_duration_block: 18513,
-          loan_duration_second: 259200,
-          interest_bps_block: 0.00156,
-          interest_bps_block_override: 0,
-          max_ltv_bps: 2800,
-        },
-        {
-          loan_duration_block: 43194,
-          loan_duration_second: 604800,
-          interest_bps_block: 0.00143,
-          interest_bps_block_override: 0.000168,
-          max_ltv_bps: 2500,
-        },
-      ],
-    },
-  },
   'testing': {
     display_name: 'Test Doodles',
     address: '0x44aCF686Ac73A157Cd5fa26A1B6AB713B547dAF5',
