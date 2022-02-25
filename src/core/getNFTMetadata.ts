@@ -31,11 +31,11 @@ export default async function getNFTMetadata({ blockchain, collectionAddress, nf
     const contract = new web3.eth.Contract(ERC721EnumerableABI as any, collectionAddress)
     const uri = await contract.methods.tokenURI(nftId).call()
 
-    const { data: metadata } = (() => {
+    const { data: metadata } = await (() => {
       if (uri.slice(0, 4) === 'data') {
         return atob(uri.split(',')[1])
       }
-      return await axios.get(normalizeUri(uri))
+      return axios.get(normalizeUri(uri))
     })()
 
     return {
