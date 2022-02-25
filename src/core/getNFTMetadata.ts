@@ -33,7 +33,7 @@ export default async function getNFTMetadata({ blockchain, collectionAddress, nf
 
     const { data: metadata } = await (() => {
       if (uri.slice(0, 4) === 'data') {
-        return atob(uri.split(',')[1])
+        return JSON.parse(atob(uri.split(',')[1]))
       }
       return axios.get(normalizeUri(uri))
     })()
