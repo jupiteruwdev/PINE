@@ -138,9 +138,28 @@ export const supportedCollections: { [key: string]: any } = {
         {
           loan_duration_block: 185142,
           loan_duration_second: 2592000,
-          interest_bps_block: 0.00138,
+          interest_bps_block: 0.00148,
           interest_bps_block_override: 0.000888,
           max_ltv_bps: 6500,
+        },
+      ]
+    }
+  },
+  'opensea:boredapeyachtclub': {
+    display_name: 'Bored Ape Yacht Club',
+    address: '0xBC4CA0EdA7647A8aB7C2061c2E118A18a936f13D',
+    networkType: 'ethereum',
+    networkId: 1,
+    image_url: 'https://lh3.googleusercontent.com/Ju9CkWtV-1Okvf45wo8UctR-M9He2PjILP0oOvxE89AyiPPGtrR3gysu1Zgy0hjd2xKIgjJJtWIc0ybj4Vd7wv8t3pxDGHoJBzDB=s130',
+    lendingPool: {
+      address: '0x90dFb72736481BBacc7938d2D3673590B92647AE',
+      loan_options: [
+        {
+          loan_duration_block: 43194,
+          loan_duration_second: 604800,
+          interest_bps_block: 0.00148,
+          interest_bps_block_override: 0.000888,
+          max_ltv_bps: 4000,
         },
       ]
     }
