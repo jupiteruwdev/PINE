@@ -30,7 +30,7 @@ export default async function getCollectionValuation({ blockchain, collectionId 
     return {
       collection,
       updatedAt: new Date(),
-      value: $ETH(0.028),
+      value: $ETH(0.0001),
       value24Hr: $ETH(1),
     }
   }
