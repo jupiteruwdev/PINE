@@ -19,7 +19,7 @@ router.get('/terms', async (req, res, next) => {
 
     let collectionId = ''
     const collection = Object.keys(supportedCollections).find(e => {
-      const pred = supportedCollections[e].address === collectionAddress
+      const pred = supportedCollections[e].address.toLowerCase() === collectionAddress.toLowerCase()
       if (pred) collectionId = e
       return pred
     })
