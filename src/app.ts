@@ -38,11 +38,11 @@ app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
       /* eslint-disable-next-line no-console */
       console.error(err)
     }
-
-    res.status(status).json({
-      error: SuperError.serialize(err),
-    })
   }
+
+  res.status(status).json({
+    error: SuperError.serialize(err),
+  })
 })
 
 http
