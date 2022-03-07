@@ -2,6 +2,7 @@ import { Router } from 'express'
 import collateralsRouter from './collaterals'
 import loanPositionRouter from './loanPosition'
 import loanTermsRouter from './loanTerms'
+import pnplRouter from './pnpl'
 import obligationsRouter from './obligations'
 import poolsRouter from './pools'
 import statsRouter from './stats'
@@ -12,6 +13,7 @@ const router = Router()
 router.use('/collaterals', collateralsRouter)
 router.use('/loan-position', loanPositionRouter)
 router.use('/loan-terms', loanTermsRouter)
+router.use('/pnpl', pnplRouter)
 router.use('/obligations', obligationsRouter)
 router.use('/pools', poolsRouter)
 router.use('/stats', statsRouter)
