@@ -29,15 +29,13 @@ app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
   if (status === 404) {
     logger.warning(`Handling 404 error... SKIP: ${JSON.stringify(err, undefined, 0)}`)
   }
+  else if (appConf.env === 'production') {
+    logger.error(`Handling 500 error... OK: ${JSON.stringify(err, undefined, 0)}`)
+  }
   else {
-    if (appConf.env === 'production') {
-      logger.error(`Handling 500 error... OK: ${JSON.stringify(err, undefined, 0)}`)
-    }
-    else {
-      logger.error('Handling 500 error... OK')
-      /* eslint-disable-next-line no-console */
-      console.error(err)
-    }
+    logger.error('Handling 500 error... OK')
+    /* eslint-disable-next-line no-console */
+    console.error(err)
   }
 
   res.status(status).json({
