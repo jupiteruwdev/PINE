@@ -133,28 +133,31 @@ export const supportedCollections: { [key: string]: any } = {
     networkId: 1,
     image_url: 'https://lh3.googleusercontent.com/m_MpnLUjOsNcpuFavS7NNjA3nWSS08Kv1IIJMHv46Jg_RLtjhuqClN-7MtwezbbdA26F9i50PDG63IyQ_HN7cFRXm4Pl9s0sAA6_=s130',
     lendingPool: {
-      address: '0x6Eefb40e8E12036Cca2547f445EaeD58B315b856',
+      address: '0xCa8619bE278D77B3ACD17B2241d35FFbdfB0191b',
       loan_options: [
         {
-          loan_duration_block: 18513,
-          loan_duration_second: 259200,
-          interest_bps_block: 0.001469,
-          interest_bps_block_override: 0,
-          max_ltv_bps: 3369
+          loan_duration_block: 185142,
+          loan_duration_second: 2592000,
+          interest_bps_block: 0.000888,
+          max_ltv_bps: 6500,
         },
+      ]
+    }
+  },
+  'opensea:boredapeyachtclub': {
+    display_name: 'Bored Ape Yacht Club',
+    address: '0xBC4CA0EdA7647A8aB7C2061c2E118A18a936f13D',
+    networkType: 'ethereum',
+    networkId: 1,
+    image_url: 'https://lh3.googleusercontent.com/Ju9CkWtV-1Okvf45wo8UctR-M9He2PjILP0oOvxE89AyiPPGtrR3gysu1Zgy0hjd2xKIgjJJtWIc0ybj4Vd7wv8t3pxDGHoJBzDB=s130',
+    lendingPool: {
+      address: '0x90dFb72736481BBacc7938d2D3673590B92647AE',
+      loan_options: [
         {
           loan_duration_block: 43194,
           loan_duration_second: 604800,
-          interest_bps_block: 0.00143,
-          interest_bps_block_override: 0.000164,
-          max_ltv_bps: 3169
-        },
-        {
-          loan_duration_block: 86388,
-          loan_duration_second: 1209600,
-          interest_bps_block: 0.00138,
-          interest_bps_block_override: 0.000155,
-          max_ltv_bps: 2869
+          interest_bps_block: 0.000888,
+          max_ltv_bps: 4000,
         },
       ]
     }
