@@ -4,6 +4,7 @@ import failure from '../utils/failure'
 import logger from '../utils/logger'
 import getLoanTerms from './getLoanTerms'
 import axios, { AxiosError } from 'axios'
+import BigNumber from 'bignumber.js'
 
 type Params = {
   openseaVersion: 'main' | 'rinkeby'
@@ -34,7 +35,7 @@ export default async function getOpenseaPNPLTerms({ openseaVersion, blockchain, 
       const pnplTerms: PNPLTerms = {
         ...loanTerms,
         purchaseInstruction: openseaInstructions.calldata,
-        listedPrice: openseaInstructions.currentPrice,
+        listedPrice: new BigNumber(openseaInstructions.currentPrice),
         flashLoanSourceContractAddress,
         marketplaceContractAddress: openseaContractAddresses[openseaVersion],
       }
