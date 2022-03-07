@@ -3,6 +3,7 @@ import { supportedCollections } from '../config/supportedCollections'
 import getOpenseaPNPLTerms from '../core/getOpenseaPNPLTerms'
 import { EthBlockchain } from '../entities/lib/Blockchain'
 import { serializePNPLTerms } from '../entities/lib/PNPLTerms'
+import { parseEthNetworkId } from '../utils/ethereum'
 import failure from '../utils/failure'
 
 const router = Router()
@@ -14,7 +15,7 @@ router.get('/terms', async (req, res, next) => {
     const parsedURL = new URL(url)
 
     const hostname = parsedURL.hostname
-    const [, collectionAddress, nftId] = parsedURL.pathname.split('/')
+    const [, , collectionAddress, nftId] = parsedURL.pathname.split('/')
 
     let collectionId = ''
     const collection = Object.keys(supportedCollections).find(e => {
@@ -29,7 +30,7 @@ router.get('/terms', async (req, res, next) => {
     case 'opensea.io':
       pnplTerms = await getOpenseaPNPLTerms({
         openseaVersion: 'main',
-        blockchain: EthBlockchain(1),
+        blockchain: EthBlockchain(parseEthNetworkId(1)),
         collectionId,
         nftId,
       })
@@ -37,7 +38,7 @@ router.get('/terms', async (req, res, next) => {
     case 'testnets.opensea.io':
       pnplTerms = await getOpenseaPNPLTerms({
         openseaVersion: 'rinkeby',
-        blockchain: EthBlockchain(4),
+        blockchain: EthBlockchain(parseEthNetworkId(4)),
         collectionId,
         nftId,
       })
