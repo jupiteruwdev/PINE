@@ -23,6 +23,11 @@ const flashLoanSourceContractAddresses: { [key: number]: any } = {
   // TODO: add mainnet flashloan contract
 }
 
+const pnplContractAddresses: { [key: number]: any } = {
+  4: '0xDD9eb60d34FcFf2078A6Cead18F623ac54571642',
+  // TODO: add mainnet flashloan contract
+}
+
 export default async function getOpenseaPNPLTerms({ openseaVersion, blockchain, collectionId, nftId }: Params): Promise<PNPLTerms> {
   logger.info(`Fetching OpenSea PNPL terms for NFT ID <${ nftId }> and collection ID <${ collectionId }> on blockchain <${ JSON.stringify(blockchain) }>...`)
 
@@ -39,6 +44,7 @@ export default async function getOpenseaPNPLTerms({ openseaVersion, blockchain, 
         listedPrice: new BigNumber(openseaInstructions.currentPrice),
         flashLoanSourceContractAddress,
         marketplaceContractAddress: openseaContractAddresses[openseaVersion],
+        pnplContractAddress: pnplContractAddresses[Number(blockchain.networkId)],
       }
 
       return pnplTerms
