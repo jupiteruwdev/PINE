@@ -1,10 +1,10 @@
+import axios, { AxiosError } from 'axios'
+import BigNumber from 'bignumber.js'
 import Blockchain from '../entities/lib/Blockchain'
 import PNPLTerms from '../entities/lib/PNPLTerms'
 import failure from '../utils/failure'
 import logger from '../utils/logger'
 import getLoanTerms from './getLoanTerms'
-import axios, { AxiosError } from 'axios'
-import BigNumber from 'bignumber.js'
 
 type Params = {
   openseaVersion: 'main' | 'rinkeby'
@@ -24,12 +24,13 @@ const flashLoanSourceContractAddresses: { [key: number]: any } = {
 }
 
 export default async function getOpenseaPNPLTerms({ openseaVersion, blockchain, collectionId, nftId }: Params): Promise<PNPLTerms> {
-  logger.info(`Fetching loan terms for NFT ID <${ nftId }> and collection ID <${ collectionId }> on blockchain <${ JSON.stringify(blockchain) }>...`)
+  logger.info(`Fetching OpenSea PNPL terms for NFT ID <${ nftId }> and collection ID <${ collectionId }> on blockchain <${ JSON.stringify(blockchain) }>...`)
 
   switch (blockchain.network) {
   case 'ethereum': {
     const loanTerms = await getLoanTerms({ blockchain, collectionId, nftId })
     const flashLoanSourceContractAddress = flashLoanSourceContractAddresses[Number(blockchain.networkId)]
+
     try {
       const { data: openseaInstructions } = await axios.get(`https://us-central1-pinedefi.cloudfunctions.net/opensea-purchase-generator?nft_address=${loanTerms.collection.address}&token_id=${nftId}&network_name=${openseaVersion}&account_address=${flashLoanSourceContractAddress}`)
       const pnplTerms: PNPLTerms = {
@@ -39,6 +40,7 @@ export default async function getOpenseaPNPLTerms({ openseaVersion, blockchain, 
         flashLoanSourceContractAddress,
         marketplaceContractAddress: openseaContractAddresses[openseaVersion],
       }
+
       return pnplTerms
     }
     catch (error: any) {

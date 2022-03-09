@@ -52,7 +52,7 @@ export async function findOne({ address, blockchain = EthBlockchain(), id, poolA
   const rawData = supportedCollections
   const matchedId = _.findKey(rawData, (val, key) => {
     if (id !== undefined && id !== key) return false
-    if (address !== undefined && _.get(val, 'address') !== address) return false
+    if (address !== undefined && _.get(val, 'address')?.toLowerCase() !== address.toLowerCase()) return false
     if (_.get(val, 'networkType') !== blockchain.network) return false
     if (_.toString(_.get(val, 'networkId')) !== blockchain.networkId) return false
     if (poolAddress !== undefined && _.get(val, 'lendingPool.address') !== poolAddress) return false

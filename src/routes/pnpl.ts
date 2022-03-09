@@ -1,9 +1,9 @@
 import { Router } from 'express'
-import { supportedCollections } from '../config/supportedCollections'
 import getOpenseaPNPLTerms from '../core/getOpenseaPNPLTerms'
+import { findOne as findOneCollection } from '../db/collections'
 import { EthBlockchain } from '../entities/lib/Blockchain'
+import EthereumNetwork from '../entities/lib/EthereumNetwork'
 import { serializePNPLTerms } from '../entities/lib/PNPLTerms'
-import { parseEthNetworkId } from '../utils/ethereum'
 import failure from '../utils/failure'
 
 const router = Router()
@@ -12,37 +12,40 @@ router.get('/terms', async (req, res, next) => {
   try {
     const url = req.query.url?.toString()
     if (!url) throw failure('INVALID_PARAMS')
+
     const parsedURL = new URL(url)
 
     const hostname = parsedURL.hostname
     const [, , collectionAddress, nftId] = parsedURL.pathname.split('/')
 
-    let collectionId = ''
-    const collection = Object.keys(supportedCollections).find(e => {
-      const pred = supportedCollections[e].address.toLowerCase() === collectionAddress.toLowerCase()
-      if (pred) collectionId = e
-      return pred
-    })
-    if (!collection) throw failure('UNSUPPORTED_COLLECTION')
-
     let pnplTerms
     switch (hostname) {
-    case 'opensea.io':
+    case 'opensea.io': {
+      const collection = await findOneCollection({ address: collectionAddress, blockchain: EthBlockchain(EthereumNetwork.MAIN) })
+      if (!collection) throw failure('UNSUPPORTED_COLLECTION')
+
       pnplTerms = await getOpenseaPNPLTerms({
         openseaVersion: 'main',
-        blockchain: EthBlockchain(parseEthNetworkId(1)),
-        collectionId,
+        blockchain: EthBlockchain(EthereumNetwork.MAIN),
+        collectionId: collection.id,
         nftId,
       })
+
       break
-    case 'testnets.opensea.io':
+    }
+    case 'testnets.opensea.io': {
+      const collection = await findOneCollection({ address: collectionAddress, blockchain: EthBlockchain(EthereumNetwork.RINKEBY) })
+      if (!collection) throw failure('UNSUPPORTED_COLLECTION')
+
       pnplTerms = await getOpenseaPNPLTerms({
         openseaVersion: 'rinkeby',
-        blockchain: EthBlockchain(parseEthNetworkId(4)),
-        collectionId,
+        blockchain: EthBlockchain(EthereumNetwork.RINKEBY),
+        collectionId: collection.id,
         nftId,
       })
+
       break
+    }
     default:
       throw failure('INVALID_MARKETPLACE')
     }
