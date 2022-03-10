@@ -36,16 +36,17 @@ export default async function getOpenseaPNPLTerms({ openseaVersion, blockchain, 
   case 'ethereum': {
     const loanTerms = await getLoanTerms({ blockchain, collectionId, nftId })
     const flashLoanSourceContractAddress = flashLoanSourceContractAddresses[Number(blockchain.networkId)]
+    const pnplContractAddress = pnplContractAddresses[Number(blockchain.networkId)]
 
     try {
-      const { data: openseaInstructions } = await axios.get(`https://us-central1-pinedefi.cloudfunctions.net/opensea-purchase-generator?nft_address=${loanTerms.collection.address}&token_id=${nftId}&network_name=${openseaVersion}&account_address=${flashLoanSourceContractAddress}`)
+      const { data: openseaInstructions } = await axios.get(`https://us-central1-pinedefi.cloudfunctions.net/opensea-purchase-generator?nft_address=${loanTerms.collection.address}&token_id=${nftId}&network_name=${openseaVersion}&account_address=${pnplContractAddress}`)
       const pnplTerms: PNPLTerms = {
         ...loanTerms,
         flashLoanSourceContractAddress,
         listedPrice: $WEI(new BigNumber(openseaInstructions.currentPrice)),
         marketplaceContractAddress: openseaContractAddresses[openseaVersion],
         marketplaceName: 'OpenSea',
-        pnplContractAddress: pnplContractAddresses[Number(blockchain.networkId)],
+        pnplContractAddress,
         purchaseInstruction: openseaInstructions.calldata,
       }
 
