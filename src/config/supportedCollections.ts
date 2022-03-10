@@ -326,7 +326,8 @@ export const supportedCollections: { [key: string]: any } = {
     networkType: 'ethereum',
     networkId: 4,
     lendingPool: {
-      address: '0x150A1a9015Bfaf54e7199eBb6ae35EBDE755D51D',
+      address: '0xbDfd0b90f708134Ee328275403AA77CB3954Ef81',
+      v2PoolAddress: '0x150A1a9015Bfaf54e7199eBb6ae35EBDE755D51D',
       loan_options: [
         {
           loan_duration_block: 7,
