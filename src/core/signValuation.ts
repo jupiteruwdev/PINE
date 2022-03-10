@@ -27,7 +27,7 @@ export default async function signValuation({ blockchain, nftId, poolAddress, co
     const blockNumber = await getEthBlockNumber(blockchain.networkId)
     const expiresAtBlock = blockNumber + appConf.ethValuationExpiryBlocks
 
-    const contract = getPoolContract({ blockchain, poolAddress })
+    const contract = await getPoolContract({ blockchain, poolAddress })
     const contractFunc = 'getMessageHash'
     const contractParams = [
       collectionAddress,

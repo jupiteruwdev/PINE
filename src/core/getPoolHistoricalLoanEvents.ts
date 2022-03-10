@@ -11,7 +11,7 @@ export async function getPoolHistoricalLoanEvents({ blockchain, poolAddress }: P
   switch (blockchain.network) {
   case 'ethereum': {
     try {
-      const poolContract = getPoolContract({ blockchain, poolAddress })
+      const poolContract = await getPoolContract({ blockchain, poolAddress })
       const events = await poolContract.getPastEvents('LoanInitiated', {
         fromBlock: 0,
         toBlock: 'latest',

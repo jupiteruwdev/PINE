@@ -10,7 +10,7 @@ type Params = {
 
 export default async function getLoanEvent({ blockchain, nftId, poolAddress }: Params) {
   try {
-    const contract = getPoolContract({ blockchain, poolAddress })
+    const contract = await getPoolContract({ blockchain, poolAddress })
     const func = '_loans'
     const params = [nftId]
     const position = await contract.methods[func].apply(undefined, params).call()
