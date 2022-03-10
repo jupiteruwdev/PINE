@@ -38,10 +38,9 @@ export default async function getLoanPosition({ blockchain, collectionId, nftId,
     const contract = await getPoolContract({ blockchain, poolAddress: pool.address })
     const event = await getLoanEvent({ blockchain, nftId, poolAddress: pool.address })
     logger.info('Getting Loan Events... OK')
-    const loanDetails = await contract.methods._loans(nftId).call();
-    const controlPlaneContract = getControlPlaneContract({blockchain: EthBlockchain(4), address: '0x913bcb2bb1Fa6E3D6f0D15AB3d70d31AA3b36b18'})
+    const loanDetails = await contract.methods._loans(nftId).call()
+    const controlPlaneContract = getControlPlaneContract({ blockchain: EthBlockchain(4), address: '0x913bcb2bb1Fa6E3D6f0D15AB3d70d31AA3b36b18' })
     const outstandingWei = new BigNumber(await controlPlaneContract.methods.outstanding(loanDetails).call())
-    
     // Early exit if loan is fully repaid.
     if (outstandingWei.lte(new BigNumber(0))) return undefined
 

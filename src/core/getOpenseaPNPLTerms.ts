@@ -1,6 +1,5 @@
 import axios, { AxiosError } from 'axios'
 import BigNumber from 'bignumber.js'
-import { supportedCollections } from '../config/supportedCollections'
 import Blockchain from '../entities/lib/Blockchain'
 import PNPLTerms from '../entities/lib/PNPLTerms'
 import { $WEI } from '../entities/lib/Value'

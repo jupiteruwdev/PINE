@@ -15,9 +15,10 @@ export default async function getPoolContract({ blockchain, poolAddress }: Param
     const web3 = getEthWeb3(blockchain.networkId)
     const contractTest = new web3.eth.Contract(ERC721LendingABIV2 as any, poolAddress)
     try {
-      await contractTest.methods._controlPlane().call();
+      await contractTest.methods._controlPlane().call()
       return contractTest
-    } catch (e) {
+    }
+    catch (e) {
       const contract = new web3.eth.Contract(ERC721LendingABI as any, poolAddress)
       return contract
     }
