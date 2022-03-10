@@ -2,6 +2,7 @@ import axios, { AxiosError } from 'axios'
 import BigNumber from 'bignumber.js'
 import Blockchain from '../entities/lib/Blockchain'
 import PNPLTerms from '../entities/lib/PNPLTerms'
+import { $WEI } from '../entities/lib/Value'
 import failure from '../utils/failure'
 import logger from '../utils/logger'
 import getLoanTerms from './getLoanTerms'
@@ -41,7 +42,7 @@ export default async function getOpenseaPNPLTerms({ openseaVersion, blockchain, 
       const pnplTerms: PNPLTerms = {
         ...loanTerms,
         purchaseInstruction: openseaInstructions.calldata,
-        listedPrice: new BigNumber(openseaInstructions.currentPrice),
+        listedPrice: $WEI(new BigNumber(openseaInstructions.currentPrice)),
         flashLoanSourceContractAddress,
         marketplaceContractAddress: openseaContractAddresses[openseaVersion],
         pnplContractAddress: pnplContractAddresses[Number(blockchain.networkId)],

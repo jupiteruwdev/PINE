@@ -29,7 +29,6 @@ export default async function getCollectionValuation({ blockchain, collectionId 
   if (collectionId === 'testing') {
     return {
       collection,
-      updatedAt: new Date(),
       value: $ETH(0.0001),
       value24Hr: $ETH(1),
     }
@@ -55,7 +54,6 @@ export default async function getCollectionValuation({ blockchain, collectionId 
       const valueEth = floorPriceEth.gt(average24HrPriceEth) ? average24HrPriceEth : floorPriceEth
       const valuation: Valuation<'ETH'> = {
         collection,
-        updatedAt: new Date(),
         value: $ETH(valueEth),
         value24Hr: $ETH(average24HrPriceEth),
       }

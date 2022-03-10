@@ -43,7 +43,7 @@ export default async function getLoanTerms({ blockchain, collectionId, nftId }: 
       nft,
       issuedAtBlock,
       expiresAtBlock,
-      contractAddress: pool.address,
+      poolAddress: pool.address,
       collection,
     }
 
