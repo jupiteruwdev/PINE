@@ -326,26 +326,14 @@ export const supportedCollections: { [key: string]: any } = {
     networkType: 'ethereum',
     networkId: 4,
     lendingPool: {
-      address: '0xbDfd0b90f708134Ee328275403AA77CB3954Ef81',
+      address: '0x150A1a9015Bfaf54e7199eBb6ae35EBDE755D51D',
       loan_options: [
         {
-          loan_duration_block: 6171,
-          loan_duration_second: 86400,
+          loan_duration_block: 7,
+          loan_duration_second: 100,
           interest_bps_block: 0.00156,
           interest_bps_block_override: 0,
           max_ltv_bps: 3000,
-        },
-        {
-          loan_duration_block: 18513,
-          loan_duration_second: 259200,
-          interest_bps_block: 0.00143,
-          max_ltv_bps: 2800,
-        },
-        {
-          loan_duration_block: 43194,
-          loan_duration_second: 604800,
-          interest_bps_block: 0.00138,
-          max_ltv_bps: 2500,
         },
       ],
     },
