@@ -25,7 +25,7 @@ const flashLoanSourceContractAddresses: { [key: number]: any } = {
 }
 
 const pnplContractAddresses: { [key: number]: any } = {
-  4: '0x6fbC2e637b92274191106a4De23291Ba2035CbEc',
+  4: '0x7D33BdDfe5945687382625547aBD8a0115B87490',
   // TODO: add mainnet flashloan contract
 }
 
