@@ -1,3 +1,4 @@
+import { routerAddresses } from '../config/supportedCollections'
 import { findOne as findOneCollection } from '../db/collections'
 import { findOne as findOnePool } from '../db/pools'
 import Blockchain from '../entities/lib/Blockchain'
@@ -8,6 +9,7 @@ import failure from '../utils/failure'
 import logger from '../utils/logger'
 import getCollectionValuation from './getCollectionValuation'
 import getNFTMetadata from './getNFTMetadata'
+import getPoolContract from './getPoolContract'
 import signValuation from './signValuation'
 
 type Params = {
@@ -33,10 +35,13 @@ export default async function getLoanTerms({ blockchain, collectionId, nftId }: 
       ...await getNFTMetadata({ blockchain, collectionAddress: collection.address, nftId }),
     }
 
+    const contract = await getPoolContract({ blockchain, poolAddress: pool.address })
+
     const valuation = await getCollectionValuation({ blockchain, collectionId })
     const { signature, issuedAtBlock, expiresAtBlock } = await signValuation({ blockchain, nftId, collectionAddress: collection.address, poolAddress: pool.address, valuation })
 
     const loanTerms: LoanTerms = {
+      routerAddress: contract.poolVersion === 2 ? routerAddresses[Number(blockchain.networkId)] : undefined,
       valuation,
       signature,
       options: pool.loanOptions,

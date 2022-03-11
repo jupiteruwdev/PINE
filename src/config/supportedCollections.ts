@@ -1,5 +1,10 @@
 /* eslint-disable */
 
+export const routerAddresses: { [key: number]: any } = {
+  4: '0xFC6c6e4727DA5E1bF79aC9C96155B4cD2faC54E6',
+  // TODO: add mainnet flashloan contract
+}
+
 export const supportedCollections: { [key: string]: any } = {
   'opensea:doodles-official': {
     display_name: 'Doodles',

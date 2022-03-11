@@ -1,5 +1,6 @@
 import BigNumber from 'bignumber.js'
 import _ from 'lodash'
+import { routerAddresses } from '../config/supportedCollections'
 import { findOne as findOneCollection } from '../db/collections'
 import { findOne as findOnePool } from '../db/pools'
 import Blockchain, { EthBlockchain } from '../entities/lib/Blockchain'
@@ -57,6 +58,7 @@ export default async function getLoanPosition({ blockchain, collectionId, nftId,
     }
 
     const loanPosition: LoanPosition = {
+      routerAddress: contract.poolVersion === 2 ? routerAddresses[Number(blockchain.networkId)] : undefined,
       accuredInterest: $WEI(event.accuredInterestWei),
       borrowed: $WEI(event.borrowedWei),
       borrowerAddress: event.borrower,
