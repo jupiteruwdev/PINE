@@ -6,6 +6,7 @@ import { $WEI } from '../entities/lib/Value'
 import failure from '../utils/failure'
 import logger from '../utils/logger'
 import getLoanTerms from './getLoanTerms'
+import getPoolContract from './getPoolContract'
 
 type Params = {
   openseaVersion: 'main' | 'rinkeby'
@@ -35,6 +36,8 @@ export default async function getOpenseaPNPLTerms({ openseaVersion, blockchain, 
   switch (blockchain.network) {
   case 'ethereum': {
     const loanTerms = await getLoanTerms({ blockchain, collectionId, nftId })
+    const poolContract = await getPoolContract({ blockchain, poolAddress: loanTerms.poolAddress })
+    if (poolContract.poolVersion || 0 < 2) throw failure('UNSUPPORTED_COLLECTION')
     const flashLoanSourceContractAddress = flashLoanSourceContractAddresses[Number(blockchain.networkId)]
     const pnplContractAddress = pnplContractAddresses[Number(blockchain.networkId)]
 
