@@ -23,8 +23,9 @@ export default async function getPoolCapacity({ blockchain, poolAddress }: Param
         return $ETH(balanceEth)
       case 2:
         const tokenAddress = await contract.methods._supportedCurrency().call()
+        const fundSource = await contract.methods._fundSource().call()
         const tokenContract = getTokenContract({ blockchain, address: tokenAddress })
-        const balanceWethWei = await tokenContract.methods.balanceOf(poolAddress).call()
+        const balanceWethWei = await tokenContract.methods.balanceOf(fundSource).call()
         const balanceWEth = web3.utils.fromWei(balanceWethWei)
         return $ETH(balanceWEth)
       default:
