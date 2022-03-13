@@ -1,6 +1,7 @@
 import BigNumber from 'bignumber.js'
 import _ from 'lodash'
 import { supportedCollections } from '../config/supportedCollections'
+import getPoolContract from '../core/getPoolContract'
 import Blockchain, { AnyBlockchain, EthBlockchain } from '../entities/lib/Blockchain'
 import LoanOption from '../entities/lib/LoanOption'
 import Pool from '../entities/lib/Pool'
@@ -43,6 +44,7 @@ function mapLoanOption(data: Record<string, any>): LoanOption {
 }
 
 function mapPool(data: Record<string, any>): Pool {
+  const version = _.get(data, 'version')
   const address = _.get(data, 'address')
   const blockchain = _.get(data, 'blockchain')
   const collection = _.get(data, 'collection')
@@ -54,6 +56,7 @@ function mapPool(data: Record<string, any>): Pool {
   if (!loanOptions) throw TypeError('Failed to map key "loanOptions"')
 
   return {
+    version,
     address,
     blockchain,
     collection,
@@ -88,7 +91,10 @@ export async function findOne({ address, collectionAddress, collectionId, blockc
     id: matchedId,
   })
 
+  const pool = await getPoolContract({ blockchain, poolAddress: data.lendingPool.address })
+
   return mapPool({
+    version: pool.poolVersion,
     ..._.get(data, 'lendingPool', {}),
     collection,
     blockchain,
@@ -128,7 +134,10 @@ export async function findAll({ collectionAddress, collectionId, blockchains }: 
 
       if (collectionAddress !== undefined && collectionAddress !== collectionAddress) continue
 
+      const pool = await getPoolContract({ blockchain: blockchainDict.ethereum, poolAddress: data.lendingPool.address })
+
       pools.push(mapPool({
+        version: pool.poolVersion,
         ..._.get(data, 'lendingPool', {}),
         collection,
         blockchain: blockchainDict.ethereum,

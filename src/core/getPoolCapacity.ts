@@ -15,6 +15,7 @@ export default async function getPoolCapacity({ blockchain, poolAddress }: Param
   case 'ethereum': {
     try {
       const web3 = getEthWeb3(blockchain.networkId)
+      // TODO: remove this one so that no need to call twice
       const contract = await getPoolContract({ blockchain, poolAddress })
       switch (contract.poolVersion) {
       case 1:
