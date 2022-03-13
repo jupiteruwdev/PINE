@@ -37,7 +37,7 @@ export default async function getOpenseaPNPLTerms({ openseaVersion, blockchain, 
   case 'ethereum': {
     const loanTerms = await getLoanTerms({ blockchain, collectionId, nftId })
     const poolContract = await getPoolContract({ blockchain, poolAddress: loanTerms.poolAddress })
-    if (poolContract.poolVersion || 0 < 2) throw failure('UNSUPPORTED_COLLECTION')
+    if ((poolContract.poolVersion || 0) < 2) throw failure('UNSUPPORTED_COLLECTION')
     const flashLoanSourceContractAddress = flashLoanSourceContractAddresses[Number(blockchain.networkId)]
     const pnplContractAddress = pnplContractAddresses[Number(blockchain.networkId)]
 
