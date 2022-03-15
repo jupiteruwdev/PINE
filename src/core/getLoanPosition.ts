@@ -40,15 +40,10 @@ export default async function getLoanPosition({ blockchain, collectionId, nftId,
     const event = await getLoanEvent({ blockchain, nftId, poolAddress: pool.address })
     logger.info('Getting Loan Events... OK')
     const loanDetails = await contract.methods._loans(nftId).call()
-    const controlPlaneContract = getControlPlaneContract({ blockchain: EthBlockchain(4), address: '0x913bcb2bb1Fa6E3D6f0D15AB3d70d31AA3b36b18' })
-    const outstandingWei = new BigNumber(await controlPlaneContract.methods.outstanding(loanDetails).call())
+    const controlPlaneContract = getControlPlaneContract({ blockchain: EthBlockchain(4), address: '0x92603A1076Ca9e419A24C67B24E63B53aAFDa61b' })
+    const outstandingWithInterestWei = new BigNumber(await controlPlaneContract.methods.outstanding(loanDetails, txSpeedBlocks).call())
     // Early exit if loan is fully repaid.
-    if (outstandingWei.lte(new BigNumber(0))) return undefined
-
-    // Give X blocks time for the loan to repay, extra ETH will be returned to user.
-    const interestRate = new BigNumber(event.interestBPS1000000XBlock).div(new BigNumber(10_000_000_000)).times(new BigNumber(txSpeedBlocks))
-    const interestWei = outstandingWei.times(interestRate).dp(0)
-    const outstandingWithInterestWei = new BigNumber(outstandingWei.plus(interestWei).toFixed().replace(/.{0,13}$/, '') + '0000000000000').plus(new BigNumber('10000000000000'))
+    if (outstandingWithInterestWei.lte(new BigNumber(0))) return undefined
 
     const nft = {
       collection,
