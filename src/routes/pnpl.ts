@@ -24,7 +24,6 @@ router.get('/terms', async (req, res, next) => {
       const [, , collectionAddress, nftId] = parsedURL.pathname.split('/')
       if (!web3.utils.isAddress(collectionAddress)) throw failure('INVALID_COLLECTION_ADDRESS')
       if (!collectionAddress || !nftId) throw failure('INVALID_PARAMS')
-      
 
       const collection = await findOneCollection({ address: collectionAddress, blockchain: EthBlockchain(EthereumNetwork.MAIN) })
       if (!collection) throw failure('UNSUPPORTED_COLLECTION')
@@ -40,8 +39,8 @@ router.get('/terms', async (req, res, next) => {
     }
     case 'testnets.opensea.io': {
       const [, , collectionAddress, nftId] = parsedURL.pathname.split('/')
+      if (!web3.utils.isAddress(collectionAddress)) throw failure('INVALID_COLLECTION_ADDRESS')
       if (!collectionAddress || !nftId) throw failure('INVALID_PARAMS')
-      if (!web3.utils.isAddress(collectionAddress)) throw failure('INVALID_PARAMS')
 
       const collection = await findOneCollection({ address: collectionAddress, blockchain: EthBlockchain(EthereumNetwork.RINKEBY) })
       if (!collection) throw failure('UNSUPPORTED_COLLECTION')
