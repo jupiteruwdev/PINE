@@ -337,6 +337,7 @@ export const supportedCollections: { [key: string]: any } = {
           loan_duration_block: 6171,
           loan_duration_second: 86400,
           interest_bps_block: 0.00156,
+          interest_bps_block_override: 0.00156,
           max_ltv_bps: 5000,
         },
       ],
