@@ -5,6 +5,7 @@ import { EthBlockchain } from '../entities/lib/Blockchain'
 import EthereumNetwork from '../entities/lib/EthereumNetwork'
 import { serializePNPLTerms } from '../entities/lib/PNPLTerms'
 import failure from '../utils/failure'
+import web3 from 'web3'
 
 const router = Router()
 
@@ -16,11 +17,14 @@ router.get('/terms', async (req, res, next) => {
     const parsedURL = new URL(url)
 
     const hostname = parsedURL.hostname
-    const [, , collectionAddress, nftId] = parsedURL.pathname.split('/')
 
     let pnplTerms
     switch (hostname) {
     case 'opensea.io': {
+      const [, , collectionAddress, nftId] = parsedURL.pathname.split('/')
+      if (!collectionAddress || !nftId) throw failure('INVALID_PARAMS')
+      if (!web3.utils.isAddress(collectionAddress)) throw failure('INVALID_PARAMS')
+
       const collection = await findOneCollection({ address: collectionAddress, blockchain: EthBlockchain(EthereumNetwork.MAIN) })
       if (!collection) throw failure('UNSUPPORTED_COLLECTION')
 
@@ -34,6 +38,10 @@ router.get('/terms', async (req, res, next) => {
       break
     }
     case 'testnets.opensea.io': {
+      const [, , collectionAddress, nftId] = parsedURL.pathname.split('/')
+      if (!collectionAddress || !nftId) throw failure('INVALID_PARAMS')
+      if (!web3.utils.isAddress(collectionAddress)) throw failure('INVALID_PARAMS')
+
       const collection = await findOneCollection({ address: collectionAddress, blockchain: EthBlockchain(EthereumNetwork.RINKEBY) })
       if (!collection) throw failure('UNSUPPORTED_COLLECTION')
 
