@@ -334,11 +334,10 @@ export const supportedCollections: { [key: string]: any } = {
       address: '0x150A1a9015Bfaf54e7199eBb6ae35EBDE755D51D',
       loan_options: [
         {
-          loan_duration_block: 7,
-          loan_duration_second: 100,
+          loan_duration_block: 6171,
+          loan_duration_second: 86400,
           interest_bps_block: 0.00156,
-          interest_bps_block_override: 0,
-          max_ltv_bps: 100,
+          max_ltv_bps: 5000,
         },
       ],
     },

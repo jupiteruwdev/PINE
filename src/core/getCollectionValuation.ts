@@ -29,7 +29,7 @@ export default async function getCollectionValuation({ blockchain, collectionId 
   if (collectionId === 'testing') {
     return {
       collection,
-      value: $ETH(0.0001),
+      value: $ETH(0.1),
       value24Hr: $ETH(1),
     }
   }
