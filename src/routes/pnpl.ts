@@ -22,8 +22,9 @@ router.get('/terms', async (req, res, next) => {
     switch (hostname) {
     case 'opensea.io': {
       const [, , collectionAddress, nftId] = parsedURL.pathname.split('/')
+      if (!web3.utils.isAddress(collectionAddress)) throw failure('INVALID_COLLECTION_ADDRESS')
       if (!collectionAddress || !nftId) throw failure('INVALID_PARAMS')
-      if (!web3.utils.isAddress(collectionAddress)) throw failure('INVALID_PARAMS')
+      
 
       const collection = await findOneCollection({ address: collectionAddress, blockchain: EthBlockchain(EthereumNetwork.MAIN) })
       if (!collection) throw failure('UNSUPPORTED_COLLECTION')
