@@ -24,7 +24,7 @@ type Params = {
 
 const controlPlaneContractAddresses: { [key: number]: any } = {
   4: '0x5E282F68a7CD593609C05AbCA32482395968d885',
-  // 1: '0x7Be8076f4EA4A4AD08075C2508e481d6C946D12b',
+  1: '0x9C2780F9e427E29Ba77EDC34C3F42e0865C3FBDF',
 }
 
 export default async function getLoanPosition({ blockchain, collectionId, nftId, txSpeedBlocks }: Params): Promise<LoanPosition | undefined> {
