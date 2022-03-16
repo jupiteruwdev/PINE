@@ -3,7 +3,7 @@ import _ from 'lodash'
 import { routerAddresses } from '../config/supportedCollections'
 import { findOne as findOneCollection } from '../db/collections'
 import { findOne as findOnePool } from '../db/pools'
-import Blockchain, { EthBlockchain } from '../entities/lib/Blockchain'
+import Blockchain from '../entities/lib/Blockchain'
 import LoanPosition from '../entities/lib/LoanPosition'
 import { $WEI } from '../entities/lib/Value'
 import { getEthBlockNumber } from '../utils/ethereum'
@@ -20,6 +20,11 @@ type Params = {
   collectionId: string
   nftId: string
   txSpeedBlocks: number
+}
+
+const controlPlaneContractAddresses: { [key: number]: any } = {
+  4: '0x5E282F68a7CD593609C05AbCA32482395968d885',
+  // 1: '0x7Be8076f4EA4A4AD08075C2508e481d6C946D12b',
 }
 
 export default async function getLoanPosition({ blockchain, collectionId, nftId, txSpeedBlocks }: Params): Promise<LoanPosition | undefined> {
@@ -40,7 +45,8 @@ export default async function getLoanPosition({ blockchain, collectionId, nftId,
     const event = await getLoanEvent({ blockchain, nftId, poolAddress: pool.address })
     logger.info('Getting Loan Events... OK')
     const loanDetails = await contract.methods._loans(nftId).call()
-    const controlPlaneContract = getControlPlaneContract({ blockchain: EthBlockchain(4), address: '0xCC31122a67575dD1F2b14b3108C820b91ECc3A99' })
+    logger.info('Get Loan Details... OK')
+    const controlPlaneContract = getControlPlaneContract({ blockchain, address: controlPlaneContractAddresses[Number(blockchain.networkId)] })
     const outstandingWithInterestWei = new BigNumber(await controlPlaneContract.methods.outstanding(loanDetails, txSpeedBlocks).call())
     // Early exit if loan is fully repaid.
     if (outstandingWithInterestWei.lte(new BigNumber(0))) return undefined
