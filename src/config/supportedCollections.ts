@@ -2,7 +2,7 @@
 
 export const routerAddresses: { [key: number]: any } = {
   4: '0xFC6c6e4727DA5E1bF79aC9C96155B4cD2faC54E6',
-  // TODO: add mainnet flashloan contract
+  1: '0x1E23F78896F6d4F0e25D7bcD49bb2f7eee62EF98',
 }
 
 export const supportedCollections: { [key: string]: any } = {
@@ -35,6 +35,25 @@ export const supportedCollections: { [key: string]: any } = {
           interest_bps_block: 0.00138,
           interest_bps_block_override: 0.000160,
           max_ltv_bps: 2300,
+        },
+      ],
+    },
+  },
+  'opensea:dourdarcels': {
+    display_name: 'DourDarcels',
+    address: '0x8d609bd201beaea7dccbfbd9c22851e23da68691',
+    networkType: 'ethereum',
+    networkId: 1,
+    image_url: 'https://lh3.googleusercontent.com/WxBXXLXUJZwhUMPfz0o18a2gjYpU-qecO-ENOF8QXsfiBLt8TeQ8Nurmi2zLbwgwTHE-J_aZRkIqDA_OGrBSbU7ZpOV8jdjtkp-U4Q=s130',
+    lendingPool: {
+      address: '0xc65deedc3e0A0aD67012ab503112c60477e5680E',
+      loan_options: [
+        {
+          loan_duration_block: 86388,
+          loan_duration_second: 1209600,
+          interest_bps_block: 0.00138,
+          interest_bps_block_override: 0.000172,
+          max_ltv_bps: 5000,
         },
       ],
     },
