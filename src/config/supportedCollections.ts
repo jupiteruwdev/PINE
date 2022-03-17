@@ -39,6 +39,25 @@ export const supportedCollections: { [key: string]: any } = {
       ],
     },
   },
+  'opensea:dourdarcels': {
+    display_name: 'DourDarcels',
+    address: '0x8d609bd201beaea7dccbfbd9c22851e23da68691',
+    networkType: 'ethereum',
+    networkId: 1,
+    image_url: 'https://lh3.googleusercontent.com/WxBXXLXUJZwhUMPfz0o18a2gjYpU-qecO-ENOF8QXsfiBLt8TeQ8Nurmi2zLbwgwTHE-J_aZRkIqDA_OGrBSbU7ZpOV8jdjtkp-U4Q=s130',
+    lendingPool: {
+      address: '0xc65deedc3e0A0aD67012ab503112c60477e5680E',
+      loan_options: [
+        {
+          loan_duration_block: 86388,
+          loan_duration_second: 1209600,
+          interest_bps_block: 0.00138,
+          interest_bps_block_override: 0.000172,
+          max_ltv_bps: 5000,
+        },
+      ],
+    },
+  },
   'opensea:onchainmonkey': {
     display_name: 'OnChainMonkey',
     address: '0x960b7a6bcd451c9968473f7bbfd9be826efd549a',
