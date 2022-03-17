@@ -1,6 +1,10 @@
 # Builds the app with dev dependencies included.
 FROM node:16.3.0 AS dev
 
+ARG BUILD_NUMBER
+
+ENV BUILD_NUMBER=$BUILD_NUMBER
+
 WORKDIR /var/app
 
 COPY package*.json ./
@@ -29,7 +33,10 @@ RUN npm prune --production
 # Final production build.
 FROM node:16.3.0-alpine AS release
 
+ARG BUILD_NUMBER
+
 ENV NODE_ENV=production
+ENV BUILD_NUMBER=$BUILD_NUMBER
 
 WORKDIR /var/app
 
