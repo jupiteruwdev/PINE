@@ -17,7 +17,7 @@ type Params = {
 
 const openseaContractAddresses = {
   rinkeby: '0xdD54D660178B28f6033a953b0E55073cFA7e3744',
-  main: '0x7Be8076f4EA4A4AD08075C2508e481d6C946D12b',
+  main: '0x7f268357A8c2552623316e2562D90e642bB538E5',
 }
 
 const flashLoanSourceContractAddresses: { [key: number]: any } = {
