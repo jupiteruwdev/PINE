@@ -30,7 +30,7 @@ export default async function getPoolCapacity({ blockchain, poolAddress }: Param
         const balanceWEth = web3.utils.fromWei(balanceWethWei)
         return $ETH(balanceWEth)
       default:
-        failure('BAD-POOL-VERSION')
+        failure('BAD_POOL_VERSION')
       }
     }
     catch (err) {

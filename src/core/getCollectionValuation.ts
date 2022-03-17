@@ -41,7 +41,7 @@ export default async function getCollectionValuation({ blockchain, collectionId 
     try {
       const apiKey = appConf.openseaAPIKey
 
-      if (!apiKey) throw failure('MISSING_API_KEY')
+      if (!apiKey) throw failure('FETCH_OPENSEA_VALUATION_FAILURE')
 
       const { data: collectionData } = await axios.get(`https://api.opensea.io/api/v1/collection/${id}/stats`, {
         headers: {
@@ -66,6 +66,6 @@ export default async function getCollectionValuation({ blockchain, collectionId 
       throw failure('FETCH_OPENSEA_VALUATION_FAILURE', err)
     }
   default:
-    throw failure('UNSUPPORTED_VENUE')
+    throw failure('UNSUPPORTED_MARKETPLACE')
   }
 }

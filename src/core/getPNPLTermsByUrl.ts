@@ -22,8 +22,8 @@ export default async function getPNPLTermsByUrl({ parsedURL }: Params): Promise<
   switch (hostname) {
   case 'opensea.io': {
     const [, , collectionAddress, nftId] = parsedURL.pathname.split('/')
-    if (!Web3.utils.isAddress(collectionAddress)) throw failure('INVALID_COLLECTION_ADDRESS')
-    if (!collectionAddress || !nftId) throw failure('INVALID_PARAMS')
+    if (!Web3.utils.isAddress(collectionAddress)) throw failure('PNPL_INVALID_URL')
+    if (!collectionAddress || !nftId) throw failure('PNPL_INVALID_URL')
 
     const collection = await findOneCollection({ address: collectionAddress, blockchain: EthBlockchain(EthereumNetwork.MAIN) })
     if (!collection) throw failure('UNSUPPORTED_COLLECTION')
@@ -39,8 +39,8 @@ export default async function getPNPLTermsByUrl({ parsedURL }: Params): Promise<
   }
   case 'testnets.opensea.io': {
     const [, , collectionAddress, nftId] = parsedURL.pathname.split('/')
-    if (!Web3.utils.isAddress(collectionAddress)) throw failure('INVALID_COLLECTION_ADDRESS')
-    if (!collectionAddress || !nftId) throw failure('INVALID_PARAMS')
+    if (!Web3.utils.isAddress(collectionAddress)) throw failure('PNPL_INVALID_URL')
+    if (!collectionAddress || !nftId) throw failure('PNPL_INVALID_URL')
 
     const collection = await findOneCollection({ address: collectionAddress, blockchain: EthBlockchain(EthereumNetwork.RINKEBY) })
     if (!collection) throw failure('UNSUPPORTED_COLLECTION')
@@ -55,6 +55,6 @@ export default async function getPNPLTermsByUrl({ parsedURL }: Params): Promise<
     break
   }
   default:
-    throw failure('INVALID_MARKETPLACE')
+    throw failure('UNSUPPORTED_MARKETPLACE')
   }
 }

@@ -13,7 +13,7 @@ router.get('/', async (req, res, next) => {
     const nftId = req.query.nftId?.toString()
     const collectionId = req.query.collectionId?.toString()
 
-    if (!nftId || !collectionId) throw failure('INVALID_PARAMS')
+    if (!nftId || !collectionId) throw failure('FETCH_LOAN_POSITION_FAILURE')
 
     const txSpeedBlocks = _.toNumber(req.query.txSpeedBlocks ?? 0)
     const networkId = parseEthNetworkId(req.query.networkId)

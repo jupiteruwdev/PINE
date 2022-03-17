@@ -8,7 +8,8 @@ const router = Router()
 router.get('/terms', async (req, res, next) => {
   try {
     const url = req.query.url?.toString()
-    if (!url) throw failure('INVALID_PARAMS')
+
+    if (!url) throw failure('PNPL_INVALID_PARAMS')
 
     const parsedURL = new URL(url)
     const pnplTerms = await getPNPLTermsByUrl({ parsedURL })

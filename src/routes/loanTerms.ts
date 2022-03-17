@@ -12,7 +12,7 @@ router.get('/', async (req, res, next) => {
     const nftId = req.query.nftId?.toString()
     const collectionId = req.query.collectionId?.toString()
 
-    if (!nftId || !collectionId) throw failure('INVALID_PARAMS')
+    if (!nftId || !collectionId) throw failure('FETCH_LOAN_TERMS_FAILURE')
 
     const networkId = parseEthNetworkId(req.query.networkId)
     const loanTerms = await getLoanTerms({ blockchain: EthBlockchain(networkId), nftId, collectionId })

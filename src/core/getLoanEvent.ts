@@ -18,6 +18,6 @@ export default async function getLoanEvent({ blockchain, nftId, poolAddress }: P
     return position
   }
   catch (err) {
-    throw failure('FETCH_ACTIVE_LOAN_EVENT_FAILURE', err)
+    throw failure('FETCH_LOAN_EVENTS_FAILURE', err)
   }
 }
