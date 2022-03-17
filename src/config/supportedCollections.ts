@@ -2,7 +2,7 @@
 
 export const routerAddresses: { [key: number]: any } = {
   4: '0xFC6c6e4727DA5E1bF79aC9C96155B4cD2faC54E6',
-  // TODO: add mainnet flashloan contract
+  1: '0x1E23F78896F6d4F0e25D7bcD49bb2f7eee62EF98',
 }
 
 export const supportedCollections: { [key: string]: any } = {
