@@ -6,6 +6,7 @@ export default {
   build: process.env.BUILD_NUMBER || '0',
   port: process.env.PORT ?? 8080,
   openseaAPIKey: process.env.OPENSEA_API_KEY,
+  moralisAPIKey: process.env.MORALIS_API_KEY,
   ethRPC: {
     4: process.env.ETH_RPC_RINKEBY,
     1: process.env.ETH_RPC_MAINNET,
