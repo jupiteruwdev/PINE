@@ -58,25 +58,25 @@ export const supportedCollections: { [key: string]: any } = {
       ],
     },
   },
-  // 'opensea:tubby-cats': {
-  //   display_name: 'tubby cats by tubby collective',
-  //   address: '0xca7ca7bcc765f77339be2d648ba53ce9c8a262bd',
-  //   networkType: 'ethereum',
-  //   networkId: 1,
-  //   image_url: 'https://lh3.googleusercontent.com/XHZY9623keDQqFSDHKqOdcjD99Y7N82K1egYRM2Mm1Z-Jxn5myrkKiC5NBktWKStVtTzDzwELy9dNpzTWJTIkLsdMIxUHI86jduQ=s130',
-  //   lendingPool: {
-  //     address: '0x1597a81012c4b06d5aB981eAb60aad5B1B933F9a',
-  //     loan_options: [
-  //       {
-  //         loan_duration_block: 86388,
-  //         loan_duration_second: 1209600,
-  //         interest_bps_block: 0.00138,
-  //         interest_bps_block_override: 0.000172,
-  //         max_ltv_bps: 5000,
-  //       },
-  //     ],
-  //   },
-  // },
+  'opensea:tubby-cats': {
+    display_name: 'tubby cats by tubby collective',
+    address: '0xca7ca7bcc765f77339be2d648ba53ce9c8a262bd',
+    networkType: 'ethereum',
+    networkId: 1,
+    image_url: 'https://lh3.googleusercontent.com/XHZY9623keDQqFSDHKqOdcjD99Y7N82K1egYRM2Mm1Z-Jxn5myrkKiC5NBktWKStVtTzDzwELy9dNpzTWJTIkLsdMIxUHI86jduQ=s130',
+    lendingPool: {
+      address: '0x1597a81012c4b06d5aB981eAb60aad5B1B933F9a',
+      loan_options: [
+        {
+          loan_duration_block: 86388,
+          loan_duration_second: 1209600,
+          interest_bps_block: 0.00138,
+          interest_bps_block_override: 0.000172,
+          max_ltv_bps: 5000,
+        },
+      ],
+    },
+  },
   'opensea:onchainmonkey': {
     display_name: 'OnChainMonkey',
     address: '0x960b7a6bcd451c9968473f7bbfd9be826efd549a',
