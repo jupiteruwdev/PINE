@@ -1,5 +1,5 @@
 import { Router } from 'express'
-import getNFTsByOwnerMoralis from '../core/getNFTsByOwnerMoralis'
+import getNFTsByOwner from '../core/getNFTsByOwner'
 import { EthBlockchain } from '../entities/lib/Blockchain'
 import { serializeNFTs } from '../entities/lib/NFT'
 import { parseEthNetworkId } from '../utils/ethereum'
@@ -14,7 +14,7 @@ router.get('/', async (req, res, next) => {
 
     if (!ownerAddress) throw Error('Invalid owner address')
 
-    const collaterals = await getNFTsByOwnerMoralis({ blockchain: EthBlockchain(networkId), ownerAddress, populateMetadata: true })
+    const collaterals = await getNFTsByOwner({ blockchain: EthBlockchain(networkId), ownerAddress, populateMetadata: true })
     const payload = serializeNFTs(collaterals)
 
     res.status(200).json(payload)
