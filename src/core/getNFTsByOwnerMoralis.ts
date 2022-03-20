@@ -59,8 +59,10 @@ export default async function getNFTsByOwnerMoralis({ blockchain, collectionOrCo
       },
     })
 
-    const nfts: NFT[] = await Promise.all(nftsRaw.data.result.map(async (value:any) => {
+    const nfts: NFT[] = (await Promise.all(nftsRaw.data.result.map(async (value:any) => {
       const collection = await findOneCollection({ address: value.token_address, blockchain })
+      if (!collection) return undefined
+      value.metadata = JSON.parse(value.metadata)
       return {
         collection: {
           address: value.token_address,
@@ -70,10 +72,10 @@ export default async function getNFTsByOwnerMoralis({ blockchain, collectionOrCo
         },
         id: value.token_id,
         ownerAddress: value.owner_of,
-        imageUrl: normalizeUri(value.metadata.image ?? ''),
-        name: value.metadata.name ?? collection?.name ?? value.name + ' #' + value.token_id,
+        imageUrl: normalizeUri(value.metadata?.image ?? ''),
+        name: value.metadata?.name ?? (collection?.name ?? value.name) + ' #' + value.token_id,
       }
-    }))
+    }))).filter(e => e)
 
     if (collectionOrCollectionAddress) {
       const collection = _.isString(collectionOrCollectionAddress) ? await findOneCollection({ address: collectionOrCollectionAddress, blockchain }) : collectionOrCollectionAddress
