@@ -1,12 +1,11 @@
 import _ from 'lodash'
-import ERC721EnumerableABI from '../abis/ERC721Enumerable.json'
-import { findAll as findAllCollections, findOne as findOneCollection } from '../db/collections'
+import { findOne as findOneCollection } from '../db/collections'
 import Blockchain from '../entities/lib/Blockchain'
 import Collection from '../entities/lib/Collection'
 import NFT from '../entities/lib/NFT'
-import { getEthWeb3 } from '../utils/ethereum'
 import failure from '../utils/failure'
-import getNFTMetadata from './getNFTMetadata'
+import axios from 'axios'
+import appConf from '../app.conf'
 
 type Params = {
   /**
@@ -31,6 +30,13 @@ type Params = {
   populateMetadata: boolean
 }
 
+
+function normalizeUri(uri: string) {
+  if (uri.slice(0, 4) !== 'ipfs') return uri
+  if (uri.indexOf('ipfs://ipfs/') !== -1) return uri.replace('ipfs://ipfs/', 'https://tempus.mypinata.cloud/ipfs/')
+  return uri.replace('ipfs://', 'https://tempus.mypinata.cloud/ipfs/')
+}
+
 /**
  * Fetches all supported NFTs owned by an address.
  *
@@ -40,41 +46,49 @@ type Params = {
  * @returns An array of {@link NFT}.
  */
 export default async function getNFTsByOwner({ blockchain, collectionOrCollectionAddress, ownerAddress, populateMetadata }: Params): Promise<NFT[]> {
-  if (collectionOrCollectionAddress) {
-    const collection = _.isString(collectionOrCollectionAddress) ? await findOneCollection({ address: collectionOrCollectionAddress, blockchain }) : collectionOrCollectionAddress
+  switch (blockchain.network) {
+  case 'ethereum': {
+    const apiKey = appConf.moralisAPIKey
 
-    if (!collection) return []
+    if (!apiKey) throw failure('MISSING_API_KEY')
 
-    switch (blockchain.network) {
-    case 'ethereum': {
-      const web3 = getEthWeb3(blockchain.networkId)
-      const contract = new web3.eth.Contract(ERC721EnumerableABI as any, collection.address)
-      const count = _.toNumber(await contract.methods.balanceOf(ownerAddress).call())
-      const nftIds = await Promise.all([...Array(count)].map((val, idx) => contract.methods.tokenOfOwnerByIndex(ownerAddress, idx).call()))
-      const nfts: NFT[] = []
+    const nftsRaw = await axios.get(`https://deep-index.moralis.io/api/v2/${ownerAddress}/nft?chain=eth&format=decimal`, {
+      headers: {
+        'accept': 'application/json',
+        'X-API-Key': apiKey,
+      },
+    })
 
-      // TODO: Optimize this. Currently doing this in series to avoid 429 for some API calls.
-      for (const nftId of nftIds) {
-        const metadata = populateMetadata === false ? {} : await getNFTMetadata({ blockchain, collectionAddress: collection.address, nftId })
-
-        nfts.push({
-          ...metadata,
-          collection,
-          id: nftId,
-          ownerAddress,
-        })
+    const nfts: NFT[] = (await Promise.all(nftsRaw.data.result.map(async (value:any) => {
+      const collection = await findOneCollection({ address: value.token_address, blockchain })
+      if (!collection) return undefined
+      value.metadata = JSON.parse(value.metadata)
+      return {
+        collection: {
+          address: value.token_address,
+          blockchain,
+          id: collection?.id ?? '',
+          name: collection?.name ?? value.name,
+        },
+        id: value.token_id,
+        ownerAddress: value.owner_of,
+        imageUrl: normalizeUri(value.metadata?.image ?? ''),
+        name: value.metadata?.name ?? (collection?.name ?? value.name) + ' #' + value.token_id,
       }
+    }))).filter(e => e)
 
-      return nfts
-    }
-    default:
-      throw failure('UNSUPPORTED_BLOCKCHAIN')
-    }
-  }
-  else {
-    const collections = await findAllCollections({ blockchains: { [blockchain.network]: blockchain.networkId } })
-    const nftsPerCollection = await Promise.all(collections.map(collection => getNFTsByOwner({ blockchain, ownerAddress, collectionOrCollectionAddress: collection, populateMetadata })))
+    if (collectionOrCollectionAddress) {
+      const collection = _.isString(collectionOrCollectionAddress) ? await findOneCollection({ address: collectionOrCollectionAddress, blockchain }) : collectionOrCollectionAddress
 
-    return _.flatten(nftsPerCollection)
+      if (!collection) return []
+
+      return nfts.filter(e => e.collection.address === collection.address)
+    }
+
+    return nfts
   }
+  default:
+    throw failure('UNSUPPORTED_BLOCKCHAIN')
+  }
+
 }
