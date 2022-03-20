@@ -30,6 +30,13 @@ type Params = {
   populateMetadata: boolean
 }
 
+
+function normalizeUri(uri: string) {
+  if (uri.slice(0, 4) !== 'ipfs') return uri
+  if (uri.indexOf('ipfs://ipfs/') !== -1) return uri.replace('ipfs://ipfs/', 'https://tempus.mypinata.cloud/ipfs/')
+  return uri.replace('ipfs://', 'https://tempus.mypinata.cloud/ipfs/')
+}
+
 /**
  * Fetches all supported NFTs owned by an address.
  *
@@ -54,7 +61,10 @@ export default async function getNFTsByOwnerMoralis({ blockchain, collectionOrCo
 
     const nfts: NFT[] = await Promise.all(nftsRaw.data.result.map(async (e:any) => {
       const collection = await findOneCollection({ address: e.token_address, blockchain })
-      return deserializeMoralisNFT(blockchain, collection, e)
+      const nft = deserializeMoralisNFT(blockchain, collection, e)
+      nft.imageUrl = normalizeUri(nft.imageUrl ?? '')
+      nft.name = nft.name ?? nft.collection.name + ' #' + nft.id
+      return nft
     }))
 
     if (collectionOrCollectionAddress) {
