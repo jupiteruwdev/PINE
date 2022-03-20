@@ -77,6 +77,44 @@ export const supportedCollections: { [key: string]: any } = {
       ],
     },
   },
+  'opensea:murixhaus': {
+    display_name: 'MURI by Haus',
+    address: '0x4b61413d4392c806e6d0ff5ee91e6073c21d6430',
+    networkType: 'ethereum',
+    networkId: 1,
+    image_url: 'https://lh3.googleusercontent.com/OPgdc2e-yuBEMeyS8ttfl8cINQ5amQofP0xS4wWj59bWyUUo84A4g-WaulcpghyQCde1mQh88XABNHWjT9MRhPo34-QF50bdYQZa=s130',
+    lendingPool: {
+      address: '0x44FF4Be276a599aFFcba9c0ec995E75bCD6b60b7',
+      loan_options: [
+        {
+          loan_duration_block: 86388,
+          loan_duration_second: 1209600,
+          interest_bps_block: 0.00138,
+          interest_bps_block_override: 0.000172,
+          max_ltv_bps: 5000,
+        },
+      ],
+    },
+  },
+  'opensea:wonderpals': {
+    display_name: 'WonderPals',
+    address: '0x3acce66cd37518a6d77d9ea3039e00b3a2955460',
+    networkType: 'ethereum',
+    networkId: 1,
+    image_url: 'https://lh3.googleusercontent.com/DA_iUjt7S9PdmAANh0aqMkxYVhvGogTuKbMSzFO3uEnbvRRt5hn1B8DuN50HQpkRtH34QX7EOYYKIayz1q5KgZWfgLedNo7xBQzK=s130',
+    lendingPool: {
+      address: '0x654c881c24AA6527e92d9C89B6DaE77356C2CC35',
+      loan_options: [
+        {
+          loan_duration_block: 86388,
+          loan_duration_second: 1209600,
+          interest_bps_block: 0.00138,
+          interest_bps_block_override: 0.000172,
+          max_ltv_bps: 5000,
+        },
+      ],
+    },
+  },
   'opensea:onchainmonkey': {
     display_name: 'OnChainMonkey',
     address: '0x960b7a6bcd451c9968473f7bbfd9be826efd549a',
