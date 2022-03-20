@@ -2,7 +2,7 @@ import _ from 'lodash'
 import { findOne as findOneCollection } from '../db/collections'
 import Blockchain from '../entities/lib/Blockchain'
 import Collection from '../entities/lib/Collection'
-import NFT, { deserializeMoralisNFT } from '../entities/lib/NFT'
+import NFT from '../entities/lib/NFT'
 import failure from '../utils/failure'
 import axios from 'axios'
 import appConf from '../app.conf'
@@ -59,12 +59,20 @@ export default async function getNFTsByOwnerMoralis({ blockchain, collectionOrCo
       },
     })
 
-    const nfts: NFT[] = await Promise.all(nftsRaw.data.result.map(async (e:any) => {
-      const collection = await findOneCollection({ address: e.token_address, blockchain })
-      const nft = deserializeMoralisNFT(blockchain, collection, e)
-      nft.imageUrl = normalizeUri(nft.imageUrl ?? '')
-      nft.name = nft.name ?? nft.collection.name + ' #' + nft.id
-      return nft
+    const nfts: NFT[] = await Promise.all(nftsRaw.data.result.map(async (value:any) => {
+      const collection = await findOneCollection({ address: value.token_address, blockchain })
+      return {
+        collection: {
+          address: value.token_address,
+          blockchain,
+          id: collection?.id ?? '',
+          name: collection?.name ?? value.name,
+        },
+        id: value.token_id,
+        ownerAddress: value.owner_of,
+        imageUrl: normalizeUri(value.metadata.image ?? ''),
+        name: value.metadata.name ?? collection?.name ?? value.name + ' #' + value.token_id,
+      }
     }))
 
     if (collectionOrCollectionAddress) {
