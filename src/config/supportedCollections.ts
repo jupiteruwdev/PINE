@@ -115,6 +115,25 @@ export const supportedCollections: { [key: string]: any } = {
       ],
     },
   },
+  'opensea:cyberbrokers': {
+    display_name: 'CyberBrokers',
+    address: '0x892848074ddea461a15f337250da3ce55580ca85',
+    networkType: 'ethereum',
+    networkId: 1,
+    image_url: 'https://lh3.googleusercontent.com/Qd1IEPYz_0YlMaclPwb6_9PyP7afZIzH15IdIU2X6t1Wvg81DwpAaWOY0cNmxy173C4yMA7sM3xF9-HJsCSKJdx6KvDR3old3IKuTIc=s0',
+    lendingPool: {
+      address: '0x56893018a87434E9b1D6af427fF52D6C27f1A542',
+      loan_options: [
+        {
+          loan_duration_block: 86388,
+          loan_duration_second: 1209600,
+          interest_bps_block: 0.00138,
+          interest_bps_block_override: 0.000172,
+          max_ltv_bps: 5000,
+        },
+      ],
+    },
+  },
   'opensea:onchainmonkey': {
     display_name: 'OnChainMonkey',
     address: '0x960b7a6bcd451c9968473f7bbfd9be826efd549a',
