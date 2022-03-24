@@ -96,6 +96,24 @@ export const supportedCollections: { [key: string]: any } = {
       ],
     },
   },
+  'opensea:sandbox': {
+    display_name: 'The Sandbox',
+    address: '0x5cc5b05a8a13e3fbdb0bb9fccd98d38e50f90c38',
+    networkType: 'ethereum',
+    networkId: 1,
+    image_url: 'https://lh3.googleusercontent.com/SXH8tW1siikB80rwCRnjm1a5xM_MwTg9Xl9Db6mioIk9HIlDM09pVoSR7GKJgS6ulSUpgW9BDtMk_ePX_NKgO9A=s130',
+    lendingPool: {
+      address: '0x5241a1FA3Ac0C73991A88B506B531b0E1536Bf78',
+      loan_options: [
+        {
+          loan_duration_block: 86388,
+          loan_duration_second: 1209600,
+          interest_bps_block: 0.000888,
+          max_ltv_bps: 3500,
+        },
+      ],
+    },
+  },
   'opensea:wonderpals': {
     display_name: 'WonderPals',
     address: '0x3acce66cd37518a6d77d9ea3039e00b3a2955460',
