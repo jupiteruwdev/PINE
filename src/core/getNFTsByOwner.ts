@@ -28,6 +28,7 @@ type Params = {
    * metadata is not fetched.
    */
   populateMetadata: boolean
+  index: number
 }
 
 
@@ -35,6 +36,14 @@ function normalizeUri(uri: string) {
   if (uri.slice(0, 4) !== 'ipfs') return uri
   if (uri.indexOf('ipfs://ipfs/') !== -1) return uri.replace('ipfs://ipfs/', 'https://tempus.mypinata.cloud/ipfs/')
   return uri.replace('ipfs://', 'https://tempus.mypinata.cloud/ipfs/')
+}
+
+function delay(t: number, val?:any) {
+  return new Promise(function(resolve) {
+    setTimeout(function() {
+      resolve(val)
+    }, t)
+  })
 }
 
 /**
@@ -45,12 +54,14 @@ function normalizeUri(uri: string) {
  *
  * @returns An array of {@link NFT}.
  */
-export default async function getNFTsByOwner({ blockchain, collectionOrCollectionAddress, ownerAddress, populateMetadata }: Params): Promise<NFT[]> {
+export default async function getNFTsByOwner({ blockchain, collectionOrCollectionAddress, ownerAddress, populateMetadata, index }: Params): Promise<NFT[]> {
   switch (blockchain.network) {
   case 'ethereum': {
     const apiKey = appConf.moralisAPIKey
 
     if (!apiKey) throw failure('MISSING_API_KEY')
+
+    await delay(100 * index)
 
     const nftsRaw = await axios.get(`https://deep-index.moralis.io/api/v2/${ownerAddress}/nft?chain=eth&format=decimal`, {
       headers: {

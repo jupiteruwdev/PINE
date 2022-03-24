@@ -133,6 +133,25 @@ export const supportedCollections: { [key: string]: any } = {
       ],
     },
   },
+  'opensea:cyberbrokers': {
+    display_name: 'CyberBrokers',
+    address: '0x892848074ddea461a15f337250da3ce55580ca85',
+    networkType: 'ethereum',
+    networkId: 1,
+    image_url: 'https://lh3.googleusercontent.com/Qd1IEPYz_0YlMaclPwb6_9PyP7afZIzH15IdIU2X6t1Wvg81DwpAaWOY0cNmxy173C4yMA7sM3xF9-HJsCSKJdx6KvDR3old3IKuTIc=s0',
+    lendingPool: {
+      address: '0x56893018a87434E9b1D6af427fF52D6C27f1A542',
+      loan_options: [
+        {
+          loan_duration_block: 86388,
+          loan_duration_second: 1209600,
+          interest_bps_block: 0.00138,
+          interest_bps_block_override: 0.000172,
+          max_ltv_bps: 5000,
+        },
+      ],
+    },
+  },
   'opensea:onchainmonkey': {
     display_name: 'OnChainMonkey',
     address: '0x960b7a6bcd451c9968473f7bbfd9be826efd549a',
@@ -166,32 +185,32 @@ export const supportedCollections: { [key: string]: any } = {
       ],
     },
   },
-  'opensea:invisiblefriends': {
-    display_name: 'Invisible Friends',
-    address: '0x59468516a8259058bad1ca5f8f4bff190d30e066',
-    networkType: 'ethereum',
-    networkId: 1,
-    image_url: 'https://lh3.googleusercontent.com/lW22aEwUE0IqGaYm5HRiMS8DwkDwsdjPpprEqYnBqo2s7gSR-JqcYOjU9LM6p32ujG_YAEd72aDyox-pdCVK10G-u1qZ3zAsn2r9=s130',
-    lendingPool: {
-      address: '0xCF7ED018Ce445141730Eb3Bca43198621eDB660b',
-      loan_options: [
-        {
-          loan_duration_block: 18513,
-          loan_duration_second: 259200,
-          interest_bps_block: 0.00156,
-          interest_bps_block_override: 0.000209,
-          max_ltv_bps: 3000,
-        },
-        {
-          loan_duration_block: 43194,
-          loan_duration_second: 604800,
-          interest_bps_block: 0.00143,
-          interest_bps_block_override: 0.000191,
-          max_ltv_bps: 2869,
-        },
-      ],
-    },
-  },
+  // 'opensea:invisiblefriends': {
+  //   display_name: 'Invisible Friends',
+  //   address: '0x59468516a8259058bad1ca5f8f4bff190d30e066',
+  //   networkType: 'ethereum',
+  //   networkId: 1,
+  //   image_url: 'https://lh3.googleusercontent.com/lW22aEwUE0IqGaYm5HRiMS8DwkDwsdjPpprEqYnBqo2s7gSR-JqcYOjU9LM6p32ujG_YAEd72aDyox-pdCVK10G-u1qZ3zAsn2r9=s130',
+  //   lendingPool: {
+  //     address: '0xCF7ED018Ce445141730Eb3Bca43198621eDB660b',
+  //     loan_options: [
+  //       {
+  //         loan_duration_block: 18513,
+  //         loan_duration_second: 259200,
+  //         interest_bps_block: 0.00156,
+  //         interest_bps_block_override: 0.000209,
+  //         max_ltv_bps: 3000,
+  //       },
+  //       {
+  //         loan_duration_block: 43194,
+  //         loan_duration_second: 604800,
+  //         interest_bps_block: 0.00143,
+  //         interest_bps_block_override: 0.000191,
+  //         max_ltv_bps: 2869,
+  //       },
+  //     ],
+  //   },
+  // },
   'opensea:azuki': {
     display_name: 'Azuki',
     address: '0xed5af388653567af2f388e6224dc7c4b3241c544',
@@ -261,32 +280,32 @@ export const supportedCollections: { [key: string]: any } = {
       ]
     }
   },
-  'opensea:irenedao': {
-    display_name: 'IreneDAO',
-    address: '0x13015585932752a8e6dc24be6c07c420381af53d',
-    networkType: 'ethereum',
-    networkId: 1,
-    image_url: 'https://lh3.googleusercontent.com/kr2NzPNWyuQGaPx2KMDT7kHsMCkGSf27fD8pJkg0fEcBCQYitcSo6VMwJIdSWq35P8oveAQ1z7VvROfxY4O9F_sXHfcmm4_wpUEJDw=s130',
-    lendingPool: {
-      address: '0x0783Dd1819337664bEa591AB9FF281d12022Fdc0',
-      loan_options: [
-        {
-          loan_duration_block: 18513,
-          loan_duration_second: 259200,
-          interest_bps_block: 0.00156,
-          interest_bps_block_override: 0,
-          max_ltv_bps: 2800,
-        },
-        {
-          loan_duration_block: 43194,
-          loan_duration_second: 604800,
-          interest_bps_block: 0.00143,
-          interest_bps_block_override: 0.000168,
-          max_ltv_bps: 2500,
-        },
-      ],
-    },
-  },
+  // 'opensea:irenedao': {
+  //   display_name: 'IreneDAO',
+  //   address: '0x13015585932752a8e6dc24be6c07c420381af53d',
+  //   networkType: 'ethereum',
+  //   networkId: 1,
+  //   image_url: 'https://lh3.googleusercontent.com/kr2NzPNWyuQGaPx2KMDT7kHsMCkGSf27fD8pJkg0fEcBCQYitcSo6VMwJIdSWq35P8oveAQ1z7VvROfxY4O9F_sXHfcmm4_wpUEJDw=s130',
+  //   lendingPool: {
+  //     address: '0x0783Dd1819337664bEa591AB9FF281d12022Fdc0',
+  //     loan_options: [
+  //       {
+  //         loan_duration_block: 18513,
+  //         loan_duration_second: 259200,
+  //         interest_bps_block: 0.00156,
+  //         interest_bps_block_override: 0,
+  //         max_ltv_bps: 2800,
+  //       },
+  //       {
+  //         loan_duration_block: 43194,
+  //         loan_duration_second: 604800,
+  //         interest_bps_block: 0.00143,
+  //         interest_bps_block_override: 0.000168,
+  //         max_ltv_bps: 2500,
+  //       },
+  //     ],
+  //   },
+  // },
   'opensea:pudgypenguins': {
     display_name: 'Pudgy Penguins',
     address: '0xbd3531da5cf5857e7cfaa92426877b022e612cf8',
