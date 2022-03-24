@@ -39,11 +39,11 @@ function normalizeUri(uri: string) {
 }
 
 function delay(t: number, val?:any) {
-  return new Promise(function (resolve) {
-    setTimeout(function () {
-      resolve(val);
-    }, t);
-  });
+  return new Promise(function(resolve) {
+    setTimeout(function() {
+      resolve(val)
+    }, t)
+  })
 }
 
 /**
@@ -60,7 +60,7 @@ export default async function getNFTsByOwner({ blockchain, collectionOrCollectio
     const apiKey = appConf.moralisAPIKey
 
     if (!apiKey) throw failure('MISSING_API_KEY')
-    
+
     await delay(100 * index)
 
     const nftsRaw = await axios.get(`https://deep-index.moralis.io/api/v2/${ownerAddress}/nft?chain=eth&format=decimal`, {
