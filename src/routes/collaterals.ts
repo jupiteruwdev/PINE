@@ -14,7 +14,7 @@ router.get('/', async (req, res, next) => {
 
     if (!ownerAddress) throw Error('Invalid owner address')
 
-    const collaterals = await getNFTsByOwner({ blockchain: EthBlockchain(networkId), ownerAddress, populateMetadata: true })
+    const collaterals = await getNFTsByOwner({ blockchain: EthBlockchain(networkId), ownerAddress, populateMetadata: true, index: 0 })
     const payload = serializeNFTs(collaterals)
 
     res.status(200).json(payload)
