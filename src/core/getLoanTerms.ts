@@ -37,7 +37,7 @@ export default async function getLoanTerms({ blockchain, collectionId, nftId }: 
 
     const contract = await getPoolContract({ blockchain, poolAddress: pool.address })
 
-    const valuation = await getCollectionValuation({ blockchain, collectionId })
+    const valuation = await getCollectionValuation({ collection })
     const { signature, issuedAtBlock, expiresAtBlock } = await signValuation({ blockchain, nftId, collectionAddress: collection.address, poolAddress: pool.address, valuation })
 
     const loanTerms: LoanTerms = {
@@ -53,7 +53,7 @@ export default async function getLoanTerms({ blockchain, collectionId, nftId }: 
     }
 
     loanTerms.options.map(option => {
-      option.maxBorrow = $ETH(option.maxLTVBPS.div(10_000).times(loanTerms.valuation.value.amount))
+      option.maxBorrow = $ETH(option.maxLTVBPS.div(10_000).times(loanTerms.valuation.value?.amount ?? 0))
     })
 
     logger.info(`Fetching loan terms for NFT ID <${nftId}> and collection ID <${collectionId}> on blockchain <${JSON.stringify(blockchain)}>... OK`, loanTerms)

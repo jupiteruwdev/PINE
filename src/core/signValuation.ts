@@ -32,7 +32,7 @@ export default async function signValuation({ blockchain, nftId, poolAddress, co
     const contractParams = [
       collectionAddress,
       _.toNumber(nftId),
-      web3.utils.toWei(_.toString(valuation.value.amount)),
+      web3.utils.toWei(_.toString(valuation.value?.amount)),
       expiresAtBlock,
     ]
 
