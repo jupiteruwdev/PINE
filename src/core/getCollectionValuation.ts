@@ -35,7 +35,7 @@ export default async function getCollectionValuation({ collection }: Params): Pr
       collection,
       value: $ETH(0.1),
       value24Hr: $ETH(1),
-      value1DTradeAvg: $ETH(1),
+      value1DReference: $ETH(1),
     }
   }
 
@@ -46,7 +46,7 @@ export default async function getCollectionValuation({ collection }: Params): Pr
       collection,
       value: undefined,
       value24Hr: undefined,
-      value1DTradeAvg: $ETH(web3.utils.fromWei(collectionValuation.price)),
+      value1DReference: $ETH(web3.utils.fromWei(collectionValuation.price)),
     }
   }
   else {
@@ -72,7 +72,7 @@ export default async function getCollectionValuation({ collection }: Params): Pr
           collection,
           value: $ETH(valueEth),
           value24Hr: $ETH(average24HrPriceEth),
-          value1DTradeAvg: $ETH(web3.utils.fromWei(collectionValuation.price)),
+          value1DReference: $ETH(web3.utils.fromWei(collectionValuation.price)),
         }
 
         logger.info(`Fetching valuation for collection ID <${collectionId}>... OK`, valuation)
