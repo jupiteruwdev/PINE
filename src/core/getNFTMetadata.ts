@@ -1,6 +1,5 @@
 import axios from 'axios'
 import ERC721EnumerableABI from '../abis/ERC721Enumerable.json'
-import { findOne } from '../db/collections'
 import Blockchain from '../entities/lib/Blockchain'
 import { NFTMetadata } from '../entities/lib/NFT'
 import { getEthWeb3 } from '../utils/ethereum'
@@ -23,9 +22,6 @@ function normalizeUri(uri: string) {
 export default async function getNFTMetadata({ blockchain, collectionAddress, nftId }: Params): Promise<NFTMetadata> {
   switch (blockchain.network) {
   case 'ethereum': {
-    const collection = await findOne({ address: collectionAddress, blockchain })
-
-    if (!collection) throw failure('UNSUPPORTED_COLLECTION')
 
     const web3 = getEthWeb3(blockchain.networkId)
     const contract = new web3.eth.Contract(ERC721EnumerableABI as any, collectionAddress)

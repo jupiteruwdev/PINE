@@ -6,6 +6,7 @@ import NFT from '../entities/lib/NFT'
 import failure from '../utils/failure'
 import axios from 'axios'
 import appConf from '../app.conf'
+import getNFTMetadata from './getNFTMetadata'
 
 type Params = {
   /**
@@ -72,8 +73,11 @@ export default async function getNFTsByOwner({ blockchain, collectionOrCollectio
 
     const nfts: NFT[] = (await Promise.all(nftsRaw.data.result.map(async (value:any) => {
       const collection = await findOneCollection({ address: value.token_address, blockchain })
-      if (!collection) return undefined
+
       value.metadata = JSON.parse(value.metadata)
+      if (!value.metadata?.image) {
+        value.metadata = await getNFTMetadata({ blockchain, collectionAddress: value.token_address, nftId: value.token_id })
+      }
       return {
         collection: {
           address: value.token_address,
@@ -83,7 +87,7 @@ export default async function getNFTsByOwner({ blockchain, collectionOrCollectio
         },
         id: value.token_id,
         ownerAddress: value.owner_of,
-        imageUrl: normalizeUri(value.metadata?.image ?? ''),
+        imageUrl: normalizeUri(value.metadata?.image ?? value.metadata.imageUrl ?? ''),
         name: value.metadata?.name ?? (collection?.name ?? value.name) + ' #' + value.token_id,
       }
     }))).filter(e => e)
