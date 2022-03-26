@@ -58,6 +58,25 @@ export const supportedCollections: { [key: string]: any } = {
       ],
     },
   },
+  'opensea:genesis-creepz': {
+    display_name: 'Creepz Genesis',
+    address: '0xfe8c6d19365453d26af321d0e8c910428c23873f',
+    networkType: 'ethereum',
+    networkId: 1,
+    image_url: 'https://lh3.googleusercontent.com/r_FGZQ0mgacLAOzH1MxC9n-yyygNmg37QyjYvM3g4HCl1mOkeGif7_8IW62v_R4Tvx9O9EWdHkNmiQQW30DNxwcvuSbg5EM1FQeSDIo=s130',
+    lendingPool: {
+      address: '0xf9B168fd0bf7BF1A36eD1ad29dd899607eb8023F',
+      loan_options: [
+        {
+          loan_duration_block: 86388,
+          loan_duration_second: 1209600,
+          interest_bps_block: 0.00138,
+          interest_bps_block_override: 0.000172,
+          max_ltv_bps: 4000,
+        },
+      ],
+    },
+  },
   'opensea:tubby-cats': {
     display_name: 'tubby cats by tubby collective',
     address: '0xca7ca7bcc765f77339be2d648ba53ce9c8a262bd',
