@@ -7,6 +7,8 @@ import failure from '../utils/failure'
 import axios from 'axios'
 import appConf from '../app.conf'
 import getNFTMetadata from './getNFTMetadata'
+import { Connection, PublicKey } from '@solana/web3.js'
+import { Metadata } from '@metaplex-foundation/mpl-token-metadata'
 
 type Params = {
   /**
@@ -101,6 +103,63 @@ export default async function getNFTsByOwner({ blockchain, collectionOrCollectio
     }
 
     return nfts
+  }
+  case 'solana':{
+    const apiKey = appConf.moralisAPIKey
+
+    if (!apiKey) throw failure('MISSING_API_KEY')
+
+    const { data: nftsRaw } = await axios.get(`https://solana-gateway.moralis.io/account/${blockchain.networkId}/${ownerAddress}/nft`, {
+      headers: {
+        'accept': 'application/json',
+        'X-API-Key': apiKey,
+      },
+    })
+
+    return (await Promise.all(nftsRaw.map(async (value:any) => {
+      try {
+        const { data: nftMeta } = await axios.get(`https://solana-gateway.moralis.io/nft/${blockchain.networkId}/${value.mint}/metadata`, {
+          headers: {
+            'accept': 'application/json',
+            'X-API-Key': apiKey,
+          },
+        })
+        const collection = await findOneCollection({ address: nftMeta.metaplex.updateAuthority, blockchain })
+        const { data } = await axios.get(nftMeta.metaplex.metadataUri)
+        return {
+          collection: {
+            address: nftMeta.metaplex.updateAuthority,
+            blockchain,
+            id: collection?.id ?? '',
+            name: collection?.name ?? nftMeta.symbol,
+          },
+          id: value.associatedTokenAddress,
+          ownerAddress,
+          imageUrl: normalizeUri(data.image ?? ''),
+          name: nftMeta.name ?? (collection?.name ?? value.name) + ' #' + value.token_id,
+        }
+      }
+      catch {
+        const connection = new Connection('https://api.mainnet-beta.solana.com')
+        const mintPubkey = new PublicKey(value.mint)
+        const tokenmetaPubkey = await Metadata.getPDA(mintPubkey)
+        const tokenmeta = await Metadata.load(connection, tokenmetaPubkey)
+        const collection = await findOneCollection({ address: tokenmeta.data.updateAuthority, blockchain })
+        const { data } = await axios.get(tokenmeta.data.data.uri)
+        return {
+          collection: {
+            address: tokenmeta.data.updateAuthority,
+            blockchain,
+            id: collection?.id ?? '',
+            name: collection?.name ?? tokenmeta.data.data.symbol,
+          },
+          id: value.associatedTokenAddress,
+          ownerAddress,
+          imageUrl: normalizeUri(data.image ?? ''),
+          name: tokenmeta.data.data.name ?? (collection?.name ?? value.name) + ' #' + value.token_id,
+        }
+      }
+    }))).filter(e => e)
   }
   default:
     throw failure('UNSUPPORTED_BLOCKCHAIN')

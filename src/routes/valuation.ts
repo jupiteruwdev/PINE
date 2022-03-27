@@ -11,7 +11,7 @@ import Collection from '../entities/lib/Collection'
 const router = Router()
 
 router.get('/', async (req, res, next) => {
-  const address = req.query.collection_address?.toString() ?? ''
+  const address = req.query.collectionAddress?.toString() ?? ''
   const networkId = parseEthNetworkId(req.query.networkId ?? EthereumNetwork.MAIN)
   const collection: Collection = await findOneCollection({ address, blockchain: EthBlockchain(networkId) }) ?? {
     address,
