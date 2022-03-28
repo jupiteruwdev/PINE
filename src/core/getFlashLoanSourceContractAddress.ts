@@ -27,6 +27,9 @@ export default async function getFlashLoanSourceContractAddress({ blockchain, po
     return poolsWithFundsource[0].address
   }
   else {
+    const tmpContract = await getPoolContract({ blockchain, poolAddress: flashLoanSourceContractAddresses[Number(blockchain.networkId)] })
+    const fundSource2 = await tmpContract.methods._fundSource().call()
+    if (fundSource === fundSource2) throw failure('NO_FLASHLOAN_POOL')
     const capacityEth = await getPoolCapacity({ blockchain, poolAddress: flashLoanSourceContractAddresses[Number(blockchain.networkId)] })
     if (capacityEth.amount.gte(web3.utils.fromWei(flashLoanAmount))) return flashLoanSourceContractAddresses[Number(blockchain.networkId)]
     else throw failure('NO_FLASHLOAN_POOL')

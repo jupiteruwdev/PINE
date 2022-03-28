@@ -32,8 +32,12 @@ export default async function getNFTMetadata({ blockchain, collectionAddress, nf
     const uri = await contract.methods.tokenURI(nftId).call()
 
     const { data: metadata } = await (() => {
-      if (uri.slice(0, 4) === 'data') {
+      if (uri.indexOf('data:application/json;base64')!==-1) {
         return { data: JSON.parse(atob(uri.split(',')[1])) }
+      }
+      else if (uri.indexOf('data:application/json;utf8')!==-1) {
+        const firstComma = uri.indexOf(',')
+        return { data: JSON.parse(uri.slice(firstComma +1, uri.length)) }
       }
       return axios.get(normalizeUri(uri))
     })()
