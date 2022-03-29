@@ -132,7 +132,7 @@ export async function findAll({ collectionAddress, collectionId, blockchains }: 
         id: key,
       })
 
-      if (collectionAddress !== undefined && collectionAddress !== collectionAddress) continue
+      if (collectionAddress !== undefined && collectionAddress.toLowerCase() !== collection.address.toLowerCase()) continue
 
       const pool = await getPoolContract({ blockchain: blockchainDict.ethereum, poolAddress: data.lendingPool.address })
 
