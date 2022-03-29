@@ -152,6 +152,25 @@ export const supportedCollections: { [key: string]: any } = {
       ],
     },
   },
+  'opensea:world-of-women-galaxy': {
+    display_name: 'World of Women Galaxy',
+    address: '0xf61f24c2d93bf2de187546b14425bf631f28d6dc',
+    networkType: 'ethereum',
+    networkId: 1,
+    image_url: 'https://lh3.googleusercontent.com/hP4JJhiY5yXu1mCvNycTke2O_xbtgIFfkLTjfT7C9TNKinkGpP2COikt7cwn0xqzoATRNC21wsiwy_Fe-MQ3PPTgRjkbbCfJf__L=s130',
+    lendingPool: {
+      address: '0x732E5339B8E7e3793Bc94F6b2DBaa18ef2591776',
+      loan_options: [
+        {
+          loan_duration_block: 86388,
+          loan_duration_second: 1209600,
+          interest_bps_block: 0.00138,
+          interest_bps_block_override: 0.000172,
+          max_ltv_bps: 5000,
+        },
+      ],
+    },
+  },
   'opensea:cyberbrokers': {
     display_name: 'CyberBrokers',
     address: '0x892848074ddea461a15f337250da3ce55580ca85',
