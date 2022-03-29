@@ -75,7 +75,7 @@ export async function findOne({ address, collectionAddress, collectionId, blockc
   const rawData = supportedCollections
   const matchedId = _.findKey(rawData, (val, key) => {
     if (collectionId !== undefined && collectionId !== key) return false
-    if (collectionAddress !== undefined && _.get(val, 'address') !== collectionAddress) return false
+    if (collectionAddress !== undefined && _.get(val, 'address')?.toLowerCase() !== collectionAddress.toLowerCase()) return false
     if (_.get(val, 'networkType') !== blockchain.network) return false
     if (_.toString(_.get(val, 'networkId')) !== blockchain.networkId) return false
     if (address !== undefined && _.get(val, 'lendingPool.address') !== address) return false

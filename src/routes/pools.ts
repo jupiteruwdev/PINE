@@ -22,9 +22,9 @@ router.get('/', async (req, res, next) => {
       blockchains: {
         [blockchain.network]: blockchain.networkId,
       },
+      collectionAddress,
     })
-    const poolsFiltered = pools.filter(e => e.collection.address.toLowerCase() === collectionAddress)
-    const payload = serializePools(poolsFiltered)
+    const payload = serializePools(pools)
     res.status(200).json(payload)
   }
   else {

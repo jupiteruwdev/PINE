@@ -12,6 +12,8 @@ type Params = {
    * `undefined`), all pools of all blockchains in their default network IDs will be returned.
    */
   blockchains?: { [K in AnyBlockchain]?: string }
+
+  collectionAddress?: string
 }
 
 /**
@@ -21,8 +23,8 @@ type Params = {
  *
  * @returns An array of {@link Pool} with usage stats included.
  */
-export default async function getPools({ blockchains }: Params): Promise<Required<Pool>[]> {
-  const pools = await findAllPools({ blockchains })
+export default async function getPools({ blockchains, collectionAddress }: Params): Promise<Required<Pool>[]> {
+  const pools = await findAllPools({ blockchains, collectionAddress })
 
   const poolsWithStats = await Promise.all(pools.map(async pool => {
     const [
