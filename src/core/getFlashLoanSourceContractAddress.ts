@@ -10,7 +10,7 @@ const flashLoanSourceContractAddresses: { [key: number]: any } = {
   1: '0x63ca18f8cb75e28f94cf81901caf1e39657ea256',
 }
 
-export default async function getFlashLoanSourceContractAddress({ blockchain, poolAddress, flashLoanAmount }: {blockchain: Blockchain; poolAddress: string; flashLoanAmount: string}) : Promise<string> {
+export default async function getFlashLoanSourceContractAddress({ blockchain, poolAddress, flashLoanAmount }: { blockchain: Blockchain; poolAddress: string; flashLoanAmount: string }): Promise<string> {
   const contract = await getPoolContract({ blockchain, poolAddress })
   const fundSource = await contract.methods._fundSource().call()
   const pools = (await getPools({ blockchains: { ethereum: blockchain.networkId } }))
