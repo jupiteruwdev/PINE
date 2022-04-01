@@ -1,13 +1,13 @@
 import axios from 'axios'
 import BigNumber from 'bignumber.js'
 import _ from 'lodash'
+import web3 from 'web3'
 import appConf from '../app.conf'
 import Collection from '../entities/lib/Collection'
 import Valuation from '../entities/lib/Valuation'
 import { $ETH } from '../entities/lib/Value'
 import failure from '../utils/failure'
 import logger from '../utils/logger'
-import web3 from 'web3'
 
 type Params = {
   collection: Collection
@@ -15,7 +15,19 @@ type Params = {
 
 export default async function getCollectionValuation({ collection }: Params): Promise<Valuation> {
   logger.info(`Fetching valuation for collection ID <${collection.id}>...`)
+
   const collectionId = collection.id
+
+  // TODO: This is a hack
+  if (collectionId === 'testing') {
+    return {
+      collection,
+      value: $ETH(0.1),
+      value24Hr: $ETH(1),
+      value1DReference: $ETH(1),
+    }
+  }
+
   const matches = collectionId.match(/(.*):(.*)/)
   const venue = matches?.[1]
   const id = matches?.[2]
@@ -28,16 +40,6 @@ export default async function getCollectionValuation({ collection }: Params): Pr
       'X-API-Key': apiKey,
     },
   })
-
-  // TODO: This is a hack
-  if (collectionId === 'testing') {
-    return {
-      collection,
-      value: $ETH(0.1),
-      value24Hr: $ETH(1),
-      value1DReference: $ETH(1),
-    }
-  }
 
   if (!collectionValuation) throw failure('UNSUPPORTED_COLLECTION')
 
