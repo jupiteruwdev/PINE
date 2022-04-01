@@ -4,6 +4,7 @@ import Blockchain from '../entities/lib/Blockchain'
 import { NFTMetadata } from '../entities/lib/NFT'
 import { getEthWeb3 } from '../utils/ethereum'
 import failure from '../utils/failure'
+import normalizeNFTImageUri from '../utils/normalizeNFTImageUri'
 
 type Params = {
   blockchain: Blockchain
@@ -11,18 +12,9 @@ type Params = {
   nftId: string
 }
 
-/**
- * @todo Is this not some kind of hack??
- */
-function normalizeUri(uri: string) {
-  if (uri.slice(0, 4) !== 'ipfs') return uri
-  return uri.replace('ipfs://', 'https://tempus.mypinata.cloud/ipfs/')
-}
-
 export default async function getNFTMetadata({ blockchain, collectionAddress, nftId }: Params): Promise<NFTMetadata> {
   switch (blockchain.network) {
   case 'ethereum': {
-
     const web3 = getEthWeb3(blockchain.networkId)
     const contract = new web3.eth.Contract(ERC721EnumerableABI as any, collectionAddress)
     const uri = await contract.methods.tokenURI(nftId).call()
@@ -35,11 +27,11 @@ export default async function getNFTMetadata({ blockchain, collectionAddress, nf
         const firstComma = uri.indexOf(',')
         return { data: JSON.parse(uri.slice(firstComma +1, uri.length)) }
       }
-      return axios.get(normalizeUri(uri))
+      return axios.get(normalizeNFTImageUri(uri))
     })()
 
     return {
-      imageUrl: normalizeUri(metadata.image),
+      imageUrl: normalizeNFTImageUri(metadata.image),
       name: metadata.name ?? `#${metadata.id ?? nftId}`,
     }
   }
