@@ -1,6 +1,6 @@
 import BigNumber from 'bignumber.js'
 import _ from 'lodash'
-import { supportedCollections } from '../config/supportedCollections'
+import { defaultFees, supportedCollections } from '../config/supportedCollections'
 import getPoolContract from '../core/getPoolContract'
 import Blockchain, { AnyBlockchain, EthBlockchain } from '../entities/lib/Blockchain'
 import LoanOption from '../entities/lib/LoanOption'
@@ -29,6 +29,7 @@ function mapLoanOption(data: Record<string, any>): LoanOption {
     const loanDurationBlocks = _.toNumber(_.get(data, 'loan_duration_block'))
     const loanDurationSeconds = _.toNumber(_.get(data, 'loan_duration_second'))
     const maxLTVBPS = new BigNumber(_.get(data, 'max_ltv_bps'))
+    const fees = defaultFees('ETH')
 
     return {
       interestBPSPerBlockOverride,
@@ -36,6 +37,7 @@ function mapLoanOption(data: Record<string, any>): LoanOption {
       loanDurationBlocks,
       loanDurationSeconds,
       maxLTVBPS,
+      fees,
     }
   }
   catch (err) {
