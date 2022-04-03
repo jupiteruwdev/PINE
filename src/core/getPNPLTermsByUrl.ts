@@ -35,8 +35,6 @@ export default async function getPNPLTermsByUrl({ parsedURL }: Params): Promise<
       collectionId: collection.id,
       nftId,
     })
-
-    break
   }
   case 'testnets.opensea.io': {
     const [, , collectionAddress, nftId] = parsedURL.pathname.split('/')
@@ -52,8 +50,6 @@ export default async function getPNPLTermsByUrl({ parsedURL }: Params): Promise<
       collectionId: collection.id,
       nftId,
     })
-
-    break
   }
   case 'looksrare.org': {
     // https://looksrare.org/collections/0x306b1ea3ecdf94aB739F1910bbda052Ed4A9f949/3060
@@ -69,8 +65,6 @@ export default async function getPNPLTermsByUrl({ parsedURL }: Params): Promise<
       collectionId: collection.id,
       nftId,
     })
-
-    break
   }
   case 'rinkeby.looksrare.org': {
     // https://looksrare.org/collections/0x306b1ea3ecdf94aB739F1910bbda052Ed4A9f949/3060
@@ -86,8 +80,6 @@ export default async function getPNPLTermsByUrl({ parsedURL }: Params): Promise<
       collectionId: collection.id,
       nftId,
     })
-
-    break
   }
   default:
     throw failure('UNSUPPORTED_MARKETPLACE')

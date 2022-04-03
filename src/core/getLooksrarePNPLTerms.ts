@@ -1,9 +1,10 @@
-import axios, { AxiosError } from 'axios'
+import { AxiosError } from 'axios'
 import BigNumber from 'bignumber.js'
 import Blockchain from '../entities/lib/Blockchain'
 import PNPLTerms from '../entities/lib/PNPLTerms'
 import { $WEI } from '../entities/lib/Value'
 import failure from '../utils/failure'
+import getRequest from '../utils/getRequest'
 import logger from '../utils/logger'
 import getFlashLoanSourceContractAddress from './getFlashLoanSourceContractAddress'
 import getLoanTerms from './getLoanTerms'
@@ -36,7 +37,15 @@ export default async function getLooksrarePNPLTerms({ blockchain, collectionId, 
     const pnplContractAddress = pnplContractAddresses[Number(blockchain.networkId)]
 
     try {
-      const { data: lookrareInstructions } = await axios.get(`https://northamerica-northeast1-pinedefi.cloudfunctions.net/looksrare-purchase-generator?nft_address=${loanTerms.collection.address}&token_id=${nftId}&network_id=${blockchain.networkId}&account_address=${pnplContractAddress}`)
+      const lookrareInstructions = await getRequest('/looksrare-purchase-generator', {
+        host: 'https://northamerica-northeast1-pinedefi.cloudfunctions.net',
+        params: {
+          'nft_address': loanTerms.collection.address,
+          'token_id': nftId,
+          'network_id': blockchain.networkId,
+          'account_address': pnplContractAddress,
+        },
+      })
       const flashLoanSourceContractAddress = await getFlashLoanSourceContractAddress({ blockchain, poolAddress: loanTerms.poolAddress, flashLoanAmount: lookrareInstructions.currentPrice })
       const pnplTerms: PNPLTerms = {
         ...loanTerms,

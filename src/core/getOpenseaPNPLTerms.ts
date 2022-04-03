@@ -1,9 +1,10 @@
-import axios, { AxiosError } from 'axios'
+import { AxiosError } from 'axios'
 import BigNumber from 'bignumber.js'
 import Blockchain from '../entities/lib/Blockchain'
 import PNPLTerms from '../entities/lib/PNPLTerms'
 import { $WEI } from '../entities/lib/Value'
 import failure from '../utils/failure'
+import getRequest from '../utils/getRequest'
 import logger from '../utils/logger'
 import getFlashLoanSourceContractAddress from './getFlashLoanSourceContractAddress'
 import getLoanTerms from './getLoanTerms'
@@ -37,7 +38,15 @@ export default async function getOpenseaPNPLTerms({ openseaVersion, blockchain, 
     const pnplContractAddress = pnplContractAddresses[Number(blockchain.networkId)]
 
     try {
-      const { data: openseaInstructions } = await axios.get(`https://us-central1-pinedefi.cloudfunctions.net/opensea-purchase-generator?nft_address=${loanTerms.collection.address}&token_id=${nftId}&network_name=${openseaVersion}&account_address=${pnplContractAddress}`)
+      const openseaInstructions = await getRequest('/opensea-purchase-generator', {
+        host: 'https://us-central1-pinedefi.cloudfunctions.net',
+        params: {
+          'nft_address': loanTerms.collection.address,
+          'token_id': nftId,
+          'network_name': openseaVersion,
+          'account_address': pnplContractAddress,
+        },
+      })
       const flashLoanSourceContractAddress = await getFlashLoanSourceContractAddress({ blockchain, poolAddress: loanTerms.poolAddress, flashLoanAmount: openseaInstructions.currentPrice })
       const pnplTerms: PNPLTerms = {
         ...loanTerms,
