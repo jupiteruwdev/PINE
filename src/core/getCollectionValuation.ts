@@ -7,6 +7,7 @@ import Collection from '../entities/lib/Collection'
 import Valuation from '../entities/lib/Valuation'
 import { $ETH } from '../entities/lib/Value'
 import failure from '../utils/failure'
+import getRequest from '../utils/getRequest'
 import logger from '../utils/logger'
 
 type Params = {
@@ -31,24 +32,28 @@ export default async function getCollectionValuation({ collection }: Params): Pr
   const matches = collectionId.match(/(.*):(.*)/)
   const venue = matches?.[1]
   const id = matches?.[2]
-  const apiKey = appConf.moralisAPIKey
+  const apiKey = appConf.nftbankAPIKey
   if (!apiKey) throw failure('MISSING_API_KEY')
 
-  const { data: collectionValuation } = await axios.get(`https://deep-index.moralis.io/api/v2/nft/${collection.address}/lowestprice?chain=eth&marketplace=opensea&days=1`, {
+  const { data: [collectionValuation] } = await getRequest(`/estimates-v2/floor_price/${collection.address}`, {
     headers: {
       'accept': 'application/json',
       'X-API-Key': apiKey,
     },
+    params: {
+      'chain_id': 'ETHEREUM',
+    },
+    host: 'https://api.nftbank.ai',
   })
 
   if (!collectionValuation) throw failure('UNSUPPORTED_COLLECTION')
-
+  const floorPriceEthRef = collectionValuation.floor_price.filter((e: any) => e.currency_symbol === 'ETH')[0].floor_price
   if (!collectionId) {
     return {
       collection,
       value: undefined,
       value24Hr: undefined,
-      value1DReference: $ETH(web3.utils.fromWei(collectionValuation.price)),
+      value1DReference: $ETH(floorPriceEthRef),
     }
   }
   else {
@@ -74,7 +79,7 @@ export default async function getCollectionValuation({ collection }: Params): Pr
           collection,
           value: $ETH(valueEth),
           value24Hr: $ETH(average24HrPriceEth),
-          value1DReference: $ETH(web3.utils.fromWei(collectionValuation.price)),
+          value1DReference: $ETH(floorPriceEthRef),
         }
 
         logger.info(`Fetching valuation for collection ID <${collectionId}>... OK`, valuation)
