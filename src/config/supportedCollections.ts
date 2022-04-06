@@ -152,6 +152,25 @@ export const supportedCollections: { [key: string]: any } = {
       ],
     },
   },
+  'opensea:clonex': {
+    display_name: 'CLONE X - X TAKASHI MURAKAMI',
+    address: '0x49cf6f5d44e70224e2e23fdcdd2c053f30ada28b',
+    networkType: 'ethereum',
+    networkId: 1,
+    image_url: 'https://lh3.googleusercontent.com/XN0XuD8Uh3jyRWNtPTFeXJg_ht8m5ofDx6aHklOiy4amhFuWUa0JaR6It49AH8tlnYS386Q0TW_-Lmedn0UET_ko1a3CbJGeu5iHMg=s130',
+    lendingPool: {
+      address: '0x7e31f1Dd48A31C4ACAF7D87F5f4B117588488cCb',
+      loan_options: [
+        {
+          loan_duration_block: 86388,
+          loan_duration_second: 1209600,
+          interest_bps_block: 0.00138,
+          interest_bps_block_override: 0.000172,
+          max_ltv_bps: 4000,
+        },
+      ],
+    },
+  },
   'opensea:world-of-women-galaxy': {
     display_name: 'World of Women Galaxy',
     address: '0xf61f24c2d93bf2de187546b14425bf631f28d6dc',
