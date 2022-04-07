@@ -45,8 +45,7 @@ export default async function getEthMainnetNFTsByOwner({
   const apiKey = appConf.moralisAPIKey
   if (!apiKey) throw failure('MISSING_API_KEY')
 
-  const { result } = await getRequest(`/${ownerAddress}/nft`, {
-    host: 'https://deep-index.moralis.io/api/v2',
+  const { result } = await getRequest(`https://deep-index.moralis.io/api/v2/${ownerAddress}/nft`, {
     headers: {
       'accept': 'application/json',
       'X-API-Key': apiKey,

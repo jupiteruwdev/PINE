@@ -1,7 +1,5 @@
-import axios from 'axios'
 import BigNumber from 'bignumber.js'
 import _ from 'lodash'
-import web3 from 'web3'
 import appConf from '../app.conf'
 import Collection from '../entities/lib/Collection'
 import Valuation from '../entities/lib/Valuation'
@@ -35,7 +33,7 @@ export default async function getCollectionValuation({ collection }: Params): Pr
   const apiKey = appConf.nftbankAPIKey
   if (!apiKey) throw failure('MISSING_API_KEY')
 
-  const { data: [collectionValuation] } = await getRequest(`/estimates-v2/floor_price/${collection.address}`, {
+  const { data: [collectionValuation] } = await getRequest(`https://api.nftbank.ai/estimates-v2/floor_price/${collection.address}`, {
     headers: {
       'accept': 'application/json',
       'X-API-Key': apiKey,
@@ -43,11 +41,12 @@ export default async function getCollectionValuation({ collection }: Params): Pr
     params: {
       'chain_id': 'ETHEREUM',
     },
-    host: 'https://api.nftbank.ai',
   })
 
   if (!collectionValuation) throw failure('UNSUPPORTED_COLLECTION')
+
   const floorPriceEthRef = collectionValuation.floor_price.filter((e: any) => e.currency_symbol === 'ETH')[0].floor_price
+
   if (!collectionId) {
     return {
       collection,
@@ -66,7 +65,7 @@ export default async function getCollectionValuation({ collection }: Params): Pr
 
         if (!apiKey) throw failure('FETCH_OPENSEA_VALUATION_FAILURE')
 
-        const { data: collectionData } = await axios.get(`https://api.opensea.io/api/v1/collection/${id}/stats`, {
+        const collectionData = await getRequest(`https://api.opensea.io/api/v1/collection/${id}/stats`, {
           headers: {
             'X-API-KEY': apiKey,
           },

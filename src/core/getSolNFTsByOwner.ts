@@ -36,8 +36,7 @@ async function getNFTDataFromMoralis(id: string, mintAddress: string, networkId:
   const apiKey = appConf.moralisAPIKey
   if (!apiKey) throw failure('MISSING_API_KEY')
 
-  const data = await getRequest(`/nft/${networkId}/${mintAddress}/metadata`, {
-    host: 'https://solana-gateway.moralis.io',
+  const data = await getRequest(`https://solana-gateway.moralis.io/nft/${networkId}/${mintAddress}/metadata`, {
     headers: {
       'accept': 'application/json',
       'X-API-Key': apiKey,
@@ -92,8 +91,7 @@ export default async function getSolNFTsByOwner({
   const apiKey = appConf.moralisAPIKey
   if (!apiKey) throw failure('MISSING_API_KEY')
 
-  const result = await getRequest(`/account/${blockchain.networkId}/${ownerAddress}/nft`, {
-    host: 'https://solana-gateway.moralis.io',
+  const result = await getRequest(`https://solana-gateway.moralis.io/account/${blockchain.networkId}/${ownerAddress}/nft`, {
     headers: {
       'accept': 'application/json',
       'X-API-Key': apiKey,
@@ -134,7 +132,7 @@ export default async function getSolNFTsByOwner({
       if (!metadataUri) return undefined
 
       try {
-        const res = await getRequest('', { host: metadataUri })
+        const res = await getRequest(metadataUri)
         const name = _.get(res, 'name')
         const image = _.get(res, 'image')
 
