@@ -21,11 +21,11 @@ export default async function getNFTMetadata({ blockchain, collectionAddress, nf
 
     const metadata = await (() => {
       if (uri.indexOf('data:application/json;base64') !== -1) {
-        return { data: JSON.parse(atob(uri.split(',')[1])) }
+        return JSON.parse(atob(uri.split(',')[1]))
       }
       else if (uri.indexOf('data:application/json;utf8') !== -1) {
         const firstComma = uri.indexOf(',')
-        return { data: JSON.parse(uri.slice(firstComma + 1, uri.length)) }
+        return JSON.parse(uri.slice(firstComma + 1, uri.length))
       }
 
       return getRequest(normalizeNFTImageUri(uri))
