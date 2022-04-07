@@ -1,5 +1,6 @@
 import _ from 'lodash'
 import appConf from '../app.conf'
+import { findOne as findOneCollection } from '../db/collections'
 import { EthBlockchain } from '../entities/lib/Blockchain'
 import Collection from '../entities/lib/Collection'
 import EthereumNetwork from '../entities/lib/EthereumNetwork'
@@ -65,6 +66,9 @@ export default async function getEthMainnetNFTsByOwner({
     if (!nftId) return undefined
 
     if (collectionAddressFilter && collectionAddressFilter.toLowerCase() !== collectionAddress.toLowerCase()) return undefined
+
+    // TODO: Remove this when NFT Portfolio Viewer is implemented.
+    if (!(await findOneCollection({ address: collectionAddress }))) return undefined
 
     let metadata: NFTMetadata | undefined
 
