@@ -1,4 +1,3 @@
-import { AxiosError } from 'axios'
 import BigNumber from 'bignumber.js'
 import Blockchain from '../entities/lib/Blockchain'
 import PNPLTerms from '../entities/lib/PNPLTerms'
@@ -60,14 +59,8 @@ export default async function getOpenseaPNPLTerms({ openseaVersion, blockchain, 
 
       return pnplTerms
     }
-    catch (error: any) {
-      if ((error as AxiosError).response) {
-        // The request was made and the server responded with a status code
-        // that falls out of the range of 2xx
-        logger.error(`Failed to get OPenSea calldata ${JSON.stringify(error.response.data)}`)
-        throw failure('FETCH_PNPL_TERMS_FAILURE', error.response.data.details)
-      }
-      throw error
+    catch (err) {
+      throw failure('FETCH_PNPL_TERMS_FAILURE', err)
     }
   }
   default:
