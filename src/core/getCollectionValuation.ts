@@ -1,7 +1,6 @@
 import axios from 'axios'
 import BigNumber from 'bignumber.js'
 import _ from 'lodash'
-import web3 from 'web3'
 import appConf from '../app.conf'
 import Collection from '../entities/lib/Collection'
 import Valuation from '../entities/lib/Valuation'

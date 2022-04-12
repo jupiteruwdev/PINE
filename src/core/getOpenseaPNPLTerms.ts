@@ -46,10 +46,11 @@ export default async function getOpenseaPNPLTerms({ openseaVersion, blockchain, 
           'account_address': pnplContractAddress,
         },
       })
-      const flashLoanSourceContractAddress = await getFlashLoanSourceContractAddress({ blockchain, poolAddress: loanTerms.poolAddress, flashLoanAmount: openseaInstructions.currentPrice })
+      const flashLoanSourceContract = await getFlashLoanSourceContractAddress({ blockchain, poolAddress: loanTerms.poolAddress, flashLoanAmount: openseaInstructions.currentPrice })
       const pnplTerms: PNPLTerms = {
         ...loanTerms,
-        flashLoanSourceContractAddress,
+        flashLoanSourceContractAddress: flashLoanSourceContract.address,
+        maxFlashloanValue: flashLoanSourceContract.maxFlashloanValue,
         listedPrice: $WEI(new BigNumber(openseaInstructions.currentPrice)),
         marketplaceContractAddress: openseaContractAddresses[openseaVersion],
         marketplaceName: 'OpenSea',
