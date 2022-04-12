@@ -68,7 +68,8 @@ export default async function getEthMainnetNFTsByOwner({
     if (collectionAddressFilter && collectionAddressFilter.toLowerCase() !== collectionAddress.toLowerCase()) return undefined
 
     // TODO: Remove this when NFT Portfolio Viewer is implemented.
-    if (!(await findOneCollection({ address: collectionAddress }))) return undefined
+    const collection = (await findOneCollection({ address: collectionAddress }))
+    if (!collection) return undefined
 
     let metadata: NFTMetadata | undefined
 
@@ -99,12 +100,7 @@ export default async function getEthMainnetNFTsByOwner({
     if (populateMetadata && !metadata) return undefined
 
     return {
-      collection: {
-        address: collectionAddress,
-        blockchain,
-        id: '', // TODO: Remove this when we get rid of id in Collection
-        name: value.name,
-      },
+      collection,
       id: value.token_id,
       ownerAddress: value.owner_of,
       name: `#${value.token_id}`,
