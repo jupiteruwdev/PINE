@@ -1,4 +1,3 @@
-import axios from 'axios'
 import BigNumber from 'bignumber.js'
 import _ from 'lodash'
 import Web3 from 'web3'
@@ -6,6 +5,7 @@ import appConf from '../app.conf'
 import EthereumNetwork from '../entities/lib/EthereumNetwork'
 import Value, { $USD, isValue } from '../entities/lib/Value'
 import failure from './failure'
+import getRequest from './getRequest'
 
 const web3s: Record<string, Web3 | undefined> = {
   [EthereumNetwork.MAIN]: undefined,
@@ -30,7 +30,7 @@ export function getEthWeb3(networkId: string = EthereumNetwork.MAIN) {
 
 export async function getEthValueUSD(amountEth: number | string | BigNumber | Value<'ETH'> = 1) {
   try {
-    const { data } = await axios.get('https://api.binance.com/api/v3/ticker/price?symbol=ETHUSDT')
+    const data = await getRequest('https://api.binance.com/api/v3/ticker/price?symbol=ETHUSDT')
     const amount = new BigNumber(isValue(amountEth) ? amountEth.amount : amountEth)
     const price = new BigNumber(_.get(data, 'price'))
 
@@ -43,7 +43,7 @@ export async function getEthValueUSD(amountEth: number | string | BigNumber | Va
 
 export async function getEthValueUSD24Hr(amountEth: number | string | BigNumber | Value<'ETH'> = 1) {
   try {
-    const { data } = await axios.get('https://api.binance.com/api/v3/ticker/24hr?symbol=ETHUSDT')
+    const data = await getRequest('https://api.binance.com/api/v3/ticker/24hr?symbol=ETHUSDT')
     const amount = new BigNumber(isValue(amountEth) ? amountEth.amount : amountEth)
     const price = new BigNumber(_.get(data, 'prevClosePrice'))
 

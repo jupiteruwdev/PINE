@@ -1,9 +1,9 @@
-import axios from 'axios'
 import ERC721EnumerableABI from '../abis/ERC721Enumerable.json'
 import Blockchain from '../entities/lib/Blockchain'
 import { NFTMetadata } from '../entities/lib/NFT'
 import { getEthWeb3 } from '../utils/ethereum'
 import failure from '../utils/failure'
+import getRequest from '../utils/getRequest'
 import normalizeNFTImageUri from '../utils/normalizeNFTImageUri'
 
 type Params = {
@@ -19,15 +19,16 @@ export default async function getNFTMetadata({ blockchain, collectionAddress, nf
     const contract = new web3.eth.Contract(ERC721EnumerableABI as any, collectionAddress)
     const uri = await contract.methods.tokenURI(nftId).call()
 
-    const { data: metadata } = await (() => {
-      if (uri.indexOf('data:application/json;base64')!==-1) {
-        return { data: JSON.parse(atob(uri.split(',')[1])) }
+    const metadata = await (() => {
+      if (uri.indexOf('data:application/json;base64') !== -1) {
+        return JSON.parse(atob(uri.split(',')[1]))
       }
-      else if (uri.indexOf('data:application/json;utf8')!==-1) {
+      else if (uri.indexOf('data:application/json;utf8') !== -1) {
         const firstComma = uri.indexOf(',')
-        return { data: JSON.parse(uri.slice(firstComma +1, uri.length)) }
+        return JSON.parse(uri.slice(firstComma + 1, uri.length))
       }
-      return axios.get(normalizeNFTImageUri(uri))
+
+      return getRequest(normalizeNFTImageUri(uri))
     })()
 
     return {
