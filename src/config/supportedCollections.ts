@@ -9,15 +9,15 @@ export const routerAddresses: { [key: number]: any } = {
   1: '0x1E23F78896F6d4F0e25D7bcD49bb2f7eee62EF98',
 }
 
-export const defaultFees = (currency: AnyCurrency): Fee[] => {
-  if (currency === 'ETH') return [
+export const defaultFees = (currency: AnyCurrency, poolVersion: number): Fee[] => {
+  if (currency === 'ETH' && poolVersion > 1) return [
     {
       type: 'fixed',
       value: $ETH(0.01),
     },
     {
       type: 'percentage',
-      value: 0.035
+      value: 0.00035
     }
   ]
   return []

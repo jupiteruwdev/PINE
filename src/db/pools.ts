@@ -22,14 +22,15 @@ type FindAllFilter = {
   blockchains?: { [K in AnyBlockchain]?: string }
 }
 
-function mapLoanOption(data: Record<string, any>): LoanOption {
+// TODO: remove version param when pool is moved into loan optiom
+function mapLoanOption(data: Record<string, any>, version: number): LoanOption {
   try {
     const interestBPSPerBlock = new BigNumber(_.get(data, 'interest_bps_block'))
     const interestBPSPerBlockOverride = _.get(data, 'interest_bps_block_override') === undefined ? undefined : new BigNumber(_.get(data, 'interest_bps_block_override'))
     const loanDurationBlocks = _.toNumber(_.get(data, 'loan_duration_block'))
     const loanDurationSeconds = _.toNumber(_.get(data, 'loan_duration_second'))
     const maxLTVBPS = new BigNumber(_.get(data, 'max_ltv_bps'))
-    const fees = defaultFees('ETH')
+    const fees = defaultFees('ETH', version)
 
     return {
       interestBPSPerBlockOverride,
@@ -50,7 +51,7 @@ function mapPool(data: Record<string, any>): Pool {
   const address = _.get(data, 'address')
   const blockchain = _.get(data, 'blockchain')
   const collection = _.get(data, 'collection')
-  const loanOptions = _.get(data, 'loan_options', []).map((t: any) => mapLoanOption(t))
+  const loanOptions = _.get(data, 'loan_options', []).map((t: any) => mapLoanOption(t, version))
 
   if (!_.isString(address)) throw TypeError('Failed to map key "address"')
   if (!blockchain) throw TypeError('Failed to map key "blockchain"')
