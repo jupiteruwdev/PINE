@@ -49,7 +49,7 @@ export default async function getLooksrarePNPLTerms({ blockchain, collectionId, 
       const pnplTerms: PNPLTerms = {
         ...loanTerms,
         flashLoanSourceContractAddress: flashLoanSourceContract.address,
-        maxFlashloanValue: flashLoanSourceContract.maxFlashloanValue,
+        maxFlashLoanValue: flashLoanSourceContract.maxFlashLoanValue,
         listedPrice: $WEI(new BigNumber(lookrareInstructions.currentPrice)),
         marketplaceContractAddress: looksrareContractAddresses[Number(blockchain.networkId)],
         marketplaceName: 'Looksrare',

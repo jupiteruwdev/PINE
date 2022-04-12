@@ -50,7 +50,7 @@ export default async function getOpenseaPNPLTerms({ openseaVersion, blockchain, 
       const pnplTerms: PNPLTerms = {
         ...loanTerms,
         flashLoanSourceContractAddress: flashLoanSourceContract.address,
-        maxFlashloanValue: flashLoanSourceContract.maxFlashloanValue,
+        maxFlashLoanValue: flashLoanSourceContract.maxFlashLoanValue,
         listedPrice: $WEI(new BigNumber(openseaInstructions.currentPrice)),
         marketplaceContractAddress: openseaContractAddresses[openseaVersion],
         marketplaceName: 'OpenSea',
