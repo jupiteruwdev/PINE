@@ -10,7 +10,7 @@ const flashLoanSourceContractAddresses: { [key: number]: any } = {
   1: '0x63ca18f8cb75e28f94cf81901caf1e39657ea256',
 }
 
-export default async function getFlashLoanSourceContractAddress({ blockchain, poolAddress, flashLoanAmount }: { blockchain: Blockchain; poolAddress: string; flashLoanAmount: string }): Promise<{ address: string; maxFlashLoanValue: Value }> {
+export default async function getFlashLoanSource({ blockchain, poolAddress, flashLoanAmount }: { blockchain: Blockchain; poolAddress: string; flashLoanAmount: string }): Promise<{ address: string; capacity: Value }> {
   const contract = await getPoolContract({ blockchain, poolAddress })
   const fundSource = await contract.methods._fundSource().call()
   const pools = (await getPools({ blockchains: { ethereum: blockchain.networkId } }))
@@ -23,11 +23,11 @@ export default async function getFlashLoanSourceContractAddress({ blockchain, po
       fundSource,
     }
   }))).filter(e => e.fundSource !== fundSource)
-  if (poolsWithFundsource.length > 0) {
-    const sortedPools = poolsWithFundsource.sort((a, b) => b.valueLocked.amount.minus(b.utilization.amount).minus(a.valueLocked.amount.minus(a.utilization.amount)).toNumber())
+  if (poolsWithFundSource.length > 0) {
+    const sortedPools = poolsWithFundSource.sort((a, b) => b.valueLocked.amount.minus(b.utilization.amount).minus(a.valueLocked.amount.minus(a.utilization.amount)).toNumber())
     return {
       address: sortedPools[0].address,
-      maxFlashLoanValue: $ETH(sortedPools[0].valueLocked.amount.minus(sortedPools[0].utilization.amount)),
+      capacity: $ETH(sortedPools[0].valueLocked.amount.minus(sortedPools[0].utilization.amount)),
     }
   }
   else {
@@ -37,7 +37,7 @@ export default async function getFlashLoanSourceContractAddress({ blockchain, po
     const capacityEth = await getPoolCapacity({ blockchain, poolAddress: flashLoanSourceContractAddresses[Number(blockchain.networkId)] })
     return {
       address: flashLoanSourceContractAddresses[Number(blockchain.networkId)],
-      maxFlashLoanValue: capacityEth,
+      capacity: capacityEth,
     }
   }
 }
