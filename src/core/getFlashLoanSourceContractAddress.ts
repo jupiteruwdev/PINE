@@ -15,7 +15,7 @@ export default async function getFlashLoanSourceContractAddress({ blockchain, po
   const fundSource = await contract.methods._fundSource().call()
   const pools = (await getPools({ blockchains: { ethereum: blockchain.networkId } }))
     .filter(e => e.version > 1 && e.address !== poolAddress)
-  const poolsWithFundsource = (await Promise.all(pools.map(async e => {
+  const poolsWithFundSource = (await Promise.all(pools.map(async e => {
     const tmpContract = await getPoolContract({ blockchain, poolAddress: e.address })
     const fundSource = await tmpContract.methods._fundSource().call()
     return {
