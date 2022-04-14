@@ -5,7 +5,7 @@ import { $WEI } from '../entities/lib/Value'
 import failure from '../utils/failure'
 import getRequest from '../utils/getRequest'
 import logger from '../utils/logger'
-import getFlashLoanSourceContractAddress from './getFlashLoanSourceContractAddress'
+import getFlashLoanSource from './getFlashLoanSource'
 import getLoanTerms from './getLoanTerms'
 import getPoolContract from './getPoolContract'
 
@@ -45,10 +45,11 @@ export default async function getOpenseaPNPLTerms({ openseaVersion, blockchain, 
           'account_address': pnplContractAddress,
         },
       })
-      const flashLoanSourceContractAddress = await getFlashLoanSourceContractAddress({ blockchain, poolAddress: loanTerms.poolAddress, flashLoanAmount: openseaInstructions.currentPrice })
+      const flashLoanSource = await getFlashLoanSource({ blockchain, poolAddress: loanTerms.poolAddress, flashLoanAmount: openseaInstructions.currentPrice })
       const pnplTerms: PNPLTerms = {
         ...loanTerms,
-        flashLoanSourceContractAddress,
+        flashLoanSourceContractAddress: flashLoanSource.address,
+        maxFlashLoanValue: flashLoanSource.capacity,
         listedPrice: $WEI(new BigNumber(openseaInstructions.currentPrice)),
         marketplaceContractAddress: openseaContractAddresses[openseaVersion],
         marketplaceName: 'OpenSea',
