@@ -13,11 +13,13 @@ export const defaultFees = (currency: AnyCurrency, poolVersion: number): Fee[] =
   if (currency === 'ETH' && poolVersion > 1) return [
     {
       type: 'fixed',
-      value: $ETH(0.01),
+      value: $ETH(0),
+      //value: $ETH(0.01),
     },
     {
       type: 'percentage',
-      value: 0.00035
+      value: 0,
+      //value: 0.00035
     }
   ]
   return []
