@@ -10,24 +10,23 @@ import getLoanTerms from './getLoanTerms'
 import getPoolContract from './getPoolContract'
 
 type Params = {
-  openseaVersion: 'main' | 'rinkeby'
   blockchain: Blockchain
   collectionId: string
   nftId: string
 }
 
-const openseaContractAddresses = {
-  rinkeby: '0xdD54D660178B28f6033a953b0E55073cFA7e3744',
-  main: '0x7f268357A8c2552623316e2562D90e642bB538E5',
+const looksrareContractAddresses: { [key: number]: any } = {
+  4: '0x1AA777972073Ff66DCFDeD85749bDD555C0665dA',
+  1: '0x59728544B08AB483533076417FbBB2fD0B17CE3a',
 }
 
 const pnplContractAddresses: { [key: number]: any } = {
   4: '0x7D33BdDfe5945687382625547aBD8a0115B87490',
-  1: '0xaD67300C087eC6c8Fb379671A418e77D79214beE',
+  1: '0x8C53B4e230A9C74F86B24E209364Af67d48c947a',
 }
 
-export default async function getOpenseaPNPLTerms({ openseaVersion, blockchain, collectionId, nftId }: Params): Promise<PNPLTerms> {
-  logger.info(`Fetching OpenSea PNPL terms for NFT ID <${ nftId }> and collection ID <${ collectionId }> on blockchain <${ JSON.stringify(blockchain) }>...`)
+export default async function getLooksrarePNPLTerms({ blockchain, collectionId, nftId }: Params): Promise<PNPLTerms> {
+  logger.info(`Fetching Looksrare PNPL terms for NFT ID <${ nftId }> and collection ID <${ collectionId }> on blockchain <${ JSON.stringify(blockchain) }>...`)
 
   switch (blockchain.network) {
   case 'ethereum': {
@@ -37,24 +36,24 @@ export default async function getOpenseaPNPLTerms({ openseaVersion, blockchain, 
     const pnplContractAddress = pnplContractAddresses[Number(blockchain.networkId)]
 
     try {
-      const openseaInstructions = await getRequest('https://us-central1-pinedefi.cloudfunctions.net/opensea-purchase-generator', {
+      const lookrareInstructions = await getRequest('https://northamerica-northeast1-pinedefi.cloudfunctions.net/looksrare-purchase-generator', {
         params: {
           'nft_address': loanTerms.collection.address,
           'token_id': nftId,
-          'network_name': openseaVersion,
+          'network_id': blockchain.networkId,
           'account_address': pnplContractAddress,
         },
       })
-      const flashLoanSource = await getFlashLoanSource({ blockchain, poolAddress: loanTerms.poolAddress, flashLoanAmount: openseaInstructions.currentPrice })
+      const flashLoanSource = await getFlashLoanSource({ blockchain, poolAddress: loanTerms.poolAddress, flashLoanAmount: lookrareInstructions.currentPrice })
       const pnplTerms: PNPLTerms = {
         ...loanTerms,
         flashLoanSourceContractAddress: flashLoanSource.address,
         maxFlashLoanValue: flashLoanSource.capacity,
-        listedPrice: $WEI(new BigNumber(openseaInstructions.currentPrice)),
-        marketplaceContractAddress: openseaContractAddresses[openseaVersion],
-        marketplaceName: 'OpenSea',
+        listedPrice: $WEI(new BigNumber(lookrareInstructions.currentPrice)),
+        marketplaceContractAddress: looksrareContractAddresses[Number(blockchain.networkId)],
+        marketplaceName: 'Looksrare',
         pnplContractAddress,
-        purchaseInstruction: openseaInstructions.calldata,
+        purchaseInstruction: lookrareInstructions.calldata,
       }
 
       return pnplTerms

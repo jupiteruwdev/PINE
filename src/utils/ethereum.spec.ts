@@ -25,7 +25,7 @@ describe('utils/ethereum', () => {
   it('can get current ETH price', async () => {
     const valueUSD = await getEthValueUSD()
     expect(valueUSD).to.be.an('object')
-    expect(valueUSD.amount).to.instanceOf(BigNumber)
+    assert.isTrue(BigNumber.isBigNumber(valueUSD.amount))
     assert.isFalse(valueUSD.amount.isNaN())
   })
 })

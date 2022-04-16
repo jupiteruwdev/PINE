@@ -7,6 +7,7 @@ env:
   ETH_RPC_MAINNET: ${{ secrets.ETH_RPC_MAINNET }}
   ETH_RPC_RINKEBY: ${{ secrets.ETH_RPC_RINKEBY }}
   MORALIS_API_KEY: ${{ secrets.MORALIS_API_KEY }}
+  NFTBANK_API_KEY: ${{ secrets.NFTBANK_API_KEY }}
   OPENSEA_API_KEY: ${{ secrets.OPENSEA_API_KEY }}
 jobs:
   build:

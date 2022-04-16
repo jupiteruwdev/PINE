@@ -1,5 +1,5 @@
 # Builds the app with dev dependencies included.
-FROM node:16.3.0 AS dev
+FROM node:17.5.0 AS dev
 
 ARG BUILD_NUMBER
 
@@ -31,7 +31,7 @@ RUN npm prune --production
 
 
 # Final production build.
-FROM node:16.3.0-alpine AS release
+FROM node:17.5.0-alpine AS release
 
 ARG BUILD_NUMBER
 

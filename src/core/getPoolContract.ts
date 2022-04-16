@@ -10,11 +10,11 @@ type Params = {
   poolAddress: string
 }
 
-const ethPoolContracts :{ [poolAddress: string]: VersionedContract } = {}
+const ethPoolContracts: { [poolAddress: string]: VersionedContract } = {}
 
 type VersionedContract = Contract & { poolVersion?: number }
 
-export default async function getPoolContract({ blockchain, poolAddress }: Params) : Promise<VersionedContract> {
+export default async function getPoolContract({ blockchain, poolAddress }: Params): Promise<VersionedContract> {
   switch (blockchain.network) {
   case 'ethereum': {
     if (ethPoolContracts[poolAddress] && (ethPoolContracts[poolAddress].poolVersion ?? 0) > 0) {

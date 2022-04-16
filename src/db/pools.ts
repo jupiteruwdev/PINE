@@ -1,6 +1,6 @@
 import BigNumber from 'bignumber.js'
 import _ from 'lodash'
-import { supportedCollections } from '../config/supportedCollections'
+import { defaultFees, supportedCollections } from '../config/supportedCollections'
 import getPoolContract from '../core/getPoolContract'
 import Blockchain, { AnyBlockchain, EthBlockchain } from '../entities/lib/Blockchain'
 import LoanOption from '../entities/lib/LoanOption'
@@ -22,13 +22,15 @@ type FindAllFilter = {
   blockchains?: { [K in AnyBlockchain]?: string }
 }
 
-function mapLoanOption(data: Record<string, any>): LoanOption {
+// TODO: remove version param when pool is moved into loan optiom
+function mapLoanOption(data: Record<string, any>, version: number): LoanOption {
   try {
     const interestBPSPerBlock = new BigNumber(_.get(data, 'interest_bps_block'))
     const interestBPSPerBlockOverride = _.get(data, 'interest_bps_block_override') === undefined ? undefined : new BigNumber(_.get(data, 'interest_bps_block_override'))
     const loanDurationBlocks = _.toNumber(_.get(data, 'loan_duration_block'))
     const loanDurationSeconds = _.toNumber(_.get(data, 'loan_duration_second'))
     const maxLTVBPS = new BigNumber(_.get(data, 'max_ltv_bps'))
+    const fees = defaultFees('ETH', version)
 
     return {
       interestBPSPerBlockOverride,
@@ -36,6 +38,7 @@ function mapLoanOption(data: Record<string, any>): LoanOption {
       loanDurationBlocks,
       loanDurationSeconds,
       maxLTVBPS,
+      fees,
     }
   }
   catch (err) {
@@ -48,7 +51,7 @@ function mapPool(data: Record<string, any>): Pool {
   const address = _.get(data, 'address')
   const blockchain = _.get(data, 'blockchain')
   const collection = _.get(data, 'collection')
-  const loanOptions = _.get(data, 'loan_options', []).map((t: any) => mapLoanOption(t))
+  const loanOptions = _.get(data, 'loan_options', []).map((t: any) => mapLoanOption(t, version))
 
   if (!_.isString(address)) throw TypeError('Failed to map key "address"')
   if (!blockchain) throw TypeError('Failed to map key "blockchain"')
@@ -75,7 +78,7 @@ export async function findOne({ address, collectionAddress, collectionId, blockc
   const rawData = supportedCollections
   const matchedId = _.findKey(rawData, (val, key) => {
     if (collectionId !== undefined && collectionId !== key) return false
-    if (collectionAddress !== undefined && _.get(val, 'address') !== collectionAddress) return false
+    if (collectionAddress !== undefined && _.get(val, 'address')?.toLowerCase() !== collectionAddress.toLowerCase()) return false
     if (_.get(val, 'networkType') !== blockchain.network) return false
     if (_.toString(_.get(val, 'networkId')) !== blockchain.networkId) return false
     if (address !== undefined && _.get(val, 'lendingPool.address') !== address) return false
@@ -132,7 +135,7 @@ export async function findAll({ collectionAddress, collectionId, blockchains }: 
         id: key,
       })
 
-      if (collectionAddress !== undefined && collectionAddress !== collectionAddress) continue
+      if (collectionAddress !== undefined && collectionAddress.toLowerCase() !== collection.address.toLowerCase()) continue
 
       const pool = await getPoolContract({ blockchain: blockchainDict.ethereum, poolAddress: data.lendingPool.address })
 

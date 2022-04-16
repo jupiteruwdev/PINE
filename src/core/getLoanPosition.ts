@@ -32,14 +32,14 @@ export default async function getLoanPosition({ blockchain, collectionId, nftId,
 
   switch (blockchain.network) {
   case 'ethereum': {
-    const [blockNumber, collection, pool, valuation] = await Promise.all([
+    const collection = await findOneCollection({ id: collectionId, blockchain })
+    if (!collection) throw failure('UNSUPPORTED_COLLECTION')
+    const [blockNumber, pool, valuation] = await Promise.all([
       getEthBlockNumber(blockchain.networkId),
-      findOneCollection({ id: collectionId, blockchain }),
       findOnePool({ collectionId, blockchain }),
-      getCollectionValuation({ blockchain, collectionId }),
+      getCollectionValuation({ collection }),
     ])
-
-    if (!collection || !pool) throw failure('UNSUPPORTED_COLLECTION')
+    if (!pool) throw failure('UNSUPPORTED_COLLECTION')
     logger.info('Getting Loan Events...')
     const contract = await getPoolContract({ blockchain, poolAddress: pool.address })
     const event = await getLoanEvent({ blockchain, nftId, poolAddress: pool.address })
