@@ -12,6 +12,15 @@ type Params = {
   collection: Collection
 }
 
+async function tryOrUndefined<T>(expression: () => T): Promise<T | undefined> {
+  try {
+    return await expression()
+  }
+  catch (err) {
+    return undefined
+  }
+}
+
 export default async function getCollectionValuation({ collection }: Params): Promise<Valuation> {
   logger.info(`Fetching valuation for collection ID <${collection.id}>...`)
 
@@ -33,7 +42,7 @@ export default async function getCollectionValuation({ collection }: Params): Pr
   const apiKey = appConf.nftbankAPIKey
   if (!apiKey) throw failure('MISSING_API_KEY')
 
-  const { data: [collectionValuation] } = await getRequest(`https://api.nftbank.ai/estimates-v2/floor_price/${collection.address}`, {
+  const { data: [collectionValuation] } = await tryOrUndefined(async () => await getRequest(`https://api.nftbank.ai/estimates-v2/floor_price/${collection.address}`, {
     headers: {
       'accept': 'application/json',
       'X-API-Key': apiKey,
@@ -41,11 +50,9 @@ export default async function getCollectionValuation({ collection }: Params): Pr
     params: {
       'chain_id': 'ETHEREUM',
     },
-  })
+  })) ?? {data: [{}]}
 
-  if (!collectionValuation) throw failure('UNSUPPORTED_COLLECTION')
-
-  const floorPriceEthRef = collectionValuation.floor_price.filter((e: any) => e.currency_symbol === 'ETH')[0].floor_price
+  const floorPriceEthRef = collectionValuation?.floor_price?.filter((e: any) => e.currency_symbol === 'ETH')[0].floor_price || 0
 
   if (!collectionId) {
     return {
