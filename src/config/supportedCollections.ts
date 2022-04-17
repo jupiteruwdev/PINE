@@ -4,9 +4,11 @@ import Currency, { AnyCurrency } from "../entities/lib/Currency"
 import Fee from "../entities/lib/Fee"
 import { $ETH } from "../entities/lib/Value"
 
-export const routerAddresses: { [key: number]: any } = {
-  4: '0xFC6c6e4727DA5E1bF79aC9C96155B4cD2faC54E6',
-  1: '0x1E23F78896F6d4F0e25D7bcD49bb2f7eee62EF98',
+// TODO: remove hack!
+export const routerAddresses = (x: number, poolAddress: string) => {
+  const y : { [key: number]: any }  = { 4: '0xFC6c6e4727DA5E1bF79aC9C96155B4cD2faC54E6', 1: '0x1E23F78896F6d4F0e25D7bcD49bb2f7eee62EF98' }
+  if (poolAddress.toLowerCase() === '0xbc7EbB061235994f360aD3E3ca9de0264443ED6a'.toLowerCase()) return '0x66a13171B0A3D6F7009eC21D224F6b491b8772f3'
+  else return y[x]
 }
 
 export const defaultFees = (currency: AnyCurrency, poolVersion: number, poolAddress: string): Fee[] => {
@@ -26,7 +28,7 @@ export const defaultFees = (currency: AnyCurrency, poolVersion: number, poolAddr
   if (currency === 'ETH' && poolVersion > 1) return [
     {
       type: 'fixed',
-      value: $ETH(0),
+      value: $ETH(0.01),
       //value: $ETH(0.01),
     },
     {
