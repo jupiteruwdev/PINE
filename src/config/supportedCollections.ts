@@ -9,7 +9,20 @@ export const routerAddresses: { [key: number]: any } = {
   1: '0x1E23F78896F6d4F0e25D7bcD49bb2f7eee62EF98',
 }
 
-export const defaultFees = (currency: AnyCurrency, poolVersion: number): Fee[] => {
+export const defaultFees = (currency: AnyCurrency, poolVersion: number, poolAddress: string): Fee[] => {
+  // TODO: remove hack!
+  if (poolAddress.toLowerCase() === '0xbc7EbB061235994f360aD3E3ca9de0264443ED6a'.toLowerCase()) return [
+    {
+      type: 'fixed',
+      value: $ETH(0.01),
+      //value: $ETH(0.01),
+    },
+    {
+      type: 'percentage',
+      value: 0.0035,
+      //value: 0.00035
+    }
+  ]
   if (currency === 'ETH' && poolVersion > 1) return [
     {
       type: 'fixed',
@@ -22,6 +35,7 @@ export const defaultFees = (currency: AnyCurrency, poolVersion: number): Fee[] =
       //value: 0.00035
     }
   ]
+  
   return []
 }
 
@@ -131,6 +145,25 @@ export const supportedCollections: { [key: string]: any } = {
           interest_bps_block: 0.00138,
           interest_bps_block_override: 0.000172,
           max_ltv_bps: 5000,
+        },
+      ],
+    },
+  },
+  'opensea:proof-moonbirds': {
+    display_name: 'Moonbirds',
+    address: '0x23581767a106ae21c074b2276d25e5c3e136a68b',
+    networkType: 'ethereum',
+    networkId: 1,
+    image_url: 'https://lh3.googleusercontent.com/sn5iLHUcNuUO98w_9Z7cat32hiqvVkPYr6tzHUacESg4PePh9M3jySvpttyWWXHD2e8M4PNQqgorU9sUvpX-FHQHXFBiCpKjloC2nA=s130',
+    lendingPool: {
+      address: '0xbc7EbB061235994f360aD3E3ca9de0264443ED6a',
+      loan_options: [
+        {
+          loan_duration_block: 86388,
+          loan_duration_second: 1209600,
+          interest_bps_block: 0.00138,
+          interest_bps_block_override: 0.000600,
+          max_ltv_bps: 3000,
         },
       ],
     },
