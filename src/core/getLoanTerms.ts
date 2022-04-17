@@ -41,7 +41,8 @@ export default async function getLoanTerms({ blockchain, collectionId, nftId }: 
     const { signature, issuedAtBlock, expiresAtBlock } = await signValuation({ blockchain, nftId, collectionAddress: collection.address, poolAddress: pool.address, valuation })
 
     const loanTerms: LoanTerms = {
-      routerAddress: contract.poolVersion === 2 ? routerAddresses[Number(blockchain.networkId)] : undefined,
+      // TODO: remove hack!
+      routerAddress: contract.poolVersion === 2 ? routerAddresses(Number(blockchain.networkId), pool.address) : undefined,
       valuation,
       signature,
       options: pool.loanOptions,

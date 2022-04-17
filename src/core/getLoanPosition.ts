@@ -59,7 +59,8 @@ export default async function getLoanPosition({ blockchain, collectionId, nftId,
     }
 
     const loanPosition: LoanPosition = {
-      routerAddress: contract.poolVersion === 2 ? routerAddresses[Number(blockchain.networkId)] : undefined,
+      // TODO: remove hack!
+      routerAddress: contract.poolVersion === 2 ? routerAddresses(Number(blockchain.networkId), pool.address) : undefined,
       accuredInterest: $WEI(event.accuredInterestWei),
       borrowed: $WEI(event.borrowedWei),
       borrowerAddress: event.borrower,

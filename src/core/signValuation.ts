@@ -20,7 +20,7 @@ type Output = {
   signature: string
 }
 
-const getMessageHashAddress = '0x7e31f1Dd48A31C4ACAF7D87F5f4B117588488cCb'
+const getMessageHashAddress = '0x90dFb72736481BBacc7938d2D3673590B92647AE'
 
 export default async function signValuation({ blockchain, nftId, poolAddress, collectionAddress, valuation }: Params): Promise<Output> {
   switch (blockchain.network) {
