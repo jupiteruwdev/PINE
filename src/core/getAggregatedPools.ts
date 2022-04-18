@@ -35,15 +35,14 @@ export default async function getAggregatedPools({ blockchains, collectionAddres
     }
   }))
 
-  const floorPrices = await Promise.all(aggregatedPools.map(pool => getEthCollectionFloorPrice({
+  const floorPricesRes = await Promise.allSettled(aggregatedPools.map(pool => getEthCollectionFloorPrice({
     blockchain: blockchainDict.ethereum ?? EthBlockchain(),
     collectionAddress: pool.collection.address,
-  })
-  ))
+  })))
 
-  const out = floorPrices.map((floorPrice, i) => ({
+  const out = floorPricesRes.map((res, i) => ({
     ...aggregatedPools[i],
-    floorPrice,
+    floorPrice: res.status === 'fulfilled' ? res.value : undefined,
   }))
 
   logger.info('Fetching aggregated pools... OK', out)
