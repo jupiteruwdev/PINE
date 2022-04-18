@@ -20,29 +20,29 @@ export default async function getEthCollectionFloorPrice({ blockchain, collectio
   if (!apiKey) throw failure('MISSING_API_KEY')
 
   switch (blockchain.networkId) {
-    case EthereumNetwork.MAIN:
-      const res = await getRequest(`https://api.nftbank.ai/estimates-v2/floor_price/${collectionAddress}`, {
-        headers: {
-          'accept': 'application/json',
-          'X-API-Key': apiKey,
-        },
-        params: {
-          'chain_id': 'ETHEREUM',
-        },
-      })
+  case EthereumNetwork.MAIN:
+    const res = await getRequest(`https://api.nftbank.ai/estimates-v2/floor_price/${collectionAddress}`, {
+      headers: {
+        'accept': 'application/json',
+        'X-API-Key': apiKey,
+      },
+      params: {
+        'chain_id': 'ETHEREUM',
+      },
+    })
 
-      const floorPrices = _.get(res, 'data.0.floor_price')
-      const floorPrice = _.get(_.find(floorPrices, { 'currency_symbol': 'ETH' }), 'floor_price')
+    const floorPrices = _.get(res, 'data.0.floor_price')
+    const floorPrice = _.get(_.find(floorPrices, { 'currency_symbol': 'ETH' }), 'floor_price')
 
-      if (!floorPrice) throw failure('FETCH_FLOOR_PRICE')
+    if (!floorPrice) throw failure('FETCH_FLOOR_PRICE')
 
-      return $ETH(floorPrice)
-    case EthereumNetwork.RINKEBY:
-      const collection = await findOneCollection({ blockchain, address: collectionAddress })
-      if (collection?.id !== 'testing') throw failure('UNSUPPORTED_COLLECTION')
+    return $ETH(floorPrice)
+  case EthereumNetwork.RINKEBY:
+    const collection = await findOneCollection({ blockchain, address: collectionAddress })
+    if (collection?.id !== 'testing') throw failure('UNSUPPORTED_COLLECTION')
 
-      return $ETH(1)
-    default:
-      throw failure('UNSUPPORTED_NETWORK')
+    return $ETH(1)
+  default:
+    throw failure('UNSUPPORTED_NETWORK')
   }
 }
