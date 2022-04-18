@@ -13,12 +13,13 @@ type Params = {
    * `undefined`), all pools of all blockchains in their default network IDs will be returned.
    */
   blockchains?: { [K in AnyBlockchain]?: string }
+  collectionAddress?: string
 }
 
-export default async function getAggregatedPools({ blockchains }: Params) {
+export default async function getAggregatedPools({ blockchains, collectionAddress }: Params) {
   logger.info(`Fetching aggregated pools with blockchain filter <${JSON.stringify(blockchains)}>...`)
 
-  const [ethValueUSD, pools] = await Promise.all([getEthValueUSD(), getPools({ blockchains })])
+  const [ethValueUSD, pools] = await Promise.all([getEthValueUSD(), getPools({ blockchains, collectionAddress })])
 
   const aggregatedPools: AggregatedPool[] = _.compact(pools.map(pool => {
     if (!pool.collection) return undefined

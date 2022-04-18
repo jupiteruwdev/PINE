@@ -1,6 +1,7 @@
 import { Router } from 'express'
 import appConf from '../app.conf'
 import collateralsRouter from './collaterals'
+import collectionsRouter from './collections'
 import loanPositionRouter from './loanPosition'
 import loanTermsRouter from './loanTerms'
 import obligationsRouter from './obligations'
@@ -15,6 +16,7 @@ router.get('/health', (req, res) => res.sendStatus(200))
 router.get('/version', (req, res) => res.send(`${appConf.version}-${appConf.build}`))
 
 router.use('/collaterals', collateralsRouter)
+router.use('/collections', collectionsRouter)
 router.use('/loan-position', loanPositionRouter)
 router.use('/loan-terms', loanTermsRouter)
 router.use('/pnpl', pnplRouter)
