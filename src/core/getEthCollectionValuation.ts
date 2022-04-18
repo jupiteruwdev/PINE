@@ -12,7 +12,7 @@ type Params = {
   collection: Collection
 }
 
-export default async function getCollectionValuation({ collection }: Params): Promise<Valuation> {
+export default async function getEthCollectionValuation({ collection }: Params): Promise<Valuation> {
   logger.info(`Fetching valuation for collection ID <${collection.id}>...`)
 
   const collectionId = collection.id

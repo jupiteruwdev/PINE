@@ -7,7 +7,7 @@ import NFT from '../entities/lib/NFT'
 import { $ETH } from '../entities/lib/Value'
 import failure from '../utils/failure'
 import logger from '../utils/logger'
-import getCollectionValuation from './getCollectionValuation'
+import getEthCollectionValuation from './getEthCollectionValuation'
 import getNFTMetadata from './getNFTMetadata'
 import getPoolContract from './getPoolContract'
 import signValuation from './signValuation'
@@ -37,7 +37,7 @@ export default async function getLoanTerms({ blockchain, collectionId, nftId }: 
 
     const contract = await getPoolContract({ blockchain, poolAddress: pool.address })
 
-    const valuation = await getCollectionValuation({ collection })
+    const valuation = await getEthCollectionValuation({ collection })
     const { signature, issuedAtBlock, expiresAtBlock } = await signValuation({ blockchain, nftId, collectionAddress: collection.address, poolAddress: pool.address, valuation })
 
     const loanTerms: LoanTerms = {

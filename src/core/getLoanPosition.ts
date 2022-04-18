@@ -9,8 +9,8 @@ import { $WEI } from '../entities/lib/Value'
 import { getEthBlockNumber } from '../utils/ethereum'
 import failure from '../utils/failure'
 import logger from '../utils/logger'
-import getCollectionValuation from './getCollectionValuation'
 import getControlPlaneContract from './getControlPlaneContract'
+import getEthCollectionValuation from './getEthCollectionValuation'
 import getLoanEvent from './getLoanEvent'
 import getNFTMetadata from './getNFTMetadata'
 import getPoolContract from './getPoolContract'
@@ -37,7 +37,7 @@ export default async function getLoanPosition({ blockchain, collectionId, nftId,
     const [blockNumber, pool, valuation] = await Promise.all([
       getEthBlockNumber(blockchain.networkId),
       findOnePool({ collectionId, blockchain }),
-      getCollectionValuation({ collection }),
+      getEthCollectionValuation({ collection }),
     ])
     if (!pool) throw failure('UNSUPPORTED_COLLECTION')
     logger.info('Getting Loan Events...')
