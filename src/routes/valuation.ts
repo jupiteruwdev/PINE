@@ -22,7 +22,7 @@ router.get('/', async (req, res, next) => {
   }
 
   try {
-    const valuation = await getEthCollectionValuation({ blockchain, collection })
+    const valuation = await getEthCollectionValuation({ blockchain, collectionAddress: collection.address })
     const payload = serializeValuation(valuation)
     res.status(200).json(payload)
   }

@@ -38,7 +38,7 @@ export default async function getLoanPosition({ blockchain, collectionId, nftId,
     const [blockNumber, pool, valuation] = await Promise.all([
       getEthBlockNumber(blockchain.networkId),
       findOnePool({ collectionId, blockchain }),
-      getEthCollectionValuation({ blockchain: blockchain as Blockchain<'ethereum'>, collection }),
+      getEthCollectionValuation({ blockchain: blockchain as Blockchain<'ethereum'>, collectionAddress: collection.address }),
     ])
 
     if (!pool) throw failure('UNSUPPORTED_COLLECTION')
