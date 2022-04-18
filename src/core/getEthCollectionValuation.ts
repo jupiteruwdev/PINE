@@ -9,6 +9,7 @@ import { $ETH } from '../entities/lib/Value'
 import failure from '../utils/failure'
 import getRequest from '../utils/getRequest'
 import logger from '../utils/logger'
+import getEthCollectionFloorPrice from './getEthCollectionFloorPrice'
 
 type Params = {
   blockchain: Blockchain<'ethereum'>
@@ -21,85 +22,72 @@ export default async function getEthCollectionValuation({ blockchain, collection
   const collection = await findOneCollection({ blockchain, address: collectionAddress })
   if (!collection) throw failure('UNSUPPORTED_COLLECTION')
 
-  const collectionId = collection.id
-
   switch (blockchain.networkId) {
     case EthereumNetwork.MAIN:
-      const matches = collectionId.match(/(.*):(.*)/)
+      const matches = collection.id.match(/(.*):(.*)/)
       const venue = matches?.[1]
       const id = matches?.[2]
-      const apiKey = appConf.nftbankAPIKey
-      if (!apiKey) throw failure('MISSING_API_KEY')
 
-      const { data: [collectionValuation] } = await getRequest(`https://api.nftbank.ai/estimates-v2/floor_price/${collection.address}`, {
-        headers: {
-          'accept': 'application/json',
-          'X-API-Key': apiKey,
-        },
-        params: {
-          'chain_id': 'ETHEREUM',
-        },
-      })
+      if (!venue || !id) throw failure('UNSUPPORTED_COLLECTION')
 
-      if (!collectionValuation) throw failure('UNSUPPORTED_COLLECTION')
+      switch (venue) {
+      case 'opensea':
+        try {
+          const apiKey = appConf.openseaAPIKey
+          if (!apiKey) throw failure('FETCH_OPENSEA_VALUATION_FAILURE')
 
-      const floorPriceEthRef = collectionValuation.floor_price.filter((e: any) => e.currency_symbol === 'ETH')[0].floor_price
-
-      if (!collectionId) {
-        return {
-          collection,
-          value: undefined,
-          value24Hr: undefined,
-          value1DReference: $ETH(floorPriceEthRef),
-        }
-      }
-      else {
-        if (!venue || !id) throw failure('UNSUPPORTED_COLLECTION')
-
-        switch (venue) {
-        case 'opensea':
-          try {
-            const apiKey = appConf.openseaAPIKey
-
-            if (!apiKey) throw failure('FETCH_OPENSEA_VALUATION_FAILURE')
-
-            const collectionData = await getRequest(`https://api.opensea.io/api/v1/collection/${id}/stats`, {
+          const [floorPriceRef, collectionData] = await Promise.all([
+            getEthCollectionFloorPrice({ blockchain, collectionAddress }),
+            getRequest(`https://api.opensea.io/api/v1/collection/${id}/stats`, {
               headers: {
                 'X-API-KEY': apiKey,
               },
-            })
+            }),
+          ])
 
-            const floorPriceEth = new BigNumber(_.get(collectionData, 'stats.floor_price'))
-            const average24HrPriceEth = new BigNumber(_.get(collectionData, 'stats.one_day_average_price'))
-            const valueEth = floorPriceEth.gt(average24HrPriceEth) ? average24HrPriceEth : floorPriceEth
-            const valuation: Valuation<'ETH'> = {
-              collection,
-              value: $ETH(valueEth),
-              value24Hr: $ETH(average24HrPriceEth),
-              value1DReference: $ETH(floorPriceEthRef),
-            }
-
-            logger.info(`Fetching valuation for collection ID <${collectionId}>... OK`, valuation)
-
-            return valuation
+          const floorPrice = new BigNumber(_.get(collectionData, 'stats.floor_price'))
+          const value24Hr = new BigNumber(_.get(collectionData, 'stats.one_day_average_price'))
+          const value = floorPrice.gt(value24Hr) ? value24Hr : floorPrice
+          const valuation: Valuation<'ETH'> = {
+            collection,
+            value: $ETH(value),
+            value24Hr: $ETH(value24Hr),
+            value1DReference: $ETH(floorPriceRef.amount),
           }
-          catch (err) {
-            throw failure('FETCH_OPENSEA_VALUATION_FAILURE', err)
-          }
-        default:
-          throw failure('UNSUPPORTED_MARKETPLACE')
+
+          logger.info(`Fetching valuation for Ethereum collection <${collectionAddress}>... OK`, valuation)
+
+          return valuation
         }
+        catch (err) {
+          logger.error(`Fetching valuation for Ethereum collection <${collectionAddress}>... ERR`, err)
+
+          throw failure('FETCH_OPENSEA_VALUATION_FAILURE', err)
+        }
+      default:
+        throw failure('UNSUPPORTED_MARKETPLACE')
       }
     case EthereumNetwork.RINKEBY:
-      if (collectionId === 'testing') {
-        return {
+      if (collection.id === 'testing') {
+        const valuation = {
           collection,
           value: $ETH(0.1),
           value24Hr: $ETH(1),
-          value1DReference: $ETH(1),
+          value1DReference: await getEthCollectionFloorPrice({ blockchain, collectionAddress: collection.address }),
         }
+
+        logger.info(`Fetching valuation for Ethereum collection <${collectionAddress}>... OK`, valuation)
+
+        return valuation
+      }
+      else {
+        const err = failure('UNSUPPORTED_COLLECTION')
+        logger.error(`Fetching valuation for Ethereum collection <${collectionAddress}>... ERR`, err)
+        throw err
       }
     default:
-      throw failure('UNSUPPORTED_NETWORK')
+      const err = failure('UNSUPPORTED_NETWORK')
+      logger.error(`Fetching valuation for Ethereum collection <${collectionAddress}>... ERR`, err)
+      throw err
   }
 }
