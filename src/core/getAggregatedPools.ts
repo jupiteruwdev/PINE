@@ -35,12 +35,10 @@ export default async function getAggregatedPools({ blockchains, collectionAddres
     }
   }))
 
-  const floorPrices = await Promise.all(aggregatedPools.map(pool => {
-    return getEthCollectionFloorPrice({
-      blockchain: blockchainDict.ethereum ?? EthBlockchain(),
-      collectionAddress: pool.collection.address,
-     })
-    }
+  const floorPrices = await Promise.all(aggregatedPools.map(pool => getEthCollectionFloorPrice({
+    blockchain: blockchainDict.ethereum ?? EthBlockchain(),
+    collectionAddress: pool.collection.address,
+  })
   ))
 
   const out = floorPrices.map((floorPrice, i) => ({
