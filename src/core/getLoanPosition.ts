@@ -34,20 +34,21 @@ export default async function getLoanPosition({ blockchain, collectionId, nftId,
   case 'ethereum': {
     const collection = await findOneCollection({ id: collectionId, blockchain })
     if (!collection) throw failure('UNSUPPORTED_COLLECTION')
+
     const [blockNumber, pool, valuation] = await Promise.all([
       getEthBlockNumber(blockchain.networkId),
       findOnePool({ collectionId, blockchain }),
-      getEthCollectionValuation({ collection }),
+      getEthCollectionValuation({ blockchain: blockchain as Blockchain<'ethereum'>, collection }),
     ])
+
     if (!pool) throw failure('UNSUPPORTED_COLLECTION')
-    logger.info('Getting Loan Events...')
+
     const contract = await getPoolContract({ blockchain, poolAddress: pool.address })
     const event = await getLoanEvent({ blockchain, nftId, poolAddress: pool.address })
-    logger.info('Getting Loan Events... OK')
     const loanDetails = await contract.methods._loans(nftId).call()
-    logger.info('Get Loan Details... OK')
     const controlPlaneContract = getControlPlaneContract({ blockchain, address: controlPlaneContractAddresses[Number(blockchain.networkId)] })
     const outstandingWithInterestWei = new BigNumber(await controlPlaneContract.methods.outstanding(loanDetails, txSpeedBlocks).call())
+
     // Early exit if loan is fully repaid.
     if (outstandingWithInterestWei.lte(new BigNumber(0))) return undefined
 
@@ -76,9 +77,13 @@ export default async function getLoanPosition({ blockchain, collectionId, nftId,
       updatedAtBlock: blockNumber,
     }
 
+    logger.info(`Fetching loan position for collection ID <${collectionId}>, NFT ID <${nftId}>, txSpeedBlocks <${txSpeedBlocks}> and blockchain <${JSON.stringify(blockchain)}>... OK: ${JSON.stringify(loanPosition)}`)
+
     return loanPosition
   }
   default:
+    logger.info(`Fetching loan position for collection ID <${collectionId}>, NFT ID <${nftId}>, txSpeedBlocks <${txSpeedBlocks}> and blockchain <${JSON.stringify(blockchain)}>... ERR: Unsupported blockchain`)
+
     throw failure('UNSUPPORTED_BLOCKCHAIN')
   }
 }

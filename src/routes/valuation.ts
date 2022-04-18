@@ -13,7 +13,8 @@ const router = Router()
 router.get('/', async (req, res, next) => {
   const address = req.query.collectionAddress?.toString() ?? ''
   const networkId = parseEthNetworkId(req.query.networkId ?? EthereumNetwork.MAIN)
-  const collection: Collection = await findOneCollection({ address, blockchain: EthBlockchain(networkId) }) ?? {
+  const blockchain = EthBlockchain(networkId)
+  const collection: Collection = await findOneCollection({ address, blockchain }) ?? {
     address,
     blockchain: EthBlockchain(networkId),
     id: '',
@@ -21,7 +22,7 @@ router.get('/', async (req, res, next) => {
   }
 
   try {
-    const valuation = await getEthCollectionValuation({ collection })
+    const valuation = await getEthCollectionValuation({ blockchain, collection })
     const payload = serializeValuation(valuation)
     res.status(200).json(payload)
   }

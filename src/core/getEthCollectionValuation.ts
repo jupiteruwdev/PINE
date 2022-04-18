@@ -1,6 +1,7 @@
 import BigNumber from 'bignumber.js'
 import _ from 'lodash'
 import appConf from '../app.conf'
+import Blockchain from '../entities/lib/Blockchain'
 import Collection from '../entities/lib/Collection'
 import Valuation from '../entities/lib/Valuation'
 import { $ETH } from '../entities/lib/Value'
@@ -9,10 +10,11 @@ import getRequest from '../utils/getRequest'
 import logger from '../utils/logger'
 
 type Params = {
+  blockchain: Blockchain<'ethereum'>
   collection: Collection
 }
 
-export default async function getEthCollectionValuation({ collection }: Params): Promise<Valuation> {
+export default async function getEthCollectionValuation({ blockchain, collection }: Params): Promise<Valuation> {
   logger.info(`Fetching valuation for collection ID <${collection.id}>...`)
 
   const collectionId = collection.id

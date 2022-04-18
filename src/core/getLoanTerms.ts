@@ -37,7 +37,7 @@ export default async function getLoanTerms({ blockchain, collectionId, nftId }: 
 
     const contract = await getPoolContract({ blockchain, poolAddress: pool.address })
 
-    const valuation = await getEthCollectionValuation({ collection })
+    const valuation = await getEthCollectionValuation({ blockchain: blockchain as Blockchain<'ethereum'>, collection })
     const { signature, issuedAtBlock, expiresAtBlock } = await signValuation({ blockchain, nftId, collectionAddress: collection.address, poolAddress: pool.address, valuation })
 
     const loanTerms: LoanTerms = {
