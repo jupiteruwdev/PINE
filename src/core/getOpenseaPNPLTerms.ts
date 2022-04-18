@@ -23,7 +23,7 @@ const openseaContractAddresses = {
 
 const pnplContractAddresses: { [key: number]: any } = {
   4: '0x7D33BdDfe5945687382625547aBD8a0115B87490',
-  1: '0xaD67300C087eC6c8Fb379671A418e77D79214beE',
+  1: '0x8C53B4e230A9C74F86B24E209364Af67d48c947a',
 }
 
 export default async function getOpenseaPNPLTerms({ openseaVersion, blockchain, collectionId, nftId }: Params): Promise<PNPLTerms> {
