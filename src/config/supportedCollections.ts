@@ -7,13 +7,13 @@ import { $ETH } from "../entities/lib/Value"
 // TODO: remove hack!
 export const routerAddresses = (x: number, poolAddress: string) => {
   const y : { [key: number]: any }  = { 4: '0xFC6c6e4727DA5E1bF79aC9C96155B4cD2faC54E6', 1: '0x1E23F78896F6d4F0e25D7bcD49bb2f7eee62EF98' }
-  if (poolAddress.toLowerCase() === '0xbc7EbB061235994f360aD3E3ca9de0264443ED6a'.toLowerCase()) return '0x66a13171B0A3D6F7009eC21D224F6b491b8772f3'
+  if (poolAddress.toLowerCase() === '0xbc7EbB061235994f360aD3E3ca9de0264443ED6a'.toLowerCase() || poolAddress.toLowerCase() === '0x4dE7B2f8160fa083F90d4900eAe448dbc9ABb1C8'.toLowerCase()) return '0x66a13171B0A3D6F7009eC21D224F6b491b8772f3'
   else return y[x]
 }
 
 export const defaultFees = (currency: AnyCurrency, poolVersion: number, poolAddress: string): Fee[] => {
   // TODO: remove hack!
-  if (poolAddress.toLowerCase() === '0xbc7EbB061235994f360aD3E3ca9de0264443ED6a'.toLowerCase()) return [
+  if (poolAddress.toLowerCase() === '0xbc7EbB061235994f360aD3E3ca9de0264443ED6a'.toLowerCase() || poolAddress.toLowerCase() === '0x4dE7B2f8160fa083F90d4900eAe448dbc9ABb1C8'.toLowerCase()) return [
     {
       type: 'fixed',
       value: $ETH(0.01),
@@ -330,28 +330,14 @@ export const supportedCollections: { [key: string]: any } = {
     networkId: 1,
     image_url: 'https://lh3.googleusercontent.com/H8jOCJuQokNqGBpkBN5wk1oZwO7LM8bNnrHCaekV2nKjnCqw6UB5oaH8XyNeBDj6bA_n1mjejzhFQUP3O1NfjFLHr3FOaeHcTOOT=s130',
     lendingPool: {
-      address: '0x087B6c9ac629B8BB8502139Cc65E9bD94840864f',
+      address: '0x4dE7B2f8160fa083F90d4900eAe448dbc9ABb1C8',
       loan_options: [
-        {
-          loan_duration_block: 18513,
-          loan_duration_second: 259200,
-          interest_bps_block: 0.00156,
-          interest_bps_block_override: 0.000151,
-          max_ltv_bps: 3300,
-        },
-        {
-          loan_duration_block: 43194,
-          loan_duration_second: 604800,
-          interest_bps_block: 0.00143,
-          interest_bps_block_override: 0.000168,
-          max_ltv_bps: 2500,
-        },
         {
           loan_duration_block: 86388,
           loan_duration_second: 1209600,
-          interest_bps_block: 0.00138,
-          interest_bps_block_override: 0.000160,
-          max_ltv_bps: 2300,
+          interest_bps_block: 0.00156,
+          interest_bps_block_override: 0.000600,
+          max_ltv_bps: 3300,
         },
       ],
     },
