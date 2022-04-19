@@ -28,7 +28,7 @@ export const defaultFees = (currency: AnyCurrency, poolVersion: number, poolAddr
   if (currency === 'ETH' && poolVersion > 1) return [
     {
       type: 'fixed',
-      value: $ETH(0.01),
+      value: $ETH(0),
       //value: $ETH(0.01),
     },
     {
