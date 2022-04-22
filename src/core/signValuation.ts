@@ -20,6 +20,8 @@ type Output = {
   signature: string
 }
 
+const getMessageHashAddress = '0x90dFb72736481BBacc7938d2D3673590B92647AE'
+
 export default async function signValuation({ blockchain, nftId, poolAddress, collectionAddress, valuation }: Params): Promise<Output> {
   switch (blockchain.network) {
   case 'ethereum': {
@@ -27,7 +29,7 @@ export default async function signValuation({ blockchain, nftId, poolAddress, co
     const blockNumber = await getEthBlockNumber(blockchain.networkId)
     const expiresAtBlock = blockNumber + appConf.ethValuationExpiryBlocks
 
-    const contract = await getPoolContract({ blockchain, poolAddress })
+    const contract = await getPoolContract({ blockchain, poolAddress: getMessageHashAddress })
     const contractFunc = 'getMessageHash'
     const contractParams = [
       collectionAddress,
