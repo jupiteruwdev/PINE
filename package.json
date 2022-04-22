@@ -9,8 +9,8 @@
     "dev": "nodemon --exec \"ts-node --files -r dotenv/config\" --verbose --watch src --ext ts,json src/app",
     "build": "npm run clean && tsc",
     "build:test": "npm run clean && tsc --project tsconfig.test.json",
-    "test": "mocha -b -c --timeout 10000 --extension spec.js --recursive --exit \"build/$npm_config_files\"",
-    "test:ts": "mocha -r ts-node/register -b -c --diff --timeout 10000 --extension spec.ts --recursive --exit \"src/$npm_config_files\"",
+    "test": "cross-env NODE_ENV=test mocha -b -c --timeout 100000 --extension spec.js --recursive --exit \"build/$npm_config_files\"",
+    "test:ts": "cross-env NODE_ENV=test mocha -r ts-node/register -b -c --diff --timeout 100000 --extension spec.ts --recursive --exit \"src/$npm_config_files\"",
     "lint": "eslint --ext .ts src",
     "lint:fix": "npm run lint -- --fix"
   },
@@ -38,6 +38,7 @@
     "@typescript-eslint/eslint-plugin": "^5.18.0",
     "@typescript-eslint/parser": "^5.18.0",
     "chai": "^4.3.6",
+    "cross-env": "^7.0.3",
     "eslint": "^8.12.0",
     "mocha": "^9.2.2",
     "nodemon": "^2.0.15",

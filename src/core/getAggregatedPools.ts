@@ -1,9 +1,11 @@
 import _ from 'lodash'
 import AggregatedPool from '../entities/lib/AggregatedPool'
-import { AnyBlockchain } from '../entities/lib/Blockchain'
+import { AnyBlockchain, EthBlockchain } from '../entities/lib/Blockchain'
 import { $USD } from '../entities/lib/Value'
 import { getEthValueUSD } from '../utils/ethereum'
 import logger from '../utils/logger'
+import mapBlockchainFilterToDict from '../utils/mapBlockchainFilterToDict'
+import getEthCollectionFloorPrice from './getEthCollectionFloorPrice'
 import getPools from './getPools'
 
 type Params = {
@@ -19,6 +21,7 @@ type Params = {
 export default async function getAggregatedPools({ blockchains, collectionAddress }: Params) {
   logger.info(`Fetching aggregated pools with blockchain filter <${JSON.stringify(blockchains)}>...`)
 
+  const blockchainDict = blockchains === undefined ? mapBlockchainFilterToDict({}, true) : mapBlockchainFilterToDict(blockchains, false)
   const [ethValueUSD, pools] = await Promise.all([getEthValueUSD(), getPools({ blockchains, collectionAddress })])
 
   const aggregatedPools: AggregatedPool[] = _.compact(pools.map(pool => {
@@ -32,7 +35,17 @@ export default async function getAggregatedPools({ blockchains, collectionAddres
     }
   }))
 
-  logger.info('Fetching aggregated pools... OK', aggregatedPools)
+  const floorPricesRes = await Promise.allSettled(aggregatedPools.map(pool => getEthCollectionFloorPrice({
+    blockchain: blockchainDict.ethereum ?? EthBlockchain(),
+    collectionAddress: pool.collection.address,
+  })))
 
-  return aggregatedPools
+  const out = floorPricesRes.map((res, i) => ({
+    ...aggregatedPools[i],
+    floorPrice: res.status === 'fulfilled' ? res.value : undefined,
+  }))
+
+  logger.info('Fetching aggregated pools... OK', out)
+
+  return out
 }

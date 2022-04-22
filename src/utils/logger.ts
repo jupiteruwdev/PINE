@@ -18,6 +18,7 @@ if (appConf.env === 'production') {
 }
 else {
   logger.add(new winston.transports.Console({
+    silent: appConf.env === 'test',
     format: winston.format.combine(
       winston.format.colorize(),
       winston.format.simple(),

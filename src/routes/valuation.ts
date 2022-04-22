@@ -1,19 +1,20 @@
 import { Router } from 'express'
-import getCollectionValuation from '../core/getCollectionValuation'
+import getEthCollectionValuation from '../core/getEthCollectionValuation'
+import { findOne as findOneCollection } from '../db/collections'
 import { EthBlockchain } from '../entities/lib/Blockchain'
+import Collection from '../entities/lib/Collection'
 import EthereumNetwork from '../entities/lib/EthereumNetwork'
 import { serializeValuation } from '../entities/lib/Valuation'
 import { parseEthNetworkId } from '../utils/ethereum'
 import failure from '../utils/failure'
-import { findOne as findOneCollection } from '../db/collections'
-import Collection from '../entities/lib/Collection'
 
 const router = Router()
 
 router.get('/', async (req, res, next) => {
   const address = req.query.collectionAddress?.toString() ?? ''
   const networkId = parseEthNetworkId(req.query.networkId ?? EthereumNetwork.MAIN)
-  const collection: Collection = await findOneCollection({ address, blockchain: EthBlockchain(networkId) }) ?? {
+  const blockchain = EthBlockchain(networkId)
+  const collection: Collection = await findOneCollection({ address, blockchain }) ?? {
     address,
     blockchain: EthBlockchain(networkId),
     id: '',
@@ -21,7 +22,7 @@ router.get('/', async (req, res, next) => {
   }
 
   try {
-    const valuation = await getCollectionValuation({ collection })
+    const valuation = await getEthCollectionValuation({ blockchain, collectionAddress: collection.address })
     const payload = serializeValuation(valuation)
     res.status(200).json(payload)
   }
