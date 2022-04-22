@@ -22,7 +22,7 @@ const looksrareContractAddresses: { [key: number]: any } = {
 
 const pnplContractAddresses: { [key: number]: any } = {
   4: '0x7D33BdDfe5945687382625547aBD8a0115B87490',
-  1: '0x8C53B4e230A9C74F86B24E209364Af67d48c947a',
+  1: '0x514183FAf3ab9Db42D76317ecea74C4300E60EEe',
 }
 
 export default async function getLooksrarePNPLTerms({ blockchain, collectionId, nftId }: Params): Promise<PNPLTerms> {
