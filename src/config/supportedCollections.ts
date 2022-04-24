@@ -316,6 +316,82 @@ export const supportedCollections: { [key: string]: any } = {
       ],
     },
   },
+  'opensea:cryptoadz-by-gremplin': {
+    display_name: 'CrypToadz by GREMPLIN',
+    address: '0x1cb1a5e65610aeff2551a50f76a87a7d3fb649c6',
+    networkType: 'ethereum',
+    networkId: 1,
+    image_url: 'https://lh3.googleusercontent.com/iofetZEyiEIGcNyJKpbOafb_efJyeo7QOYnTog8qcQJhqoBU-Vu9l3lXidZhXOAdu6dj4fzWW6BZDU5vLseC-K03rMMu-_j2LvwcbHo=s130',
+    lendingPool: {
+      address: '0x52e74fd190ded6538202b131d2c8f63569fa3593',
+      loan_options: [
+        {
+          loan_duration_block: 86388,
+          loan_duration_second: 1209600,
+          interest_bps_block: 0.00156,
+          interest_bps_block_override: 0.000600,
+          max_ltv_bps: 3500,
+        },
+      ],
+    },
+  },
+  'opensea:meebits': {
+    display_name: 'Meebits',
+    address: '0x7bd29408f11d2bfc23c34f18275bbf23bb716bc7',
+    networkType: 'ethereum',
+    networkId: 1,
+    image_url: 'https://lh3.googleusercontent.com/d784iHHbqQFVH1XYD6HoT4u3y_Fsu_9FZUltWjnOzoYv7qqB5dLUqpGyHBd8Gq3h4mykK5Enj8pxqOUorgD2PfIWcVj9ugvu8l0=s130',
+    lendingPool: {
+      address: '0x3783bDf5bCddA4a5e748E6CA7108a26Fb6d5F3F9',
+      loan_options: [
+        {
+          loan_duration_block: 86388,
+          loan_duration_second: 1209600,
+          interest_bps_block: 0.00156,
+          interest_bps_block_override: 0.000600,
+          max_ltv_bps: 4000,
+        },
+      ],
+    },
+  },
+  'opensea:cool-cats-nft': {
+    display_name: 'Cool Cats NFT',
+    address: '0x1a92f7381b9f03921564a437210bb9396471050c',
+    networkType: 'ethereum',
+    networkId: 1,
+    image_url: 'https://lh3.googleusercontent.com/LIov33kogXOK4XZd2ESj29sqm_Hww5JSdO7AFn5wjt8xgnJJ0UpNV9yITqxra3s_LMEW1AnnrgOVB_hDpjJRA1uF4skI5Sdi_9rULi8=s130',
+    lendingPool: {
+      address: '0x6a8f1D2362EB4df91DEA217D43124A2B77E93E2D',
+      loan_options: [
+        {
+          loan_duration_block: 86388,
+          loan_duration_second: 1209600,
+          interest_bps_block: 0.00156,
+          interest_bps_block_override: 0.000600,
+          max_ltv_bps: 4000,
+        },
+      ],
+    },
+  },
+  'opensea:official-moar-by-joan-cornella': {
+    display_name: '"MOAR" by Joan Cornella',
+    address: '0xeb3a9a839dfeeaf71db1b4ed6a8ae0ccb171b227',
+    networkType: 'ethereum',
+    networkId: 1,
+    image_url: 'https://lh3.googleusercontent.com/4c4dqYwdIhtmAkeKAfwVJEQYaJqwgek3juaUSfTY9lhR--LOj8HyqUBzcXxzrVr-XZiWBk98PRg25Hf7M7Wlff0hLe5Vnq5lx3jFF9c=s130',
+    lendingPool: {
+      address: '0x7b693823c501e9575ef5c5fbc2aa4206f8c056d4',
+      loan_options: [
+        {
+          loan_duration_block: 86388,
+          loan_duration_second: 1209600,
+          interest_bps_block: 0.00156,
+          interest_bps_block_override: 0.000600,
+          max_ltv_bps: 3500,
+        },
+      ],
+    },
+  },
   'opensea:chromie-squiggle-by-snowfro': {
     display_name: 'Chromie Squiggle by Snowfro',
     address: '0x059edd72cd353df5106d2b9cc5ab83a52287ac3a',
