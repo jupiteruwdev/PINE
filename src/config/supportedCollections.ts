@@ -219,6 +219,25 @@ export const supportedCollections: { [key: string]: any } = {
       ],
     },
   },
+  'opensea:world-of-women-nft': {
+    display_name: 'World of Women',
+    address: '0xe785e82358879f061bc3dcac6f0444462d4b5330',
+    networkType: 'ethereum',
+    networkId: 1,
+    image_url: 'https://lh3.googleusercontent.com/EFAQpIktMBU5SU0TqSdPWZ4byHr3hFirL_mATsR8KWhM5z-GJljX8E73V933lkyKgv2SAFlfRRjGsWvWbQQmJAwu3F2FDXVa1C9F=s130',
+    lendingPool: {
+      address: '0x00498884D17A7155561D0Faa9876B1a918e13C06',
+      loan_options: [
+        {
+          loan_duration_block: 86388,
+          loan_duration_second: 1209600,
+          interest_bps_block: 0.00138,
+          interest_bps_block_override: 0.000600,
+          max_ltv_bps: 4000,
+        },
+      ],
+    },
+  },
   'opensea:cyberbrokers': {
     display_name: 'CyberBrokers',
     address: '0x892848074ddea461a15f337250da3ce55580ca85',
