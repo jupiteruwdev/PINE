@@ -513,28 +513,14 @@ export const supportedCollections: { [key: string]: any } = {
     networkId: 1,
     image_url: 'https://lh3.googleusercontent.com/lHexKRMpw-aoSyB1WdFBff5yfANLReFxHzt1DOj_sg7mS14yARpuvYcUtsyyx-Nkpk6WTcUPFoG53VnLJezYi8hAs0OxNZwlw6Y-dmI=s130',
     lendingPool: {
-      address: '0xcd1dd26f7c8ce04fd55b379bb30246e2ac950d18',
+      address: '0x9dd5e00105f82137dbfdd808ff5548ae4bb65a0c',
       loan_options: [
-        {
-          loan_duration_block: 18513,
-          loan_duration_second: 259200,
-          interest_bps_block: 0.00156,
-          interest_bps_block_override: 0.000089,
-          max_ltv_bps: 2969,
-        },
-        {
-          loan_duration_block: 43194,
-          loan_duration_second: 604800,
-          interest_bps_block: 0.00143,
-          interest_bps_block_override: 0.000168,
-          max_ltv_bps: 2500,
-        },
         {
           loan_duration_block: 86388,
           loan_duration_second: 1209600,
           interest_bps_block: 0.00138,
-          interest_bps_block_override: 0.000160,
-          max_ltv_bps: 2300,
+          interest_bps_block_override: 0.000600,
+          max_ltv_bps: 4000,
         },
       ],
     },
