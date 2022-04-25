@@ -227,6 +227,7 @@ export const supportedCollections: { [key: string]: any } = {
     image_url: 'https://lh3.googleusercontent.com/Qd1IEPYz_0YlMaclPwb6_9PyP7afZIzH15IdIU2X6t1Wvg81DwpAaWOY0cNmxy173C4yMA7sM3xF9-HJsCSKJdx6KvDR3old3IKuTIc=s0',
     lendingPool: [
       {
+        retired: true,
         address: '0x56893018a87434E9b1D6af427fF52D6C27f1A542',
         loan_options: [
           {
