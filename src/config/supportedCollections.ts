@@ -525,6 +525,25 @@ export const supportedCollections: { [key: string]: any } = {
       ],
     },
   },
+  'opensea:akutars': {
+    display_name: 'Akutars',
+    address: '0xaaD35C2DadbE77f97301617D82e661776c891Fa9',
+    networkType: 'ethereum',
+    networkId: 1,
+    image_url: 'https://lh3.googleusercontent.com/lU7HLkzbdUB07EpfR2wvLkLi8Msc5JyE5d7iDNmgVn3EdnNnNM-2c-027IHP0W8T1t2wH5Hl2gtv90tzF_LdUC6Q-UBYwXpBfMaOCA=s130',
+    lendingPool: {
+      address: '0xCa91dAc73595C2524842500D68C66de55cf33c52',
+      loan_options: [
+        {
+          loan_duration_block: 86388,
+          loan_duration_second: 1209600,
+          interest_bps_block: 0.00138,
+          interest_bps_block_override: 0.000600,
+          max_ltv_bps: 3500,
+        },
+      ],
+    },
+  },
   'opensea:worldwidewebbland': {
     display_name: 'Worldwide Webb Land',
     address: '0xA1D4657e0E6507D5a94d06DA93E94dC7C8c44b51',
