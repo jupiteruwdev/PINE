@@ -238,6 +238,25 @@ export const supportedCollections: { [key: string]: any } = {
       ],
     },
   },
+  'opensea:rich-baby': {
+    display_name: 'Rich Baby Official',
+    address: '0x78fD3FA3cE045f59eb8C4DC7C21906295a8e3Ab4',
+    networkType: 'ethereum',
+    networkId: 1,
+    image_url: 'https://lh3.googleusercontent.com/2PDflxyoUNhZNAPudZy1ridnZDTYII82xkUB_PKrewB2yRB1nPnyKwJhM0mbNzg5OI1s1IhtVf96X3ejFj0KfauCDx3ZyQpWCXJH3Q=s130',
+    lendingPool: {
+      address: '0xb81D17A19C570e60Ea25A7a7bAe2AA8b27c5Db5c',
+      loan_options: [
+        {
+          loan_duration_block: 86388,
+          loan_duration_second: 1209600,
+          interest_bps_block: 0.00138,
+          interest_bps_block_override: 0.000600,
+          max_ltv_bps: 3000,
+        },
+      ],
+    },
+  },
   'opensea:cyberbrokers': {
     display_name: 'CyberBrokers',
     address: '0x892848074ddea461a15f337250da3ce55580ca85',
