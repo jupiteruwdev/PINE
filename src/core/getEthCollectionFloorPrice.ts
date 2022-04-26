@@ -33,7 +33,6 @@ export default async function getEthCollectionFloorPrice({ blockchain, collectio
 
     const floorPrices = _.get(res, 'data.0.floor_price')
     const floorPrice = _.get(_.find(floorPrices, { 'currency_symbol': 'ETH' }), 'floor_price')
-
     if (!floorPrice) throw failure('FETCH_FLOOR_PRICE')
 
     return $ETH(floorPrice)

@@ -36,8 +36,7 @@ export default async function getEthCollectionValuation({ blockchain, collection
         const apiKey = appConf.openseaAPIKey
         if (!apiKey) throw failure('FETCH_OPENSEA_VALUATION_FAILURE')
 
-        const [floorPriceRef, collectionData] = await Promise.all([
-          getEthCollectionFloorPrice({ blockchain, collectionAddress }),
+        const [collectionData] = await Promise.all([
           getRequest(`https://api.opensea.io/api/v1/collection/${id}/stats`, {
             headers: {
               'X-API-KEY': apiKey,
@@ -52,7 +51,7 @@ export default async function getEthCollectionValuation({ blockchain, collection
           collection,
           value: $ETH(value),
           value24Hr: $ETH(value24Hr),
-          value1DReference: $ETH(floorPriceRef.amount),
+          value1DReference: $ETH(0),
         }
 
         logger.info(`Fetching valuation for Ethereum collection <${collectionAddress}>... OK`, valuation)
