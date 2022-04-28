@@ -83,7 +83,7 @@ export async function findOne({ address, collectionAddress, collectionId, blockc
     if (collectionAddress !== undefined && _.get(val, 'address')?.toLowerCase() !== collectionAddress.toLowerCase()) return false
     if (_.get(val, 'networkType') !== blockchain.network) return false
     if (_.toString(_.get(val, 'networkId')) !== blockchain.networkId) return false
-    if (address !== undefined && _.get(val, 'lendingPool.address') !== address) return false
+    if (address !== undefined && _.get(val, 'lendingPools.address') !== address) return false
     return true
   })
 
@@ -96,7 +96,7 @@ export async function findOne({ address, collectionAddress, collectionId, blockc
     id: matchedId,
   })
 
-  for (const lendingPool of _.get(data, 'lendingPool', [])) {
+  for (const lendingPool of _.get(data, 'lendingPools', [])) {
     const pool = await getPoolContract({ blockchain, poolAddress: lendingPool.address })
     if (!includeRetired && lendingPool.retired) continue
     return mapPool({
@@ -142,7 +142,7 @@ export async function findAll({ collectionAddress, collectionId, blockchains, in
       if (collectionAddress !== undefined && collectionAddress.toLowerCase() !== collection.address.toLowerCase()) continue
 
       // identify if multi-pool or single-pool
-      for (const lendingPool of _.get(data, 'lendingPool', [])) {
+      for (const lendingPool of _.get(data, 'lendingPools', [])) {
         const pool = await getPoolContract({ blockchain: blockchainDict.ethereum, poolAddress: lendingPool.address })
         if (!includeRetired && lendingPool.retired) continue
         pools.push(mapPool({
