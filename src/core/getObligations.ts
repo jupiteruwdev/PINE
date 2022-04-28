@@ -12,7 +12,7 @@ type Params = {
 }
 
 export default async function getObligations({ blockchain, borrowerAddress }: Params) {
-  const pools = await findAllPools({ blockchains: { [blockchain.network]: blockchain.networkId }, retired: true })
+  const pools = await findAllPools({ blockchains: { [blockchain.network]: blockchain.networkId }, includeRetired: true })
   const allCollaterals = _.flatten(await Promise.all(pools.map((pool, index) => getNFTsByOwner({ blockchain, ownerAddress: pool.address, populateMetadata: false, index }))))
   const allEvents = await Promise.all(allCollaterals.map(collateral => {
     if (!collateral.ownerAddress) throw failure('FETCH_LOAN_EVENTS_FAILURE')

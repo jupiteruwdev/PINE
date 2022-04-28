@@ -14,14 +14,14 @@ type FindOneFilter = {
   collectionAddress?: string
   collectionId?: string
   blockchain?: Blockchain
-  retired?: boolean
+  includeRetired?: boolean
 }
 
 type FindAllFilter = {
   collectionAddress?: string
   collectionId?: string
   blockchains?: { [K in AnyBlockchain]?: string }
-  retired?: boolean
+  includeRetired?: boolean
 }
 
 // TODO: remove version param when pool is moved into loan optiom
@@ -76,7 +76,7 @@ function mapPool(data: Record<string, any>): Pool {
  *
  * @returns The pool if there is a match, `undefined` otherwise.
  */
-export async function findOne({ address, collectionAddress, collectionId, blockchain = EthBlockchain(), retired = false }: FindOneFilter = {}): Promise<Pool | undefined> {
+export async function findOne({ address, collectionAddress, collectionId, blockchain = EthBlockchain(), includeRetired = false }: FindOneFilter = {}): Promise<Pool | undefined> {
   const rawData = supportedCollections
   const matchedId = _.findKey(rawData, (val, key) => {
     if (collectionId !== undefined && collectionId !== key) return false
@@ -95,24 +95,13 @@ export async function findOne({ address, collectionAddress, collectionId, blockc
     ...data,
     id: matchedId,
   })
-  if (_.isArray(data.lendingPool)) {
-    for (const lendingPool of _.get(data, 'lendingPool', [])) {
-      const pool = await getPoolContract({ blockchain, poolAddress: lendingPool.address })
-      if (!retired && lendingPool.retired) continue
-      return mapPool({
-        version: pool.poolVersion,
-        ...lendingPool,
-        collection,
-        blockchain,
-      })
-    }
-  }
-  else {
-    const pool = await getPoolContract({ blockchain, poolAddress: data.lendingPool.address })
-    if (!retired && data.lendingPool.retired) return undefined
+
+  for (const lendingPool of _.get(data, 'lendingPool', [])) {
+    const pool = await getPoolContract({ blockchain, poolAddress: lendingPool.address })
+    if (!includeRetired && lendingPool.retired) continue
     return mapPool({
       version: pool.poolVersion,
-      ..._.get(data, 'lendingPool', {}),
+      ...lendingPool,
       collection,
       blockchain,
     })
@@ -128,7 +117,7 @@ export async function findOne({ address, collectionAddress, collectionId, blockc
  *
  * @returns Array of pools.
  */
-export async function findAll({ collectionAddress, collectionId, blockchains, retired = false }: FindAllFilter = {}): Promise<Pool[]> {
+export async function findAll({ collectionAddress, collectionId, blockchains, includeRetired = false }: FindAllFilter = {}): Promise<Pool[]> {
   const rawData = supportedCollections
 
   const blockchainDict = blockchains === undefined ? mapBlockchainFilterToDict({}, true) : mapBlockchainFilterToDict(blockchains, false)
@@ -153,29 +142,16 @@ export async function findAll({ collectionAddress, collectionId, blockchains, re
       if (collectionAddress !== undefined && collectionAddress.toLowerCase() !== collection.address.toLowerCase()) continue
 
       // identify if multi-pool or single-pool
-      if (_.isArray(data.lendingPool)) {
-        for (const lendingPool of _.get(data, 'lendingPool', [])) {
-          const pool = await getPoolContract({ blockchain: blockchainDict.ethereum, poolAddress: lendingPool.address })
-          if (!retired && lendingPool.retired) continue
-          pools.push(mapPool({
-            version: pool.poolVersion,
-            ...lendingPool,
-            collection,
-            blockchain: blockchainDict.ethereum,
-          }))
-        }
-      }
-      else {
-        const pool = await getPoolContract({ blockchain: blockchainDict.ethereum, poolAddress: data.lendingPool.address })
-        if (!retired && data.lendingPool.retired) continue
+      for (const lendingPool of _.get(data, 'lendingPool', [])) {
+        const pool = await getPoolContract({ blockchain: blockchainDict.ethereum, poolAddress: lendingPool.address })
+        if (!includeRetired && lendingPool.retired) continue
         pools.push(mapPool({
           version: pool.poolVersion,
-          ..._.get(data, 'lendingPool', {}),
+          ...lendingPool,
           collection,
           blockchain: blockchainDict.ethereum,
         }))
       }
-
     }
   }
 

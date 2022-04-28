@@ -37,7 +37,7 @@ export default async function getLoanPosition({ blockchain, collectionId, nftId,
 
     const [blockNumber, pools, valuation] = await Promise.all([
       getEthBlockNumber(blockchain.networkId),
-      findAllPools({ collectionId, blockchains: { ethereum: blockchain.network }, retired: true }),
+      findAllPools({ collectionId, blockchains: { ethereum: blockchain.network }, includeRetired: true }),
       getEthCollectionValuation({ blockchain: blockchain as Blockchain<'ethereum'>, collectionAddress: collection.address }),
     ])
 
