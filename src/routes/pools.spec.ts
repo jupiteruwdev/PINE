@@ -7,7 +7,7 @@ import { supportedCollections } from '../config/supportedCollections'
 
 describe('routes/pools', () => {
   it('can get all Ethereum loan pools on Mainnet', async () => {
-    const poolAddresses = _.compact(_.flatMap(supportedCollections, data => (data.networkType === 'ethereum' && data.networkId === 1) ? data.lendingPools.map((e: any) => e.address) : undefined))
+    const poolAddresses = _.compact(_.flatMap(supportedCollections, data => (data.networkType === 'ethereum' && data.networkId === 1) ? data.lendingPools.map((lendingPool: any) => lendingPool.address) : undefined))
 
     await Promise.all(poolAddresses.map(async poolAddress => {
       console.log(poolAddress)
