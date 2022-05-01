@@ -218,6 +218,25 @@ export const supportedCollections: { [key: string]: any } = {
       },
     ],
   },
+  'opensea:otherdeed': {
+    display_name: 'Otherdeed for Otherside',
+    address: '0x34d85c9cdeb23fa97cb08333b511ac86e1c4e258',
+    networkType: 'ethereum',
+    networkId: 1,
+    image_url: 'https://lh3.googleusercontent.com/yIm-M5-BpSDdTEIJRt5D6xphizhIdozXjqSITgK4phWq7MmAU3qE7Nw7POGCiPGyhtJ3ZFP8iJ29TFl-RLcGBWX5qI4-ZcnCPcsY4zI=s130',
+    lendingPool: {
+      address: '0x5facc5eeB5163E55FdD8B59Df3c8649082bA68Ac',
+      loan_options: [
+        {
+          loan_duration_block: 86388,
+          loan_duration_second: 1209600,
+          interest_bps_block: 0.00138,
+          interest_bps_block_override: 0.000600,
+          max_ltv_bps: 3000,
+        },
+      ],
+    },
+  },
   'opensea:world-of-women-galaxy': {
     display_name: 'World of Women Galaxy',
     address: '0xf61f24c2d93bf2de187546b14425bf631f28d6dc',
@@ -555,28 +574,14 @@ export const supportedCollections: { [key: string]: any } = {
     image_url: 'https://lh3.googleusercontent.com/bcCd1TfusKK6wWjmshwmizmY9j7An3pp9kxopMxfIt-_I8WFnSIK-5gevOduoYK4Qpq2e3DyXgROKNfkP396W5ViEYXhxoyAZG3s_vY=s130',
     lendingPools: [
       {
-        address: '0x007cA695D441D9Be5d851B2695AAc0B36777f8F4',
+        address: '0xC738AB51B98D3d81f11dD12B23A39b6bAD2A5162',
         loan_options: [
-          {
-            loan_duration_block: 18513,
-            loan_duration_second: 259200,
-            interest_bps_block: 0.00156,
-            interest_bps_block_override: 0.000151,
-            max_ltv_bps: 3300,
-          },
-          {
-            loan_duration_block: 43194,
-            loan_duration_second: 604800,
-            interest_bps_block: 0.00143,
-            interest_bps_block_override: 0.000168,
-            max_ltv_bps: 2500,
-          },
           {
             loan_duration_block: 86388,
             loan_duration_second: 1209600,
             interest_bps_block: 0.00138,
-            interest_bps_block_override: 0.000160,
-            max_ltv_bps: 2300,
+            interest_bps_block_override: 0.000600,
+            max_ltv_bps: 4000,
           },
         ],
       },
