@@ -224,18 +224,20 @@ export const supportedCollections: { [key: string]: any } = {
     networkType: 'ethereum',
     networkId: 1,
     image_url: 'https://lh3.googleusercontent.com/yIm-M5-BpSDdTEIJRt5D6xphizhIdozXjqSITgK4phWq7MmAU3qE7Nw7POGCiPGyhtJ3ZFP8iJ29TFl-RLcGBWX5qI4-ZcnCPcsY4zI=s130',
-    lendingPool: {
-      address: '0x5facc5eeB5163E55FdD8B59Df3c8649082bA68Ac',
-      loan_options: [
-        {
-          loan_duration_block: 86388,
-          loan_duration_second: 1209600,
-          interest_bps_block: 0.00138,
-          interest_bps_block_override: 0.000600,
-          max_ltv_bps: 3000,
-        },
-      ],
-    },
+    lendingPools: [
+      {
+        address: '0x5facc5eeB5163E55FdD8B59Df3c8649082bA68Ac',
+        loan_options: [
+          {
+            loan_duration_block: 86388,
+            loan_duration_second: 1209600,
+            interest_bps_block: 0.00138,
+            interest_bps_block_override: 0.000600,
+            max_ltv_bps: 3000,
+          },
+        ],
+      },
+    ],
   },
   'opensea:world-of-women-galaxy': {
     display_name: 'World of Women Galaxy',
