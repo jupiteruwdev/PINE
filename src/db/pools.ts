@@ -14,12 +14,14 @@ type FindOneFilter = {
   collectionAddress?: string
   collectionId?: string
   blockchain?: Blockchain
+  includeRetired?: boolean
 }
 
 type FindAllFilter = {
   collectionAddress?: string
   collectionId?: string
   blockchains?: { [K in AnyBlockchain]?: string }
+  includeRetired?: boolean
 }
 
 // TODO: remove version param when pool is moved into loan optiom
@@ -74,14 +76,14 @@ function mapPool(data: Record<string, any>): Pool {
  *
  * @returns The pool if there is a match, `undefined` otherwise.
  */
-export async function findOne({ address, collectionAddress, collectionId, blockchain = EthBlockchain() }: FindOneFilter = {}): Promise<Pool | undefined> {
+export async function findOne({ address, collectionAddress, collectionId, blockchain = EthBlockchain(), includeRetired = false }: FindOneFilter = {}): Promise<Pool | undefined> {
   const rawData = supportedCollections
   const matchedId = _.findKey(rawData, (val, key) => {
     if (collectionId !== undefined && collectionId !== key) return false
     if (collectionAddress !== undefined && _.get(val, 'address')?.toLowerCase() !== collectionAddress.toLowerCase()) return false
     if (_.get(val, 'networkType') !== blockchain.network) return false
     if (_.toString(_.get(val, 'networkId')) !== blockchain.networkId) return false
-    if (address !== undefined && _.get(val, 'lendingPool.address') !== address) return false
+    if (address !== undefined && !_.get(val, 'lendingPools').some((e: any) => e.address !== address)) return false
     return true
   })
 
@@ -94,14 +96,16 @@ export async function findOne({ address, collectionAddress, collectionId, blockc
     id: matchedId,
   })
 
-  const pool = await getPoolContract({ blockchain, poolAddress: data.lendingPool.address })
-
-  return mapPool({
-    version: pool.poolVersion,
-    ..._.get(data, 'lendingPool', {}),
-    collection,
-    blockchain,
-  })
+  for (const lendingPool of _.get(data, 'lendingPools', [])) {
+    const pool = await getPoolContract({ blockchain, poolAddress: lendingPool.address })
+    if (!includeRetired && lendingPool.retired) continue
+    return mapPool({
+      version: pool.poolVersion,
+      ...lendingPool,
+      collection,
+      blockchain,
+    })
+  }
 }
 
 /**
@@ -113,7 +117,7 @@ export async function findOne({ address, collectionAddress, collectionId, blockc
  *
  * @returns Array of pools.
  */
-export async function findAll({ collectionAddress, collectionId, blockchains }: FindAllFilter = {}): Promise<Pool[]> {
+export async function findAll({ collectionAddress, collectionId, blockchains, includeRetired = false }: FindAllFilter = {}): Promise<Pool[]> {
   const rawData = supportedCollections
 
   const blockchainDict = blockchains === undefined ? mapBlockchainFilterToDict({}, true) : mapBlockchainFilterToDict(blockchains, false)
@@ -137,14 +141,17 @@ export async function findAll({ collectionAddress, collectionId, blockchains }: 
 
       if (collectionAddress !== undefined && collectionAddress.toLowerCase() !== collection.address.toLowerCase()) continue
 
-      const pool = await getPoolContract({ blockchain: blockchainDict.ethereum, poolAddress: data.lendingPool.address })
-
-      pools.push(mapPool({
-        version: pool.poolVersion,
-        ..._.get(data, 'lendingPool', {}),
-        collection,
-        blockchain: blockchainDict.ethereum,
-      }))
+      // identify if multi-pool or single-pool
+      for (const lendingPool of _.get(data, 'lendingPools', [])) {
+        const pool = await getPoolContract({ blockchain: blockchainDict.ethereum, poolAddress: lendingPool.address })
+        if (!includeRetired && lendingPool.retired) continue
+        pools.push(mapPool({
+          version: pool.poolVersion,
+          ...lendingPool,
+          collection,
+          blockchain: blockchainDict.ethereum,
+        }))
+      }
     }
   }
 

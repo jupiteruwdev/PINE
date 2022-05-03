@@ -36,18 +36,20 @@ export const supportedCollections: { [key: string]: any } = {
     networkType: 'ethereum',
     networkId: 1,
     image_url: 'https://lh3.googleusercontent.com/7B0qai02OdHA8P_EOVK672qUliyjQdQDGNrACxs7WnTgZAkJa_wWURnIFKeOh5VTf8cfTqW3wQpozGedaC9mteKphEOtztls02RlWQ=s130',
-    lendingPool: {
-      address: '0x4286f77da706339A631c9578278b99a254156D10',
-      loan_options: [
-        {
-          loan_duration_block: 86388,
-          loan_duration_second: 1209600,
-          interest_bps_block: 0.00156,
-          interest_bps_block_override: 0.000600,
-          max_ltv_bps: 3300,
-        },
-      ],
-    },
+    lendingPools: [
+      {
+        address: '0x4286f77da706339A631c9578278b99a254156D10',
+        loan_options: [
+          {
+            loan_duration_block: 86388,
+            loan_duration_second: 1209600,
+            interest_bps_block: 0.00156,
+            interest_bps_block_override: 0.000600,
+            max_ltv_bps: 3300,
+          },
+        ],
+      },
+    ],
   },
   'opensea:dourdarcels': {
     display_name: 'DourDarcels',
@@ -55,18 +57,20 @@ export const supportedCollections: { [key: string]: any } = {
     networkType: 'ethereum',
     networkId: 1,
     image_url: 'https://lh3.googleusercontent.com/WxBXXLXUJZwhUMPfz0o18a2gjYpU-qecO-ENOF8QXsfiBLt8TeQ8Nurmi2zLbwgwTHE-J_aZRkIqDA_OGrBSbU7ZpOV8jdjtkp-U4Q=s130',
-    lendingPool: {
-      address: '0xc65deedc3e0A0aD67012ab503112c60477e5680E',
-      loan_options: [
-        {
-          loan_duration_block: 86388,
-          loan_duration_second: 1209600,
-          interest_bps_block: 0.00138,
-          interest_bps_block_override: 0.000172,
-          max_ltv_bps: 5000,
-        },
-      ],
-    },
+    lendingPools: [
+      {
+        address: '0xc65deedc3e0A0aD67012ab503112c60477e5680E',
+        loan_options: [
+          {
+            loan_duration_block: 86388,
+            loan_duration_second: 1209600,
+            interest_bps_block: 0.00138,
+            interest_bps_block_override: 0.000172,
+            max_ltv_bps: 5000,
+          },
+        ],
+      },
+    ],
   },
   'opensea:genesis-creepz': {
     display_name: 'Creepz Genesis',
@@ -74,18 +78,20 @@ export const supportedCollections: { [key: string]: any } = {
     networkType: 'ethereum',
     networkId: 1,
     image_url: 'https://lh3.googleusercontent.com/r_FGZQ0mgacLAOzH1MxC9n-yyygNmg37QyjYvM3g4HCl1mOkeGif7_8IW62v_R4Tvx9O9EWdHkNmiQQW30DNxwcvuSbg5EM1FQeSDIo=s130',
-    lendingPool: {
-      address: '0xf9B168fd0bf7BF1A36eD1ad29dd899607eb8023F',
-      loan_options: [
-        {
-          loan_duration_block: 86388,
-          loan_duration_second: 1209600,
-          interest_bps_block: 0.00138,
-          interest_bps_block_override: 0.000172,
-          max_ltv_bps: 4000,
-        },
-      ],
-    },
+    lendingPools: [
+      {
+        address: '0xf9B168fd0bf7BF1A36eD1ad29dd899607eb8023F',
+        loan_options: [
+          {
+            loan_duration_block: 86388,
+            loan_duration_second: 1209600,
+            interest_bps_block: 0.00138,
+            interest_bps_block_override: 0.000172,
+            max_ltv_bps: 4000,
+          },
+        ],
+      },
+    ],
   },
   'opensea:tubby-cats': {
     display_name: 'tubby cats by tubby collective',
@@ -93,18 +99,20 @@ export const supportedCollections: { [key: string]: any } = {
     networkType: 'ethereum',
     networkId: 1,
     image_url: 'https://lh3.googleusercontent.com/XHZY9623keDQqFSDHKqOdcjD99Y7N82K1egYRM2Mm1Z-Jxn5myrkKiC5NBktWKStVtTzDzwELy9dNpzTWJTIkLsdMIxUHI86jduQ=s130',
-    lendingPool: {
-      address: '0x1597a81012c4b06d5aB981eAb60aad5B1B933F9a',
-      loan_options: [
-        {
-          loan_duration_block: 86388,
-          loan_duration_second: 1209600,
-          interest_bps_block: 0.00138,
-          interest_bps_block_override: 0.000172,
-          max_ltv_bps: 5000,
-        },
-      ],
-    },
+    lendingPools: [
+      {
+        address: '0x1597a81012c4b06d5aB981eAb60aad5B1B933F9a',
+        loan_options: [
+          {
+            loan_duration_block: 86388,
+            loan_duration_second: 1209600,
+            interest_bps_block: 0.00138,
+            interest_bps_block_override: 0.000172,
+            max_ltv_bps: 5000,
+          },
+        ],
+      },
+    ]
   },
   'opensea:murixhaus': {
     display_name: 'MURI by Haus',
@@ -112,18 +120,20 @@ export const supportedCollections: { [key: string]: any } = {
     networkType: 'ethereum',
     networkId: 1,
     image_url: 'https://lh3.googleusercontent.com/OPgdc2e-yuBEMeyS8ttfl8cINQ5amQofP0xS4wWj59bWyUUo84A4g-WaulcpghyQCde1mQh88XABNHWjT9MRhPo34-QF50bdYQZa=s130',
-    lendingPool: {
-      address: '0x44FF4Be276a599aFFcba9c0ec995E75bCD6b60b7',
-      loan_options: [
-        {
-          loan_duration_block: 86388,
-          loan_duration_second: 1209600,
-          interest_bps_block: 0.00138,
-          interest_bps_block_override: 0.000172,
-          max_ltv_bps: 5000,
-        },
-      ],
-    },
+    lendingPools: [
+      {
+        address: '0x44FF4Be276a599aFFcba9c0ec995E75bCD6b60b7',
+        loan_options: [
+          {
+            loan_duration_block: 86388,
+            loan_duration_second: 1209600,
+            interest_bps_block: 0.00138,
+            interest_bps_block_override: 0.000172,
+            max_ltv_bps: 5000,
+          },
+        ],
+      },
+    ],
   },
   'opensea:proof-moonbirds': {
     display_name: 'Moonbirds',
@@ -131,18 +141,20 @@ export const supportedCollections: { [key: string]: any } = {
     networkType: 'ethereum',
     networkId: 1,
     image_url: 'https://lh3.googleusercontent.com/sn5iLHUcNuUO98w_9Z7cat32hiqvVkPYr6tzHUacESg4PePh9M3jySvpttyWWXHD2e8M4PNQqgorU9sUvpX-FHQHXFBiCpKjloC2nA=s130',
-    lendingPool: {
-      address: '0xbc7EbB061235994f360aD3E3ca9de0264443ED6a',
-      loan_options: [
-        {
-          loan_duration_block: 86388,
-          loan_duration_second: 1209600,
-          interest_bps_block: 0.00138,
-          interest_bps_block_override: 0.000600,
-          max_ltv_bps: 3000,
-        },
-      ],
-    },
+    lendingPools: [
+      {
+        address: '0xbc7EbB061235994f360aD3E3ca9de0264443ED6a',
+        loan_options: [
+          {
+            loan_duration_block: 86388,
+            loan_duration_second: 1209600,
+            interest_bps_block: 0.00138,
+            interest_bps_block_override: 0.000600,
+            max_ltv_bps: 3000,
+          },
+        ],
+      },
+    ],
   },
   'opensea:sandbox': {
     display_name: 'The Sandbox',
@@ -150,17 +162,19 @@ export const supportedCollections: { [key: string]: any } = {
     networkType: 'ethereum',
     networkId: 1,
     image_url: 'https://lh3.googleusercontent.com/SXH8tW1siikB80rwCRnjm1a5xM_MwTg9Xl9Db6mioIk9HIlDM09pVoSR7GKJgS6ulSUpgW9BDtMk_ePX_NKgO9A=s130',
-    lendingPool: {
-      address: '0x5241a1FA3Ac0C73991A88B506B531b0E1536Bf78',
-      loan_options: [
+    lendingPools: [
         {
-          loan_duration_block: 86388,
-          loan_duration_second: 1209600,
-          interest_bps_block: 0.000888,
-          max_ltv_bps: 3500,
-        },
-      ],
-    },
+        address: '0x5241a1FA3Ac0C73991A88B506B531b0E1536Bf78',
+        loan_options: [
+          {
+            loan_duration_block: 86388,
+            loan_duration_second: 1209600,
+            interest_bps_block: 0.000888,
+            max_ltv_bps: 3500,
+          },
+        ],
+      },
+    ]
   },
   'opensea:wonderpals': {
     display_name: 'WonderPals',
@@ -168,18 +182,20 @@ export const supportedCollections: { [key: string]: any } = {
     networkType: 'ethereum',
     networkId: 1,
     image_url: 'https://lh3.googleusercontent.com/DA_iUjt7S9PdmAANh0aqMkxYVhvGogTuKbMSzFO3uEnbvRRt5hn1B8DuN50HQpkRtH34QX7EOYYKIayz1q5KgZWfgLedNo7xBQzK=s130',
-    lendingPool: {
-      address: '0x654c881c24AA6527e92d9C89B6DaE77356C2CC35',
-      loan_options: [
+    lendingPools: [
         {
-          loan_duration_block: 86388,
-          loan_duration_second: 1209600,
-          interest_bps_block: 0.00138,
-          interest_bps_block_override: 0.000172,
-          max_ltv_bps: 5000,
-        },
-      ],
-    },
+        address: '0x654c881c24AA6527e92d9C89B6DaE77356C2CC35',
+        loan_options: [
+          {
+            loan_duration_block: 86388,
+            loan_duration_second: 1209600,
+            interest_bps_block: 0.00138,
+            interest_bps_block_override: 0.000172,
+            max_ltv_bps: 5000,
+          },
+        ],
+      },
+    ],
   },
   'opensea:clonex': {
     display_name: 'CLONE X - X TAKASHI MURAKAMI',
@@ -187,18 +203,20 @@ export const supportedCollections: { [key: string]: any } = {
     networkType: 'ethereum',
     networkId: 1,
     image_url: 'https://lh3.googleusercontent.com/XN0XuD8Uh3jyRWNtPTFeXJg_ht8m5ofDx6aHklOiy4amhFuWUa0JaR6It49AH8tlnYS386Q0TW_-Lmedn0UET_ko1a3CbJGeu5iHMg=s130',
-    lendingPool: {
-      address: '0x7e31f1Dd48A31C4ACAF7D87F5f4B117588488cCb',
-      loan_options: [
+    lendingPools: [
         {
-          loan_duration_block: 86388,
-          loan_duration_second: 1209600,
-          interest_bps_block: 0.00138,
-          interest_bps_block_override: 0.000172,
-          max_ltv_bps: 4000,
-        },
-      ],
-    },
+        address: '0x7e31f1Dd48A31C4ACAF7D87F5f4B117588488cCb',
+        loan_options: [
+          {
+            loan_duration_block: 86388,
+            loan_duration_second: 1209600,
+            interest_bps_block: 0.00138,
+            interest_bps_block_override: 0.000172,
+            max_ltv_bps: 4000,
+          },
+        ],
+      },
+    ],
   },
   'opensea:otherdeed': {
     display_name: 'Otherdeed for Otherside',
@@ -206,18 +224,20 @@ export const supportedCollections: { [key: string]: any } = {
     networkType: 'ethereum',
     networkId: 1,
     image_url: 'https://lh3.googleusercontent.com/yIm-M5-BpSDdTEIJRt5D6xphizhIdozXjqSITgK4phWq7MmAU3qE7Nw7POGCiPGyhtJ3ZFP8iJ29TFl-RLcGBWX5qI4-ZcnCPcsY4zI=s130',
-    lendingPool: {
-      address: '0x5facc5eeB5163E55FdD8B59Df3c8649082bA68Ac',
-      loan_options: [
-        {
-          loan_duration_block: 86388,
-          loan_duration_second: 1209600,
-          interest_bps_block: 0.00138,
-          interest_bps_block_override: 0.000600,
-          max_ltv_bps: 3000,
-        },
-      ],
-    },
+    lendingPools: [
+      {
+        address: '0x5facc5eeB5163E55FdD8B59Df3c8649082bA68Ac',
+        loan_options: [
+          {
+            loan_duration_block: 86388,
+            loan_duration_second: 1209600,
+            interest_bps_block: 0.00138,
+            interest_bps_block_override: 0.000600,
+            max_ltv_bps: 3000,
+          },
+        ],
+      },
+    ],
   },
   'opensea:world-of-women-galaxy': {
     display_name: 'World of Women Galaxy',
@@ -225,18 +245,20 @@ export const supportedCollections: { [key: string]: any } = {
     networkType: 'ethereum',
     networkId: 1,
     image_url: 'https://lh3.googleusercontent.com/hP4JJhiY5yXu1mCvNycTke2O_xbtgIFfkLTjfT7C9TNKinkGpP2COikt7cwn0xqzoATRNC21wsiwy_Fe-MQ3PPTgRjkbbCfJf__L=s130',
-    lendingPool: {
-      address: '0x732E5339B8E7e3793Bc94F6b2DBaa18ef2591776',
-      loan_options: [
-        {
-          loan_duration_block: 86388,
-          loan_duration_second: 1209600,
-          interest_bps_block: 0.00138,
-          interest_bps_block_override: 0.000172,
-          max_ltv_bps: 5000,
-        },
-      ],
-    },
+    lendingPools: [
+      {
+        address: '0x732E5339B8E7e3793Bc94F6b2DBaa18ef2591776',
+        loan_options: [
+          {
+            loan_duration_block: 86388,
+            loan_duration_second: 1209600,
+            interest_bps_block: 0.00138,
+            interest_bps_block_override: 0.000172,
+            max_ltv_bps: 5000,
+          },
+        ],
+      },
+    ],
   },
   'opensea:world-of-women-nft': {
     display_name: 'World of Women',
@@ -244,18 +266,20 @@ export const supportedCollections: { [key: string]: any } = {
     networkType: 'ethereum',
     networkId: 1,
     image_url: 'https://lh3.googleusercontent.com/EFAQpIktMBU5SU0TqSdPWZ4byHr3hFirL_mATsR8KWhM5z-GJljX8E73V933lkyKgv2SAFlfRRjGsWvWbQQmJAwu3F2FDXVa1C9F=s130',
-    lendingPool: {
-      address: '0x00498884D17A7155561D0Faa9876B1a918e13C06',
-      loan_options: [
+    lendingPools: [
         {
-          loan_duration_block: 86388,
-          loan_duration_second: 1209600,
-          interest_bps_block: 0.00138,
-          interest_bps_block_override: 0.000600,
-          max_ltv_bps: 4000,
-        },
-      ],
-    },
+        address: '0x00498884D17A7155561D0Faa9876B1a918e13C06',
+        loan_options: [
+          {
+            loan_duration_block: 86388,
+            loan_duration_second: 1209600,
+            interest_bps_block: 0.00138,
+            interest_bps_block_override: 0.000600,
+            max_ltv_bps: 4000,
+          },
+        ],
+      },
+    ],
   },
   'opensea:rich-baby': {
     display_name: 'Rich Baby Official',
@@ -263,18 +287,20 @@ export const supportedCollections: { [key: string]: any } = {
     networkType: 'ethereum',
     networkId: 1,
     image_url: 'https://lh3.googleusercontent.com/2PDflxyoUNhZNAPudZy1ridnZDTYII82xkUB_PKrewB2yRB1nPnyKwJhM0mbNzg5OI1s1IhtVf96X3ejFj0KfauCDx3ZyQpWCXJH3Q=s130',
-    lendingPool: {
-      address: '0xb81D17A19C570e60Ea25A7a7bAe2AA8b27c5Db5c',
-      loan_options: [
+    lendingPools: [
         {
-          loan_duration_block: 86388,
-          loan_duration_second: 1209600,
-          interest_bps_block: 0.00138,
-          interest_bps_block_override: 0.000600,
-          max_ltv_bps: 3000,
-        },
-      ],
-    },
+        address: '0xb81D17A19C570e60Ea25A7a7bAe2AA8b27c5Db5c',
+        loan_options: [
+          {
+            loan_duration_block: 86388,
+            loan_duration_second: 1209600,
+            interest_bps_block: 0.00138,
+            interest_bps_block_override: 0.000600,
+            max_ltv_bps: 3000,
+          },
+        ],
+      },
+    ],
   },
   'opensea:cyberbrokers': {
     display_name: 'CyberBrokers',
@@ -282,18 +308,33 @@ export const supportedCollections: { [key: string]: any } = {
     networkType: 'ethereum',
     networkId: 1,
     image_url: 'https://lh3.googleusercontent.com/Qd1IEPYz_0YlMaclPwb6_9PyP7afZIzH15IdIU2X6t1Wvg81DwpAaWOY0cNmxy173C4yMA7sM3xF9-HJsCSKJdx6KvDR3old3IKuTIc=s0',
-    lendingPool: {
-      address: '0x56893018a87434E9b1D6af427fF52D6C27f1A542',
-      loan_options: [
-        {
-          loan_duration_block: 86388,
-          loan_duration_second: 1209600,
-          interest_bps_block: 0.00138,
-          interest_bps_block_override: 0.000198,
-          max_ltv_bps: 4000,
-        },
-      ],
-    },
+    lendingPools: [
+      {
+        retired: true,
+        address: '0x56893018a87434E9b1D6af427fF52D6C27f1A542',
+        loan_options: [
+          {
+            loan_duration_block: 86388,
+            loan_duration_second: 1209600,
+            interest_bps_block: 0.00138,
+            interest_bps_block_override: 0.000198,
+            max_ltv_bps: 4000,
+          },
+        ],
+      },
+      {
+        address: '0x56893018a87434E9b1D6af427fF52D6C27f1A542',
+        loan_options: [
+          {
+            loan_duration_block: 86388,
+            loan_duration_second: 1209600,
+            interest_bps_block: 0.00138,
+            interest_bps_block_override: 0.000198,
+            max_ltv_bps: 4000,
+          },
+        ],
+      },      
+    ],
   },
   'opensea:onchainmonkey': {
     display_name: 'OnChainMonkey',
@@ -301,32 +342,34 @@ export const supportedCollections: { [key: string]: any } = {
     networkType: 'ethereum',
     networkId: 1,
     image_url: 'https://lh3.googleusercontent.com/DiZDS55tz4x8hmupgiNQxHHq1kuts0n83RNwpytSpNJ90IKyNxRzDLMVPtCQOBd5IlEjE5nlvwXISh065KHXfOS7F5tS-Dvdh-dTMis=s130',
-    lendingPool: {
-      address: '0x96007fc943c0A53e21746aD637eEd6Ce0AFA810f',
-      loan_options: [
-        {
-          loan_duration_block: 18513,
-          loan_duration_second: 259200,
-          interest_bps_block: 0.00156,
-          interest_bps_block_override: 0.000209,
-          max_ltv_bps: 3469,
-        },
-        {
-          loan_duration_block: 43194,
-          loan_duration_second: 604800,
-          interest_bps_block: 0.00143,
-          interest_bps_block_override: 0.000195,
-          max_ltv_bps: 3169,
-        },
-        {
-          loan_duration_block: 86388,
-          loan_duration_second: 1209600,
-          interest_bps_block: 0.00138,
-          interest_bps_block_override: 0.000191,
-          max_ltv_bps: 2888,
-        },
-      ],
-    },
+    lendingPools: [
+      {
+        address: '0x96007fc943c0A53e21746aD637eEd6Ce0AFA810f',
+        loan_options: [
+          {
+            loan_duration_block: 18513,
+            loan_duration_second: 259200,
+            interest_bps_block: 0.00156,
+            interest_bps_block_override: 0.000209,
+            max_ltv_bps: 3469,
+          },
+          {
+            loan_duration_block: 43194,
+            loan_duration_second: 604800,
+            interest_bps_block: 0.00143,
+            interest_bps_block_override: 0.000195,
+            max_ltv_bps: 3169,
+          },
+          {
+            loan_duration_block: 86388,
+            loan_duration_second: 1209600,
+            interest_bps_block: 0.00138,
+            interest_bps_block_override: 0.000191,
+            max_ltv_bps: 2888,
+          },
+        ],
+      },
+    ],
   },
   // 'opensea:invisiblefriends': {
   //   display_name: 'Invisible Friends',
@@ -334,7 +377,7 @@ export const supportedCollections: { [key: string]: any } = {
   //   networkType: 'ethereum',
   //   networkId: 1,
   //   image_url: 'https://lh3.googleusercontent.com/lW22aEwUE0IqGaYm5HRiMS8DwkDwsdjPpprEqYnBqo2s7gSR-JqcYOjU9LM6p32ujG_YAEd72aDyox-pdCVK10G-u1qZ3zAsn2r9=s130',
-  //   lendingPool: {
+  //   lendingPools: {
   //     address: '0xCF7ED018Ce445141730Eb3Bca43198621eDB660b',
   //     loan_options: [
   //       {
@@ -360,18 +403,20 @@ export const supportedCollections: { [key: string]: any } = {
     networkType: 'ethereum',
     networkId: 1,
     image_url: 'https://lh3.googleusercontent.com/H8jOCJuQokNqGBpkBN5wk1oZwO7LM8bNnrHCaekV2nKjnCqw6UB5oaH8XyNeBDj6bA_n1mjejzhFQUP3O1NfjFLHr3FOaeHcTOOT=s130',
-    lendingPool: {
-      address: '0x4dE7B2f8160fa083F90d4900eAe448dbc9ABb1C8',
-      loan_options: [
+    lendingPools: [
         {
-          loan_duration_block: 86388,
-          loan_duration_second: 1209600,
-          interest_bps_block: 0.00156,
-          interest_bps_block_override: 0.000600,
-          max_ltv_bps: 3300,
-        },
-      ],
-    },
+        address: '0x4dE7B2f8160fa083F90d4900eAe448dbc9ABb1C8',
+        loan_options: [
+          {
+            loan_duration_block: 86388,
+            loan_duration_second: 1209600,
+            interest_bps_block: 0.00156,
+            interest_bps_block_override: 0.000600,
+            max_ltv_bps: 3300,
+          },
+        ],
+      },
+    ],
   },
   'opensea:cryptoadz-by-gremplin': {
     display_name: 'CrypToadz by GREMPLIN',
@@ -379,18 +424,20 @@ export const supportedCollections: { [key: string]: any } = {
     networkType: 'ethereum',
     networkId: 1,
     image_url: 'https://lh3.googleusercontent.com/iofetZEyiEIGcNyJKpbOafb_efJyeo7QOYnTog8qcQJhqoBU-Vu9l3lXidZhXOAdu6dj4fzWW6BZDU5vLseC-K03rMMu-_j2LvwcbHo=s130',
-    lendingPool: {
-      address: '0x52e74fd190ded6538202b131d2c8f63569fa3593',
-      loan_options: [
+    lendingPools: [
         {
-          loan_duration_block: 86388,
-          loan_duration_second: 1209600,
-          interest_bps_block: 0.00156,
-          interest_bps_block_override: 0.000600,
-          max_ltv_bps: 3500,
-        },
-      ],
-    },
+        address: '0x52e74fd190ded6538202b131d2c8f63569fa3593',
+        loan_options: [
+          {
+            loan_duration_block: 86388,
+            loan_duration_second: 1209600,
+            interest_bps_block: 0.00156,
+            interest_bps_block_override: 0.000600,
+            max_ltv_bps: 3500,
+          },
+        ],
+      },
+    ],
   },
   'opensea:meebits': {
     display_name: 'Meebits',
@@ -398,18 +445,20 @@ export const supportedCollections: { [key: string]: any } = {
     networkType: 'ethereum',
     networkId: 1,
     image_url: 'https://lh3.googleusercontent.com/d784iHHbqQFVH1XYD6HoT4u3y_Fsu_9FZUltWjnOzoYv7qqB5dLUqpGyHBd8Gq3h4mykK5Enj8pxqOUorgD2PfIWcVj9ugvu8l0=s130',
-    lendingPool: {
-      address: '0x3783bDf5bCddA4a5e748E6CA7108a26Fb6d5F3F9',
-      loan_options: [
+    lendingPools: [
         {
-          loan_duration_block: 86388,
-          loan_duration_second: 1209600,
-          interest_bps_block: 0.00156,
-          interest_bps_block_override: 0.000600,
-          max_ltv_bps: 4000,
-        },
-      ],
-    },
+        address: '0x3783bDf5bCddA4a5e748E6CA7108a26Fb6d5F3F9',
+        loan_options: [
+          {
+            loan_duration_block: 86388,
+            loan_duration_second: 1209600,
+            interest_bps_block: 0.00156,
+            interest_bps_block_override: 0.000600,
+            max_ltv_bps: 4000,
+          },
+        ],
+      },
+    ],
   },
   'opensea:cool-cats-nft': {
     display_name: 'Cool Cats NFT',
@@ -417,18 +466,20 @@ export const supportedCollections: { [key: string]: any } = {
     networkType: 'ethereum',
     networkId: 1,
     image_url: 'https://lh3.googleusercontent.com/LIov33kogXOK4XZd2ESj29sqm_Hww5JSdO7AFn5wjt8xgnJJ0UpNV9yITqxra3s_LMEW1AnnrgOVB_hDpjJRA1uF4skI5Sdi_9rULi8=s130',
-    lendingPool: {
-      address: '0x6a8f1D2362EB4df91DEA217D43124A2B77E93E2D',
-      loan_options: [
+    lendingPools: [
         {
-          loan_duration_block: 86388,
-          loan_duration_second: 1209600,
-          interest_bps_block: 0.00156,
-          interest_bps_block_override: 0.000600,
-          max_ltv_bps: 4000,
-        },
-      ],
-    },
+        address: '0x6a8f1D2362EB4df91DEA217D43124A2B77E93E2D',
+        loan_options: [
+          {
+            loan_duration_block: 86388,
+            loan_duration_second: 1209600,
+            interest_bps_block: 0.00156,
+            interest_bps_block_override: 0.000600,
+            max_ltv_bps: 4000,
+          },
+        ],
+      },
+    ],
   },
   'opensea:official-moar-by-joan-cornella': {
     display_name: '"MOAR" by Joan Cornella',
@@ -436,18 +487,20 @@ export const supportedCollections: { [key: string]: any } = {
     networkType: 'ethereum',
     networkId: 1,
     image_url: 'https://lh3.googleusercontent.com/4c4dqYwdIhtmAkeKAfwVJEQYaJqwgek3juaUSfTY9lhR--LOj8HyqUBzcXxzrVr-XZiWBk98PRg25Hf7M7Wlff0hLe5Vnq5lx3jFF9c=s130',
-    lendingPool: {
-      address: '0x7b693823c501e9575ef5c5fbc2aa4206f8c056d4',
-      loan_options: [
+    lendingPools: [
         {
-          loan_duration_block: 86388,
-          loan_duration_second: 1209600,
-          interest_bps_block: 0.00156,
-          interest_bps_block_override: 0.000600,
-          max_ltv_bps: 3500,
-        },
-      ],
-    },
+        address: '0x7b693823c501e9575ef5c5fbc2aa4206f8c056d4',
+        loan_options: [
+          {
+            loan_duration_block: 86388,
+            loan_duration_second: 1209600,
+            interest_bps_block: 0.00156,
+            interest_bps_block_override: 0.000600,
+            max_ltv_bps: 3500,
+          },
+        ],
+      },
+    ],
   },
   'opensea:chromie-squiggle-by-snowfro': {
     display_name: 'Chromie Squiggle by Snowfro',
@@ -455,17 +508,19 @@ export const supportedCollections: { [key: string]: any } = {
     networkType: 'ethereum',
     networkId: 1,
     image_url: 'https://lh3.googleusercontent.com/m_MpnLUjOsNcpuFavS7NNjA3nWSS08Kv1IIJMHv46Jg_RLtjhuqClN-7MtwezbbdA26F9i50PDG63IyQ_HN7cFRXm4Pl9s0sAA6_=s130',
-    lendingPool: {
-      address: '0xCa8619bE278D77B3ACD17B2241d35FFbdfB0191b',
-      loan_options: [
-        {
-          loan_duration_block: 185142,
-          loan_duration_second: 2592000,
-          interest_bps_block: 0.000888,
-          max_ltv_bps: 6500,
-        },
-      ]
-    }
+    lendingPools: [
+      {
+        address: '0xCa8619bE278D77B3ACD17B2241d35FFbdfB0191b',
+        loan_options: [
+          {
+            loan_duration_block: 185142,
+            loan_duration_second: 2592000,
+            interest_bps_block: 0.000888,
+            max_ltv_bps: 6500,
+          },
+        ]
+      }
+    ],
   },
   'opensea:boredapeyachtclub': {
     display_name: 'Bored Ape Yacht Club',
@@ -473,17 +528,19 @@ export const supportedCollections: { [key: string]: any } = {
     networkType: 'ethereum',
     networkId: 1,
     image_url: 'https://lh3.googleusercontent.com/Ju9CkWtV-1Okvf45wo8UctR-M9He2PjILP0oOvxE89AyiPPGtrR3gysu1Zgy0hjd2xKIgjJJtWIc0ybj4Vd7wv8t3pxDGHoJBzDB=s130',
-    lendingPool: {
-      address: '0x90dFb72736481BBacc7938d2D3673590B92647AE',
-      loan_options: [
-        {
-          loan_duration_block: 43194,
-          loan_duration_second: 604800,
-          interest_bps_block: 0.000888,
-          max_ltv_bps: 4000,
-        },
-      ]
-    }
+    lendingPools: [
+      {
+        address: '0x90dFb72736481BBacc7938d2D3673590B92647AE',
+        loan_options: [
+          {
+            loan_duration_block: 43194,
+            loan_duration_second: 604800,
+            interest_bps_block: 0.000888,
+            max_ltv_bps: 4000,
+          },
+        ]
+      }
+    ],
   },
   // 'opensea:irenedao': {
   //   display_name: 'IreneDAO',
@@ -491,7 +548,7 @@ export const supportedCollections: { [key: string]: any } = {
   //   networkType: 'ethereum',
   //   networkId: 1,
   //   image_url: 'https://lh3.googleusercontent.com/kr2NzPNWyuQGaPx2KMDT7kHsMCkGSf27fD8pJkg0fEcBCQYitcSo6VMwJIdSWq35P8oveAQ1z7VvROfxY4O9F_sXHfcmm4_wpUEJDw=s130',
-  //   lendingPool: {
+  //   lendingPools: {
   //     address: '0x0783Dd1819337664bEa591AB9FF281d12022Fdc0',
   //     loan_options: [
   //       {
@@ -517,18 +574,20 @@ export const supportedCollections: { [key: string]: any } = {
     networkType: 'ethereum',
     networkId: 1,
     image_url: 'https://lh3.googleusercontent.com/bcCd1TfusKK6wWjmshwmizmY9j7An3pp9kxopMxfIt-_I8WFnSIK-5gevOduoYK4Qpq2e3DyXgROKNfkP396W5ViEYXhxoyAZG3s_vY=s130',
-    lendingPool: {
-      address: '0xC738AB51B98D3d81f11dD12B23A39b6bAD2A5162',
-      loan_options: [
-        {
-          loan_duration_block: 86388,
-          loan_duration_second: 1209600,
-          interest_bps_block: 0.00138,
-          interest_bps_block_override: 0.000600,
-          max_ltv_bps: 4000,
-        },
-      ],
-    },
+    lendingPools: [
+      {
+        address: '0xC738AB51B98D3d81f11dD12B23A39b6bAD2A5162',
+        loan_options: [
+          {
+            loan_duration_block: 86388,
+            loan_duration_second: 1209600,
+            interest_bps_block: 0.00138,
+            interest_bps_block_override: 0.000600,
+            max_ltv_bps: 4000,
+          },
+        ],
+      },
+    ],
   },
   'opensea:mutant-ape-yacht-club': {
     display_name: 'Mutant Ape Yacht Club',
@@ -536,18 +595,20 @@ export const supportedCollections: { [key: string]: any } = {
     networkType: 'ethereum',
     networkId: 1,
     image_url: 'https://lh3.googleusercontent.com/lHexKRMpw-aoSyB1WdFBff5yfANLReFxHzt1DOj_sg7mS14yARpuvYcUtsyyx-Nkpk6WTcUPFoG53VnLJezYi8hAs0OxNZwlw6Y-dmI=s130',
-    lendingPool: {
-      address: '0x9dd5e00105f82137dbfdd808ff5548ae4bb65a0c',
-      loan_options: [
-        {
-          loan_duration_block: 86388,
-          loan_duration_second: 1209600,
-          interest_bps_block: 0.00138,
-          interest_bps_block_override: 0.000600,
-          max_ltv_bps: 4000,
-        },
-      ],
-    },
+    lendingPools: [
+      {
+        address: '0x9dd5e00105f82137dbfdd808ff5548ae4bb65a0c',
+        loan_options: [
+          {
+            loan_duration_block: 86388,
+            loan_duration_second: 1209600,
+            interest_bps_block: 0.00138,
+            interest_bps_block_override: 0.000600,
+            max_ltv_bps: 4000,
+          },
+        ],
+      },
+    ],
   },
   'opensea:akutars': {
     display_name: 'Akutars',
@@ -555,18 +616,20 @@ export const supportedCollections: { [key: string]: any } = {
     networkType: 'ethereum',
     networkId: 1,
     image_url: 'https://lh3.googleusercontent.com/lU7HLkzbdUB07EpfR2wvLkLi8Msc5JyE5d7iDNmgVn3EdnNnNM-2c-027IHP0W8T1t2wH5Hl2gtv90tzF_LdUC6Q-UBYwXpBfMaOCA=s130',
-    lendingPool: {
-      address: '0xCa91dAc73595C2524842500D68C66de55cf33c52',
-      loan_options: [
+    lendingPools: [
         {
-          loan_duration_block: 86388,
-          loan_duration_second: 1209600,
-          interest_bps_block: 0.00138,
-          interest_bps_block_override: 0.000600,
-          max_ltv_bps: 3500,
-        },
-      ],
-    },
+        address: '0xCa91dAc73595C2524842500D68C66de55cf33c52',
+        loan_options: [
+          {
+            loan_duration_block: 86388,
+            loan_duration_second: 1209600,
+            interest_bps_block: 0.00138,
+            interest_bps_block_override: 0.000600,
+            max_ltv_bps: 3500,
+          },
+        ],
+      },
+    ],
   },
   'opensea:worldwidewebbland': {
     display_name: 'Worldwide Webb Land',
@@ -574,32 +637,34 @@ export const supportedCollections: { [key: string]: any } = {
     networkType: 'ethereum',
     networkId: 1,
     image_url: 'https://lh3.googleusercontent.com/Tc7kJNU7hcpmCCykek6ANVhWervl1zhbNIlM_T3VSR1hsSCrOGG6IiNALSs8v-OgUVJvoKW6tVbJWjnJti_o0ihvUNlxFWfZV9V9=s130',
-    lendingPool: {
-      address: '0xcAed49B77aD08345fBa620A10CA4E4915a9c6f56',
-      loan_options: [
+    lendingPools: [
         {
-          loan_duration_block: 18513,
-          loan_duration_second: 259200,
-          interest_bps_block: 0.00156,
-          interest_bps_block_override: 0.000151,
-          max_ltv_bps: 3300,
-        },
-        {
-          loan_duration_block: 43194,
-          loan_duration_second: 604800,
-          interest_bps_block: 0.00143,
-          interest_bps_block_override: 0.000168,
-          max_ltv_bps: 2500,
-        },
-        {
-          loan_duration_block: 86388,
-          loan_duration_second: 1209600,
-          interest_bps_block: 0.00138,
-          interest_bps_block_override: 0.000160,
-          max_ltv_bps: 2300,
-        },
-      ],
-    },
+        address: '0xcAed49B77aD08345fBa620A10CA4E4915a9c6f56',
+        loan_options: [
+          {
+            loan_duration_block: 18513,
+            loan_duration_second: 259200,
+            interest_bps_block: 0.00156,
+            interest_bps_block_override: 0.000151,
+            max_ltv_bps: 3300,
+          },
+          {
+            loan_duration_block: 43194,
+            loan_duration_second: 604800,
+            interest_bps_block: 0.00143,
+            interest_bps_block_override: 0.000168,
+            max_ltv_bps: 2500,
+          },
+          {
+            loan_duration_block: 86388,
+            loan_duration_second: 1209600,
+            interest_bps_block: 0.00138,
+            interest_bps_block_override: 0.000160,
+            max_ltv_bps: 2300,
+          },
+        ],
+      },
+    ],
   },
   'opensea:alienfrensnft': {
     display_name: 'alien frens',
@@ -607,50 +672,54 @@ export const supportedCollections: { [key: string]: any } = {
     networkType: 'ethereum',
     networkId: 1,
     image_url: 'https://lh3.googleusercontent.com/_zidXBb2QsMBD6OYdjED63tczeXDUr1ah7zvhSSLHQjU4BF-H-lUexkLJ76_ahmbkkItEiH738jVPG88DOFVdt4GX377cvNNgCyzFT4=s130',
-    lendingPool: {
-      address: '0x8045f270e9C12377C76f3478Cc08213Bac771f94',
-      loan_options: [
-        {
-          loan_duration_block: 18513,
-          loan_duration_second: 259200,
-          interest_bps_block: 0.00156,
-          interest_bps_block_override: 0.000151,
-          max_ltv_bps: 3300,
-        },
-        {
-          loan_duration_block: 43194,
-          loan_duration_second: 604800,
-          interest_bps_block: 0.00143,
-          interest_bps_block_override: 0.000168,
-          max_ltv_bps: 2500,
-        },
-        {
-          loan_duration_block: 86388,
-          loan_duration_second: 1209600,
-          interest_bps_block: 0.00138,
-          interest_bps_block_override: 0.000160,
-          max_ltv_bps: 2300,
-        },
-      ],
-    },
+    lendingPools: [
+      {
+        address: '0x8045f270e9C12377C76f3478Cc08213Bac771f94',
+        loan_options: [
+          {
+            loan_duration_block: 18513,
+            loan_duration_second: 259200,
+            interest_bps_block: 0.00156,
+            interest_bps_block_override: 0.000151,
+            max_ltv_bps: 3300,
+          },
+          {
+            loan_duration_block: 43194,
+            loan_duration_second: 604800,
+            interest_bps_block: 0.00143,
+            interest_bps_block_override: 0.000168,
+            max_ltv_bps: 2500,
+          },
+          {
+            loan_duration_block: 86388,
+            loan_duration_second: 1209600,
+            interest_bps_block: 0.00138,
+            interest_bps_block_override: 0.000160,
+            max_ltv_bps: 2300,
+          },
+        ],
+      },
+    ],
   },
   'testing': {
     display_name: 'Test Doodles',
     address: '0x44aCF686Ac73A157Cd5fa26A1B6AB713B547dAF5',
     networkType: 'ethereum',
     networkId: 4,
-    lendingPool: {
-      address: '0x150A1a9015Bfaf54e7199eBb6ae35EBDE755D51D',
-      loan_options: [
-        {
-          loan_duration_block: 6171,
-          loan_duration_second: 86400,
-          interest_bps_block: 0.00156,
-          interest_bps_block_override: 0.00156,
-          max_ltv_bps: 5000,
-        },
-      ],
-    },
+    lendingPools: [
+      {
+        address: '0x150A1a9015Bfaf54e7199eBb6ae35EBDE755D51D',
+        loan_options: [
+          {
+            loan_duration_block: 6171,
+            loan_duration_second: 86400,
+            interest_bps_block: 0.00156,
+            interest_bps_block_override: 0.00156,
+            max_ltv_bps: 5000,
+          },
+        ],
+      },
+    ],
   },
   // 'robotos-official': {
   //     display_name: 'Robotos',
