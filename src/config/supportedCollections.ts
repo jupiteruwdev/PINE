@@ -51,9 +51,9 @@ export const supportedCollections: { [key: string]: any } = {
       },
       {
         address: '0x4286f77da706339A631c9578278b99a254156D10',
+        retired: true,
         loan_options: [
           {
-            retired: true,
             loan_duration_block: 86388,
             loan_duration_second: 1209600,
             interest_bps_block: 0.00156,
