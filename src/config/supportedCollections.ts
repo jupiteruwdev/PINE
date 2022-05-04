@@ -38,9 +38,22 @@ export const supportedCollections: { [key: string]: any } = {
     image_url: 'https://lh3.googleusercontent.com/7B0qai02OdHA8P_EOVK672qUliyjQdQDGNrACxs7WnTgZAkJa_wWURnIFKeOh5VTf8cfTqW3wQpozGedaC9mteKphEOtztls02RlWQ=s130',
     lendingPools: [
       {
+        address: '0xAe139B2C530fAb436ebe180c0B41a78382B2D0Bb',
+        loan_options: [
+          {
+            loan_duration_block: 86388,
+            loan_duration_second: 1209600,
+            interest_bps_block: 0.00156,
+            interest_bps_block_override: 0.000600,
+            max_ltv_bps: 4000,
+          },
+        ],
+      },
+      {
         address: '0x4286f77da706339A631c9578278b99a254156D10',
         loan_options: [
           {
+            retired: true,
             loan_duration_block: 86388,
             loan_duration_second: 1209600,
             interest_bps_block: 0.00156,
@@ -323,13 +336,13 @@ export const supportedCollections: { [key: string]: any } = {
         ],
       },
       {
-        address: '0x56893018a87434E9b1D6af427fF52D6C27f1A542',
+        address: '0x8c2894650263299972a22bb30e30860543c63c42',
         loan_options: [
           {
             loan_duration_block: 86388,
             loan_duration_second: 1209600,
             interest_bps_block: 0.00138,
-            interest_bps_block_override: 0.000198,
+            interest_bps_block_override: 0.000600,
             max_ltv_bps: 4000,
           },
         ],
