@@ -37,14 +37,15 @@ export default async function getLoanPosition({ blockchain, collectionId, nftId,
 
     const [blockNumber, pools, valuation] = await Promise.all([
       getEthBlockNumber(blockchain.networkId),
-      findAllPools({ collectionId, blockchains: { ethereum: blockchain.network }, includeRetired: true }),
+      findAllPools({ collectionId, blockchains: { ethereum: blockchain.networkId }, includeRetired: true }),
       getEthCollectionValuation({ blockchain: blockchain as Blockchain<'ethereum'>, collectionAddress: collection.address }),
     ])
 
     if (pools.length === 0) throw failure('UNSUPPORTED_COLLECTION')
 
     const loanPosition = pools.reduce<Promise<LoanPosition | undefined>>(async (loan, pool) => {
-      if (loan) return loan
+      const rLoan = await loan
+      if (rLoan) return rLoan
       const contract = await getPoolContract({ blockchain, poolAddress: pool.address })
       const event = await getLoanEvent({ blockchain, nftId, poolAddress: pool.address })
       const loanDetails = await contract.methods._loans(nftId).call()
