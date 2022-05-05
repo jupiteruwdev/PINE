@@ -85,6 +85,27 @@ export const supportedCollections: { [key: string]: any } = {
       },
     ],
   },
+  'opensea:llamaverse-genesis': {
+    display_name: 'Llamaverse Genesis',
+    address: '0x9df8aa7c681f33e442a0d57b838555da863504f3',
+    networkType: 'ethereum',
+    networkId: 1,
+    image_url: 'https://lh3.googleusercontent.com/I-ef-zrbXTLC8w38vOFCRGnaJyRkyYxHNgb7yNE8g_POI7O1UAo0yDEQIaCtf_eEDdovFkCP9nyDGFpjtOD8T6-JSs0HLqbGSDtdNLo=s130',
+    lendingPools: [
+      {
+        address: '0xd7b018a68A2dc66D6Fd56Dd9F4008CDFD127F287',
+        loan_options: [
+          {
+            loan_duration_block: 86388,
+            loan_duration_second: 1209600,
+            interest_bps_block: 0.00138,
+            interest_bps_block_override: 0.000600,
+            max_ltv_bps: 3000,
+          },
+        ],
+      },
+    ],
+  },
   'opensea:genesis-creepz': {
     display_name: 'Creepz Genesis',
     address: '0xfe8c6d19365453d26af321d0e8c910428c23873f',
