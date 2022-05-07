@@ -106,6 +106,27 @@ export const supportedCollections: { [key: string]: any } = {
       },
     ],
   },
+  'opensea:mfers': {
+    display_name: 'mfers',
+    address: '0x79fcdef22feed20eddacbb2587640e45491b757f',
+    networkType: 'ethereum',
+    networkId: 1,
+    image_url: 'https://lh3.googleusercontent.com/J2iIgy5_gmA8IS6sXGKGZeFVZwhldQylk7w7fLepTE9S7ICPCn_dlo8kypX8Ju0N6wvLVOKsbP_7bNGd8cpKmWhFQmqMXOC8q2sOdqw=s130',
+    lendingPools: [
+      {
+        address: '0x2B165317d5669932A1f1FEE741C0cc64d751f21E',
+        loan_options: [
+          {
+            loan_duration_block: 86388,
+            loan_duration_second: 1209600,
+            interest_bps_block: 0.00138,
+            interest_bps_block_override: 0.000600,
+            max_ltv_bps: 4000,
+          },
+        ],
+      },
+    ],
+  },
   'opensea:genesis-creepz': {
     display_name: 'Creepz Genesis',
     address: '0xfe8c6d19365453d26af321d0e8c910428c23873f',
