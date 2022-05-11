@@ -39,6 +39,7 @@ export const supportedCollections: { [key: string]: any } = {
     lendingPools: [
       {
         address: '0xAe139B2C530fAb436ebe180c0B41a78382B2D0Bb',
+        retired: true,
         loan_options: [
           {
             loan_duration_block: 86388,
@@ -51,7 +52,6 @@ export const supportedCollections: { [key: string]: any } = {
       },
       {
         address: '0x4286f77da706339A631c9578278b99a254156D10',
-        retired: true,
         loan_options: [
           {
             loan_duration_block: 86388,
