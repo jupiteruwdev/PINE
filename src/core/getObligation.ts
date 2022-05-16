@@ -3,7 +3,9 @@ import _ from 'lodash'
 import Pool from '../entities/lib/Pool'
 import appConf from '../app.conf'
 import { getActiveLoansForPools } from '../subgraph/request'
+import ActiveLoanStat from '../entities/lib/ActiveLoanStats'
 import axios from 'axios'
+import { $ETH } from '../entities/lib/Value'
 
 type Params = {
   collectionAddress: string
@@ -26,7 +28,7 @@ export default async function getObligation({ collectionAddress }: Params) {
 
   const { loans }: { loans: ActiveLoan[] } = await getActiveLoansForPools({ pools: addresses })
   const promises: Promise<any>[] = []
-  const result: any[] = []
+  const result: ActiveLoanStat[] = []
 
   _.map(loans, ((loan: ActiveLoan) => {
     const contractAddress = loan.id.split('/')[0]
@@ -43,7 +45,7 @@ export default async function getObligation({ collectionAddress }: Params) {
     result.push({
       id: loan.id,
       thumbnail: '',
-      amountBorrowed: loan.borrowedWei,
+      amountBorrowed: $ETH(loan.borrowedWei),
       expiry: loan.loanExpiretimestamp,
       poolOwner: loan.borrower,
     })
