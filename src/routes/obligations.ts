@@ -1,7 +1,7 @@
 import { Router } from 'express'
 import getObligation from '../core/getObligation'
 import getObligations from '../core/getObligations'
-import { serializeActiveLoanStats } from '../entities/lib/ActiveLoanStats'
+import { serializeActiveLoanStats } from '../entities/lib/ActiveLoanStat'
 import { EthBlockchain } from '../entities/lib/Blockchain'
 import { serializeNFTs } from '../entities/lib/NFT'
 import { parseEthNetworkId } from '../utils/ethereum'

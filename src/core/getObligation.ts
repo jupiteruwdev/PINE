@@ -3,7 +3,7 @@ import _ from 'lodash'
 import Pool from '../entities/lib/Pool'
 import appConf from '../app.conf'
 import { getActiveLoansForPools } from '../subgraph/request'
-import ActiveLoanStat from '../entities/lib/ActiveLoanStats'
+import ActiveLoanStat from '../entities/lib/ActiveLoanStat'
 import axios from 'axios'
 import { $ETH } from '../entities/lib/Value'
 
