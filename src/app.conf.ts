@@ -8,6 +8,8 @@ export default {
   openseaAPIKey: process.env.OPENSEA_API_KEY,
   moralisAPIKey: process.env.MORALIS_API_KEY,
   nftbankAPIKey: process.env.NFTBANK_API_KEY,
+  alchemyAPIKey: process.env.ALCHEMY_API_KEY,
+  alchemyAPIUrl: process.env.ALCHEMY_API_URL,
   ethRPC: {
     4: process.env.ETH_RPC_RINKEBY,
     1: process.env.ETH_RPC_MAINNET,
