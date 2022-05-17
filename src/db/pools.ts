@@ -22,6 +22,8 @@ type FindAllFilter = {
   collectionId?: string
   blockchains?: { [K in AnyBlockchain]?: string }
   includeRetired?: boolean
+  offset?: number
+  count?: number
 }
 
 // TODO: remove version param when pool is moved into loan optiom
@@ -117,8 +119,9 @@ export async function findOne({ address, collectionAddress, collectionId, blockc
  *
  * @returns Array of pools.
  */
-export async function findAll({ collectionAddress, collectionId, blockchains, includeRetired = false }: FindAllFilter = {}): Promise<Pool[]> {
-  const rawData = supportedCollections
+export async function findAll({ collectionAddress, collectionId, blockchains, includeRetired = false, offset = 0, count = 10 }: FindAllFilter = {}): Promise<Pool[]> {
+  const keys = _.keys(supportedCollections).slice(offset, offset + count)
+  const rawData = _.pickBy(supportedCollections, (value, key) => keys.indexOf(key) >= 0)
 
   const blockchainDict = blockchains === undefined ? mapBlockchainFilterToDict({}, true) : mapBlockchainFilterToDict(blockchains, false)
   const pools: Pool[] = []

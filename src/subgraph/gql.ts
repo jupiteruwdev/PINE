@@ -10,3 +10,13 @@ export const GET_ACTIVE_LOANS_FOR_POOLS = gql`
     }
   }
 `
+
+export const GET_POOL = gql`
+  query pools($id: ID!) {
+    pool(id: $id) {
+      id
+      totalUtilization
+      collection
+    }
+  }
+`
