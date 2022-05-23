@@ -12,20 +12,12 @@ type Params = {
   nftId: string
 }
 
-const cachedMetadata: { [key: string]: NFTMetadata } = {}
-const cachedUri: { [key: string]: string } = {}
-
 export default async function getNFTMetadata({ blockchain, collectionAddress, nftId }: Params): Promise<NFTMetadata> {
-  if (cachedMetadata[JSON.stringify({ blockchain, collectionAddress, nftId })]) {
-    return cachedMetadata[JSON.stringify({ blockchain, collectionAddress, nftId })]
-  }
   switch (blockchain.network) {
   case 'ethereum': {
     const web3 = getEthWeb3(blockchain.networkId)
     const contract = new web3.eth.Contract(ERC721EnumerableABI as any, collectionAddress)
-    const cachedUriName = JSON.stringify({ blockchain, collectionAddress })
-    const uri = cachedUri[cachedUriName] ?? await contract.methods.tokenURI(nftId).call()
-    if (!cachedUri[cachedUriName]) cachedUri[cachedUriName] = uri
+    const uri = await contract.methods.tokenURI(nftId).call()
     const metadata = await (() => {
       if (uri.indexOf('data:application/json;base64') !== -1) {
         return JSON.parse(atob(uri.split(',')[1]))
@@ -37,11 +29,10 @@ export default async function getNFTMetadata({ blockchain, collectionAddress, nf
 
       return getRequest(normalizeNFTImageUri(uri))
     })()
-    cachedMetadata[JSON.stringify({ blockchain, collectionAddress, nftId })] = {
+    return {
       imageUrl: normalizeNFTImageUri(metadata.image),
       name: metadata.name ?? `#${metadata.id ?? nftId}`,
     }
-    return cachedMetadata[JSON.stringify({ blockchain, collectionAddress, nftId })]
   }
   default:
     throw failure('UNSUPPORTED_BLOCKCHAIN')
