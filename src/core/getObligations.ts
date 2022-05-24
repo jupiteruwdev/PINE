@@ -30,7 +30,7 @@ const tokensQuery = (borrower: string) => JSON.stringify(
 
 export default async function getObligations({ blockchain, borrowerAddress }: Params) {
   let nfts: NFT[]
-  if (Number(blockchain.networkId) === 1) {
+  if (blockchain.networkId === EthereumNetwork.MAIN) {
     const { data: { data: { loans } } } = await axios.post(APIURL, tokensQuery(borrowerAddress))
 
     nfts = await Promise.all(loans.map(async (loan: any) => ({
