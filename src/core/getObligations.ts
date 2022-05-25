@@ -8,6 +8,7 @@ import getNFTMetadata from './getNFTMetadata'
 import getNFTsByOwner from './getNFTsByOwner'
 import { findOne as findOneCollection } from '../db/collections'
 import NFT from '../entities/lib/NFT'
+import EthereumNetwork from '../entities/lib/EthereumNetwork'
 
 type Params = {
   blockchain: Blockchain
@@ -16,7 +17,7 @@ type Params = {
 
 const APIURL = 'https://api.thegraph.com/subgraphs/name/pinedefi/open-loans'
 
-const tokensQuery = (borrower: string) => JSON.stringify(
+const tokensQuery = (borrower: string) => (
   {
     operationName: 'openLoans',
     query: `query {
@@ -26,7 +27,8 @@ const tokensQuery = (borrower: string) => JSON.stringify(
       }
     }`,
     variables: {},
-  })
+  }
+)
 
 export default async function getObligations({ blockchain, borrowerAddress }: Params) {
   let nfts: NFT[]
