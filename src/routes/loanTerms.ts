@@ -2,6 +2,7 @@ import { Router } from 'express'
 import getLoanTerms from '../core/getLoanTerms'
 import { EthBlockchain } from '../entities/lib/Blockchain'
 import { serializeLoanTerms } from '../entities/lib/LoanTerms'
+import { isRolloverTerms, serializeRolloverTerms } from '../entities/lib/RolloverTerms'
 import { parseEthNetworkId } from '../utils/ethereum'
 import failure from '../utils/failure'
 
@@ -16,7 +17,7 @@ router.get('/', async (req, res, next) => {
 
     const networkId = parseEthNetworkId(req.query.networkId)
     const loanTerms = await getLoanTerms({ blockchain: EthBlockchain(networkId), nftId, collectionId })
-    const payload = serializeLoanTerms(loanTerms)
+    const payload = isRolloverTerms(loanTerms) ? serializeRolloverTerms(loanTerms) : serializeLoanTerms(loanTerms)
 
     res.status(200).json(payload)
   }
