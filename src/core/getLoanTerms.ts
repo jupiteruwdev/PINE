@@ -91,6 +91,14 @@ export default async function getLoanTerms({ blockchain, collectionId, nftId }: 
 
     loanTerms.options.map(option => {
       option.maxBorrow = $ETH(option.maxLTVBPS.div(10_000).times(loanTerms.valuation.value?.amount ?? 0))
+      if (hasLoan) {
+        option.fees = [
+          {
+            type: 'percentage',
+            value: 0.0035,
+          },
+        ]
+      }
     })
 
     logger.info(`Fetching loan terms for NFT ID <${nftId}> and collection ID <${collectionId}> on blockchain <${JSON.stringify(blockchain)}>... OK`, loanTerms)
