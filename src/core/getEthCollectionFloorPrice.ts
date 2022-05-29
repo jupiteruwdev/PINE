@@ -38,9 +38,9 @@ export default async function getEthCollectionFloorPrice({ blockchain, collectio
     return $ETH(floorPrice)
   case EthereumNetwork.RINKEBY:
     const collection = await findOneCollection({ blockchain, address: collectionAddress })
-    if (collection?.id !== 'testing') throw failure('UNSUPPORTED_COLLECTION')
-
-    return $ETH(1)
+    if (collection?.id === 'testing2') return $ETH(1)
+    else if (collection?.id === 'testing' || collection?.id === 'testing3') return $ETH(0.1)
+    throw failure('UNSUPPORTED_COLLECTION')
   default:
     throw failure('UNSUPPORTED_NETWORK')
   }
