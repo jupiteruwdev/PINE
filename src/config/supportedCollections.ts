@@ -776,6 +776,46 @@ export const supportedCollections: { [key: string]: any } = {
       },
     ],
   },
+  'testing2': {
+    display_name: 'Test NFTBank 1',
+    address: '0x094069cFab3B64A12fD8F0161F8D804fC6068082',
+    networkType: 'ethereum',
+    networkId: 4,
+    lendingPools: [
+      {
+        address: '0xC33A8a44604E561d379a38df9Fdc8bD357DCfD26',
+        loan_options: [
+          {
+            loan_duration_block: 86388,
+            loan_duration_second: 1209600,
+            interest_bps_block: 0.00138,
+            interest_bps_block_override: 0.000888,
+            max_ltv_bps: 5000,
+          },
+        ],
+      },
+    ],
+  },
+  'testing3': {
+    display_name: 'Test NFTBank 2',
+    address: '0xc5C8Cce493FdF6E0F3BFBDE63FF6c3959d1142b2',
+    networkType: 'ethereum',
+    networkId: 4,
+    lendingPools: [
+      {
+        address: '0xf948a76e6fC54F04a3de344c15c26CC6e6f6264C',
+        loan_options: [
+          {
+            loan_duration_block: 86388,
+            loan_duration_second: 1209600,
+            interest_bps_block: 0.00138,
+            interest_bps_block_override: 0.000444,
+            max_ltv_bps: 5000,
+          },
+        ],
+      },
+    ],
+  },
   // 'robotos-official': {
   //     display_name: 'Robotos',
   //     address: '0x099689220846644F87D1137665CDED7BF3422747',
