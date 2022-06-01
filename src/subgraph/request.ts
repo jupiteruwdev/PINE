@@ -1,4 +1,5 @@
 import { request } from 'graphql-request'
+import appConf from '../app.conf'
 import { GET_ACTIVE_LOANS_FOR_POOLS, GET_POOL } from './gql'
 
 export const getActiveLoansForPools = async ({
@@ -6,13 +7,13 @@ export const getActiveLoansForPools = async ({
 }: {
   pools: string[]
 }) =>
-  request(process.env.SUBGRAPH_API_URL ?? '', GET_ACTIVE_LOANS_FOR_POOLS, {
+  request(appConf.subgraphAPIUrl ?? '', GET_ACTIVE_LOANS_FOR_POOLS, {
     pools,
   })
 
 export const getPool = async (
   pool: string
 ) =>
-  request(process.env.SUBGRAPH_API_URL ?? '', GET_POOL, {
+  request(appConf.subgraphAPIUrl ?? '', GET_POOL, {
     id: pool,
   })
