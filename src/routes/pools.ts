@@ -34,7 +34,7 @@ router.get('/', async (req, res, next) => {
     })
     const payload = serializePools(pools)
     const nextOffset = (offset ?? 0) + pools.length
-    const pagination = serializePagination({ value: payload, totalCount: collectionCount, nextOffset: nextOffset === totalCount - 1 ? null : nextOffset })
+    const pagination = serializePagination({ data: payload, totalCount: collectionCount, nextOffset: nextOffset === collectionCount - 1 ? undefined : nextOffset })
     res.status(200).json(pagination)
   }
   else {
@@ -42,7 +42,7 @@ router.get('/', async (req, res, next) => {
       const pools = await getAggregatedPools({ blockchains: _.mapValues(mapBlockchainFilterToDict(req.query, true), t => t.networkId), count, offset })
       const payload = serializeAggregatedPools(pools)
       const nextOffset = (offset ?? 0) + pools.length
-      const pagination = serializePagination({ value: payload, totalCount: collectionCount, nextOffset: nextOffset === totalCount - 1 ? null : nextOffset })
+      const pagination = serializePagination({ data: payload, totalCount: collectionCount, nextOffset: nextOffset === collectionCount - 1 ? undefined : nextOffset })
       res.status(200).json(pagination)
     }
     catch (err) {
