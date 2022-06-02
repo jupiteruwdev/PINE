@@ -1,7 +1,6 @@
 import { assert } from 'chai'
 import { describe, it } from 'mocha'
 import EthereumNetwork from '../entities/lib/EthereumNetwork'
-import { findAll } from './collections'
 import * as pools from './pools'
 
 describe('db/pools', () => {
