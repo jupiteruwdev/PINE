@@ -1,7 +1,7 @@
 import { assert } from 'chai'
 import { describe, it } from 'mocha'
 import EthereumNetwork from '../entities/lib/EthereumNetwork'
-import { totalCount } from './collections'
+import { findAll } from './collections'
 import * as pools from './pools'
 
 describe('db/pools', () => {
@@ -12,20 +12,23 @@ describe('db/pools', () => {
   })
 
   it('can find all pools on Ethereum Mainnet only', async () => {
-    const res = await pools.findAll({ blockchains: { ethereum: EthereumNetwork.MAIN }, offset: 0, count: totalCount() })
+    const count = (await findAll()).length
+    const res = await pools.findAll({ blockchains: { ethereum: EthereumNetwork.MAIN }, offset: 0, count })
     assert.isTrue(res.length > 0)
     assert.isTrue(res.reduce((out, curr) => out && (curr.blockchain.network === 'ethereum' && curr.blockchain.networkId === EthereumNetwork.MAIN), true))
   })
 
   it('can find all pools on Ethereum Rinkeby only', async () => {
-    const res = await pools.findAll({ blockchains: { ethereum: EthereumNetwork.RINKEBY }, offset: 0, count: totalCount() })
+    const count = (await findAll()).length
+    const res = await pools.findAll({ blockchains: { ethereum: EthereumNetwork.RINKEBY }, offset: 0, count })
     assert.isArray(res)
     assert.isTrue(res.length > 0)
     assert.isTrue(res.reduce((out, curr) => out && (curr.blockchain.network === 'ethereum' && curr.blockchain.networkId === EthereumNetwork.RINKEBY), true))
   })
 
   it('can find no pools on an empty blockchain filter', async () => {
-    const res = await pools.findAll({ blockchains: {}, offset: 0, count: totalCount() })
+    const count = (await findAll()).length
+    const res = await pools.findAll({ blockchains: {}, offset: 0, count })
     assert.isArray(res)
     assert.isTrue(res.length === 0)
   })
