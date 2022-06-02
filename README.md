@@ -2,6 +2,21 @@
 
 This is Pine's core web service/API gateway.
 
+## Setup
+
+This project requires the following environment variables defined in `.env`. In most cases there are separate keys for development/staging and production environments. Always use development/staging keys for local development or testing purposes.
+
+```sh
+# .env
+
+OPENSEA_API_KEY=
+MORALIS_API_KEY=
+NFTBANK_API_KEY=
+ETH_RPC_RINKEBY=
+ETH_RPC_MAINNET=
+VALUATION_SIGNER=
+```
+
 ## Usage
 
 ```sh

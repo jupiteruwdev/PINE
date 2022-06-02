@@ -85,7 +85,7 @@ export async function findOne({ address, collectionAddress, collectionId, blockc
     if (collectionAddress !== undefined && _.get(val, 'address')?.toLowerCase() !== collectionAddress.toLowerCase()) return false
     if (_.get(val, 'networkType') !== blockchain.network) return false
     if (_.toString(_.get(val, 'networkId')) !== blockchain.networkId) return false
-    if (address !== undefined && !_.get(val, 'lendingPools').some((e: any) => e.address !== address)) return false
+    if (address !== undefined && !_.get(val, 'lendingPools').some((e: any) => e.address.toLowerCase() === address.toLowerCase())) return false
     return true
   })
 
