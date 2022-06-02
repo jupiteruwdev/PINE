@@ -61,6 +61,6 @@ export async function getEthBlockNumber(networkId: string = EthereumNetwork.MAIN
   return blockNumber
 }
 
-export function parseEthNetworkId(value: any): string {
+export function parseEthNetworkId(value: any = EthereumNetwork.MAIN): string {
   return _.toString(_.toNumber(value))
 }
