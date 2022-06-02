@@ -156,5 +156,5 @@ export async function findAll({ collectionAddress, collectionId, blockchains, in
     }
   }
 
-  return typeof !_.isNil(offset) && !_.isNil(count) ? pools.slice(offset, (offset ?? 0) + count) : pools
+  return !_.isNil(offset) && !_.isNil(count) ? pools.slice(offset, offset + count) : pools
 }

@@ -17,7 +17,7 @@ const router = Router()
 
 router.get('/', async (req, res, next) => {
   const networkName = req.query.networkName?.toString()
-  const blockchain = networkName === 'solana' ? SolBlockchain(req.query.networkId?.toString()) : EthBlockchain(parseEthNetworkId(req.query.networkId))
+  const blockchain = networkName === 'solana' ? SolBlockchain(req.query.networkId?.toString()) : EthBlockchain(parseEthNetworkId(req.query.networkId ?? EthereumNetwork.MAIN))
   const totalCount = (await findAllCollections({ blockchains: { [blockchain.network]: blockchain.networkId } })).length
   const collectionAddress = req.query.collectionAddress?.toString().toLowerCase()
   const offset = req.query.offset ? Number(req.query.offset.toString()) : undefined
