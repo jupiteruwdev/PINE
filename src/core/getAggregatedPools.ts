@@ -16,13 +16,15 @@ type Params = {
    */
   blockchains?: { [K in AnyBlockchain]?: string }
   collectionAddress?: string
+  offset?: number
+  count?: number
 }
 
-export default async function getAggregatedPools({ blockchains, collectionAddress }: Params) {
+export default async function getAggregatedPools({ blockchains, collectionAddress, offset, count }: Params) {
   logger.info(`Fetching aggregated pools with blockchain filter <${JSON.stringify(blockchains)}>...`)
 
   const blockchainDict = blockchains === undefined ? mapBlockchainFilterToDict({}, true) : mapBlockchainFilterToDict(blockchains, false)
-  const [ethValueUSD, pools] = await Promise.all([getEthValueUSD(), getPools({ blockchains, collectionAddress })])
+  const [ethValueUSD, pools] = await Promise.all([getEthValueUSD(), getPools({ blockchains, collectionAddress, offset, count })])
 
   const aggregatedPools: AggregatedPool[] = _.compact(pools.map(pool => {
     if (!pool.collection) return undefined
