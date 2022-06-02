@@ -3,7 +3,7 @@ import _ from 'lodash'
 import getAggregatedPools from '../core/getAggregatedPools'
 import getPool from '../core/getPool'
 import getPools from '../core/getPools'
-import { findAll } from '../db/collections'
+import { findAll as findAllCollections } from '../db/collections'
 import { serializeAggregatedPools } from '../entities/lib/AggregatedPool'
 import { EthBlockchain, SolBlockchain } from '../entities/lib/Blockchain'
 import EthereumNetwork from '../entities/lib/EthereumNetwork'
@@ -16,9 +16,9 @@ import mapBlockchainFilterToDict from '../utils/mapBlockchainFilterToDict'
 const router = Router()
 
 router.get('/', async (req, res, next) => {
-  const totalCount = (await findAll()).length
   const networkName = req.query.networkName?.toString()
   const blockchain = networkName === 'solana' ? SolBlockchain(req.query.networkId?.toString()) : EthBlockchain(parseEthNetworkId(req.query.networkId))
+  const totalCount = (await findAllCollections({ blockchains: { [blockchain.network]: blockchain.networkId } })).length
   const collectionAddress = req.query.collectionAddress?.toString().toLowerCase()
   const offset = req.query.offset ? Number(req.query.offset.toString()) : undefined
   const count = req.query.count ? Number(req.query.count?.toString()) : undefined
