@@ -18,6 +18,11 @@ type FindAllFilter = {
   blockchains?: { [K in AnyBlockchain]?: string }
 }
 
+type SliceCollectionParams = {
+  offset?: number
+  count?: number
+}
+
 export function mapCollection(data: Record<string, any>): Collection {
   const address = _.get(data, 'address')
   const networkType = _.get(data, 'networkType')
@@ -39,6 +44,13 @@ export function mapCollection(data: Record<string, any>): Collection {
     imageUrl,
     name,
   }
+}
+
+export function sliceCollection({ offset = 0, count = 10 }: SliceCollectionParams): Record<string, any> {
+  const keys = _.keys(supportedCollections).slice(offset, offset + count)
+  const rawData = _.pickBy(supportedCollections, (value, key) => keys.indexOf(key) >= 0)
+
+  return rawData
 }
 
 /**
