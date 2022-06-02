@@ -101,7 +101,3 @@ export async function findAll({ blockchains }: FindAllFilter = {}): Promise<Coll
 
   return collections
 }
-
-export function totalCount(): number {
-  return _.values(supportedCollections).length
-}

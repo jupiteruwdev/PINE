@@ -119,10 +119,8 @@ export async function findOne({ address, collectionAddress, collectionId, blockc
  *
  * @returns Array of pools.
  */
-export async function findAll({ collectionAddress, collectionId, blockchains, includeRetired = false, offset = 0, count = 10 }: FindAllFilter = {}): Promise<Pool[]> {
-  const keys = _.keys(supportedCollections).slice(offset, offset + count)
-  const rawData = _.pickBy(supportedCollections, (value, key) => keys.indexOf(key) >= 0)
-
+export async function findAll({ collectionAddress, collectionId, blockchains, includeRetired = false, offset, count }: FindAllFilter = {}): Promise<Pool[]> {
+  const rawData = supportedCollections
   const blockchainDict = blockchains === undefined ? mapBlockchainFilterToDict({}, true) : mapBlockchainFilterToDict(blockchains, false)
   const pools: Pool[] = []
 
@@ -158,5 +156,5 @@ export async function findAll({ collectionAddress, collectionId, blockchains, in
     }
   }
 
-  return pools
+  return offset && count ? pools.slice(offset, count) : pools
 }
