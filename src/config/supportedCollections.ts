@@ -294,6 +294,27 @@ export const supportedCollections: { [key: string]: any } = {
       },
     ],
   },
+  'opensea:goblintownwtf': {
+    display_name: 'goblintown.wtf',
+    address: '0xbce3781ae7ca1a5e050bd9c4c77369867ebc307e',
+    networkType: 'ethereum',
+    networkId: 1,
+    image_url: 'https://lh3.googleusercontent.com/cb_wdEAmvry_noTfeuQzhqKpghhZWQ_sEhuGS9swM03UM8QMEVJrndu0ZRdLFgGVqEPeCUzOHGTUllxug9U3xdvt0bES6VFdkRCKPqg=s168',
+    lendingPools: [
+      {
+        address: '0xA905dEA7B63B0f54f633E2Cb8B5814ec91Ec2E84',
+        loan_options: [
+          {
+            loan_duration_block: 86388,
+            loan_duration_second: 1209600,
+            interest_bps_block: 0.00138,
+            interest_bps_block_override: 0.000600,
+            max_ltv_bps: 3000,
+          },
+        ],
+      },
+    ],
+  },
   'opensea:world-of-women-galaxy': {
     display_name: 'World of Women Galaxy',
     address: '0xf61f24c2d93bf2de187546b14425bf631f28d6dc',
@@ -308,7 +329,7 @@ export const supportedCollections: { [key: string]: any } = {
             loan_duration_block: 86388,
             loan_duration_second: 1209600,
             interest_bps_block: 0.00138,
-            interest_bps_block_override: 0,
+            interest_bps_block_override:0.000600,
             max_ltv_bps: 5000,
           },
         ],
@@ -329,7 +350,7 @@ export const supportedCollections: { [key: string]: any } = {
             loan_duration_block: 86388,
             loan_duration_second: 1209600,
             interest_bps_block: 0.00138,
-            interest_bps_block_override: 0,
+            interest_bps_block_override: 0.000600,
             max_ltv_bps: 4000,
           },
         ],
