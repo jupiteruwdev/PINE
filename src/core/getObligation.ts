@@ -1,14 +1,16 @@
-import { findAll as findAllPools } from '../db/pools'
-import _ from 'lodash'
-import Pool from '../entities/lib/Pool'
-import appConf from '../app.conf'
-import { getActiveLoansForPools } from '../subgraph/request'
-import ActiveLoanStat from '../entities/lib/ActiveLoanStat'
 import axios from 'axios'
+import _ from 'lodash'
+import appConf from '../app.conf'
+import { findAll as findAllPools } from '../db/pools'
+import ActiveLoanStat from '../entities/lib/ActiveLoanStat'
+import Blockchain from '../entities/lib/Blockchain'
+import Pool from '../entities/lib/Pool'
 import { $ETH } from '../entities/lib/Value'
+import { getActiveLoansForPools } from '../subgraph/request'
 
 type Params = {
   collectionAddress: string
+  blockchain: Blockchain
 }
 
 type ActiveLoan = {
@@ -18,7 +20,7 @@ type ActiveLoan = {
   borrower: string
 }
 
-export default async function getObligation({ collectionAddress }: Params) {
+export default async function getObligation({ collectionAddress, blockchain }: Params) {
   const pools = await findAllPools({ collectionAddress })
 
   const addresses = _.reduce(pools, (prev: string[], cur: Pool) => {
@@ -34,7 +36,8 @@ export default async function getObligation({ collectionAddress }: Params) {
     const contractAddress = loan.id.split('/')[0]
     const tokenId = loan.id.split('/')[1]
     promises.push(new Promise((resolve, reject) => {
-      axios.get(`${appConf.alchemyAPIUrl}${appConf.alchemyAPIKey}/getNFTMetadata?contractAddress=${contractAddress}&tokenId=${tokenId}`)
+      const alchemyUrl = _.get(appConf.alchemyAPIUrl, blockchain.networkId)
+      axios.get(`${alchemyUrl}${appConf.alchemyAPIKey}/getNFTMetadata?contractAddress=${contractAddress}&tokenId=${tokenId}`)
         .then(res => {
           resolve(res.data)
         })
