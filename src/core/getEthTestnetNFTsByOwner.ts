@@ -44,8 +44,8 @@ export default async function getEthTestnetNFTsByOwner({ blockchain, collectionO
     const nftsRes = await getRequest(`${alchemyUrl}${appConf.alchemyAPIKey}/getNFTs?owner=${ownerAddress}&contractAddresses[]=${collection.address}`)
     const nfts: NFT[] = []
 
-    if (nftsRes.data.totalCount) {
-      _.forEach(nftsRes.data.ownedNfts, (nft: any) => {
+    if (nftsRes.totalCount) {
+      _.forEach(nftsRes.ownedNfts, (nft: any) => {
         nfts.push({
           name: nft.metadata.name,
           imageUrl: nft.metadata.image,

@@ -39,7 +39,7 @@ export default async function getObligation({ collectionAddress, blockchain }: P
       const alchemyUrl = _.get(appConf.alchemyAPIUrl, blockchain.networkId)
       getRequest(`${alchemyUrl}${appConf.alchemyAPIKey}/getNFTMetadata?contractAddress=${contractAddress}&tokenId=${tokenId}`)
         .then(res => {
-          resolve(res.data)
+          resolve(res)
         })
         .catch(err => {
           reject(err)
