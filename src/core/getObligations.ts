@@ -1,14 +1,14 @@
 import axios from 'axios'
 import _ from 'lodash'
+import { findOne as findOneCollection } from '../db/collections'
 import { findAll as findAllPools } from '../db/pools'
 import Blockchain from '../entities/lib/Blockchain'
+import EthereumNetwork from '../entities/lib/EthereumNetwork'
+import NFT from '../entities/lib/NFT'
 import failure from '../utils/failure'
 import getLoanEvent from './getLoanEvent'
 import getNFTMetadata from './getNFTMetadata'
 import getNFTsByOwner from './getNFTsByOwner'
-import { findOne as findOneCollection } from '../db/collections'
-import NFT from '../entities/lib/NFT'
-import EthereumNetwork from '../entities/lib/EthereumNetwork'
 
 type Params = {
   blockchain: Blockchain
