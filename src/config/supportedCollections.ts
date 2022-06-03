@@ -7,6 +7,8 @@ import { $ETH } from "../entities/lib/Value"
 // TODO: remove hack!
 export const routerAddresses : { [key: number]: any } = { 4: '0xFC6c6e4727DA5E1bF79aC9C96155B4cD2faC54E6', 1: '0x774badBc759234Bff52B0Be11bF61Bb68c9E9A24' }
 
+export const rolloverAddresses : { [key: number]: any } = { 4:'0x47BD3D351E399B566298dBA8c36A112aa885d3e4', 1: '0x33dA4AB55Bbf69Bf5cFa28468AbA2C775Ea2364F' }
+
 export const repayRouterAddresses = (x: number, poolAddress: string) => {
   const y : { [key: number]: any }  = { 4: '0xFC6c6e4727DA5E1bF79aC9C96155B4cD2faC54E6', 1: '0x1E23F78896F6d4F0e25D7bcD49bb2f7eee62EF98' }
   if (poolAddress.toLowerCase() === '0xbc7EbB061235994f360aD3E3ca9de0264443ED6a'.toLowerCase() || poolAddress.toLowerCase() === '0x4dE7B2f8160fa083F90d4900eAe448dbc9ABb1C8'.toLowerCase()) return '0x66a13171B0A3D6F7009eC21D224F6b491b8772f3'

@@ -24,6 +24,7 @@ const tokensQuery = (borrower: string) => (
       loans(where: {borrower: "${borrower}"}) {
         erc721
         id
+        pool
       }
     }`,
     variables: {},

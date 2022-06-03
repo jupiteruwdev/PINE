@@ -44,7 +44,7 @@ export default async function getLooksrarePNPLTerms({ blockchain, collectionId, 
           'account_address': pnplContractAddress,
         },
       })
-      const flashLoanSource = await getFlashLoanSource({ blockchain, poolAddress: loanTerms.poolAddress, flashLoanAmount: lookrareInstructions.currentPrice })
+      const flashLoanSource = await getFlashLoanSource({ blockchain, poolAddress: loanTerms.poolAddress })
       const pnplTerms: PNPLTerms = {
         ...loanTerms,
         flashLoanSourceContractAddress: flashLoanSource.address,
