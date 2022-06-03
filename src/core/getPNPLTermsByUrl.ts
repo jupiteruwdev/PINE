@@ -22,7 +22,7 @@ export default async function getPNPLTermsByUrl({ parsedURL }: Params): Promise<
 
   switch (hostname) {
   case 'opensea.io': {
-    const [, , collectionAddress, nftId] = parsedURL.pathname.split('/')
+    const [, , , collectionAddress, nftId] = parsedURL.pathname.split('/')
     if (!Web3.utils.isAddress(collectionAddress)) throw failure('PNPL_INVALID_URL')
     if (!collectionAddress || !nftId) throw failure('PNPL_INVALID_URL')
 
@@ -37,7 +37,7 @@ export default async function getPNPLTermsByUrl({ parsedURL }: Params): Promise<
     })
   }
   case 'testnets.opensea.io': {
-    const [, , collectionAddress, nftId] = parsedURL.pathname.split('/')
+    const [, , , collectionAddress, nftId] = parsedURL.pathname.split('/')
     if (!Web3.utils.isAddress(collectionAddress)) throw failure('PNPL_INVALID_URL')
     if (!collectionAddress || !nftId) throw failure('PNPL_INVALID_URL')
 

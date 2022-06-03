@@ -67,10 +67,22 @@ export default async function getEthCollectionValuation({ blockchain, collection
       throw failure('UNSUPPORTED_MARKETPLACE')
     }
   case EthereumNetwork.RINKEBY:
-    if (collection.id === 'testing') {
+    if (collection.id === 'testing' || collection.id === 'testing3') {
       const valuation = {
         collection,
         value: $ETH(0.1),
+        value24Hr: $ETH(1),
+        value1DReference: await getEthCollectionFloorPrice({ blockchain, collectionAddress: collection.address }),
+      }
+
+      logger.info(`Fetching valuation for Ethereum collection <${collectionAddress}>... OK`, valuation)
+
+      return valuation
+    }
+    else if (collection.id === 'testing2') {
+      const valuation = {
+        collection,
+        value: $ETH(1),
         value24Hr: $ETH(1),
         value1DReference: await getEthCollectionFloorPrice({ blockchain, collectionAddress: collection.address }),
       }
