@@ -1,4 +1,3 @@
-import axios from 'axios'
 import _ from 'lodash'
 import appConf from '../app.conf'
 import { findAll as findAllPools } from '../db/pools'
@@ -7,6 +6,7 @@ import Blockchain from '../entities/lib/Blockchain'
 import Pool from '../entities/lib/Pool'
 import { $ETH } from '../entities/lib/Value'
 import { getActiveLoansForPools } from '../subgraph/request'
+import getRequest from '../utils/getRequest'
 
 type Params = {
   collectionAddress: string
@@ -37,7 +37,7 @@ export default async function getObligation({ collectionAddress, blockchain }: P
     const tokenId = loan.id.split('/')[1]
     promises.push(new Promise((resolve, reject) => {
       const alchemyUrl = _.get(appConf.alchemyAPIUrl, blockchain.networkId)
-      axios.get(`${alchemyUrl}${appConf.alchemyAPIKey}/getNFTMetadata?contractAddress=${contractAddress}&tokenId=${tokenId}`)
+      getRequest(`${alchemyUrl}${appConf.alchemyAPIKey}/getNFTMetadata?contractAddress=${contractAddress}&tokenId=${tokenId}`)
         .then(res => {
           resolve(res.data)
         })

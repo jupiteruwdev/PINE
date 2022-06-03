@@ -1,10 +1,10 @@
-import axios from 'axios'
 import _ from 'lodash'
 import appConf from '../app.conf'
 import { findAll as findAllCollections, findOne as findOneCollection } from '../db/collections'
 import Blockchain from '../entities/lib/Blockchain'
 import Collection from '../entities/lib/Collection'
 import NFT from '../entities/lib/NFT'
+import getRequest from '../utils/getRequest'
 
 type Params = {
   /**
@@ -41,7 +41,7 @@ export default async function getEthTestnetNFTsByOwner({ blockchain, collectionO
     const collection = _.isString(collectionOrCollectionAddress) ? await findOneCollection({ address: collectionOrCollectionAddress, blockchain }) : collectionOrCollectionAddress
     if (!collection) return []
     const alchemyUrl = _.get(appConf.alchemyAPIUrl, blockchain.networkId)
-    const nftsRes = await axios.get(`${alchemyUrl}${appConf.alchemyAPIKey}/getNFTs?owner=${ownerAddress}&contractAddresses[]=${collection.address}`)
+    const nftsRes = await getRequest(`${alchemyUrl}${appConf.alchemyAPIKey}/getNFTs?owner=${ownerAddress}&contractAddresses[]=${collection.address}`)
     const nfts: NFT[] = []
 
     if (nftsRes.data.totalCount) {
