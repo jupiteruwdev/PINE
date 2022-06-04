@@ -1,7 +1,7 @@
-name: CI
+name: Nightly
 on:
-  push:
-    branches-ignore: [staging, main]
+  schedule:
+    - cron: '0 7 * * *' # 7AM UTC daily
 env:
   IMAGE_NAME: gcr.io/${{ secrets.GCP_PROJECT }}/core-service
   ETH_RPC_MAINNET: ${{ secrets.ETH_RPC_MAINNET }}
