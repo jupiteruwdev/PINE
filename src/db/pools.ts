@@ -1,3 +1,7 @@
+/**
+ * @todo Use proper db.
+ */
+
 import BigNumber from 'bignumber.js'
 import _ from 'lodash'
 import { defaultFees, supportedCollections } from '../config/supportedCollections'
