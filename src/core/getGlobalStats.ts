@@ -16,7 +16,7 @@ type Params = {
 
 export default async function getGlobalStats({ blockchainFilter = { ethereum: EthereumNetwork.MAIN, solana: SolanaNetwork.MAINNET } }: Params = {}): Promise<GlobalStats> {
   try {
-    logger.info(`Fetching global stats for blockchainFilter <${JSON.stringify(blockchainFilter)}>...`)
+    logger.info(`Fetching global stats for blockchain filter <${JSON.stringify(blockchainFilter)}>...`)
 
     const [
       ethValueUSD,

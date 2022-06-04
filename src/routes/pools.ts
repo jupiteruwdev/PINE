@@ -18,7 +18,7 @@ const router = Router()
 router.get('/', async (req, res, next) => {
   const blockchainFilter = getBlockchainFilter(req.query, true)
   const totalCount = (await findAllCollections({ blockchainFilter })).length
-  const collectionAddress = getString(req.query, 'collectionAddress')
+  const collectionAddress = tryOrUndefined(() => getString(req.query, 'collectionAddress'))
   const offset = tryOrUndefined(() => getNumber(req.query, 'offset'))
   const count = tryOrUndefined(() => getNumber(req.query, 'count'))
 
