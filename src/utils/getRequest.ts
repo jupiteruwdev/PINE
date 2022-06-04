@@ -32,7 +32,7 @@ export default async function getRequest<T = any>(path: string, { controller, ho
       throw failure('REQUEST_CANCELLED', err)
     }
     else if (axios.isAxiosError(err)) {
-      const error = err.response?.status === undefined ? failure('SYSTEM_OFFLINE') : new SuperError(err.message, err.response?.status.toString(), err.response?.data, err)
+      const error = err.response?.status === undefined ? failure('SYSTEM_OFFLINE') : new SuperError(err.message, err.response?.status.toString(), err.response?.data as any, err)
       logger.error(`Making request to <${host ?? ''}${path}>...`, err.response?.status ?? 'ERR', error.code)
       throw error
     }
