@@ -136,7 +136,7 @@ export default async function getSolNFTsByOwner({
         const name = _.get(res, 'name')
         const image = _.get(res, 'image')
 
-        if (!name || !image) throw Error()
+        if (!name || !image) throw 0
 
         collectionName = _.get(res, 'collection.name') ?? name
 

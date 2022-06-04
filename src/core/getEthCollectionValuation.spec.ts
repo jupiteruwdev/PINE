@@ -13,7 +13,7 @@ describe('core/getEthCollectionValuation', () => {
     const collections = await findAllCollections({ blockchainFilter: { [blockchain.network]: blockchain.networkId } })
     const collection = _.sample(collections)
 
-    if (!collection) throw Error()
+    if (!collection) throw 0
 
     const valuation = await getEthCollectionValuation({ blockchain, collectionAddress: collection.address })
 
@@ -44,7 +44,7 @@ describe('core/getEthCollectionValuation', () => {
     const collections = await findAllCollections({ blockchainFilter: { [blockchain.network]: blockchain.networkId } })
     const collection = _.sample(collections)
 
-    if (!collection) throw Error()
+    if (!collection) throw 0
 
     const valuation = await getEthCollectionValuation({ blockchain, collectionAddress: collection.address })
 
