@@ -16,7 +16,7 @@ router.get('/terms', async (req, res, next) => {
     res.status(200).json(payload)
   }
   catch (err) {
-    next(failure('PNPL_INVALID_PARAMS', err))
+    next(failure('FETCH_PNPL_TERMS_FAILURE', err))
   }
 })
 
