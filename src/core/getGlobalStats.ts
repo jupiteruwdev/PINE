@@ -1,42 +1,36 @@
 import BigNumber from 'bignumber.js'
-import _ from 'lodash'
-import { AnyBlockchain } from '../entities/lib/Blockchain'
+import { BlockchainFilter, EthBlockchain } from '../entities/lib/Blockchain'
+import EthereumNetwork from '../entities/lib/EthereumNetwork'
 import GlobalStats from '../entities/lib/GlobalStats'
+import SolanaNetwork from '../entities/lib/SolanaNetwork'
 import { $USD } from '../entities/lib/Value'
 import { getEthValueUSD } from '../utils/ethereum'
 import failure from '../utils/failure'
 import logger from '../utils/logger'
-import mapBlockchainFilterToDict from '../utils/mapBlockchainFilterToDict'
 import getPoolHistoricalLent from './getPoolHistoricalLent'
 import getPools from './getPools'
 
 type Params = {
-  /**
-   * Blockchains to filter for the returned pools. Any missing blockchains in this object will be
-   * auto mapped to their default network IDs.
-   */
-  blockchains?: { [K in AnyBlockchain]?: string }
+  blockchainFilter?: BlockchainFilter
 }
 
-export default async function getGlobalStats({ blockchains }: Params = {}): Promise<GlobalStats> {
+export default async function getGlobalStats({ blockchainFilter = { ethereum: EthereumNetwork.MAIN, solana: SolanaNetwork.MAINNET } }: Params = {}): Promise<GlobalStats> {
   try {
-    const blockchainDict = mapBlockchainFilterToDict(blockchains ?? {}, true)
-
-    logger.info(`Fetching global stats for blockchains <${JSON.stringify(blockchainDict)}>...`)
+    logger.info(`Fetching global stats for blockchain filter <${JSON.stringify(blockchainFilter)}>...`)
 
     const [
       ethValueUSD,
       pools,
     ] = await Promise.all([
       getEthValueUSD(),
-      getPools({ blockchains: _.mapValues(blockchainDict, blockchain => blockchain.networkId) }),
+      getPools({ blockchainFilter }),
     ])
 
     const totalUtilizationUSD = pools.reduce((p, c) => p.plus(c.utilization.amount), new BigNumber(0)).times(ethValueUSD.amount)
     const totalValueLockedUSD = pools.reduce((p, c) => p.plus(c.valueLocked.amount), new BigNumber(0)).times(ethValueUSD.amount)
     const totalCapacityUSD = totalValueLockedUSD.minus(totalUtilizationUSD)
 
-    const lentEthPerPool = await Promise.all(pools.map(pool => getPoolHistoricalLent({ blockchain: blockchainDict.ethereum, poolAddress: pool.address })))
+    const lentEthPerPool = await Promise.all(pools.map(pool => getPoolHistoricalLent({ blockchain: EthBlockchain(blockchainFilter), poolAddress: pool.address })))
     const totalLentlUSD = lentEthPerPool.reduce((p, c) => p.plus(c.amount), new BigNumber(0)).times(ethValueUSD.amount)
 
     const globalStats: GlobalStats = {

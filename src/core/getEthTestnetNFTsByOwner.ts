@@ -5,6 +5,7 @@ import Blockchain from '../entities/lib/Blockchain'
 import Collection from '../entities/lib/Collection'
 import NFT from '../entities/lib/NFT'
 import getRequest from '../utils/getRequest'
+import normalizeNFTImageUri from '../utils/normalizeNFTImageUri'
 
 type Params = {
   /**
@@ -48,7 +49,7 @@ export default async function getEthTestnetNFTsByOwner({ blockchain, collectionO
       _.forEach(nftsRes.ownedNfts, (nft: any) => {
         nfts.push({
           name: nft.metadata.name,
-          imageUrl: nft.metadata.image,
+          imageUrl: normalizeNFTImageUri(nft.metadata.image),
           collection,
           id: nft.id.tokenId,
           ownerAddress,
@@ -58,7 +59,7 @@ export default async function getEthTestnetNFTsByOwner({ blockchain, collectionO
     return nfts
   }
   else {
-    const collections = await findAllCollections({ blockchains: { [blockchain.network]: blockchain.networkId } })
+    const collections = await findAllCollections({ blockchainFilter: { [blockchain.network]: blockchain.networkId } })
     const nftsPerCollection = await Promise.all(collections.map(collection => getEthTestnetNFTsByOwner({ blockchain, ownerAddress, collectionOrCollectionAddress: collection, populateMetadata })))
 
     return _.flatten(nftsPerCollection)

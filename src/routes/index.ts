@@ -8,7 +8,6 @@ import obligationsRouter from './obligations'
 import pnplRouter from './pnpl'
 import poolsRouter from './pools'
 import statsRouter from './stats'
-import valuationRouter from './valuation'
 
 const router = Router()
 
@@ -23,6 +22,5 @@ router.use('/pnpl', pnplRouter)
 router.use('/obligations', obligationsRouter)
 router.use('/pools', poolsRouter)
 router.use('/stats', statsRouter)
-router.use('/valuation', valuationRouter)
 
 export default router

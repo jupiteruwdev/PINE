@@ -7,16 +7,14 @@ import EthereumNetwork from '../entities/lib/EthereumNetwork'
 import { serializeNFTs } from '../entities/lib/NFT'
 import { parseEthNetworkId } from '../utils/ethereum'
 import failure from '../utils/failure'
+import { getString } from '../utils/query'
 
 const router = Router()
 
 router.get('/', async (req, res, next) => {
   try {
-    const borrowerAddress = req.query.owner?.toString()
+    const borrowerAddress = getString(req.query, 'owner')
     const networkId = parseEthNetworkId(req.query.networkId)
-
-    if (!borrowerAddress) throw Error('Invalid owner address')
-
     const obligations = await getObligations({ blockchain: EthBlockchain(networkId), borrowerAddress })
     const payload = serializeNFTs(obligations)
 

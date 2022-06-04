@@ -1,3 +1,7 @@
+/**
+ * @TODO Remove this file when using BlockchainFilter for all requests.
+ */
+
 import { Request } from 'express'
 import Blockchain, { EthBlockchain, SolBlockchain } from '../entities/lib/Blockchain'
 import EthereumNetwork from '../entities/lib/EthereumNetwork'

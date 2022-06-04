@@ -60,6 +60,7 @@ export default async function getNFTsByOwner({
   switch (blockchain.network) {
   case 'ethereum':
     if (blockchain.networkId === EthereumNetwork.MAIN) {
+      // TODO: This is bad
       await delay(100 * index)
       return getEthMainnetNFTsByOwner({ collectionOrCollectionAddress, ownerAddress, populateMetadata })
     }
