@@ -1,18 +1,16 @@
 import { Router } from 'express'
-import _ from 'lodash'
 import getAggregatedPools from '../core/getAggregatedPools'
 import { serializeAggregatedPool } from '../entities/lib/AggregatedPool'
 import failure from '../utils/failure'
-import mapBlockchainFilterToDict from '../utils/mapBlockchainFilterToDict'
+import { getBlockchainFilter, getString } from '../utils/query'
 
 const router = Router()
 
 router.get('/ethereum/:collectionAddress/pools', async (req, res, next) => {
-  const collectionAddress = req.params.collectionAddress
-  const blockchains = _.mapValues(mapBlockchainFilterToDict(req.query, true), t => t.networkId)
-
   try {
-    const pools = await getAggregatedPools({ blockchains, collectionAddress })
+    const collectionAddress = getString(req.query, 'collectionAddress')
+    const blockchainFilter = getBlockchainFilter(req.query, true)
+    const pools = await getAggregatedPools({ blockchainFilter, collectionAddress })
     const payload = serializeAggregatedPool(pools[0])
     res.status(200).json(payload)
   }

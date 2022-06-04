@@ -1,9 +1,9 @@
 import Blockchain from '../entities/lib/Blockchain'
+import Value, { $ETH } from '../entities/lib/Value'
 import failure from '../utils/failure'
+import getPoolCapacity from './getPoolCapacity'
 import getPoolContract from './getPoolContract'
 import getPools from './getPools'
-import getPoolCapacity from './getPoolCapacity'
-import Value, { $ETH } from '../entities/lib/Value'
 
 const flashLoanSourceContractAddresses: { [key: number]: any } = {
   4: '0x8eE816b1B3B3E5F2dE1d8344A7Dc69AA16074314',
@@ -13,7 +13,7 @@ const flashLoanSourceContractAddresses: { [key: number]: any } = {
 export default async function getFlashLoanSource({ blockchain, poolAddress }: { blockchain: Blockchain; poolAddress: string }): Promise<{ address: string; capacity: Value }> {
   const contract = await getPoolContract({ blockchain, poolAddress })
   const fundSource = await contract.methods._fundSource().call()
-  const pools = (await getPools({ blockchains: { ethereum: blockchain.networkId } }))
+  const pools = (await getPools({ blockchainFilter: { ethereum: blockchain.networkId } }))
     .filter(e => e.version > 1 && e.address !== poolAddress)
   const poolsWithFundSource = (await Promise.all(pools.map(async e => {
     const tmpContract = await getPoolContract({ blockchain, poolAddress: e.address })

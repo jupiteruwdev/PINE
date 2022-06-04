@@ -2,11 +2,12 @@ import BigNumber from 'bignumber.js'
 import _ from 'lodash'
 import { defaultFees, supportedCollections } from '../config/supportedCollections'
 import getPoolContract from '../core/getPoolContract'
-import Blockchain, { AnyBlockchain, EthBlockchain } from '../entities/lib/Blockchain'
+import Blockchain, { BlockchainFilter, EthBlockchain } from '../entities/lib/Blockchain'
+import EthereumNetwork from '../entities/lib/EthereumNetwork'
 import LoanOption from '../entities/lib/LoanOption'
 import Pool from '../entities/lib/Pool'
+import SolanaNetwork from '../entities/lib/SolanaNetwork'
 import failure from '../utils/failure'
-import mapBlockchainFilterToDict from '../utils/mapBlockchainFilterToDict'
 import * as collections from './collections'
 
 type FindOneFilter = {
@@ -20,7 +21,7 @@ type FindOneFilter = {
 type FindAllFilter = {
   collectionAddress?: string
   collectionId?: string
-  blockchains?: { [K in AnyBlockchain]?: string }
+  blockchainFilter?: BlockchainFilter
   includeRetired?: boolean
   offset?: number
   count?: number
@@ -111,20 +112,20 @@ export async function findOne({ address, collectionAddress, collectionId, blockc
 }
 
 /**
- * Finds all pools on the platform. If the blockchains filter is specified, only pools residing in
- * the mapped blockchains will be returned. Otherwise if unspecified (i.e. `filter.blockchains` ===
- * `undefined`), all pools of all blockchains in their default network IDs will be returned.
+ * Finds all pools on the platform. If the blockchain filter is specified, only pools residing in
+ * the filtered blockchains will be returned.
  *
  * @param filter - See {@link FindAllFilter}.
  *
  * @returns Array of pools.
  */
-export async function findAll({ collectionAddress, collectionId, blockchains, includeRetired = false, offset, count }: FindAllFilter = {}): Promise<Pool[]> {
+export async function findAll({ collectionAddress, collectionId, blockchainFilter = { ethereum: EthereumNetwork.MAIN, solana: SolanaNetwork.MAINNET }, includeRetired = false, offset, count }: FindAllFilter = {}): Promise<Pool[]> {
   const rawData = supportedCollections
-  const blockchainDict = blockchains === undefined ? mapBlockchainFilterToDict({}, true) : mapBlockchainFilterToDict(blockchains, false)
   const pools: Pool[] = []
 
-  if (blockchainDict.ethereum) {
+  if (blockchainFilter.ethereum !== undefined) {
+    const blockchain = EthBlockchain(blockchainFilter.ethereum)
+
     for (const key in rawData) {
       if (!rawData.hasOwnProperty(key)) continue
 
@@ -132,8 +133,8 @@ export async function findAll({ collectionAddress, collectionId, blockchains, in
 
       const data = rawData[key]
 
-      if (_.get(data, 'networkType') !== blockchainDict.ethereum.network) continue
-      if (_.toString(_.get(data, 'networkId')) !== blockchainDict.ethereum.networkId) continue
+      if (_.get(data, 'networkType') !== blockchain.network) continue
+      if (_.toString(_.get(data, 'networkId')) !== blockchain.networkId) continue
 
       const collection = collections.mapCollection({
         ...data,
@@ -144,13 +145,13 @@ export async function findAll({ collectionAddress, collectionId, blockchains, in
 
       // identify if multi-pool or single-pool
       for (const lendingPool of _.get(data, 'lendingPools', [])) {
-        const pool = await getPoolContract({ blockchain: blockchainDict.ethereum, poolAddress: lendingPool.address })
+        const pool = await getPoolContract({ blockchain, poolAddress: lendingPool.address })
         if (!includeRetired && lendingPool.retired) continue
         pools.push(mapPool({
           version: pool.poolVersion,
           ...lendingPool,
           collection,
-          blockchain: blockchainDict.ethereum,
+          blockchain,
         }))
       }
     }
