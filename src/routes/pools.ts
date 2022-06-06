@@ -1,16 +1,13 @@
 import { Router } from 'express'
-import _ from 'lodash'
 import getAggregatedPools from '../core/getAggregatedPools'
 import getPool from '../core/getPool'
 import getPools from '../core/getPools'
 import { findAll as findAllCollections } from '../db/collections'
 import { serializeAggregatedPools } from '../entities/lib/AggregatedPool'
-import { EthBlockchain } from '../entities/lib/Blockchain'
-import EthereumNetwork from '../entities/lib/EthereumNetwork'
 import { serializePagination } from '../entities/lib/Pagination'
 import { serializePool, serializePools } from '../entities/lib/Pool'
 import failure from '../utils/failure'
-import { getBlockchainFilter, getNumber, getString } from '../utils/query'
+import { getBlockchainFilter, getBlockchainFromQuery, getNumber, getString } from '../utils/query'
 import tryOrUndefined from '../utils/tryOrUndefined'
 
 const router = Router()
@@ -49,11 +46,11 @@ router.get('/', async (req, res, next) => {
 })
 
 router.get('/eth/:address', async (req, res, next) => {
-  const networkId = _.toNumber(req.query.networkId ?? EthereumNetwork.MAIN)
+  const blockchain = getBlockchainFromQuery(req.query)
   const poolAddress = req.params.address
 
   try {
-    const pool = await getPool({ blockchain: EthBlockchain(networkId), poolAddress })
+    const pool = await getPool({ blockchain, poolAddress })
     const payload = serializePool(pool)
     res.status(200).json(payload)
   }

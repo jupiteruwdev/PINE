@@ -1,6 +1,6 @@
 import { Request } from 'express'
 import _ from 'lodash'
-import { BlockchainFilter, EthBlockchain, SolBlockchain } from '../entities/lib/Blockchain'
+import Blockchain, { AnyBlockchain, BlockchainFilter, EthBlockchain, SolBlockchain } from '../entities/lib/Blockchain'
 import { parseEthNetworkId } from './ethereum'
 import failure from './failure'
 
@@ -62,4 +62,12 @@ export function getBlockchainFilter<T extends boolean>(query: Request['query'], 
     ethereum: ethBlockchain?.networkId,
     solana: solBlockchain?.networkId,
   }
+}
+
+export function getBlockchainFromQuery(query: Request['query']): Blockchain<AnyBlockchain> {
+  return _.has(query, 'ethereum')
+    ? EthBlockchain(parseEthNetworkId(query.ethereum))
+    : _.has(query, 'solana')
+      ? SolBlockchain(query.solana?.toString())
+      : EthBlockchain()
 }
