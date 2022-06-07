@@ -1,6 +1,6 @@
 import { Request } from 'express'
 import _ from 'lodash'
-import { BlockchainFilter, EthBlockchain, SolBlockchain } from '../entities/lib/Blockchain'
+import Blockchain, { AnyBlockchain, BlockchainFilter, EthBlockchain, SolBlockchain } from '../entities/lib/Blockchain'
 import { parseEthNetworkId } from './ethereum'
 import failure from './failure'
 
@@ -61,5 +61,20 @@ export function getBlockchainFilter<T extends boolean>(query: Request['query'], 
   return {
     ethereum: ethBlockchain?.networkId,
     solana: solBlockchain?.networkId,
+  }
+
+}
+
+export function getBlockchain(query: Request['query']): Blockchain<AnyBlockchain> {
+  const blockchainFilter = _.omitBy(getBlockchainFilter(query, false), value =>
+    value === undefined
+  )
+  if (_.values(blockchainFilter).length !== 1) {
+    throw failure('AMBIGUOUS_TARGET_BLOCKCHAIN')
+  }
+
+  return {
+    network: _.keys(blockchainFilter)[0] as AnyBlockchain,
+    networkId: _.values(blockchainFilter)[0],
   }
 }
