@@ -49,7 +49,7 @@ export function getNumber(query: Request['query'], key: string): number {
  *          query, an empty dictionary is simply returned.
  */
 export function getBlockchainFilter<T extends boolean>(query: Request['query'], autofillDefaults: T): T extends true ? Required<BlockchainFilter> : BlockchainFilter
-export function getBlockchainFilter<T extends boolean>(query: Request['query'], autofillDefaults: T): Required<BlockchainFilter> | BlockchainFilter | Blockchain<AnyBlockchain> {
+export function getBlockchainFilter<T extends boolean>(query: Request['query'], autofillDefaults: T): Required<BlockchainFilter> | BlockchainFilter {
   const ethBlockchain = _.get(query, 'ethereum', _.get(query, 'eth')) === undefined
     ? autofillDefaults ? EthBlockchain() : undefined
     : EthBlockchain(parseEthNetworkId(query.ethereum))
@@ -58,20 +58,23 @@ export function getBlockchainFilter<T extends boolean>(query: Request['query'], 
     ? autofillDefaults ? SolBlockchain() : undefined
     : SolBlockchain(query.solana?.toString())
 
-  if (!autofillDefaults) {
-    if (!solBlockchain) {
-      return ethBlockchain || EthBlockchain()
-    }
-    else if (!ethBlockchain) {
-      return solBlockchain
-    }
-    else {
-      throw failure('AMBIGUOUS_TARGET_BLOCKCHAIN')
-    }
-  }
-
   return {
     ethereum: ethBlockchain?.networkId,
     solana: solBlockchain?.networkId,
+  }
+
+}
+
+export function getBlockchain(query: Request['query']): Blockchain<AnyBlockchain> {
+  const blockchainFilter = _.omitBy(getBlockchainFilter(query, false), value =>
+    value === undefined
+  )
+  if (_.values(blockchainFilter).length !== 1) {
+    throw failure('AMBIGUOUS_TARGET_BLOCKCHAIN')
+  }
+
+  return {
+    network: _.keys(blockchainFilter)[0] as AnyBlockchain,
+    networkId: _.values(blockchainFilter)[0],
   }
 }
