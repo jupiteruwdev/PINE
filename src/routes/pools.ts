@@ -4,10 +4,11 @@ import getPool from '../core/getPool'
 import getPools from '../core/getPools'
 import { findAll as findAllCollections } from '../db/collections'
 import { serializeAggregatedPools } from '../entities/lib/AggregatedPool'
+import Blockchain from '../entities/lib/Blockchain'
 import { serializePagination } from '../entities/lib/Pagination'
 import { serializePool, serializePools } from '../entities/lib/Pool'
 import failure from '../utils/failure'
-import { getBlockchainFilter, getBlockchainFromQuery, getNumber, getString } from '../utils/query'
+import { getBlockchainFilter, getNumber, getString } from '../utils/query'
 import tryOrUndefined from '../utils/tryOrUndefined'
 
 const router = Router()
@@ -46,7 +47,7 @@ router.get('/', async (req, res, next) => {
 })
 
 router.get('/eth/:address', async (req, res, next) => {
-  const blockchain = getBlockchainFromQuery(req.query)
+  const blockchain = getBlockchainFilter(req.query, false) as Blockchain
   const poolAddress = req.params.address
 
   try {

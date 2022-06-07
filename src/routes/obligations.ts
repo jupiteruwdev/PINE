@@ -2,16 +2,17 @@ import { Router } from 'express'
 import getObligation from '../core/getObligation'
 import getObligations from '../core/getObligations'
 import { serializeActiveLoanStats } from '../entities/lib/ActiveLoanStat'
+import Blockchain from '../entities/lib/Blockchain'
 import { serializeNFTs } from '../entities/lib/NFT'
 import failure from '../utils/failure'
-import { getBlockchainFromQuery, getString } from '../utils/query'
+import { getBlockchainFilter, getString } from '../utils/query'
 
 const router = Router()
 
 router.get('/', async (req, res, next) => {
   try {
     const borrowerAddress = getString(req.query, 'owner')
-    const blockchain = getBlockchainFromQuery(req.query)
+    const blockchain = getBlockchainFilter(req.query, false) as Blockchain
     const obligations = await getObligations({ blockchain, borrowerAddress })
     const payload = serializeNFTs(obligations)
 
@@ -25,7 +26,7 @@ router.get('/', async (req, res, next) => {
 router.get('/:collectionAddress', async (req, res, next) => {
   try {
     const collectionAddress = req.params.collectionAddress
-    const blockchain = getBlockchainFromQuery(req.query)
+    const blockchain = getBlockchainFilter(req.query, false) as Blockchain
     const obligation = await getObligation({ collectionAddress, blockchain })
     const payload = serializeActiveLoanStats(obligation)
     res.status(200).json(payload)
