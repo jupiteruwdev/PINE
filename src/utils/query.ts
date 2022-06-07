@@ -69,8 +69,11 @@ export function getBlockchain(query: Request['query']): Blockchain<AnyBlockchain
   const blockchainFilter = _.omitBy(getBlockchainFilter(query, false), value =>
     value === undefined
   )
-  if (_.values(blockchainFilter).length !== 1) {
+  if (_.values(blockchainFilter).length > 1) {
     throw failure('AMBIGUOUS_TARGET_BLOCKCHAIN')
+  }
+  else if (_.values(blockchainFilter).length === 0) {
+    return EthBlockchain()
   }
 
   return {
