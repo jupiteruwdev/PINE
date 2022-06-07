@@ -22,7 +22,7 @@ export default {
   ethValuationExpiryBlocks: 64, // quote expires in 15 mins
   ethValuationSigner: process.env.VALUATION_SIGNER,
   flashLoanSourceContractAddress: {
-    [EthereumNetwork.RINKEBY]: '0x8eE816b1B3B3E5F2dE1d8344A7Dc69AA16074314',
+    [EthereumNetwork.RINKEBY]: '0x1Bf5d5051eA8025B41e69C139E5fE5d6499A9077',
     [EthereumNetwork.MAIN]: '0x63ca18f8cb75e28f94cf81901caf1e39657ea256',
   },
   controlPlaneContractAddress: {
