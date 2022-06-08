@@ -46,7 +46,7 @@ export default async function getObligation({ collectionAddress, blockchain }: P
         })
     }))
     result.push({
-      id: loan.id,
+      id: tokenId,
       thumbnail: '',
       amountBorrowed: $ETH(loan.borrowedWei),
       expiry: loan.loanExpiretimestamp,
