@@ -1,4 +1,4 @@
-name: Nightly
+name: Nightly (Staging)
 on:
   schedule:
     - cron: '0 7 * * *' # 7AM UTC daily
@@ -25,6 +25,7 @@ jobs:
         with:
           submodules: recursive
           token: ${{ secrets.GH_ACCESS_TOKEN }}
+          ref: staging
       - name: Authenticate Google Cloud
         id: gcloud
         uses: google-github-actions/auth@v0
