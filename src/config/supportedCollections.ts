@@ -41,6 +41,7 @@ export const supportedCollections: { [key: string]: any } = {
     lendingPools: [
       {
         address: '0xAe139B2C530fAb436ebe180c0B41a78382B2D0Bb',
+        retired: true,
         loan_options: [
           {
             loan_duration_block: 86388,
@@ -53,7 +54,6 @@ export const supportedCollections: { [key: string]: any } = {
       },
       {
         address: '0x4286f77da706339A631c9578278b99a254156D10',
-        retired: true,
         loan_options: [
           {
             loan_duration_block: 86388,
@@ -103,6 +103,27 @@ export const supportedCollections: { [key: string]: any } = {
             interest_bps_block: 0.00138,
             interest_bps_block_override: 0.000600,
             max_ltv_bps: 3000,
+          },
+        ],
+      },
+    ],
+  },
+  'opensea:mfers': {
+    display_name: 'mfers',
+    address: '0x79fcdef22feed20eddacbb2587640e45491b757f',
+    networkType: 'ethereum',
+    networkId: 1,
+    image_url: 'https://lh3.googleusercontent.com/J2iIgy5_gmA8IS6sXGKGZeFVZwhldQylk7w7fLepTE9S7ICPCn_dlo8kypX8Ju0N6wvLVOKsbP_7bNGd8cpKmWhFQmqMXOC8q2sOdqw=s130',
+    lendingPools: [
+      {
+        address: '0x2B165317d5669932A1f1FEE741C0cc64d751f21E',
+        loan_options: [
+          {
+            loan_duration_block: 86388,
+            loan_duration_second: 1209600,
+            interest_bps_block: 0.00138,
+            interest_bps_block_override: 0.000600,
+            max_ltv_bps: 4000,
           },
         ],
       },
@@ -367,7 +388,6 @@ export const supportedCollections: { [key: string]: any } = {
     image_url: 'https://lh3.googleusercontent.com/Qd1IEPYz_0YlMaclPwb6_9PyP7afZIzH15IdIU2X6t1Wvg81DwpAaWOY0cNmxy173C4yMA7sM3xF9-HJsCSKJdx6KvDR3old3IKuTIc=s0',
     lendingPools: [
       {
-        retired: true,
         address: '0x56893018a87434E9b1D6af427fF52D6C27f1A542',
         loan_options: [
           {
@@ -380,6 +400,7 @@ export const supportedCollections: { [key: string]: any } = {
         ],
       },
       {
+        retired: true,
         address: '0x8c2894650263299972a22bb30e30860543c63c42',
         loan_options: [
           {
