@@ -1,4 +1,6 @@
 import BigNumber from 'bignumber.js'
+import _ from 'lodash'
+import appConf from '../app.conf'
 import Blockchain from '../entities/lib/Blockchain'
 import PNPLTerms from '../entities/lib/PNPLTerms'
 import { $WEI } from '../entities/lib/Value'
@@ -16,16 +18,6 @@ type Params = {
   nftId: string
 }
 
-const openseaContractAddresses = {
-  rinkeby: '0xdD54D660178B28f6033a953b0E55073cFA7e3744',
-  main: '0x7f268357A8c2552623316e2562D90e642bB538E5',
-}
-
-const pnplContractAddresses: { [key: number]: any } = {
-  4: '0x7D33BdDfe5945687382625547aBD8a0115B87490',
-  1: '0x514183FAf3ab9Db42D76317ecea74C4300E60EEe',
-}
-
 export default async function getOpenseaPNPLTerms({ openseaVersion, blockchain, collectionId, nftId }: Params): Promise<PNPLTerms> {
   logger.info(`Fetching OpenSea PNPL terms for NFT ID <${ nftId }> and collection ID <${ collectionId }> on blockchain <${ JSON.stringify(blockchain) }>...`)
 
@@ -34,7 +26,7 @@ export default async function getOpenseaPNPLTerms({ openseaVersion, blockchain, 
     const loanTerms = await getLoanTerms({ blockchain, collectionId, nftId })
     const poolContract = await getPoolContract({ blockchain, poolAddress: loanTerms.poolAddress })
     if ((poolContract.poolVersion || 0) < 2) throw failure('UNSUPPORTED_COLLECTION')
-    const pnplContractAddress = pnplContractAddresses[Number(blockchain.networkId)]
+    const pnplContractAddress = _.get(appConf.pnplContractAddress, blockchain.networkId)
 
     try {
       const openseaInstructions = await getRequest('https://us-central1-pinedefi.cloudfunctions.net/opensea-purchase-generator', {
@@ -45,13 +37,13 @@ export default async function getOpenseaPNPLTerms({ openseaVersion, blockchain, 
           'account_address': pnplContractAddress,
         },
       })
-      const flashLoanSource = await getFlashLoanSource({ blockchain, poolAddress: loanTerms.poolAddress, flashLoanAmount: openseaInstructions.currentPrice })
+      const flashLoanSource = await getFlashLoanSource({ blockchain, poolAddress: loanTerms.poolAddress })
       const pnplTerms: PNPLTerms = {
         ...loanTerms,
         flashLoanSourceContractAddress: flashLoanSource.address,
         maxFlashLoanValue: flashLoanSource.capacity,
         listedPrice: $WEI(new BigNumber(openseaInstructions.currentPrice)),
-        marketplaceContractAddress: openseaContractAddresses[openseaVersion],
+        marketplaceContractAddress: _.get(appConf.openseaContractAddress, blockchain.networkId),
         marketplaceName: 'OpenSea',
         pnplContractAddress,
         purchaseInstruction: openseaInstructions.calldata,

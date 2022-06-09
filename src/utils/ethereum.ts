@@ -20,7 +20,7 @@ export function getEthWeb3(networkId: string = EthereumNetwork.MAIN) {
 
   const rpc = _.get(appConf.ethRPC, networkId)
 
-  if (!rpc) throw Error(`Unsupported RPC for network ${networkId}`)
+  if (!rpc) throw failure('UNSUPPORTED_RPC')
 
   const web3 = new Web3(rpc)
   web3s[networkId] = web3

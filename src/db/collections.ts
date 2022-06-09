@@ -4,8 +4,10 @@
 
 import _ from 'lodash'
 import { supportedCollections } from '../config/supportedCollections'
-import Blockchain, { AnyBlockchain, EthBlockchain } from '../entities/lib/Blockchain'
+import Blockchain, { BlockchainFilter, EthBlockchain } from '../entities/lib/Blockchain'
 import Collection from '../entities/lib/Collection'
+import EthereumNetwork from '../entities/lib/EthereumNetwork'
+import SolanaNetwork from '../entities/lib/SolanaNetwork'
 
 type FindOneFilter = {
   address?: string
@@ -15,7 +17,7 @@ type FindOneFilter = {
 }
 
 type FindAllFilter = {
-  blockchains?: { [K in AnyBlockchain]?: string }
+  blockchainFilter?: BlockchainFilter
 }
 
 export function mapCollection(data: Record<string, any>): Collection {
@@ -77,20 +79,20 @@ export async function findOne({ address, blockchain = EthBlockchain(), id, poolA
  *
  * @returns Array of collections.
  */
-export async function findAll({ blockchains }: FindAllFilter = {}): Promise<Collection[]> {
+export async function findAll({ blockchainFilter = { ethereum: EthereumNetwork.MAIN, solana: SolanaNetwork.MAINNET } }: FindAllFilter = {}): Promise<Collection[]> {
   const rawData = supportedCollections
-  const ethBlockchain = blockchains ? (blockchains.ethereum ? EthBlockchain(blockchains.ethereum) : undefined) : EthBlockchain()
-
   const collections: Collection[] = []
 
-  if (ethBlockchain) {
+  if (blockchainFilter.ethereum !== undefined) {
+    const blockchain = EthBlockchain(blockchainFilter.ethereum)
+
     for (const key in rawData) {
       if (!rawData.hasOwnProperty(key)) continue
 
       const data = rawData[key]
 
-      if (_.get(data, 'networkType') !== ethBlockchain.network) continue
-      if (_.toString(_.get(data, 'networkId')) !== ethBlockchain.networkId) continue
+      if (_.get(data, 'networkType') !== blockchain.network) continue
+      if (_.toString(_.get(data, 'networkId')) !== blockchain.networkId) continue
 
       collections.push(mapCollection({
         ...data,

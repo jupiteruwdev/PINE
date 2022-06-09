@@ -1,37 +1,43 @@
 import { Router } from 'express'
-import _ from 'lodash'
 import getAggregatedPools from '../core/getAggregatedPools'
 import getPool from '../core/getPool'
 import getPools from '../core/getPools'
+import { findAll as findAllCollections } from '../db/collections'
 import { serializeAggregatedPools } from '../entities/lib/AggregatedPool'
-import { EthBlockchain, SolBlockchain } from '../entities/lib/Blockchain'
-import EthereumNetwork from '../entities/lib/EthereumNetwork'
+import { serializePagination } from '../entities/lib/Pagination'
 import { serializePool, serializePools } from '../entities/lib/Pool'
-import { parseEthNetworkId } from '../utils/ethereum'
 import failure from '../utils/failure'
-import mapBlockchainFilterToDict from '../utils/mapBlockchainFilterToDict'
+import { getBlockchain, getBlockchainFilter, getNumber, getString } from '../utils/query'
+import tryOrUndefined from '../utils/tryOrUndefined'
 
 const router = Router()
 
 router.get('/', async (req, res, next) => {
-  const networkName = req.query.networkName?.toString()
-  const blockchain = networkName === 'solana' ? SolBlockchain(req.query.networkId?.toString()) : EthBlockchain(parseEthNetworkId(req.query.networkId))
-  const collectionAddress = req.query.collectionAddress?.toString().toLowerCase()
+  const blockchainFilter = getBlockchainFilter(req.query, true)
+  const totalCount = (await findAllCollections({ blockchainFilter })).length
+  const collectionAddress = tryOrUndefined(() => getString(req.query, 'collectionAddress'))
+  const offset = tryOrUndefined(() => getNumber(req.query, 'offset'))
+  const count = tryOrUndefined(() => getNumber(req.query, 'count'))
+
   if (collectionAddress) {
     const pools = await getPools({
-      blockchains: {
-        [blockchain.network]: blockchain.networkId,
-      },
+      blockchainFilter,
       collectionAddress,
+      offset,
+      count,
     })
     const payload = serializePools(pools)
-    res.status(200).json(payload)
+    const nextOffset = (offset ?? 0) + pools.length
+    const pagination = serializePagination({ data: payload, totalCount, nextOffset: nextOffset === totalCount - 1 ? undefined : nextOffset })
+    res.status(200).json(pagination)
   }
   else {
     try {
-      const pools = await getAggregatedPools({ blockchains: _.mapValues(mapBlockchainFilterToDict(req.query, true), t => t.networkId) })
+      const pools = await getAggregatedPools({ blockchainFilter, count, offset })
       const payload = serializeAggregatedPools(pools)
-      res.status(200).json(payload)
+      const nextOffset = (offset ?? 0) + pools.length
+      const pagination = serializePagination({ data: payload, totalCount, nextOffset: nextOffset === totalCount - 1 ? undefined : nextOffset })
+      res.status(200).json(pagination)
     }
     catch (err) {
       next(failure('FETCH_AGGREGATED_POOLS_FAILURE', err))
@@ -40,11 +46,11 @@ router.get('/', async (req, res, next) => {
 })
 
 router.get('/eth/:address', async (req, res, next) => {
-  const networkId = _.toNumber(req.query.networkId ?? EthereumNetwork.MAIN)
+  const blockchain = getBlockchain(req.query)
   const poolAddress = req.params.address
 
   try {
-    const pool = await getPool({ blockchain: EthBlockchain(networkId), poolAddress })
+    const pool = await getPool({ blockchain, poolAddress })
     const payload = serializePool(pool)
     res.status(200).json(payload)
   }

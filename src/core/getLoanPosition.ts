@@ -1,5 +1,6 @@
 import BigNumber from 'bignumber.js'
 import _ from 'lodash'
+import appConf from '../app.conf'
 import { repayRouterAddresses } from '../config/supportedCollections'
 import { findOne as findOneCollection } from '../db/collections'
 import { findAll as findAllPools } from '../db/pools'
@@ -22,11 +23,6 @@ type Params = {
   txSpeedBlocks: number
 }
 
-const controlPlaneContractAddresses: { [key: number]: any } = {
-  4: '0x5E282F68a7CD593609C05AbCA32482395968d885',
-  1: '0x9C2780F9e427E29Ba77EDC34C3F42e0865C3FBDF',
-}
-
 export default async function getLoanPosition({ blockchain, collectionId, nftId, txSpeedBlocks }: Params): Promise<LoanPosition | undefined> {
   logger.info(`Fetching loan position for collection ID <${collectionId}>, NFT ID <${nftId}>, txSpeedBlocks <${txSpeedBlocks}> and blockchain <${JSON.stringify(blockchain)}>...`)
 
@@ -37,7 +33,7 @@ export default async function getLoanPosition({ blockchain, collectionId, nftId,
 
     const [blockNumber, pools, valuation] = await Promise.all([
       getEthBlockNumber(blockchain.networkId),
-      findAllPools({ collectionId, blockchains: { ethereum: blockchain.networkId }, includeRetired: true }),
+      findAllPools({ collectionId, blockchainFilter: { ethereum: blockchain.networkId }, includeRetired: true }),
       getEthCollectionValuation({ blockchain: blockchain as Blockchain<'ethereum'>, collectionAddress: collection.address }),
     ])
 
@@ -49,7 +45,7 @@ export default async function getLoanPosition({ blockchain, collectionId, nftId,
       const contract = await getPoolContract({ blockchain, poolAddress: pool.address })
       const event = await getLoanEvent({ blockchain, nftId, poolAddress: pool.address })
       const loanDetails = await contract.methods._loans(nftId).call()
-      const controlPlaneContract = getControlPlaneContract({ blockchain, address: controlPlaneContractAddresses[Number(blockchain.networkId)] })
+      const controlPlaneContract = getControlPlaneContract({ blockchain, address: _.get(appConf.controlPlaneContractAddress, blockchain.networkId) })
       const outstandingWithInterestWei = new BigNumber(await controlPlaneContract.methods.outstanding(loanDetails, txSpeedBlocks).call())
 
       // Early exit if loan is fully repaid.

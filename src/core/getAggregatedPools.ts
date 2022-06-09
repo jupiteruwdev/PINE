@@ -1,28 +1,25 @@
 import _ from 'lodash'
 import AggregatedPool from '../entities/lib/AggregatedPool'
-import { AnyBlockchain, EthBlockchain } from '../entities/lib/Blockchain'
+import Blockchain, { BlockchainFilter } from '../entities/lib/Blockchain'
+import EthereumNetwork from '../entities/lib/EthereumNetwork'
+import SolanaNetwork from '../entities/lib/SolanaNetwork'
 import { $USD } from '../entities/lib/Value'
 import { getEthValueUSD } from '../utils/ethereum'
 import logger from '../utils/logger'
-import mapBlockchainFilterToDict from '../utils/mapBlockchainFilterToDict'
 import getEthCollectionFloorPrice from './getEthCollectionFloorPrice'
 import getPools from './getPools'
 
 type Params = {
-  /**
-   * Blockchains to filter for the returned pools. If specified, only pools residing in the
-   * mapped blockchains will be returned. Otherwise if unspecified (i.e. `filter.blockchains` ===
-   * `undefined`), all pools of all blockchains in their default network IDs will be returned.
-   */
-  blockchains?: { [K in AnyBlockchain]?: string }
+  blockchainFilter?: BlockchainFilter
   collectionAddress?: string
+  offset?: number
+  count?: number
 }
 
-export default async function getAggregatedPools({ blockchains, collectionAddress }: Params) {
-  logger.info(`Fetching aggregated pools with blockchain filter <${JSON.stringify(blockchains)}>...`)
+export default async function getAggregatedPools({ blockchainFilter = { ethereum: EthereumNetwork.MAIN, solana: SolanaNetwork.MAINNET }, collectionAddress, offset, count }: Params) {
+  logger.info(`Fetching aggregated pools with blockchain filter <${JSON.stringify(blockchainFilter)}>...`)
 
-  const blockchainDict = blockchains === undefined ? mapBlockchainFilterToDict({}, true) : mapBlockchainFilterToDict(blockchains, false)
-  const [ethValueUSD, pools] = await Promise.all([getEthValueUSD(), getPools({ blockchains, collectionAddress })])
+  const [ethValueUSD, pools] = await Promise.all([getEthValueUSD(), getPools({ blockchainFilter, collectionAddress, offset, count })])
 
   const aggregatedPools: AggregatedPool[] = _.compact(pools.map(pool => {
     if (!pool.collection) return undefined
@@ -35,14 +32,21 @@ export default async function getAggregatedPools({ blockchains, collectionAddres
     }
   }))
 
-  const floorPricesRes = await Promise.allSettled(aggregatedPools.map(pool => getEthCollectionFloorPrice({
-    blockchain: blockchainDict.ethereum ?? EthBlockchain(),
-    collectionAddress: pool.collection.address,
-  })))
+  const floorPricesRes = await Promise.allSettled(aggregatedPools.map(pool => {
+    switch (pool.collection.blockchain.network) {
+    case 'ethereum':
+      return getEthCollectionFloorPrice({
+        blockchain: pool.collection.blockchain as Blockchain<'ethereum'>,
+        collectionAddress: pool.collection.address,
+      })
+    case 'solana':
+      return undefined
+    }
+  }))
 
   const out = floorPricesRes.map((res, i) => ({
     ...aggregatedPools[i],
-    floorPrice: res.status === 'fulfilled' ? res.value : undefined,
+    floorPrice: res?.status === 'fulfilled' ? res.value : undefined,
   }))
 
   logger.info('Fetching aggregated pools... OK', out)

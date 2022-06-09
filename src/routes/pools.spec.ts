@@ -10,7 +10,6 @@ describe('routes/pools', () => {
     const poolAddresses = _.compact(_.flatMap(supportedCollections, data => (data.networkType === 'ethereum' && data.networkId === 1) ? data.lendingPools.map((lendingPool: any) => lendingPool.address) : undefined))
 
     await Promise.all(poolAddresses.map(async poolAddress => {
-      console.log(poolAddress)
       const { body: res } = await request(app).get(`/pools/eth/${poolAddress}`)
         .query({
           ethereum: 1,

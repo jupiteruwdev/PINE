@@ -1,14 +1,14 @@
 import axios from 'axios'
 import _ from 'lodash'
+import { findOne as findOneCollection } from '../db/collections'
 import { findAll as findAllPools } from '../db/pools'
 import Blockchain from '../entities/lib/Blockchain'
+import EthereumNetwork from '../entities/lib/EthereumNetwork'
+import NFT from '../entities/lib/NFT'
 import failure from '../utils/failure'
 import getLoanEvent from './getLoanEvent'
 import getNFTMetadata from './getNFTMetadata'
 import getNFTsByOwner from './getNFTsByOwner'
-import { findOne as findOneCollection } from '../db/collections'
-import NFT from '../entities/lib/NFT'
-import EthereumNetwork from '../entities/lib/EthereumNetwork'
 
 type Params = {
   blockchain: Blockchain
@@ -24,6 +24,7 @@ const tokensQuery = (borrower: string) => (
       loans(where: {borrower: "${borrower}"}) {
         erc721
         id
+        pool
       }
     }`,
     variables: {},
@@ -41,7 +42,7 @@ export default async function getObligations({ blockchain, borrowerAddress }: Pa
     })))
   }
   else {
-    const pools = await findAllPools({ blockchains: { [blockchain.network]: blockchain.networkId }, includeRetired: true })
+    const pools = await findAllPools({ blockchainFilter: { [blockchain.network]: blockchain.networkId }, includeRetired: true })
     const allCollaterals = _.flatten(await Promise.all(pools.map((pool, index) => getNFTsByOwner({ blockchain, ownerAddress: pool.address, populateMetadata: false, index }))))
     const allEvents = await Promise.all(allCollaterals.map(collateral => {
       if (!collateral.ownerAddress) throw failure('FETCH_LOAN_EVENTS_FAILURE')

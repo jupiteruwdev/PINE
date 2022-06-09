@@ -79,7 +79,7 @@ export default async function getEthMainnetNFTsByOwner({
           const name = _.get(parsed, 'name')
           const image = _.get(parsed, 'image')
 
-          if (!name || !image) throw Error()
+          if (!name || !image) throw 0
 
           metadata = {
             name,
