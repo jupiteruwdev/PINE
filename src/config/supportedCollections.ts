@@ -116,7 +116,7 @@ export const supportedCollections: { [key: string]: any } = {
     address: '0x026224a2940bfe258d0dbe947919b62fe321f042',
     networkType: 'ethereum',
     networkId: 1,
-    image_url: 'https://lh3.googleusercontent.com/U6Yllvrowd7Hbp9c0SKNM0qGXJrp4JKt6ZtlKcslGcs0jhSOUzkjvXhEecz-YfFxlTkl53REmKDy4oIU2yPa0SlmqTsHkeMioF0u=s168',
+    image_url: 'https://lh3.googleusercontent.com/K3przaQ8611YP5QQ-MH_tK4aa46WksIIjg2uIka4oq4sexLGrKJRGOy-chgfZzafKLHOUciismnz_go-20iTBoUkhydVhRlJMLodAfg=s168',
     lendingPools: [
       {
         address: '0xD0A48e3a6A0b81bDA1d3d01C3E8b53AC41C64fBf',
