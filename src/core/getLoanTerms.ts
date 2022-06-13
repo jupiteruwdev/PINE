@@ -42,7 +42,7 @@ export default async function getLoanTerms({ blockchain, collectionId, nftId }: 
 
     const loanTerms: LoanTerms = {
       // TODO: remove hack!
-      routerAddress: contract.poolVersion === 2 ? routerAddresses[Number(blockchain.networkId)] : undefined,
+      routerAddress: contract.poolVersion === 2 ? routerAddresses(Number(blockchain.networkId), pool.address) : undefined,
       valuation,
       signature,
       options: pool.loanOptions,

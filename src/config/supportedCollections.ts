@@ -5,7 +5,11 @@ import Fee from "../entities/lib/Fee"
 import { $ETH } from "../entities/lib/Value"
 
 // TODO: remove hack!
-export const routerAddresses : { [key: number]: any } = { 4: '0xFC6c6e4727DA5E1bF79aC9C96155B4cD2faC54E6', 1: '0x774badBc759234Bff52B0Be11bF61Bb68c9E9A24' }
+export const routerAddresses = (x: number, poolAddress: string) => {
+  const y  : { [key: number]: any } = { 4: '0xFC6c6e4727DA5E1bF79aC9C96155B4cD2faC54E6', 1: '0x774badBc759234Bff52B0Be11bF61Bb68c9E9A24' }
+  if (poolAddress.toLowerCase() === '0x609fee5870739611fea720ad5d86be458b47596a') return '0x1E23F78896F6d4F0e25D7bcD49bb2f7eee62EF98'
+}
+
 
 export const rolloverAddresses : { [key: number]: any } = { 4:'0xC796d62fB1927a13D7E41eBd0c8eA80fdA5Ef80a', 1: '0x239f1818f21ebac47306ffa690016aa6a8882a59' }
 
@@ -82,6 +86,46 @@ export const supportedCollections: { [key: string]: any } = {
             interest_bps_block: 0.00138,
             interest_bps_block_override: 0.000172,
             max_ltv_bps: 5000,
+          },
+        ],
+      },
+    ],
+  },
+  'opensea:fatcatsgenesis': {
+    display_name: 'Fat Cats Genesis',
+    address: '0xedf6d3c3664606fe9ee3a9796d5cc75e3b16e682',
+    networkType: 'ethereum',
+    networkId: 1,
+    image_url: 'https://lh3.googleusercontent.com/U6Yllvrowd7Hbp9c0SKNM0qGXJrp4JKt6ZtlKcslGcs0jhSOUzkjvXhEecz-YfFxlTkl53REmKDy4oIU2yPa0SlmqTsHkeMioF0u=s168',
+    lendingPools: [
+      {
+        address: '0x609fee5870739611fea720ad5d86be458b47596a',
+        loan_options: [
+          {
+            loan_duration_block: 86388,
+            loan_duration_second: 1209600,
+            interest_bps_block: 0.000888,
+            max_ltv_bps: 5000,
+          },
+        ],
+      },
+    ],
+  },
+  'opensea:lobsterdao': {
+    display_name: 'lobsterdao',
+    address: '0x026224a2940bfe258d0dbe947919b62fe321f042',
+    networkType: 'ethereum',
+    networkId: 1,
+    image_url: 'https://lh3.googleusercontent.com/U6Yllvrowd7Hbp9c0SKNM0qGXJrp4JKt6ZtlKcslGcs0jhSOUzkjvXhEecz-YfFxlTkl53REmKDy4oIU2yPa0SlmqTsHkeMioF0u=s168',
+    lendingPools: [
+      {
+        address: '0xD0A48e3a6A0b81bDA1d3d01C3E8b53AC41C64fBf',
+        loan_options: [
+          {
+            loan_duration_block: 86388,
+            loan_duration_second: 1209600,
+            interest_bps_block: 0.000600,
+            max_ltv_bps: 3500,
           },
         ],
       },
