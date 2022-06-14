@@ -1,8 +1,7 @@
 import { Router } from 'express'
 import getActiveLoanStatsByCollection from '../core/getActiveLoanStatsByCollection'
 import getObligations from '../core/getObligations'
-import { EthBlockchain, serializeActiveLoanStats, serializeEntityArray } from '../entities'
-import { serializeNFTs } from '../entities/build/NFT'
+import { EthBlockchain, serializeActiveLoanStats, serializeEntityArray, serializeNFT } from '../entities'
 import failure from '../utils/failure'
 import { getBlockchain, getString } from '../utils/query'
 import tryOrUndefined from '../utils/tryOrUndefined'
@@ -14,7 +13,7 @@ router.get('/', async (req, res, next) => {
     const borrowerAddress = getString(req.query, 'owner')
     const blockchain = getBlockchain(req.query)
     const obligations = await getObligations({ blockchain, borrowerAddress })
-    const payload = serializeNFTs(obligations)
+    const payload = serializeEntityArray(obligations, serializeNFT)
 
     res.status(200).json(payload)
   }
