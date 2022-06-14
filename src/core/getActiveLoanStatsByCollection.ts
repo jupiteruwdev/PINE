@@ -1,10 +1,7 @@
 import _ from 'lodash'
 import appConf from '../app.conf'
 import { findAll as findAllPools } from '../db/pools'
-import ActiveLoanStat from '../entities/lib/ActiveLoanStat'
-import Blockchain from '../entities/lib/Blockchain'
-import Pool from '../entities/lib/Pool'
-import { $ETH } from '../entities/lib/Value'
+import { $ETH, ActiveLoanStats, Blockchain, Pool } from '../entities'
 import { getActiveLoansForPools } from '../subgraph/request'
 import getRequest from '../utils/getRequest'
 
@@ -20,7 +17,7 @@ type ActiveLoan = {
   borrower: string
 }
 
-export default async function getObligation({ collectionAddress, blockchain }: Params) {
+export default async function getActiveLoanStatsByCollection({ collectionAddress, blockchain }: Params) {
   const pools = await findAllPools({ collectionAddress })
 
   const addresses = _.reduce(pools, (prev: string[], cur: Pool) => {
@@ -30,7 +27,7 @@ export default async function getObligation({ collectionAddress, blockchain }: P
 
   const { loans }: { loans: ActiveLoan[] } = await getActiveLoansForPools({ pools: addresses })
   const promises: Promise<any>[] = []
-  const result: ActiveLoanStat[] = []
+  const result: ActiveLoanStats[] = []
 
   _.map(loans, ((loan: ActiveLoan) => {
     const contractAddress = loan.id.split('/')[0]

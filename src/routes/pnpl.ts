@@ -1,6 +1,6 @@
 import { Router } from 'express'
 import getPNPLTermsByUrl from '../core/getPNPLTermsByUrl'
-import { serializePNPLTerms } from '../entities/lib/PNPLTerms'
+import { serializePNPLTerms } from '../entities'
 import failure from '../utils/failure'
 import { getString } from '../utils/query'
 

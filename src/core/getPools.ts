@@ -1,9 +1,5 @@
 import { findAll as findAllPools } from '../db/pools'
-import { BlockchainFilter } from '../entities/lib/Blockchain'
-import EthereumNetwork from '../entities/lib/EthereumNetwork'
-import Pool from '../entities/lib/Pool'
-import SolanaNetwork from '../entities/lib/SolanaNetwork'
-import { $ETH } from '../entities/lib/Value'
+import { $ETH, BlockchainFilter, EthereumNetwork, Pool, SolanaNetwork } from '../entities'
 import getPoolCapacity from './getPoolCapacity'
 import getPoolUtilization from './getPoolUtilization'
 

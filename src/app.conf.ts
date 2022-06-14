@@ -1,5 +1,5 @@
 import 'dotenv/config'
-import EthereumNetwork from './entities/lib/EthereumNetwork'
+import { EthereumNetwork } from './entities'
 
 export default {
   env: process.env.NODE_ENV ?? 'development',

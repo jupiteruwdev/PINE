@@ -1,7 +1,6 @@
 import _ from 'lodash'
 import appConf from '../app.conf'
-import Blockchain from '../entities/lib/Blockchain'
-import Valuation from '../entities/lib/Valuation'
+import { Blockchain, Valuation } from '../entities'
 import { getEthBlockNumber, getEthWeb3 } from '../utils/ethereum'
 import failure from '../utils/failure'
 import getPoolContract from './getPoolContract'

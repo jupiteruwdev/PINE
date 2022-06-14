@@ -1,6 +1,6 @@
 import { Router } from 'express'
 import getNFTsByOwner from '../core/getNFTsByOwner'
-import { serializeNFTs } from '../entities/lib/NFT'
+import { serializeNFTs } from '../entities/build/NFT'
 import failure from '../utils/failure'
 import { getBlockchain, getString } from '../utils/query'
 

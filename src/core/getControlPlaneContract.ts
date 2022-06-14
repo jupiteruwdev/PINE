@@ -1,5 +1,5 @@
 import ControlPlaneABI from '../abis/ControlPlane.json'
-import Blockchain from '../entities/lib/Blockchain'
+import { Blockchain } from '../entities'
 import { getEthWeb3 } from '../utils/ethereum'
 import failure from '../utils/failure'
 

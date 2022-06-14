@@ -1,6 +1,6 @@
 import { Router } from 'express'
-import getAggregatedPools from '../core/getAggregatedPools'
-import { serializeAggregatedPool } from '../entities/lib/AggregatedPool'
+import getPoolGroupStats from '../core/getPoolGroupStats'
+import { serializePoolGroupStats } from '../entities'
 import failure from '../utils/failure'
 import { getBlockchainFilter } from '../utils/query'
 
@@ -10,12 +10,12 @@ router.get('/:collectionAddress/pools', async (req, res, next) => {
   try {
     const collectionAddress = req.params.collectionAddress
     const blockchainFilter = getBlockchainFilter(req.query, true)
-    const pools = await getAggregatedPools({ blockchainFilter, collectionAddress })
-    const payload = serializeAggregatedPool(pools[0])
+    const pools = await getPoolGroupStats({ blockchainFilter, collectionAddress })
+    const payload = serializePoolGroupStats(pools[0])
     res.status(200).json(payload)
   }
   catch (err) {
-    next(failure('FETCH_AGGREGATED_POOLS_FAILURE', err))
+    next(failure('FETCH_POOL_GROUP_STATS_FAILURE', err))
   }
 })
 

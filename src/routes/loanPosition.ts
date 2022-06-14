@@ -1,7 +1,7 @@
 import { Router } from 'express'
 import _ from 'lodash'
 import getLoanPosition from '../core/getLoanPosition'
-import { serializeLoanPosition } from '../entities/lib/LoanPosition'
+import { serializeLoanPosition } from '../entities'
 import failure from '../utils/failure'
 import { getBlockchain, getString } from '../utils/query'
 
