@@ -3,7 +3,7 @@ import { BlockchainFilter, EthBlockchain } from '../entities/lib/Blockchain'
 import EthereumNetwork from '../entities/lib/EthereumNetwork'
 import GlobalStats from '../entities/lib/GlobalStats'
 import SolanaNetwork from '../entities/lib/SolanaNetwork'
-import { $USD } from '../entities/lib/Value'
+import { $ETH, $USD } from '../entities/lib/Value'
 import { getEthValueUSD } from '../utils/ethereum'
 import failure from '../utils/failure'
 import logger from '../utils/logger'
@@ -31,11 +31,11 @@ export default async function getGlobalStats({ blockchainFilter = { ethereum: Et
     const totalCapacityUSD = totalValueLockedUSD.minus(totalUtilizationUSD)
 
     const lentEthPerPool = await Promise.all(pools.map(pool => getPoolHistoricalLent({ blockchain: EthBlockchain(blockchainFilter), poolAddress: pool.address })))
-    const totalLentlUSD = lentEthPerPool.reduce((p, c) => p.plus(c.amount), new BigNumber(0)).times(ethValueUSD.amount)
+    const totalLentETH = lentEthPerPool.reduce((p, c) => p.plus(c.amount), new BigNumber(0))
 
     const globalStats: GlobalStats = {
       capacity: $USD(totalCapacityUSD),
-      totalValueLentHistorical: $USD(totalLentlUSD),
+      totalValueLentHistorical: $ETH(totalLentETH),
       totalValueLocked: $USD(totalValueLockedUSD),
       utilization: $USD(totalUtilizationUSD),
       utilizationRatio: totalUtilizationUSD.div(totalValueLockedUSD),
