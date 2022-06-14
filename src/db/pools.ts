@@ -103,6 +103,19 @@ export async function findOne({ address, collectionAddress, collectionId, blockc
     id: matchedId,
   })
 
+  if (address) {
+    for (const lendingPool of _.get(data, 'lendingPools', [])) {
+      if (lendingPool.address.toLowerCase() === address.toLowerCase()) {
+        const pool = await getPoolContract({ blockchain, poolAddress: lendingPool.address })
+        return mapPool({
+          version: pool.poolVersion,
+          ...lendingPool,
+          collection,
+          blockchain,
+        })
+      }
+    }
+  }
   for (const lendingPool of _.get(data, 'lendingPools', [])) {
     const pool = await getPoolContract({ blockchain, poolAddress: lendingPool.address })
     if (!includeRetired && lendingPool.retired) continue
