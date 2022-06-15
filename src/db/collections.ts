@@ -4,10 +4,7 @@
 
 import _ from 'lodash'
 import { supportedCollections } from '../config/supportedCollections'
-import Blockchain, { BlockchainFilter, EthBlockchain } from '../entities/lib/Blockchain'
-import Collection from '../entities/lib/Collection'
-import EthereumNetwork from '../entities/lib/EthereumNetwork'
-import SolanaNetwork from '../entities/lib/SolanaNetwork'
+import { Blockchain, BlockchainFilter, Collection, EthBlockchain, EthereumNetwork, SolanaNetwork } from '../entities'
 
 type FindOneFilter = {
   address?: string

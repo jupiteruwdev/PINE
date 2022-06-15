@@ -1,6 +1,5 @@
 import ERC721EnumerableABI from '../abis/ERC721Enumerable.json'
-import Blockchain from '../entities/lib/Blockchain'
-import { NFTMetadata } from '../entities/lib/NFT'
+import { Blockchain, NFTMetadata } from '../entities'
 import { getEthWeb3 } from '../utils/ethereum'
 import failure from '../utils/failure'
 import getRequest from '../utils/getRequest'

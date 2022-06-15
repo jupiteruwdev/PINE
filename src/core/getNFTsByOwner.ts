@@ -1,7 +1,4 @@
-import Blockchain from '../entities/lib/Blockchain'
-import Collection from '../entities/lib/Collection'
-import EthereumNetwork from '../entities/lib/EthereumNetwork'
-import NFT from '../entities/lib/NFT'
+import { Blockchain, Collection, EthereumNetwork, NFT } from '../entities'
 import failure from '../utils/failure'
 import getEthMainnetNFTsByOwner from './getEthMainnetNFTsByOwner'
 import getEthTestnetNFTsByOwner from './getEthTestnetNFTsByOwner'

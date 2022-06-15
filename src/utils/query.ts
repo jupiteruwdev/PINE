@@ -1,6 +1,6 @@
 import { Request } from 'express'
 import _ from 'lodash'
-import Blockchain, { AnyBlockchain, BlockchainFilter, EthBlockchain, SolBlockchain } from '../entities/lib/Blockchain'
+import { AnyBlockchain, Blockchain, BlockchainFilter, EthBlockchain, SolBlockchain } from '../entities'
 import { parseEthNetworkId } from './ethereum'
 import failure from './failure'
 

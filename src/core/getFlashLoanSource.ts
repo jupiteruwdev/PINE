@@ -1,7 +1,6 @@
 import _ from 'lodash'
 import appConf from '../app.conf'
-import Blockchain from '../entities/lib/Blockchain'
-import Value, { $ETH } from '../entities/lib/Value'
+import { $ETH, Blockchain, Value } from '../entities'
 import failure from '../utils/failure'
 import getPoolCapacity from './getPoolCapacity'
 import getPoolContract from './getPoolContract'

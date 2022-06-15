@@ -1,9 +1,5 @@
 import _ from 'lodash'
-import AggregatedPool from '../entities/lib/AggregatedPool'
-import Blockchain, { BlockchainFilter } from '../entities/lib/Blockchain'
-import EthereumNetwork from '../entities/lib/EthereumNetwork'
-import SolanaNetwork from '../entities/lib/SolanaNetwork'
-import { $USD } from '../entities/lib/Value'
+import { $USD, Blockchain, BlockchainFilter, EthereumNetwork, PoolGroupStats, SolanaNetwork } from '../entities'
 import { getEthValueUSD } from '../utils/ethereum'
 import logger from '../utils/logger'
 import getEthCollectionFloorPrice from './getEthCollectionFloorPrice'
@@ -16,12 +12,12 @@ type Params = {
   count?: number
 }
 
-export default async function getAggregatedPools({ blockchainFilter = { ethereum: EthereumNetwork.MAIN, solana: SolanaNetwork.MAINNET }, collectionAddress, offset, count }: Params) {
-  logger.info(`Fetching aggregated pools with blockchain filter <${JSON.stringify(blockchainFilter)}>...`)
+export default async function getPoolGroupStats({ blockchainFilter = { ethereum: EthereumNetwork.MAIN, solana: SolanaNetwork.MAINNET }, collectionAddress, offset, count }: Params) {
+  logger.info(`Fetching pool group stats with blockchain filter <${JSON.stringify(blockchainFilter)}>...`)
 
   const [ethValueUSD, pools] = await Promise.all([getEthValueUSD(), getPools({ blockchainFilter, collectionAddress, offset, count })])
 
-  const aggregatedPools: AggregatedPool[] = _.compact(pools.map(pool => {
+  const stats: PoolGroupStats[] = _.compact(pools.map(pool => {
     if (!pool.collection) return undefined
 
     return {
@@ -32,7 +28,7 @@ export default async function getAggregatedPools({ blockchainFilter = { ethereum
     }
   }))
 
-  const floorPricesRes = await Promise.allSettled(aggregatedPools.map(pool => {
+  const floorPricesRes = await Promise.allSettled(stats.map(pool => {
     switch (pool.collection.blockchain.network) {
     case 'ethereum':
       return getEthCollectionFloorPrice({
@@ -45,11 +41,11 @@ export default async function getAggregatedPools({ blockchainFilter = { ethereum
   }))
 
   const out = floorPricesRes.map((res, i) => ({
-    ...aggregatedPools[i],
+    ...stats[i],
     floorPrice: res?.status === 'fulfilled' ? res.value : undefined,
   }))
 
-  logger.info('Fetching aggregated pools... OK', out)
+  logger.info('Fetching pool group stats... OK', out)
 
   return out
 }
