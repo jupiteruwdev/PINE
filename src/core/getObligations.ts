@@ -1,9 +1,9 @@
-import axios from 'axios'
 import _ from 'lodash'
 import { findOne as findOneCollection } from '../db/collections'
 import { findAll as findAllPools } from '../db/pools'
-import { Blockchain, EthereumNetwork, NFT } from '../entities'
+import { Blockchain, EthereumNetwork } from '../entities'
 import { CollateralizedNFT } from '../entities/lib/CollateralizedNFT'
+import { getOpenLoan } from '../subgraph/request'
 import failure from '../utils/failure'
 import getLoanEvent from './getLoanEvent'
 import getNFTMetadata from './getNFTMetadata'
@@ -14,27 +14,10 @@ type Params = {
   borrowerAddress: string
 }
 
-const APIURL = 'https://api.thegraph.com/subgraphs/name/pinedefi/open-loans'
-
-const tokensQuery = (borrower: string) => (
-  {
-    operationName: 'openLoans',
-    query: `query {
-      loans(where: {borrower: "${borrower}"}) {
-        erc721
-        id
-        pool
-        loanExpiretimestamp
-      }
-    }`,
-    variables: {},
-  }
-)
-
 export default async function getObligations({ blockchain, borrowerAddress }: Params) {
   let nfts: CollateralizedNFT[]
   if (blockchain.networkId === EthereumNetwork.MAIN) {
-    const { data: { data: { loans } } } = await axios.post(APIURL, tokensQuery(borrowerAddress))
+    const { loans } = await getOpenLoan({ borrower: borrowerAddress })
 
     nfts = await Promise.all(loans.map(async (loan: any) => ({
       collection: await findOneCollection({ address: loan.erc721 }),
