@@ -4,7 +4,7 @@
 
 import BigNumber from 'bignumber.js'
 import _ from 'lodash'
-import { defaultFees, supportedCollections } from '../config/supportedCollections'
+import { defaultFees } from '../config/supportedCollections'
 import getPoolContract from '../core/getPoolContract'
 import { Blockchain, BlockchainFilter, EthBlockchain, EthereumNetwork, LoanOption, Pool, SolanaNetwork } from '../entities'
 import failure from '../utils/failure'
@@ -30,11 +30,11 @@ type FindAllFilter = {
 // TODO: remove version param when pool is moved into loan optiom
 function mapLoanOption(data: Record<string, any>, version: number, poolAddress: string): LoanOption {
   try {
-    const interestBPSPerBlock = new BigNumber(_.get(data, 'interest_bps_block'))
-    const interestBPSPerBlockOverride = _.get(data, 'interest_bps_block_override') === undefined ? undefined : new BigNumber(_.get(data, 'interest_bps_block_override'))
-    const loanDurationBlocks = _.toNumber(_.get(data, 'loan_duration_block'))
-    const loanDurationSeconds = _.toNumber(_.get(data, 'loan_duration_second'))
-    const maxLTVBPS = new BigNumber(_.get(data, 'max_ltv_bps'))
+    const interestBPSPerBlock = new BigNumber(_.get(data, 'interestBpsBlock'))
+    const interestBPSPerBlockOverride = _.get(data, 'interestBpsBlockOverride') === undefined ? undefined : new BigNumber(_.get(data, 'interestBpsBlockOverride'))
+    const loanDurationBlocks = _.toNumber(_.get(data, 'loanDurationBlock'))
+    const loanDurationSeconds = _.toNumber(_.get(data, 'loanDurationSecond'))
+    const maxLTVBPS = new BigNumber(_.get(data, 'maxLtvBps'))
     const fees = defaultFees('ETH', version, poolAddress)
 
     return {
@@ -56,7 +56,7 @@ function mapPool(data: Record<string, any>): Pool {
   const address = _.get(data, 'address')
   const blockchain = _.get(data, 'blockchain')
   const collection = _.get(data, 'collection')
-  const loanOptions = _.get(data, 'loan_options', []).map((t: any) => mapLoanOption(t, version, address))
+  const loanOptions = _.get(data, 'loanOptions', []).map((t: any) => mapLoanOption(t, version, address))
 
   if (!_.isString(address)) throw TypeError('Failed to map key "address"')
   if (!blockchain) throw TypeError('Failed to map key "blockchain"')
@@ -80,45 +80,34 @@ function mapPool(data: Record<string, any>): Pool {
  * @returns The pool if there is a match, `undefined` otherwise.
  */
 export async function findOne({ address, collectionAddress, collectionId, blockchain = EthBlockchain(), includeRetired = false }: FindOneFilter = {}): Promise<Pool | undefined> {
-  const rawData = supportedCollections
-  const matchedId = _.findKey(rawData, (val, key) => {
-    if (collectionId !== undefined && collectionId !== key) return false
-    if (collectionAddress !== undefined && _.get(val, 'address')?.toLowerCase() !== collectionAddress.toLowerCase()) return false
-    if (_.get(val, 'networkType') !== blockchain.network) return false
-    if (_.toString(_.get(val, 'networkId')) !== blockchain.networkId) return false
-    if (address !== undefined && !_.get(val, 'lendingPools').some((e: any) => e.address.toLowerCase() === address.toLowerCase())) return false
-    return true
-  })
+  const collection = await collections.findOneOrigin({ address: collectionAddress, blockchain, id: collectionId, poolAddress: address })
+  if (collection === undefined) return undefined
 
-  if (!matchedId) return undefined
-
-  const data = rawData[matchedId]
-
-  const collection = collections.mapCollection({
-    ...data,
-    id: matchedId,
+  const collectionMap = collections.mapCollection({
+    ...collection,
+    id: collections.getCollectionVendorId(collection),
   })
 
   if (address) {
-    for (const lendingPool of _.get(data, 'lendingPools', [])) {
+    for (const lendingPool of _.get(collection, 'lendingPools', [])) {
       if (lendingPool.address.toLowerCase() === address.toLowerCase()) {
         const pool = await getPoolContract({ blockchain, poolAddress: lendingPool.address })
         return mapPool({
           version: pool.poolVersion,
           ...lendingPool,
-          collection,
+          collection: collectionMap,
           blockchain,
         })
       }
     }
   }
-  for (const lendingPool of _.get(data, 'lendingPools', [])) {
+  for (const lendingPool of _.get(collection, 'lendingPools', [])) {
     const pool = await getPoolContract({ blockchain, poolAddress: lendingPool.address })
     if (!includeRetired && lendingPool.retired) continue
     return mapPool({
       version: pool.poolVersion,
       ...lendingPool,
-      collection,
+      collection: collectionMap,
       blockchain,
     })
   }
@@ -133,37 +122,30 @@ export async function findOne({ address, collectionAddress, collectionId, blockc
  * @returns Array of pools.
  */
 export async function findAll({ collectionAddress, collectionId, blockchainFilter = { ethereum: EthereumNetwork.MAIN, solana: SolanaNetwork.MAINNET }, includeRetired = false, offset, count }: FindAllFilter = {}): Promise<Pool[]> {
-  const rawData = supportedCollections
   const pools: Pool[] = []
 
   if (blockchainFilter.ethereum !== undefined) {
     const blockchain = EthBlockchain(blockchainFilter.ethereum)
+    const collectionData = await collections.findAllOrigin({ blockchainFilter })
 
-    for (const key in rawData) {
-      if (!rawData.hasOwnProperty(key)) continue
-
-      if (collectionId !== undefined && collectionId !== key) continue
-
-      const data = rawData[key]
-
-      if (_.get(data, 'networkType') !== blockchain.network) continue
-      if (_.toString(_.get(data, 'networkId')) !== blockchain.networkId) continue
-
-      const collection = collections.mapCollection({
-        ...data,
-        id: key,
+    for (const collection of collectionData) {
+      const vendorId = collections.getCollectionVendorId(collection)
+      const collectionMap = collections.mapCollection({
+        ...collection,
+        id: vendorId,
       })
 
       if (collectionAddress !== undefined && collectionAddress.toLowerCase() !== collection.address.toLowerCase()) continue
+      if (collectionId !== undefined && collectionId !== vendorId) continue
 
       // identify if multi-pool or single-pool
-      for (const lendingPool of _.get(data, 'lendingPools', [])) {
+      for (const lendingPool of _.get(collection, 'lendingPools', [])) {
         const pool = await getPoolContract({ blockchain, poolAddress: lendingPool.address })
         if (!includeRetired && lendingPool.retired) continue
         pools.push(mapPool({
           version: pool.poolVersion,
           ...lendingPool,
-          collection,
+          collection: collectionMap,
           blockchain,
         }))
       }
