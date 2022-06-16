@@ -22,6 +22,12 @@ export const repayRouterAddresses = (x: number, poolAddress: string) => {
 }
 
 export const defaultFees = (currency: AnyCurrency, poolVersion: number, poolAddress: string): Fee[] => {
+  if (poolAddress.toLowerCase() === '0x609fee5870739611fea720ad5d86be458b47596a') return [
+    {
+      type: 'percentage',
+      value: 0.0035,
+    }
+  ]
   if (currency === 'ETH' && poolVersion > 1) return [
     {
       type: 'fixed',
