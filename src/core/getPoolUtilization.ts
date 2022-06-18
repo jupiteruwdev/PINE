@@ -1,5 +1,4 @@
-import Blockchain from '../entities/lib/Blockchain'
-import Value, { $ETH } from '../entities/lib/Value'
+import { $ETH, Blockchain, Value } from '../entities'
 import { getPool } from '../subgraph/request'
 import { getEthWeb3 } from '../utils/ethereum'
 import failure from '../utils/failure'

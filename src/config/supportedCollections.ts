@@ -1,8 +1,7 @@
 /* eslint-disable */
 
-import Currency, { AnyCurrency } from "../entities/lib/Currency"
-import Fee from "../entities/lib/Fee"
-import { $ETH } from "../entities/lib/Value"
+import { $ETH, AnyCurrency, Fee } from '../entities'
+
 
 // TODO: remove hack!
 export const routerAddresses = (x: number, poolAddress: string) => {
@@ -38,7 +37,7 @@ export const defaultFees = (currency: AnyCurrency, poolVersion: number, poolAddr
       value: 0.0035,
     }
   ]
-  
+
   return []
 }
 
@@ -462,7 +461,7 @@ export const supportedCollections: { [key: string]: any } = {
             max_ltv_bps: 4000,
           },
         ],
-      },      
+      },
     ],
   },
   'opensea:onchainmonkey': {

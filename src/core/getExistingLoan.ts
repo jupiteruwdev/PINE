@@ -1,10 +1,9 @@
 import axios from 'axios'
 import { findOne as findOneCollection } from '../db/collections'
-import getLoanPosition from './getLoanPosition'
-import Blockchain from '../entities/lib/Blockchain'
-import EthereumNetwork from '../entities/lib/EthereumNetwork'
+import { Blockchain, EthereumNetwork } from '../entities'
 import failure from '../utils/failure'
 import logger from '../utils/logger'
+import getLoanPosition from './getLoanPosition'
 
 type Params = {
   blockchain: Blockchain

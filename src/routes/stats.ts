@@ -1,6 +1,6 @@
 import { Router } from 'express'
 import getGlobalStats from '../core/getGlobalStats'
-import { serializeGlobalStats } from '../entities/lib/GlobalStats'
+import { serializeGlobalStats } from '../entities'
 import failure from '../utils/failure'
 import { getBlockchainFilter } from '../utils/query'
 

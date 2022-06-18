@@ -1,11 +1,9 @@
 import { Router } from 'express'
-import getAggregatedPools from '../core/getAggregatedPools'
 import getPool from '../core/getPool'
+import getPoolGroupStats from '../core/getPoolGroupStats'
 import getPools from '../core/getPools'
 import { findAll as findAllCollections } from '../db/collections'
-import { serializeAggregatedPools } from '../entities/lib/AggregatedPool'
-import { serializePagination } from '../entities/lib/Pagination'
-import { serializePool, serializePools } from '../entities/lib/Pool'
+import { serializeEntityArray, serializePagination, serializePool, serializePoolGroupStats } from '../entities'
 import failure from '../utils/failure'
 import { getBlockchain, getBlockchainFilter, getNumber, getString } from '../utils/query'
 import tryOrUndefined from '../utils/tryOrUndefined'
@@ -26,21 +24,21 @@ router.get('/', async (req, res, next) => {
       offset,
       count,
     })
-    const payload = serializePools(pools)
+    const payload = serializeEntityArray(pools, serializePool)
     const nextOffset = (offset ?? 0) + pools.length
     const pagination = serializePagination({ data: payload, totalCount, nextOffset: nextOffset === totalCount - 1 ? undefined : nextOffset })
     res.status(200).json(pagination)
   }
   else {
     try {
-      const pools = await getAggregatedPools({ blockchainFilter, count, offset })
-      const payload = serializeAggregatedPools(pools)
+      const pools = await getPoolGroupStats({ blockchainFilter, count, offset })
+      const payload = serializeEntityArray(pools, serializePoolGroupStats)
       const nextOffset = (offset ?? 0) + pools.length
       const pagination = serializePagination({ data: payload, totalCount, nextOffset: nextOffset === totalCount - 1 ? undefined : nextOffset })
       res.status(200).json(pagination)
     }
     catch (err) {
-      next(failure('FETCH_AGGREGATED_POOLS_FAILURE', err))
+      next(failure('FETCH_POOL_GROUP_STATS_FAILURE', err))
     }
   }
 })

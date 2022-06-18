@@ -1,11 +1,9 @@
-import { findOne as findOneCollection } from '../db/collections'
-import { EthBlockchain } from '../entities/lib/Blockchain'
-import EthereumNetwork from '../entities/lib/EthereumNetwork'
-import PNPLTerms from '../entities/lib/PNPLTerms'
-import failure from '../utils/failure'
 import Web3 from 'web3'
-import getOpenseaPNPLTerms from './getOpenseaPNPLTerms'
+import { findOne as findOneCollection } from '../db/collections'
+import { EthBlockchain, EthereumNetwork, PNPLTerms } from '../entities'
+import failure from '../utils/failure'
 import getLooksrarePNPLTerms from './getLooksrarePNPLTerms'
+import getOpenseaPNPLTerms from './getOpenseaPNPLTerms'
 
 type Params = {
   parsedURL: URL

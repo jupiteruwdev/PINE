@@ -1,6 +1,5 @@
 import BigNumber from 'bignumber.js'
-import Blockchain from '../entities/lib/Blockchain'
-import Value, { $ETH } from '../entities/lib/Value'
+import { $ETH, Blockchain, Value } from '../entities'
 import { getEthWeb3 } from '../utils/ethereum'
 import failure from '../utils/failure'
 import { getPoolHistoricalLoanEvents } from './getPoolHistoricalLoanEvents'

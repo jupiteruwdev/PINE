@@ -1,9 +1,7 @@
 import { assert } from 'chai'
 import { describe, it } from 'mocha'
 import { findAll as findAllCollections } from '../db/collections'
-import { EthBlockchain } from '../entities/lib/Blockchain'
-import EthereumNetwork from '../entities/lib/EthereumNetwork'
-import Value, { isValue } from '../entities/lib/Value'
+import { EthBlockchain, EthereumNetwork, isValue, Value } from '../entities'
 import getEthCollectionFloorPrice from './getEthCollectionFloorPrice'
 
 describe('core/getEthCollectionFloorPrice', () => {
