@@ -63,9 +63,11 @@ export default async function getEthMainnetNFTsByOwner({
 
     if (collectionAddressFilter && collectionAddressFilter.toLowerCase() !== collectionAddress.toLowerCase()) return undefined
 
-    // TODO: Remove this when NFT Portfolio Viewer is implemented.
-    const collection = (await findOneCollection({ address: collectionAddress }))
-    if (!collection) return undefined
+    const collection = (await findOneCollection({ address: collectionAddress })) ?? {
+      address: collectionAddress,
+      blockchain: EthBlockchain(1),
+      id: '',
+    }
 
     let metadata: NFTMetadata | undefined
 
