@@ -26,7 +26,6 @@ export default async function getRolloverTerms({ blockchain, collectionId, nftId
     if (!collection) throw failure('UNSUPPORTED_COLLECTION')
 
     const pool = await findOnePool({ address: existingLoan?.pool, blockchain })
-
     const flashLoanSource = await getFlashLoanSource({ blockchain, poolAddress: existingLoan?.pool })
     if (!pool) throw failure('NO_POOLS_AVAILABLE')
 
