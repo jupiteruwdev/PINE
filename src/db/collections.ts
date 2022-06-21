@@ -45,7 +45,7 @@ export function getCollectionVendorId(data: Record<string, any>): string {
   return `${_.keys(vendorIds)[0]}:${_.values(vendorIds)[0]}`
 }
 
-export async function findOneOrigin({ address, blockchain = EthBlockchain(), id, poolAddress }: FindOneFilter): Promise<Record<string, any> | undefined> {
+export async function findOne({ address, blockchain = EthBlockchain(), id, poolAddress }: FindOneFilter): Promise<Collection | undefined> {
   const collection = await CollectionModel.findOne({
     address,
     networkType: blockchain.network,
@@ -60,21 +60,6 @@ export async function findOneOrigin({ address, blockchain = EthBlockchain(), id,
       if (_.get(collection, ['vendorIds', venue]) !== name) return undefined
     }
 
-    return collection
-  }
-}
-
-/**
- * Finds one supported collection on the platform based on the specified filter.
- *
- * @param filter - See {@link FindOneFilter}.
- *
- * @returns The collection if there is a match, `undefined` otherwise.
- */
-export async function findOne({ address, blockchain = EthBlockchain(), id, poolAddress }: FindOneFilter): Promise<Collection | undefined> {
-  const collection = await findOneOrigin({ address, blockchain, id, poolAddress })
-  if (collection) {
-
     return mapCollection({
       ...collection,
       id: getCollectionVendorId(collection),
@@ -82,7 +67,9 @@ export async function findOne({ address, blockchain = EthBlockchain(), id, poolA
   }
 }
 
-export async function findAllOrigin({ blockchainFilter = { ethereum: EthereumNetwork.MAIN, solana: SolanaNetwork.MAINNET } }: FindAllFilter = {}): Promise<Record<string, any>[]> {
+export async function findAll({ blockchainFilter = { ethereum: EthereumNetwork.MAIN, solana: SolanaNetwork.MAINNET } }: FindAllFilter = {}): Promise<Collection[]> {
+  const collections: Collection[] = []
+
   if (blockchainFilter.ethereum !== undefined) {
     const blockchain = EthBlockchain(blockchainFilter.ethereum)
 
@@ -91,30 +78,13 @@ export async function findAllOrigin({ blockchainFilter = { ethereum: EthereumNet
       networkId: blockchain.networkId,
     }).lean().exec()
 
-    return collectionData
+    collectionData.forEach(collection => {
+      collections.push(mapCollection({
+        ...collection,
+        id: getCollectionVendorId(collection),
+      }))
+    })
   }
-
-  return []
-}
-
-/**
- * Finds all supported collections on the platform. If no filters are provided, all collection will
- * be returned in the default networks of all blockchains.
- *
- * @param filter - See {@link FindAllFilter}.
- *
- * @returns Array of collections.
- */
-export async function findAll({ blockchainFilter = { ethereum: EthereumNetwork.MAIN, solana: SolanaNetwork.MAINNET } }: FindAllFilter = {}): Promise<Collection[]> {
-  const collections: Collection[] = []
-  const collectionData = await findAllOrigin({ blockchainFilter })
-
-  collectionData.forEach(collection => {
-    collections.push(mapCollection({
-      ...collection,
-      id: getCollectionVendorId(collection),
-    }))
-  })
 
   return collections
 }
