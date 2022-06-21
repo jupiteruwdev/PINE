@@ -54,7 +54,7 @@ export default async function getEthMainnetNFTsByOwner({
     },
   })
 
-  const nfts: (NFT | undefined)[] = await Promise.all(result.map(async (value: any) => {
+  const nfts: (NFT | undefined)[] = await Promise.all(result.map(async (value: any): Promise<(NFT | undefined)> => {
     const collectionAddress = value.token_address
     if (!collectionAddress) return undefined
 
@@ -63,7 +63,8 @@ export default async function getEthMainnetNFTsByOwner({
 
     if (collectionAddressFilter && collectionAddressFilter.toLowerCase() !== collectionAddress.toLowerCase()) return undefined
 
-    const collection = (await findOneCollection({ address: collectionAddress })) ?? {
+    const collectionFromDB = await findOneCollection({ address: collectionAddress })
+    const collection = collectionFromDB ?? {
       address: collectionAddress,
       blockchain: EthBlockchain(1),
       id: '',
@@ -103,8 +104,9 @@ export default async function getEthMainnetNFTsByOwner({
       ownerAddress: value.owner_of,
       name: `#${value.token_id}`,
       ...metadata ?? {},
+      isSupported: !!collectionFromDB,
     }
   }))
 
-  return _.compact(nfts)
+  return _.compact(nfts).sort((a, b) => a.isSupported ? -1 : 1)
 }

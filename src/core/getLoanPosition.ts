@@ -54,6 +54,7 @@ export default async function getLoanPosition({ blockchain, collectionId, nftId,
         id: nftId,
         ownerAddress: pool.address,
         ...await getNFTMetadata({ blockchain, collectionAddress: collection.address, nftId }),
+        isSupported: true,
       }
 
       return {

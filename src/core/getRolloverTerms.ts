@@ -24,15 +24,16 @@ export default async function getRolloverTerms({ blockchain, collectionId, nftId
   case 'ethereum': {
     const collection = await findOneCollection({ id: collectionId, blockchain })
     if (!collection) throw failure('UNSUPPORTED_COLLECTION')
-    console.log(existingLoan?.pool)
+
     const pool = await findOnePool({ address: existingLoan?.pool, blockchain })
-    console.log(pool)
+
     const flashLoanSource = await getFlashLoanSource({ blockchain, poolAddress: existingLoan?.pool })
     if (!pool) throw failure('NO_POOLS_AVAILABLE')
 
     const nft: NFT = {
       collection,
       id: nftId,
+      isSupported: true,
       ...await getNFTMetadata({ blockchain, collectionAddress: collection.address, nftId }),
     }
 
