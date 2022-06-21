@@ -221,6 +221,27 @@ export const supportedCollections: { [key: string]: any } = {
       },
     ]
   },
+  'opensea:adam-bomb-squad': {
+    display_name: 'Adam Bomb Squad',
+    address: '0x7ab2352b1d2e185560494d5e577f9d3c238b78c5',
+    networkType: 'ethereum',
+    networkId: 1,
+    image_url: 'https://img-ae.seadn.io/https%3A%2F%2Flh3.googleusercontent.com%2FAFLfluhz2BbvfAUDmTdZzZKvF-wETqzYFZUefPJIw9tO9uXiqftaznKxpgUobXFQqpmG5n2tgAvjbSycubZZ7E89D4K8QbzIFtGWCkY%3Ds10000?fit=max&h=120&w=120&auto=format&s=cc5491b7d98e32a24da4cef0a0a1ec1a',
+    lendingPools: [
+      {
+        address: '0x50Bf32a0248f74aD2d62ae98200Ea8f82d63E0a7',
+        loan_options: [
+          {
+            loan_duration_block: 86388,
+            loan_duration_second: 1209600,
+            interest_bps_block: 0.00140,
+            interest_bps_block_override: 0.000666,
+            max_ltv_bps: 3500,
+          },
+        ],
+      },
+    ]
+  },
   'opensea:murixhaus': {
     display_name: 'MURI by Haus',
     address: '0x4b61413d4392c806e6d0ff5ee91e6073c21d6430',
