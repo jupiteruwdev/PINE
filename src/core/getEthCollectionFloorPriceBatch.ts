@@ -3,7 +3,7 @@ import _ from 'lodash'
 import appConf from '../app.conf'
 import { findOne as findOneCollection } from '../db/collections'
 import { $ETH, BlockchainFilter, EthereumNetwork, SolanaNetwork } from '../entities'
-import CollectionFloorPrice from '../entities/lib/CollectionFloorPrice'
+import { Valuation } from '../entities/lib/Valuation'
 import failure from '../utils/failure'
 import logger from '../utils/logger'
 
@@ -12,7 +12,7 @@ type Params = {
   collectionAddresses: string[]
 }
 
-export default async function getEthCollectionFloorPriceBatch({ blockchainFilter, collectionAddresses }: Params): Promise<CollectionFloorPrice[]> {
+export default async function getEthCollectionFloorPriceBatch({ blockchainFilter, collectionAddresses }: Params): Promise<Valuation[]> {
   logger.info(`Fetching floor price for Ethereum collection <${collectionAddresses}>...`)
 
   const apiKey = appConf.nftbankAPIKey
@@ -46,7 +46,7 @@ export default async function getEthCollectionFloorPriceBatch({ blockchainFilter
           id: '',
           blockchain: { network: 'ethereum', networkId: EthereumNetwork.MAIN },
         },
-        floor: $ETH(_.get(_.find(floorPrices, { 'currency_symbol': 'ETH' }), 'floor_price')),
+        value1DReference: $ETH(_.get(_.find(floorPrices, { 'currency_symbol': 'ETH' }), 'floor_price')),
       }
     })
 
@@ -63,7 +63,7 @@ export default async function getEthCollectionFloorPriceBatch({ blockchainFilter
       else throw failure('UNSUPPORTED_COLLECTION')
       floorPricesRinkeby.push({
         collection,
-        floor: floorPriceRinkeby,
+        value1DReference: floorPriceRinkeby,
       })
     }
     return floorPricesRinkeby

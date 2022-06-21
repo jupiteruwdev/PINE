@@ -3,7 +3,7 @@ import _ from 'lodash'
 import getEthCollectionFloorPriceBatch from '../core/getEthCollectionFloorPriceBatch'
 import getPoolGroupStats from '../core/getPoolGroupStats'
 import { serializeEntityArray, serializePoolGroupStats } from '../entities'
-import { serializeCollectionFloorPrice } from '../entities/lib/CollectionFloorPrice'
+import { serializeValuation } from '../entities/lib/Valuation'
 import failure from '../utils/failure'
 import { getBlockchainFilter } from '../utils/query'
 
@@ -29,7 +29,7 @@ router.get('/floor', async (req, res, next) => {
     if (!((c: any): c is string[] => _.every(c, (e: any) => _.isString(e)))(collectionAddresses)) throw failure('BAD_PARAMS_STRING')
     const blockchainFilter = getBlockchainFilter(req.query, false)
     const prices = await getEthCollectionFloorPriceBatch({ blockchainFilter, collectionAddresses })
-    const payload = serializeEntityArray(prices, serializeCollectionFloorPrice)
+    const payload = serializeEntityArray(prices, serializeValuation)
     res.status(200).json(payload)
   }
   catch (err) {
