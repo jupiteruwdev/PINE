@@ -7,8 +7,8 @@ import _ from 'lodash'
 import { defaultFees } from '../config/supportedCollections'
 import getPoolContract from '../core/getPoolContract'
 import { Blockchain, BlockchainFilter, EthBlockchain, EthereumNetwork, LoanOption, Pool, SolanaNetwork } from '../entities'
+import PoolModel from '../models/pool'
 import failure from '../utils/failure'
-import * as collections from './collections'
 
 type FindOneFilter = {
   address?: string
@@ -80,34 +80,64 @@ function mapPool(data: Record<string, any>): Pool {
  * @returns The pool if there is a match, `undefined` otherwise.
  */
 export async function findOne({ address, collectionAddress, collectionId, blockchain = EthBlockchain(), includeRetired = false }: FindOneFilter = {}): Promise<Pool | undefined> {
-  const collection = await collections.findOneOrigin({ address: collectionAddress, blockchain, id: collectionId, poolAddress: address })
-  if (collection === undefined) return undefined
 
-  const collectionMap = collections.mapCollection({
-    ...collection,
-    id: collections.getCollectionVendorId(collection),
-  })
+  const filter: Record<string, any>[] = [{
+    'collection.networkType': blockchain.network,
+  },
+  {
+    'collection.networkId': parseInt(blockchain.networkId, 10),
+  }]
 
-  if (address) {
-    for (const lendingPool of _.get(collection, 'lendingPools', [])) {
-      if (lendingPool.address.toLowerCase() === address.toLowerCase()) {
-        const pool = await getPoolContract({ blockchain, poolAddress: lendingPool.address })
-        return mapPool({
-          version: pool.poolVersion,
-          ...lendingPool,
-          collection: collectionMap,
-          blockchain,
-        })
-      }
-    }
+  if (collectionAddress !== undefined) {
+    filter.push({
+      'collection.address': collectionAddress,
+    })
   }
-  for (const lendingPool of _.get(collection, 'lendingPools', [])) {
-    const pool = await getPoolContract({ blockchain, poolAddress: lendingPool.address })
-    if (!includeRetired && lendingPool.retired) continue
+
+  if (collectionId !== undefined) {
+    const matches = collectionId.match(/(.*):(.*)/)
+    const venue = matches?.[1]
+    const id = matches?.[2] ?? ''
+    filter.push({
+      [`collection.${venue}`]: id,
+    })
+  }
+
+  if (address !== undefined) {
+    filter.push({
+      address,
+    })
+  }
+
+  if (address === undefined && !includeRetired) {
+    filter.push({
+      'retired': {
+        $ne: true,
+      },
+    })
+  }
+
+  const poolsData = await PoolModel.aggregate([
+    {
+      $lookup: {
+        from: 'nftCollections',
+        localField: 'nftCollection',
+        foreignField: '_id',
+        as: 'collection',
+      },
+    },
+    {
+      $match: {
+        $and: filter,
+      },
+    }]).exec()
+
+  for (const pool of poolsData) {
+    const poolContract = await getPoolContract({ blockchain, poolAddress: pool.address })
     return mapPool({
-      version: pool.poolVersion,
-      ...lendingPool,
-      collection: collectionMap,
+      version: poolContract.poolVersion,
+      ...pool,
+      collection: pool.collection,
       blockchain,
     })
   }
@@ -126,29 +156,60 @@ export async function findAll({ collectionAddress, collectionId, blockchainFilte
 
   if (blockchainFilter.ethereum !== undefined) {
     const blockchain = EthBlockchain(blockchainFilter.ethereum)
-    const collectionData = await collections.findAllOrigin({ blockchainFilter })
 
-    for (const collection of collectionData) {
-      const vendorId = collections.getCollectionVendorId(collection)
-      const collectionMap = collections.mapCollection({
-        ...collection,
-        id: vendorId,
+    const filter: Record<string, any>[] = [{
+      'collection.networkType': blockchain.network,
+    },
+    {
+      'collection.networkId': parseInt(blockchain.networkId, 10),
+    }]
+
+    if (collectionAddress !== undefined) {
+      filter.push({
+        'collection.address': collectionAddress,
       })
+    }
 
-      if (collectionAddress !== undefined && collectionAddress.toLowerCase() !== collection.address.toLowerCase()) continue
-      if (collectionId !== undefined && collectionId !== vendorId) continue
+    if (collectionId !== undefined) {
+      const matches = collectionId.match(/(.*):(.*)/)
+      const venue = matches?.[1]
+      const id = matches?.[2] ?? ''
+      filter.push({
+        [`collection.${venue}`]: id,
+      })
+    }
 
-      // identify if multi-pool or single-pool
-      for (const lendingPool of _.get(collection, 'lendingPools', [])) {
-        const pool = await getPoolContract({ blockchain, poolAddress: lendingPool.address })
-        if (!includeRetired && lendingPool.retired) continue
-        pools.push(mapPool({
-          version: pool.poolVersion,
-          ...lendingPool,
-          collection: collectionMap,
-          blockchain,
-        }))
-      }
+    if (!includeRetired) {
+      filter.push({
+        'retired': {
+          $ne: true,
+        },
+      })
+    }
+
+    const poolsData = await PoolModel.aggregate([
+      {
+        $lookup: {
+          from: 'nftCollections',
+          localField: 'nftCollection',
+          foreignField: '_id',
+          as: 'collection',
+        },
+      },
+      {
+        $match: {
+          $and: filter,
+        },
+      }]).exec()
+
+    for (const pool of poolsData) {
+      const poolContract = await getPoolContract({ blockchain, poolAddress: pool.address })
+      pools.push(mapPool({
+        version: poolContract.poolVersion,
+        ...pool,
+        collection: pool.collection,
+        blockchain,
+      }))
     }
   }
 

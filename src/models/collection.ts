@@ -2,32 +2,21 @@ import mongoose from 'mongoose'
 const { Schema } = mongoose
 
 const schema = new Schema({
-  _id: String,
+  _id: Schema.Types.ObjectId,
   vendorIds: {
-    opensea: String,
+    opensea: Schema.Types.String,
   },
-  displayName: String,
-  address: String,
-  networkType: String,
-  networkId: Number,
-  imageUrl: String,
-  lendingPools: [
-    {
-      address: String,
-      retired: Boolean,
-      loanOptions: [
-        {
-          loanDurationBlock: Number,
-          loanDurationSecond: Number,
-          interestBpsBlock: Number,
-          interestBpsBlockOverride: Number,
-          maxLtvBps: Number,
-        },
-      ],
-    },
-  ],
+  displayName: Schema.Types.String,
+  address: Schema.Types.String,
+  networkType: Schema.Types.String,
+  networkId: Schema.Types.Number,
+  imageUrl: Schema.Types.String,
+  lendingPools: [{
+    type: Schema.Types.ObjectId,
+    ref: 'pool',
+  }],
 })
 
-const CollectionModel = mongoose.model('collection', schema, 'collection')
+const CollectionModel = mongoose.model('nftCollection', schema, 'nftCollections')
 
 export default CollectionModel
