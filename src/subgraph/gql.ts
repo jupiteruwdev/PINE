@@ -20,3 +20,17 @@ export const GET_POOL = gql`
     }
   }
 `
+
+export const GET_OPEN_LOAN = gql`
+  query loans($borrower: String, $id: ID) {
+    loans(where: {borrower: $borrower, id: $id}) {
+      erc721
+      id
+      pool
+      borrowedWei
+      returnedWei
+      pool
+      loanExpiretimestamp
+    }
+  }
+`
