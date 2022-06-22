@@ -1,10 +1,14 @@
-import mongoose from 'mongoose'
-const { Schema } = mongoose
+import mongoose, { Schema } from 'mongoose'
 
 const schema = new Schema({
   _id: Schema.Types.ObjectId,
   retired: Schema.Types.Boolean,
-  address: Schema.Types.String,
+  address: {
+    type: Schema.Types.String,
+    unique: true,
+  },
+  networkType: Schema.Types.String,
+  networkId: Schema.Types.Number,
   loanOptions: [
     {
       loanDurationBlock: Schema.Types.Number,
@@ -14,12 +18,15 @@ const schema = new Schema({
       maxLtvBps: Schema.Types.Number,
     },
   ],
+  poolVersion: Schema.Types.Number,
   nftCollection: {
     type: Schema.Types.ObjectId,
-    ref: 'nftCollection',
+    ref: 'NFTCollection',
   },
-})
+}, { timestamps: true })
 
-const PoolModel = mongoose.model('pool', schema, 'pools')
+schema.index({ networkType: 1, networkId: 1, address: 1 })
+
+const PoolModel = mongoose.model('Pool', schema, 'pools')
 
 export default PoolModel

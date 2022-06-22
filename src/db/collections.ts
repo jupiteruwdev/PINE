@@ -4,7 +4,7 @@
 
 import _ from 'lodash'
 import { Blockchain, BlockchainFilter, Collection, EthBlockchain, EthereumNetwork, SolanaNetwork } from '../entities'
-import CollectionModel from '../models/collection'
+import { NFTCollectionModel } from './models'
 
 type FindOneFilter = {
   address?: string
@@ -46,7 +46,7 @@ export function getCollectionVendorId(data: Record<string, any>): string {
 }
 
 export async function findOne({ address, blockchain = EthBlockchain(), id, poolAddress }: FindOneFilter): Promise<Collection | undefined> {
-  const collection = await CollectionModel.findOne({
+  const collection = await NFTCollectionModel.findOne({
     address,
     networkType: blockchain.network,
     networkId: blockchain.networkId,
@@ -73,7 +73,7 @@ export async function findAll({ blockchainFilter = { ethereum: EthereumNetwork.M
   if (blockchainFilter.ethereum !== undefined) {
     const blockchain = EthBlockchain(blockchainFilter.ethereum)
 
-    const collectionData = await CollectionModel.find({
+    const collectionData = await NFTCollectionModel.find({
       networkType: blockchain.network,
       networkId: blockchain.networkId,
     }).lean().exec()

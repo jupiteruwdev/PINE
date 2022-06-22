@@ -6,10 +6,11 @@ import http from 'http'
 import ip from 'ip'
 import _ from 'lodash'
 import appConf from './app.conf'
-import './config/mongoose'
+import initDb from './db'
 import routes from './routes'
 import logger from './utils/logger'
 
+initDb()
 const app = express()
 
 app.use(cors())

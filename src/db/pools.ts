@@ -15,9 +15,9 @@ import {
   Pool,
   SolanaNetwork,
 } from '../entities'
-import PoolModel from '../models/pool'
 import failure from '../utils/failure'
 import { getCollectionVendorId, mapCollection } from './collections'
+import { PoolModel } from './models'
 
 type FindOneFilter = {
   address?: string
@@ -277,4 +277,12 @@ export async function findAll({
     }
   }
   return pools
+}
+
+export async function updatePools() {
+  await PoolModel.updateMany({}, { $set: {
+    poolVersion: 2,
+  } })
+
+  return true
 }

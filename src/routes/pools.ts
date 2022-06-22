@@ -3,6 +3,7 @@ import getPool from '../core/getPool'
 import getPoolGroupStats from '../core/getPoolGroupStats'
 import getPools from '../core/getPools'
 import { findAll as findAllCollections } from '../db/collections'
+import { updatePools } from '../db/pools'
 import { serializeEntityArray, serializePagination, serializePool, serializePoolGroupStats } from '../entities'
 import failure from '../utils/failure'
 import { getBlockchain, getBlockchainFilter, getNumber, getString } from '../utils/query'
@@ -55,6 +56,11 @@ router.get('/eth/:address', async (req, res, next) => {
   catch (err) {
     next(failure('FETCH_POOL_FAILURE', err))
   }
+})
+
+router.post('/update', async (req, res, next) => {
+  const res1 = await updatePools()
+  res.status(200).json(res1)
 })
 
 export default router

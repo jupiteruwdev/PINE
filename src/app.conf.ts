@@ -45,5 +45,5 @@ export default {
     [EthereumNetwork.RINKEBY]: '0x150A1a9015Bfaf54e7199eBb6ae35EBDE755D51D',
     [EthereumNetwork.MAIN]: '0x90dFb72736481BBacc7938d2D3673590B92647AE',
   },
-  mongoPassword: process.env.MONGO_PASSWORD,
+  mongoUri: process.env.MONGO_URI ?? '',
 }
