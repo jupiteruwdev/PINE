@@ -34,6 +34,7 @@ type FindAllFilter = {
   includeRetired?: boolean
   offset?: number
   count?: number
+  collectionName?: string
 }
 
 // TODO: remove version param when pool is moved into loan optiom
@@ -178,6 +179,86 @@ export async function findOne({
   }
 }
 
+export async function getCount({
+  collectionAddress,
+  collectionId,
+  blockchainFilter = {
+    ethereum: EthereumNetwork.MAIN,
+    solana: SolanaNetwork.MAINNET,
+  },
+  includeRetired = false,
+  collectionName,
+}: FindAllFilter = {}): Promise<number> {
+  let count = 0
+  if (blockchainFilter.ethereum !== undefined) {
+    const blockchain = EthBlockchain(blockchainFilter.ethereum)
+
+    const filter: Record<string, any>[] = [
+      {
+        'collection.networkType': blockchain.network,
+      },
+      {
+        'collection.networkId': parseInt(blockchain.networkId, 10),
+      },
+    ]
+
+    if (collectionAddress !== undefined) {
+      filter.push({
+        'collection.address': collectionAddress,
+      })
+    }
+
+    if (collectionName !== undefined) {
+      filter.push({
+        'collection.displayName': {
+          $regex: `.*${collectionName}.*`,
+          $options: 'i',
+        },
+      })
+    }
+
+    if (collectionId !== undefined) {
+      const matches = collectionId.match(/(.*):(.*)/)
+      const venue = matches?.[1]
+      const id = matches?.[2] ?? ''
+      filter.push({
+        [`collection.${venue}`]: id,
+      })
+    }
+
+    if (!includeRetired) {
+      filter.push({
+        retired: {
+          $ne: true,
+        },
+      })
+    }
+
+    const aggregation = PoolModel.aggregate([
+      {
+        $lookup: {
+          from: 'nftCollections',
+          localField: 'nftCollection',
+          foreignField: '_id',
+          as: 'collection',
+        },
+      },
+      {
+        $unwind: '$collection',
+      },
+      {
+        $match: {
+          $and: filter,
+        },
+      },
+    ])
+
+    const poolsCount = await aggregation.count('count').exec()
+    count = poolsCount[0].count
+  }
+  return count
+}
+
 /**
  * Finds all pools on the platform. If the blockchain filter is specified, only pools residing in
  * the filtered blockchains will be returned.
@@ -196,6 +277,7 @@ export async function findAll({
   includeRetired = false,
   offset,
   count,
+  collectionName,
 }: FindAllFilter = {}): Promise<Pool[]> {
   const pools: Pool[] = []
 
@@ -214,6 +296,15 @@ export async function findAll({
     if (collectionAddress !== undefined) {
       filter.push({
         'collection.address': collectionAddress,
+      })
+    }
+
+    if (collectionName !== undefined) {
+      filter.push({
+        'collection.displayName': {
+          $regex: `.*${collectionName}.*`,
+          $options: 'i',
+        },
       })
     }
 
@@ -277,12 +368,4 @@ export async function findAll({
     }
   }
   return pools
-}
-
-export async function updatePools() {
-  await PoolModel.updateMany({}, { $set: {
-    poolVersion: 2,
-  } })
-
-  return true
 }

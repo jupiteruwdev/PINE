@@ -10,12 +10,13 @@ type Params = {
   collectionAddress?: string
   offset?: number
   count?: number
+  collectionName?: string
 }
 
-export default async function getPoolGroupStats({ blockchainFilter = { ethereum: EthereumNetwork.MAIN, solana: SolanaNetwork.MAINNET }, collectionAddress, offset, count }: Params) {
+export default async function getPoolGroupStats({ blockchainFilter = { ethereum: EthereumNetwork.MAIN, solana: SolanaNetwork.MAINNET }, collectionAddress, offset, count, collectionName }: Params) {
   logger.info(`Fetching pool group stats with blockchain filter <${JSON.stringify(blockchainFilter)}>...`)
 
-  const [ethValueUSD, pools] = await Promise.all([getEthValueUSD(), getPools({ blockchainFilter, collectionAddress, offset, count })])
+  const [ethValueUSD, pools] = await Promise.all([getEthValueUSD(), getPools({ blockchainFilter, collectionAddress, offset, count, collectionName })])
 
   const stats: PoolGroupStats[] = _.compact(pools.map(pool => {
     if (!pool.collection) return undefined
