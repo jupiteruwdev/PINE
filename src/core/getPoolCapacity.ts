@@ -1,3 +1,4 @@
+import { ETHLimits } from '../config/supportedCollections'
 import { $ETH, Blockchain, Value } from '../entities'
 import { getEthWeb3 } from '../utils/ethereum'
 import failure from '../utils/failure'
@@ -27,7 +28,7 @@ export default async function getPoolCapacity({ blockchain, poolAddress }: Param
       const tokenContract = getTokenContract({ blockchain, address: tokenAddress })
       const balanceWethWei = await tokenContract.methods.balanceOf(fundSource).call().catch((err: unknown) => { throw failure('CONTRACT_FUNC_FUND_SOURCE_BALANCE', err) })
       const balanceWEth = web3.utils.fromWei(balanceWethWei)
-      return $ETH(balanceWEth)
+      return Number(balanceWEth) > ETHLimits[poolAddress] ? $ETH(ETHLimits[poolAddress]) : $ETH(balanceWEth)
     default:
       failure('BAD_POOL_VERSION')
     }
