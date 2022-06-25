@@ -1,3 +1,5 @@
+import BigNumber from 'bignumber.js'
+import { ETHLimits } from '../config/supportedCollections'
 import { findOne as findOnePool } from '../db/pools'
 import { $ETH, Blockchain, Pool } from '../entities'
 import failure from '../utils/failure'
@@ -28,7 +30,7 @@ export default async function getPool({ blockchain, poolAddress }: Params): Prom
     getPoolCapacity({ blockchain, poolAddress }),
   ])
 
-  const valueLockedEth = capacityEth.plus(utilizationEth)
+  const valueLockedEth = capacityEth.plus(utilizationEth).gt(new BigNumber(ETHLimits[poolAddress])) ? new BigNumber(ETHLimits[poolAddress]) : capacityEth.plus(utilizationEth)
 
   return {
     ...pool,
