@@ -17,7 +17,7 @@ export default async function getNFTMetadata({ blockchain, collectionAddress, nf
     const web3 = getEthWeb3(blockchain.networkId)
     const contract = new web3.eth.Contract(ERC721EnumerableABI as any, collectionAddress)
     const uri = await contract.methods.tokenURI(nftId).call()
-    const metadata = await (() => {
+    const metadata = await (async () => {
       if (uri.indexOf('data:application/json;base64') !== -1) {
         return JSON.parse(atob(uri.split(',')[1]))
       }
@@ -25,8 +25,16 @@ export default async function getNFTMetadata({ blockchain, collectionAddress, nf
         const firstComma = uri.indexOf(',')
         return JSON.parse(uri.slice(firstComma + 1, uri.length))
       }
-
-      return getRequest(normalizeNFTImageUri(uri))
+      try {
+        const ret = await getRequest(normalizeNFTImageUri(uri))
+        return ret
+      }
+      catch (e) {
+        return {
+          imageUrl: uri,
+          id: nftId,
+        }
+      }
     })()
     return {
       imageUrl: normalizeNFTImageUri(metadata.image),
