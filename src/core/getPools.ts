@@ -1,3 +1,5 @@
+import BigNumber from 'bignumber.js'
+import { ETHLimits } from '../config/supportedCollections'
 import { findAll as findAllPools } from '../db/pools'
 import {
   $ETH,
@@ -56,7 +58,7 @@ export default async function getPools({
           }),
         ])
 
-      const valueLockedEth = capacityEth.plus(utilizationEth)
+      const valueLockedEth = capacityEth.plus(utilizationEth).gt(new BigNumber(ETHLimits[pool.address])) ? new BigNumber(ETHLimits[pool.address]) : capacityEth.plus(utilizationEth)
 
       return {
         ...pool,

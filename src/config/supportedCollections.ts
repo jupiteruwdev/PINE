@@ -5,19 +5,23 @@ import { $ETH, AnyCurrency, Fee } from '../entities'
 
 // TODO: remove hack!
 export const routerAddresses = (x: number, poolAddress: string) => {
-  const y  : { [key: number]: any } = { 4: '0xFC6c6e4727DA5E1bF79aC9C96155B4cD2faC54E6', 1: '0x774badBc759234Bff52B0Be11bF61Bb68c9E9A24' }
+  const y  : Record<number, string> = { 4: '0xFC6c6e4727DA5E1bF79aC9C96155B4cD2faC54E6', 1: '0x774badBc759234Bff52B0Be11bF61Bb68c9E9A24' }
   if (poolAddress.toLowerCase() === '0x609fee5870739611fea720ad5d86be458b47596a') return '0x1E23F78896F6d4F0e25D7bcD49bb2f7eee62EF98'
   else return y[x]
 }
 
 
-export const rolloverAddresses : { [key: number]: any } = { 4:'0xC796d62fB1927a13D7E41eBd0c8eA80fdA5Ef80a', 1: '0x239f1818f21ebac47306ffa690016aa6a8882a59' }
+export const rolloverAddresses : Record<number, string> = { 4:'0xC796d62fB1927a13D7E41eBd0c8eA80fdA5Ef80a', 1: '0x239f1818f21ebac47306ffa690016aa6a8882a59' }
 
 export const repayRouterAddresses = (x: number, poolAddress: string) => {
-  const y : { [key: number]: any }  = { 4: '0xFC6c6e4727DA5E1bF79aC9C96155B4cD2faC54E6', 1: '0x1E23F78896F6d4F0e25D7bcD49bb2f7eee62EF98' }
+  const y : Record<number, string>  = { 4: '0xFC6c6e4727DA5E1bF79aC9C96155B4cD2faC54E6', 1: '0x1E23F78896F6d4F0e25D7bcD49bb2f7eee62EF98' }
   if (poolAddress.toLowerCase() === '0xbc7EbB061235994f360aD3E3ca9de0264443ED6a'.toLowerCase() || poolAddress.toLowerCase() === '0x4dE7B2f8160fa083F90d4900eAe448dbc9ABb1C8'.toLowerCase()) return '0x66a13171B0A3D6F7009eC21D224F6b491b8772f3'
   if (poolAddress.toLowerCase() === '0x4286f77da706339A631c9578278b99a254156D10'.toLowerCase()) return  '0x774badBc759234Bff52B0Be11bF61Bb68c9E9A24'
   else return y[x]
+}
+
+export const ETHLimits : Record<string, number> = {
+  '0x609fee5870739611fea720ad5d86be458b47596a': 5.5
 }
 
 export const defaultFees = (currency: AnyCurrency, poolVersion: number, poolAddress: string): Fee[] => {

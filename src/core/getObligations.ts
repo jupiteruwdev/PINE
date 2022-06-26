@@ -41,10 +41,19 @@ export default async function getObligations({ blockchain, borrowerAddress }: Pa
 
   // TODO: Optimize this. Currently doing this in series to avoid 429 for some API calls.
   for (let i = 0, n = nfts.length; i < n; i++) {
-    const metadata = await getNFTMetadata({ blockchain, nftId: nfts[i].id, collectionAddress: nfts[i].collection.address })
-    nfts[i] = {
-      ...nfts[i],
-      ...metadata,
+    try {
+      const metadata = await getNFTMetadata({ blockchain, nftId: nfts[i].id, collectionAddress: nfts[i].collection.address })
+      nfts[i] = {
+        ...nfts[i],
+        ...metadata,
+      }
+    }
+    catch (e) {
+      nfts[i] = {
+        ...nfts[i],
+        imageUrl: nfts[i].collection.imageUrl,
+        name: nfts[i].collection.name,
+      }
     }
   }
 

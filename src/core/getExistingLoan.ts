@@ -1,6 +1,5 @@
 import { findOne as findOneCollection } from '../db/collections'
-import { Blockchain, EthereumNetwork } from '../entities'
-import { getOpenLoan } from '../subgraph/request'
+import { Blockchain } from '../entities'
 import failure from '../utils/failure'
 import logger from '../utils/logger'
 import getLoanPosition from './getLoanPosition'
@@ -18,18 +17,12 @@ export default async function getExistingLoan({ blockchain, collectionId, nftId 
   case 'ethereum': {
     const collection = await findOneCollection({ id: collectionId, blockchain })
     if (!collection) throw failure('UNSUPPORTED_COLLECTION')
-    if (blockchain.networkId === EthereumNetwork.RINKEBY) {
-      const position = await getLoanPosition({ blockchain, collectionId, nftId, txSpeedBlocks: 0 })
-      return {
-        borrowedWei: position?.borrowed.amount.toString(),
-        returnedWei: position?.returned.amount.toString(),
-        pool: position?.poolAddress,
-      }
+    const position = await getLoanPosition({ blockchain, collectionId, nftId, txSpeedBlocks: 0 })
+    return {
+      borrowedWei: position?.borrowed.amount.toString(),
+      returnedWei: position?.returned.amount.toString(),
+      pool: position?.poolAddress,
     }
-    const { loans } = await getOpenLoan({ id: `${collection.address}/${nftId}` })
-    const existingLoan = loans.length > 0 ? loans[0] : undefined
-
-    return existingLoan
   }
   default:
     throw failure('UNSUPPORTED_BLOCKCHAIN')
