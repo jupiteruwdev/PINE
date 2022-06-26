@@ -1,4 +1,5 @@
-import { routerAddresses } from '../config/supportedCollections'
+import BigNumber from 'bignumber.js'
+import { ETHLimits, routerAddresses } from '../config/supportedCollections'
 import { findOne as findOneCollection } from '../db/collections'
 import { findOne as findOnePool } from '../db/pools'
 import { Blockchain, LoanTerms, NFT, $ETH } from '../entities'
@@ -7,6 +8,7 @@ import logger from '../utils/logger'
 import getEthCollectionValuation from './getEthCollectionValuation'
 import getNFTMetadata from './getNFTMetadata'
 import getPoolContract from './getPoolContract'
+import getPoolUtilization from './getPoolUtilization'
 import signValuation from './signValuation'
 
 type Params = {
@@ -25,6 +27,8 @@ export default async function getLoanTerms({ blockchain, collectionId, nftId }: 
 
     const pool = await findOnePool({ collectionAddress: collection.address, blockchain })
     if (!pool) throw failure('NO_POOLS_AVAILABLE')
+
+    const utilization = await getPoolUtilization({ blockchain, poolAddress: pool.address })
 
     const nft: NFT = {
       collection,
@@ -53,6 +57,8 @@ export default async function getLoanTerms({ blockchain, collectionId, nftId }: 
     loanTerms.options.map(option => {
       option.maxBorrow = $ETH(option.maxLTVBPS.div(10_000).times(loanTerms.valuation.value?.amount ?? 0))
     })
+
+    if (ETHLimits[pool.address] && loanTerms.options.some(option => utilization.amount.plus(option.maxBorrow?.amount ?? new BigNumber(0)).gt(new BigNumber(ETHLimits[pool.address])))) throw failure('POOL_OVER_LENDER_DEFINED_UTILIZATION')
 
     logger.info(`Fetching loan terms for NFT ID <${nftId}> and collection ID <${collectionId}> on blockchain <${JSON.stringify(blockchain)}>... OK`, loanTerms)
 

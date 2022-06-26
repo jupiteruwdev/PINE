@@ -22,8 +22,8 @@ export const GET_POOL = gql`
 `
 
 export const GET_OPEN_LOAN = gql`
-  query loans($borrower: String, $id: ID) {
-    loans(where: {borrower: $borrower, id: $id}) {
+  query loans($borrower: String) {
+    loans(where: {borrower: $borrower}) {
       erc721
       id
       pool
