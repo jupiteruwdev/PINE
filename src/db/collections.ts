@@ -3,8 +3,8 @@
  */
 
 import _ from 'lodash'
-import { supportedCollections } from '../config/supportedCollections'
 import { Blockchain, BlockchainFilter, Collection, EthBlockchain, EthereumNetwork, SolanaNetwork } from '../entities'
+import { NFTCollectionModel } from './models'
 
 type FindOneFilter = {
   address?: string
@@ -22,8 +22,8 @@ export function mapCollection(data: Record<string, any>): Collection {
   const networkType = _.get(data, 'networkType')
   const networkId = _.toString(_.get(data, 'networkId'))
   const id = _.get(data, 'id')
-  const imageUrl = _.get(data, 'image_url')
-  const name = _.get(data, 'display_name')
+  const imageUrl = _.get(data, 'imageUrl')
+  const name = _.get(data, 'displayName')
 
   if (!_.isString(address)) throw TypeError('Failed to map key "address"')
   if (!_.isString(id)) throw TypeError('Failed to map key "id"')
@@ -40,62 +40,50 @@ export function mapCollection(data: Record<string, any>): Collection {
   }
 }
 
-/**
- * Finds one supported collection on the platform based on the specified filter.
- *
- * @param filter - See {@link FindOneFilter}.
- *
- * @returns The collection if there is a match, `undefined` otherwise.
- */
-export async function findOne({ address, blockchain = EthBlockchain(), id, poolAddress }: FindOneFilter): Promise<Collection | undefined> {
-  const rawData = supportedCollections
-  const matchedId = _.findKey(rawData, (val, key) => {
-    if (id !== undefined && id !== key) return false
-    if (address !== undefined && _.get(val, 'address')?.toLowerCase() !== address.toLowerCase()) return false
-    if (_.get(val, 'networkType') !== blockchain.network) return false
-    if (_.toString(_.get(val, 'networkId')) !== blockchain.networkId) return false
-    if (poolAddress !== undefined && !_.get(val, 'lendingPools').some((e: any) => e.address !== poolAddress)) return false
-    return true
-  })
-
-  if (!matchedId) return undefined
-
-  const collectionData = rawData[matchedId]
-
-  return mapCollection({
-    ...collectionData,
-    id: matchedId,
-  })
+export function getCollectionVendorId(data: Record<string, any>): string {
+  const vendorIds = _.get(data, 'vendorIds')
+  return `${_.keys(vendorIds)[0]}:${_.values(vendorIds)[0]}`
 }
 
-/**
- * Finds all supported collections on the platform. If no filters are provided, all collection will
- * be returned in the default networks of all blockchains.
- *
- * @param filter - See {@link FindAllFilter}.
- *
- * @returns Array of collections.
- */
+export async function findOne({ address, blockchain = EthBlockchain(), id, poolAddress }: FindOneFilter): Promise<Collection | undefined> {
+  const collection = await NFTCollectionModel.findOne({
+    address,
+    networkType: blockchain.network,
+    networkId: blockchain.networkId,
+  }).lean().exec()
+  if (collection) {
+    if (poolAddress !== undefined && _.get(collection, 'lendingPools').some((e: any) => e.address !== poolAddress)) return undefined
+    if (id !== undefined) {
+      const matches = id.match(/(.*):(.*)/)
+      const venue = matches?.[1] ?? ''
+      const name = matches?.[2]
+      if (_.get(collection, ['vendorIds', venue]) !== name) return undefined
+    }
+
+    return mapCollection({
+      ...collection,
+      id: getCollectionVendorId(collection),
+    })
+  }
+}
+
 export async function findAll({ blockchainFilter = { ethereum: EthereumNetwork.MAIN, solana: SolanaNetwork.MAINNET } }: FindAllFilter = {}): Promise<Collection[]> {
-  const rawData = supportedCollections
   const collections: Collection[] = []
 
   if (blockchainFilter.ethereum !== undefined) {
     const blockchain = EthBlockchain(blockchainFilter.ethereum)
 
-    for (const key in rawData) {
-      if (!rawData.hasOwnProperty(key)) continue
+    const collectionData = await NFTCollectionModel.find({
+      networkType: blockchain.network,
+      networkId: blockchain.networkId,
+    }).lean().exec()
 
-      const data = rawData[key]
-
-      if (_.get(data, 'networkType') !== blockchain.network) continue
-      if (_.toString(_.get(data, 'networkId')) !== blockchain.networkId) continue
-
+    collectionData.forEach(collection => {
       collections.push(mapCollection({
-        ...data,
-        id: key,
+        ...collection,
+        id: getCollectionVendorId(collection),
       }))
-    }
+    })
   }
 
   return collections

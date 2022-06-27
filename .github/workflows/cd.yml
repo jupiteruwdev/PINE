@@ -13,6 +13,7 @@ env:
   ALCHEMY_API_MAINNET_URL: ${{ secrets.ALCHEMY_API_MAINNET_URL }}
   ALCHEMY_API_RINKEBY_URL: ${{ secrets.ALCHEMY_API_RINKEBY_URL }}
   SUBGRAPH_API_URL: ${{ secrets.SUBGRAPH_API_URL }}
+  MONGO_URI: ${{ secrets.MONGO_URI }}
 jobs:
   deploy:
     name: Build/Test/Deploy
@@ -51,10 +52,10 @@ jobs:
           context: .
           load: true
           push: false
-          tags: ${{ env.IMAGE_NAME }}:test
+          tags: ${{ env.IMAGE_NAME }}:test-${{ github.sha }}
           target: test
       - name: Run tests
-        run: IMAGE_TAG=test docker-compose -f docker-compose.test.yml up --exit-code-from app
+        run: IMAGE_TAG=test-${{ github.sha }} docker-compose -f docker-compose.test.yml up --exit-code-from app
       - name: Set metadata
         id: meta
         uses: docker/metadata-action@v3
