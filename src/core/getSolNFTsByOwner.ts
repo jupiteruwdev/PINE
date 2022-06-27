@@ -49,6 +49,7 @@ async function getNFTDataFromMoralis(id: string, mintAddress: string, networkId:
     },
     id,
     mintAddress,
+    isSupported: false,
   }, data.metaplex.metadataUri]
 }
 
@@ -66,6 +67,7 @@ async function getNFTDataFromBlockchain(id: string, mintAddress: string, network
     },
     id,
     mintAddress,
+    isSupported: false,
   }, data.data.uri]
 }
 

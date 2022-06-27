@@ -24,11 +24,23 @@ export function getCollectionVendorId(data: Record<string, any>): string {
 }
 
 export async function findOneCollection({ address, blockchain = EthBlockchain(), id, poolAddress }: FindOneFilter): Promise<Collection | undefined> {
-  const collection = await NFTCollectionModel.findOne({
-    address,
+  const query: Record<string, any> = {
     networkType: blockchain.network,
     networkId: blockchain.networkId,
-  }).lean().exec()
+  }
+  if (address !== undefined) {
+    query['address'] = address
+  }
+  if (id !== undefined) {
+    const matches = id.match(/(.*):(.*)/)
+    const venue = matches?.[1] ?? ''
+    const collectionId = matches?.[2] ?? ''
+    query['vendorIds'] = {
+      [venue]: collectionId,
+    }
+  }
+
+  const collection = await NFTCollectionModel.findOne(query).lean().exec()
   if (collection) {
     if (poolAddress !== undefined && _.get(collection, 'lendingPools').some((e: any) => e.address !== poolAddress)) return undefined
     if (id !== undefined) {

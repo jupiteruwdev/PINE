@@ -66,10 +66,12 @@ export async function findOnePool({
 
   if (collectionId !== undefined) {
     const matches = collectionId.match(/(.*):(.*)/)
-    const venue = matches?.[1]
+    const venue = matches?.[1] ?? ''
     const id = matches?.[2] ?? ''
     filter.push({
-      [`collection.${venue}`]: id,
+      'collection.vendorIds': {
+        [venue]: id,
+      },
     })
   }
 
@@ -163,13 +165,14 @@ export async function getCount({
 
     if (collectionId !== undefined) {
       const matches = collectionId.match(/(.*):(.*)/)
-      const venue = matches?.[1]
+      const venue = matches?.[1] ?? ''
       const id = matches?.[2] ?? ''
       filter.push({
-        [`collection.${venue}`]: id,
+        'collection.vendorIds': {
+          [venue]: id,
+        },
       })
     }
-
     if (!includeRetired) {
       filter.push({
         retired: {
@@ -254,10 +257,12 @@ export async function findAllPools({
 
     if (collectionId !== undefined) {
       const matches = collectionId.match(/(.*):(.*)/)
-      const venue = matches?.[1]
+      const venue = matches?.[1] ?? ''
       const id = matches?.[2] ?? ''
       filter.push({
-        [`collection.${venue}`]: id,
+        'collection.vendorIds': {
+          [venue]: id,
+        },
       })
     }
 

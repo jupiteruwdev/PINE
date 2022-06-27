@@ -51,6 +51,7 @@ export default async function getEthTestnetNFTsByOwner({ blockchain, collectionO
           collection,
           id: nft.id.tokenId,
           ownerAddress,
+          isSupported: true,
         })
       })
     }
