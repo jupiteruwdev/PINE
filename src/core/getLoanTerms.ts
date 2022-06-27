@@ -33,6 +33,7 @@ export default async function getLoanTerms({ blockchain, collectionId, nftId }: 
     const nft: NFT = {
       collection,
       id: nftId,
+      isSupported: true,
       ...await getNFTMetadata({ blockchain, collectionAddress: collection.address, nftId }),
     }
 
