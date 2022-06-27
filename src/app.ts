@@ -6,7 +6,7 @@ import http from 'http'
 import ip from 'ip'
 import _ from 'lodash'
 import appConf from './app.conf'
-import initDb from './db'
+import { initDb } from './db'
 import routes from './routes'
 import logger from './utils/logger'
 
