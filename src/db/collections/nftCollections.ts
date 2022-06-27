@@ -18,11 +18,6 @@ type FindAllFilter = {
   blockchainFilter?: BlockchainFilter
 }
 
-export function getCollectionVendorId(data: Record<string, any>): string {
-  const vendorIds = _.get(data, 'vendorIds')
-  return `${_.keys(vendorIds)[0]}:${_.values(vendorIds)[0]}`
-}
-
 export async function findOneCollection({ address, blockchain = EthBlockchain(), id, poolAddress }: FindOneFilter): Promise<Collection | undefined> {
   const query: Record<string, any> = {
     networkType: blockchain.network,
@@ -50,10 +45,7 @@ export async function findOneCollection({ address, blockchain = EthBlockchain(),
       if (_.get(collection, ['vendorIds', venue]) !== name) return undefined
     }
 
-    return mapCollection({
-      ...collection,
-      id: getCollectionVendorId(collection),
-    })
+    return mapCollection(collection)
   }
 }
 
@@ -69,10 +61,7 @@ export async function findAllCollections({ blockchainFilter = { ethereum: Ethere
     }).lean().exec()
 
     collectionData.forEach(collection => {
-      collections.push(mapCollection({
-        ...collection,
-        id: getCollectionVendorId(collection),
-      }))
+      collections.push(mapCollection(collection))
     })
   }
 

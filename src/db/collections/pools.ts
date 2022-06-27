@@ -13,7 +13,6 @@ import {
 } from '../../entities'
 import { mapCollection, mapPool } from '../adapters'
 import { PoolModel } from '../models'
-import { getCollectionVendorId } from './nftCollections'
 
 type FindOneFilter = {
   address?: string
@@ -116,16 +115,13 @@ export async function findOnePool({
     return mapPool({
       version: poolContract.poolVersion,
       ...pool,
-      collection: mapCollection({
-        ...pool.collection,
-        id: getCollectionVendorId(pool.collection),
-      }),
+      collection: mapCollection(pool.collection),
       blockchain,
     })
   }
 }
 
-export async function getCount({
+export async function countAllPools({
   collectionAddress,
   collectionId,
   blockchainFilter = {
@@ -307,10 +303,7 @@ export async function findAllPools({
         mapPool({
           version: poolContract.poolVersion,
           ...pool,
-          collection: mapCollection({
-            ...pool.collection,
-            id: getCollectionVendorId(pool.collection),
-          }),
+          collection: mapCollection(pool.collection),
           blockchain,
         })
       )
