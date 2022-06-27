@@ -1,6 +1,6 @@
 import BigNumber from 'bignumber.js'
 import { ETHLimits } from '../config/supportedCollections'
-import { findOne as findOnePool } from '../db/pools'
+import { findOnePool } from '../db'
 import { $ETH, Blockchain, Pool } from '../entities'
 import failure from '../utils/failure'
 import getPoolCapacity from './getPoolCapacity'

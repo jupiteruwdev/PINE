@@ -1,5 +1,5 @@
 import Web3 from 'web3'
-import { findOne as findOneCollection } from '../db/collections'
+import { findOneCollection } from '../db'
 import { EthBlockchain, EthereumNetwork, PNPLTerms } from '../entities'
 import failure from '../utils/failure'
 import getLooksrarePNPLTerms from './getLooksrarePNPLTerms'

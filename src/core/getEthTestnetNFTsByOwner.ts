@@ -1,6 +1,6 @@
 import _ from 'lodash'
 import appConf from '../app.conf'
-import { findAll as findAllCollections, findOne as findOneCollection } from '../db/collections'
+import { findAllCollections, findOneCollection } from '../db'
 import { Blockchain, Collection, NFT } from '../entities'
 import getRequest from '../utils/getRequest'
 import normalizeNFTImageUri from '../utils/normalizeNFTImageUri'
