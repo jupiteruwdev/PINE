@@ -1,8 +1,2 @@
-import NFTCollectionModel from './NFTCollectionModel'
-import PoolModel from './PoolModel'
-
-export {
-  NFTCollectionModel,
-  PoolModel,
-}
-
+export { default as NFTCollectionModel } from './NFTCollectionModel'
+export { default as PoolModel } from './PoolModel'
