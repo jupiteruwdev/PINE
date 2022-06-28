@@ -28,4 +28,3 @@ export default function mapCollection(data: Record<string, any>): Collection {
     name,
   }
 }
-
