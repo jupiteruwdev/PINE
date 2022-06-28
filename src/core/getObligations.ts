@@ -1,6 +1,5 @@
 import _ from 'lodash'
-import { findOne as findOneCollection } from '../db/collections'
-import { findAll as findAllPools } from '../db/pools'
+import { findAllPools, findOneCollection } from '../db'
 import { Blockchain, EthereumNetwork } from '../entities'
 import { CollateralizedNFT } from '../entities/lib/CollateralizedNFT'
 import { getOpenLoan } from '../subgraph/request'

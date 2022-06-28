@@ -1,6 +1,6 @@
 import _ from 'lodash'
 import appConf from '../app.conf'
-import { findOne as findOneCollection } from '../db/collections'
+import { findOneCollection } from '../db'
 import { Collection, EthBlockchain, EthereumNetwork, NFT, NFTMetadata } from '../entities'
 import failure from '../utils/failure'
 import getRequest from '../utils/getRequest'

@@ -1,6 +1,6 @@
 import _ from 'lodash'
 import appConf from '../app.conf'
-import { findAll as findAllPools } from '../db/pools'
+import { findAllPools } from '../db'
 import { $ETH, ActiveLoanStats, Blockchain, Pool } from '../entities'
 import { getActiveLoansForPools } from '../subgraph/request'
 import getRequest from '../utils/getRequest'

@@ -1,6 +1,6 @@
 import { assert } from 'chai'
 import { describe, it } from 'mocha'
-import { findAll as findAllCollections } from '../db/collections'
+import { findAllCollections } from '../db'
 import { EthBlockchain, EthereumNetwork, isValue, Value } from '../entities'
 import getEthCollectionFloorPrice from './getEthCollectionFloorPrice'
 

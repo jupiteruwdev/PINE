@@ -2,7 +2,7 @@ import { Router } from 'express'
 import getPool from '../core/getPool'
 import getPoolGroupStats from '../core/getPoolGroupStats'
 import getPools from '../core/getPools'
-import { getCount } from '../db/pools'
+import { countAllPools } from '../db'
 import { serializeEntityArray, serializePagination, serializePool, serializePoolGroupStats } from '../entities'
 import failure from '../utils/failure'
 import { getBlockchain, getBlockchainFilter, getNumber, getString } from '../utils/query'
@@ -16,7 +16,7 @@ router.get('/', async (req, res, next) => {
   const offset = tryOrUndefined(() => getNumber(req.query, 'offset'))
   const count = tryOrUndefined(() => getNumber(req.query, 'count'))
   const collectionName = tryOrUndefined(() => getString(req.query, 'search'))
-  const totalCount = await getCount({ collectionAddress, blockchainFilter, collectionName })
+  const totalCount = await countAllPools({ collectionAddress, blockchainFilter, collectionName })
 
   if (collectionAddress) {
     const pools = await getPools({

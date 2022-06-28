@@ -1,7 +1,7 @@
 import axios from 'axios'
 import _ from 'lodash'
 import appConf from '../app.conf'
-import { findOne as findOneCollection } from '../db/collections'
+import { findOneCollection } from '../db'
 import { $ETH, BlockchainFilter, EthereumNetwork } from '../entities'
 import { Valuation } from '../entities/lib/Valuation'
 import failure from '../utils/failure'

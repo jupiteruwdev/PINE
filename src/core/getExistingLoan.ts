@@ -1,4 +1,4 @@
-import { findOne as findOneCollection } from '../db/collections'
+import { findOneCollection } from '../db'
 import { Blockchain } from '../entities'
 import failure from '../utils/failure'
 import logger from '../utils/logger'

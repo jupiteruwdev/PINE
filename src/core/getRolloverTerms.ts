@@ -1,6 +1,5 @@
 import { rolloverAddresses } from '../config/supportedCollections'
-import { findOne as findOneCollection } from '../db/collections'
-import { findOne as findOnePool } from '../db/pools'
+import { findOneCollection, findOnePool } from '../db'
 import { $ETH, Blockchain, NFT, RolloverTerms } from '../entities'
 import failure from '../utils/failure'
 import logger from '../utils/logger'

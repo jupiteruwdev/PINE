@@ -1,6 +1,6 @@
 import BigNumber from 'bignumber.js'
 import { ETHLimits } from '../config/supportedCollections'
-import { findAll as findAllPools } from '../db/pools'
+import { findAllPools } from '../db'
 import {
   $ETH,
   BlockchainFilter,

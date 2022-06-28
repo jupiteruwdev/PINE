@@ -1,7 +1,7 @@
 import { assert } from 'chai'
 import _ from 'lodash'
 import { describe, it } from 'mocha'
-import { findAll as findAllCollections } from '../db/collections'
+import { findAllCollections } from '../db'
 import { EthBlockchain, EthereumNetwork, isValuation, Valuation } from '../entities'
 import getEthCollectionValuation from './getEthCollectionValuation'
 
