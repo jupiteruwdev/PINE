@@ -3,7 +3,7 @@ import _ from 'lodash'
 import appConf from '../app.conf'
 import { repayRouterAddresses } from '../config/supportedCollections'
 import { findAllPools, findOneCollection } from '../db'
-import { $WEI, Blockchain, LoanPosition } from '../entities'
+import { Value, Blockchain, LoanPosition } from '../entities'
 import { getEthBlockNumber } from '../utils/ethereum'
 import failure from '../utils/failure'
 import logger from '../utils/logger'
@@ -59,18 +59,18 @@ export default async function getLoanPosition({ blockchain, collectionId, nftId,
       return {
         // TODO: remove hack!
         routerAddress: contract.poolVersion === 2 ? repayRouterAddresses(Number(blockchain.networkId), pool.address) : undefined,
-        accuredInterest: $WEI(event.accuredInterestWei),
-        borrowed: $WEI(event.borrowedWei),
+        accuredInterest: Value.$WEI(event.accuredInterestWei),
+        borrowed: Value.$WEI(event.borrowedWei),
         borrowerAddress: event.borrower,
         expiresAt: new Date(_.toNumber(event.loanExpireTimestamp) * 1000),
         interestBPSPerBlock: new BigNumber(event.interestBPS1000000XBlock).dividedBy(new BigNumber(1_000_000)),
         loanStartBlock: event.loanStartBlock,
         maxLTVBPS: new BigNumber(event.maxLTVBPS),
         nft,
-        outstanding: $WEI(outstandingWithInterestWei),
+        outstanding: Value.$WEI(outstandingWithInterestWei),
         poolAddress: pool.address,
-        repaidInterest: $WEI(event.repaidInterestWei),
-        returned: $WEI(event.returnedWei),
+        repaidInterest: Value.$WEI(event.repaidInterestWei),
+        returned: Value.$WEI(event.returnedWei),
         valuation,
         updatedAtBlock: blockNumber,
       }

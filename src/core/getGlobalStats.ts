@@ -1,5 +1,5 @@
 import BigNumber from 'bignumber.js'
-import { $ETH, $USD, BlockchainFilter, EthBlockchain, EthereumNetwork, GlobalStats, SolanaNetwork } from '../entities'
+import { Blockchain, GlobalStats, Value } from '../entities'
 import { getEthValueUSD } from '../utils/ethereum'
 import failure from '../utils/failure'
 import logger from '../utils/logger'
@@ -7,10 +7,10 @@ import getPoolHistoricalLent from './getPoolHistoricalLent'
 import getPools from './getPools'
 
 type Params = {
-  blockchainFilter?: BlockchainFilter
+  blockchainFilter?: Blockchain.Filter
 }
 
-export default async function getGlobalStats({ blockchainFilter = { ethereum: EthereumNetwork.MAIN, solana: SolanaNetwork.MAINNET } }: Params = {}): Promise<GlobalStats> {
+export default async function getGlobalStats({ blockchainFilter = { ethereum: Blockchain.Ethereum.Network.MAIN, solana: Blockchain.Solana.Network.MAINNET } }: Params = {}): Promise<GlobalStats> {
   try {
     logger.info(`Fetching global stats for blockchain filter <${JSON.stringify(blockchainFilter)}>...`)
 
@@ -26,14 +26,14 @@ export default async function getGlobalStats({ blockchainFilter = { ethereum: Et
     const totalValueLockedUSD = pools.reduce((p, c) => p.plus(c.valueLocked.amount), new BigNumber(0)).times(ethValueUSD.amount)
     const totalCapacityUSD = totalValueLockedUSD.minus(totalUtilizationUSD)
 
-    const lentEthPerPool = await Promise.all(pools.map(pool => getPoolHistoricalLent({ blockchain: EthBlockchain(blockchainFilter), poolAddress: pool.address })))
+    const lentEthPerPool = await Promise.all(pools.map(pool => getPoolHistoricalLent({ blockchain: Blockchain.Ethereum(blockchainFilter), poolAddress: pool.address })))
     const totalLentETH = lentEthPerPool.reduce((p, c) => p.plus(c.amount), new BigNumber(0))
 
     const globalStats: GlobalStats = {
-      capacity: $USD(totalCapacityUSD),
-      totalValueLentHistorical: $ETH(totalLentETH),
-      totalValueLocked: $USD(totalValueLockedUSD),
-      utilization: $USD(totalUtilizationUSD),
+      capacity: Value.$USD(totalCapacityUSD),
+      totalValueLentHistorical: Value.$ETH(totalLentETH),
+      totalValueLocked: Value.$USD(totalValueLockedUSD),
+      utilization: Value.$USD(totalUtilizationUSD),
       utilizationRatio: totalUtilizationUSD.div(totalValueLockedUSD),
     }
 

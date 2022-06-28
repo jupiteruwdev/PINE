@@ -1,7 +1,7 @@
 import { Router } from 'express'
 import _ from 'lodash'
 import getLoanPosition from '../core/getLoanPosition'
-import { serializeLoanPosition } from '../entities'
+import { LoanPosition } from '../entities'
 import failure from '../utils/failure'
 import { getBlockchain, getString } from '../utils/query'
 
@@ -14,9 +14,14 @@ router.get('/', async (req, res, next) => {
     const txSpeedBlocks = _.toNumber(req.query.txSpeedBlocks ?? 0)
     const blockchain = getBlockchain(req.query)
     const loanPosition = await getLoanPosition({ blockchain, nftId, collectionId, txSpeedBlocks })
-    const payload = serializeLoanPosition(loanPosition)
 
-    res.status(200).json(payload)
+    if (loanPosition === undefined) {
+      res.status(404).send()
+    }
+    else {
+      const payload = LoanPosition.serialize(loanPosition)
+      res.status(200).json(payload)
+    }
   }
   catch (err) {
     next(failure('FETCH_LOAN_POSITION_FAILURE', err))

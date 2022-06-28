@@ -1,7 +1,6 @@
 /* eslint-disable */
 
-import { $ETH, AnyCurrency, Fee } from '../entities'
-
+import { AnyCurrency, Fee, Value } from '../entities'
 
 // TODO: remove hack!
 export const routerAddresses = (x: number, poolAddress: string) => {
@@ -34,7 +33,7 @@ export const defaultFees = (currency: AnyCurrency, poolVersion: number, poolAddr
   if (currency === 'ETH' && poolVersion > 1) return [
     {
       type: 'fixed',
-      value: $ETH(0.01),
+      value: Value.$ETH(0.01),
     },
     {
       type: 'percentage',

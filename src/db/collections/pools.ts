@@ -4,13 +4,7 @@
 
 import _ from 'lodash'
 import getPoolContract from '../../core/getPoolContract'
-import {
-  Blockchain,
-  BlockchainFilter,
-  EthBlockchain,
-  EthereumNetwork, Pool,
-  SolanaNetwork,
-} from '../../entities'
+import { Blockchain, Pool } from '../../entities'
 import { mapCollection, mapPool } from '../adapters'
 import { PoolModel } from '../models'
 
@@ -25,7 +19,7 @@ type FindOneFilter = {
 type FindAllFilter = {
   collectionAddress?: string
   collectionId?: string
-  blockchainFilter?: BlockchainFilter
+  blockchainFilter?: Blockchain.Filter
   includeRetired?: boolean
   offset?: number
   count?: number
@@ -45,7 +39,7 @@ export async function findOnePool({
   address,
   collectionAddress,
   collectionId,
-  blockchain = EthBlockchain(),
+  blockchain = Blockchain.Ethereum(),
   includeRetired = false,
 }: FindOneFilter = {}): Promise<Pool | undefined> {
   const filter: Record<string, any>[] = [
@@ -125,15 +119,15 @@ export async function countAllPools({
   collectionAddress,
   collectionId,
   blockchainFilter = {
-    ethereum: EthereumNetwork.MAIN,
-    solana: SolanaNetwork.MAINNET,
+    ethereum: Blockchain.Ethereum.Network.MAIN,
+    solana: Blockchain.Solana.Network.MAINNET,
   },
   includeRetired = false,
   collectionName,
 }: FindAllFilter = {}): Promise<number> {
   let count = 0
   if (blockchainFilter.ethereum !== undefined) {
-    const blockchain = EthBlockchain(blockchainFilter.ethereum)
+    const blockchain = Blockchain.Ethereum(blockchainFilter.ethereum)
 
     const filter: Record<string, any>[] = [
       {
@@ -214,8 +208,8 @@ export async function findAllPools({
   collectionAddress,
   collectionId,
   blockchainFilter = {
-    ethereum: EthereumNetwork.MAIN,
-    solana: SolanaNetwork.MAINNET,
+    ethereum: Blockchain.Ethereum.Network.MAIN,
+    solana: Blockchain.Solana.Network.MAINNET,
   },
   includeRetired = false,
   offset,
@@ -225,7 +219,7 @@ export async function findAllPools({
   const pools: Pool[] = []
 
   if (blockchainFilter.ethereum !== undefined) {
-    const blockchain = EthBlockchain(blockchainFilter.ethereum)
+    const blockchain = Blockchain.Ethereum(blockchainFilter.ethereum)
 
     const filter: Record<string, any>[] = [
       {

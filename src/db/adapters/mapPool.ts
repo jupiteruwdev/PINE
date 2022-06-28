@@ -1,10 +1,7 @@
 import BigNumber from 'bignumber.js'
 import _ from 'lodash'
 import { defaultFees } from '../../config/supportedCollections'
-import {
-  LoanOption,
-  Pool,
-} from '../../entities'
+import { LoanOption, Pool } from '../../entities'
 import failure from '../../utils/failure'
 
 function mapLoanOption(

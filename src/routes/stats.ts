@@ -1,6 +1,6 @@
 import { Router } from 'express'
 import getGlobalStats from '../core/getGlobalStats'
-import { serializeGlobalStats } from '../entities'
+import { GlobalStats } from '../entities'
 import failure from '../utils/failure'
 import { getBlockchainFilter } from '../utils/query'
 
@@ -10,7 +10,7 @@ router.get('/global', async (req, res, next) => {
   try {
     const blockchainFilter = getBlockchainFilter(req.query, true)
     const stats = await getGlobalStats({ blockchainFilter })
-    const payload = serializeGlobalStats(stats)
+    const payload = GlobalStats.serialize(stats)
 
     res.status(200).json(payload)
   }

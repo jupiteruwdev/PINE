@@ -1,6 +1,6 @@
 import { assert } from 'chai'
 import { describe, it } from 'mocha'
-import { EthereumNetwork } from '../../entities'
+import { Blockchain } from '../../entities'
 import * as collections from './nftCollections'
 
 describe('db/collections', () => {
@@ -11,17 +11,17 @@ describe('db/collections', () => {
   })
 
   it('can find all collections on Ethereum Mainnet only', async () => {
-    const res = await collections.findAllCollections({ blockchainFilter: { ethereum: EthereumNetwork.MAIN } })
+    const res = await collections.findAllCollections({ blockchainFilter: { ethereum: Blockchain.Ethereum.Network.MAIN } })
     assert.isArray(res)
     assert.isTrue(res.length > 0)
-    assert.isTrue(res.reduce((out, curr) => out && (curr.blockchain.network === 'ethereum' && curr.blockchain.networkId === EthereumNetwork.MAIN), true))
+    assert.isTrue(res.reduce((out, curr) => out && (curr.blockchain.network === 'ethereum' && curr.blockchain.networkId === Blockchain.Ethereum.Network.MAIN), true))
   })
 
   it('can find all collections on Ethereum Rinkeby only', async () => {
-    const res = await collections.findAllCollections({ blockchainFilter: { ethereum: EthereumNetwork.RINKEBY } })
+    const res = await collections.findAllCollections({ blockchainFilter: { ethereum: Blockchain.Ethereum.Network.RINKEBY } })
     assert.isArray(res)
     assert.isTrue(res.length > 0)
-    assert.isTrue(res.reduce((out, curr) => out && (curr.blockchain.network === 'ethereum' && curr.blockchain.networkId === EthereumNetwork.RINKEBY), true))
+    assert.isTrue(res.reduce((out, curr) => out && (curr.blockchain.network === 'ethereum' && curr.blockchain.networkId === Blockchain.Ethereum.Network.RINKEBY), true))
   })
 
   it('can find no collections on an empty filter', async () => {

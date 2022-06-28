@@ -9,8 +9,8 @@
     "dev": "nodemon --exec \"ts-node --files -r dotenv/config\" --verbose --watch src --ext ts,json src/app",
     "build": "npm run clean && tsc",
     "build:test": "npm run clean && tsc --project tsconfig.test.json",
-    "test": "cross-env NODE_ENV=test mocha -b -c --timeout 100000 --extension spec.js --recursive --exit \"build/$npm_config_files\"",
-    "test:ts": "cross-env NODE_ENV=test mocha -r ts-node/register -b -c --diff --timeout 100000 --extension spec.ts --recursive --exit \"src/$npm_config_files\"",
+    "test": "cross-env NODE_ENV=test mocha -c --timeout 100000 --extension spec.js --recursive --exit --ignore \"build/entities/**/*\" \"build/$npm_config_files\"",
+    "test:ts": "cross-env NODE_ENV=test mocha -r ts-node/register -c --diff --timeout 100000 --extension spec.ts --recursive --exit --ignore \"src/entities/**/*\" \"src/$npm_config_files\"",
     "lint": "eslint --ext .ts --ignore-pattern entities src",
     "lint:fix": "npm run lint -- --fix"
   },
@@ -30,24 +30,24 @@
     "@types/ip": "^1.1.0",
     "@types/lodash": "^4.14.182",
     "@types/mocha": "^9.1.1",
-    "@types/node": "^17.0.39",
+    "@types/node": "^18.0.0",
     "@types/supertest": "^2.0.12",
-    "@typescript-eslint/eslint-plugin": "^5.27.0",
-    "@typescript-eslint/parser": "^5.27.0",
+    "@typescript-eslint/eslint-plugin": "^5.30.0",
+    "@typescript-eslint/parser": "^5.30.0",
     "chai": "^4.3.6",
     "cross-env": "^7.0.3",
-    "eslint": "^8.17.0",
+    "eslint": "^8.18.0",
     "mocha": "^10.0.0",
-    "nodemon": "^2.0.16",
+    "nodemon": "^2.0.18",
     "rimraf": "^3.0.2",
     "supertest": "^6.2.3",
     "ts-node": "^10.8.1",
-    "typescript": "^4.7.3"
+    "typescript": "^4.7.4"
   },
   "dependencies": {
     "@andrewscwei/super-error": "^1.7.0",
     "@metaplex-foundation/mpl-token-metadata": "^1.2.5",
-    "@solana/web3.js": "^1.43.4",
+    "@solana/web3.js": "^1.44.3",
     "axios": "^0.27.2",
     "bignumber.js": "^9.0.2",
     "cors": "^2.8.5",
@@ -56,8 +56,8 @@
     "graphql-request": "^4.3.0",
     "ip": "^1.1.8",
     "lodash": "^4.17.21",
-    "mongoose": "^6.3.8",
-    "web3": "^1.7.3",
-    "winston": "^3.7.2"
+    "mongoose": "^6.4.1",
+    "web3": "^1.7.4",
+    "winston": "^3.8.0"
   }
 }

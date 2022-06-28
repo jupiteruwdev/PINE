@@ -1,7 +1,7 @@
 import _ from 'lodash'
 import appConf from '../app.conf'
 import { findOneCollection } from '../db'
-import { Collection, EthBlockchain, EthereumNetwork, NFT, NFTMetadata } from '../entities'
+import { Blockchain, Collection, NFT, NFTMetadata } from '../entities'
 import failure from '../utils/failure'
 import getRequest from '../utils/getRequest'
 import normalizeNFTImageUri from '../utils/normalizeNFTImageUri'
@@ -37,7 +37,7 @@ export default async function getEthMainnetNFTsByOwner({
   ownerAddress,
   populateMetadata = false,
 }: Params): Promise<NFT[]> {
-  const blockchain = EthBlockchain(EthereumNetwork.MAIN)
+  const blockchain = Blockchain.Ethereum(Blockchain.Ethereum.Network.MAIN)
   const collectionAddressFilter = _.isString(collectionOrCollectionAddress) ? collectionOrCollectionAddress : collectionOrCollectionAddress?.address
 
   const apiKey = appConf.moralisAPIKey
@@ -66,7 +66,7 @@ export default async function getEthMainnetNFTsByOwner({
     const collectionFromDB = await findOneCollection({ address: collectionAddress })
     const collection = collectionFromDB ?? {
       address: collectionAddress,
-      blockchain: EthBlockchain(1),
+      blockchain: Blockchain.Ethereum(1),
       id: '',
     }
 

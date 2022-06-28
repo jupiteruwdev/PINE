@@ -3,7 +3,7 @@
  */
 
 import _ from 'lodash'
-import { Blockchain, BlockchainFilter, Collection, EthBlockchain, EthereumNetwork, SolanaNetwork } from '../../entities'
+import { Blockchain, Collection } from '../../entities'
 import { mapCollection } from '../adapters'
 import { NFTCollectionModel } from '../models'
 
@@ -15,10 +15,10 @@ type FindOneFilter = {
 }
 
 type FindAllFilter = {
-  blockchainFilter?: BlockchainFilter
+  blockchainFilter?: Blockchain.Filter
 }
 
-export async function findOneCollection({ address, blockchain = EthBlockchain(), id, poolAddress }: FindOneFilter): Promise<Collection | undefined> {
+export async function findOneCollection({ address, blockchain = Blockchain.Ethereum(), id, poolAddress }: FindOneFilter): Promise<Collection | undefined> {
   const query: Record<string, any> = {
     networkType: blockchain.network,
     networkId: blockchain.networkId,
@@ -49,11 +49,11 @@ export async function findOneCollection({ address, blockchain = EthBlockchain(),
   }
 }
 
-export async function findAllCollections({ blockchainFilter = { ethereum: EthereumNetwork.MAIN, solana: SolanaNetwork.MAINNET } }: FindAllFilter = {}): Promise<Collection[]> {
+export async function findAllCollections({ blockchainFilter = { ethereum: Blockchain.Ethereum.Network.MAIN, solana: Blockchain.Solana.Network.MAINNET } }: FindAllFilter = {}): Promise<Collection[]> {
   const collections: Collection[] = []
 
   if (blockchainFilter.ethereum !== undefined) {
-    const blockchain = EthBlockchain(blockchainFilter.ethereum)
+    const blockchain = Blockchain.Ethereum(blockchainFilter.ethereum)
 
     const collectionData = await NFTCollectionModel.find({
       networkType: blockchain.network,

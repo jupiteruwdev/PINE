@@ -1,7 +1,5 @@
 import _ from 'lodash'
-import {
-  Collection,
-} from '../../entities'
+import { Collection } from '../../entities'
 
 function getCollectionVendorId(data: Record<string, any>): string {
   const vendorIds = _.get(data, 'vendorIds')
@@ -30,4 +28,3 @@ export default function mapCollection(data: Record<string, any>): Collection {
     name,
   }
 }
-

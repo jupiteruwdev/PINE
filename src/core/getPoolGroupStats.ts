@@ -1,18 +1,12 @@
 import _ from 'lodash'
-import {
-  $USD, BlockchainFilter,
-  EthBlockchain,
-  EthereumNetwork,
-  PoolGroupStats,
-  SolanaNetwork,
-} from '../entities'
+import { Blockchain, PoolGroupStats, Value } from '../entities'
 import { getEthValueUSD } from '../utils/ethereum'
 import logger from '../utils/logger'
 import getEthCollectionFloorPriceBatch from './getEthCollectionFloorPriceBatch'
 import getPools from './getPools'
 
 type Params = {
-  blockchainFilter?: BlockchainFilter
+  blockchainFilter?: Blockchain.Filter
   collectionAddress?: string
   offset?: number
   count?: number
@@ -21,8 +15,8 @@ type Params = {
 
 export default async function getPoolGroupStats({
   blockchainFilter = {
-    ethereum: EthereumNetwork.MAIN,
-    solana: SolanaNetwork.MAINNET,
+    ethereum: Blockchain.Ethereum.Network.MAIN,
+    solana: Blockchain.Solana.Network.MAINNET,
   },
   collectionAddress,
   offset,
@@ -53,8 +47,8 @@ export default async function getPoolGroupStats({
       return {
         collection: pool.collection,
         pools: [pool],
-        totalValueLent: $USD(pool.utilization.amount.times(ethValueUSD.amount)),
-        totalValueLocked: $USD(
+        totalValueLent: Value.$USD(pool.utilization.amount.times(ethValueUSD.amount)),
+        totalValueLocked: Value.$USD(
           pool.valueLocked.amount.times(ethValueUSD.amount)
         ),
       }
@@ -74,7 +68,7 @@ export default async function getPoolGroupStats({
 
   const floorPrices = await getEthCollectionFloorPriceBatch({
     blockchainFilter: {
-      ethereum: EthBlockchain().networkId,
+      ethereum: Blockchain.Ethereum().networkId,
     },
     collectionAddresses: ethereumCollectionAddresses,
   })

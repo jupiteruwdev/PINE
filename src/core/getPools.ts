@@ -1,18 +1,12 @@
 import BigNumber from 'bignumber.js'
 import { ETHLimits } from '../config/supportedCollections'
 import { findAllPools } from '../db'
-import {
-  $ETH,
-  BlockchainFilter,
-  EthereumNetwork,
-  Pool,
-  SolanaNetwork,
-} from '../entities'
+import { Blockchain, Pool, Value } from '../entities'
 import getPoolCapacity from './getPoolCapacity'
 import getPoolUtilization from './getPoolUtilization'
 
 type Params = {
-  blockchainFilter?: BlockchainFilter
+  blockchainFilter?: Blockchain.Filter
   collectionAddress?: string
   offset?: number
   count?: number
@@ -28,8 +22,8 @@ type Params = {
  */
 export default async function getPools({
   blockchainFilter = {
-    ethereum: EthereumNetwork.MAIN,
-    solana: SolanaNetwork.MAINNET,
+    ethereum: Blockchain.Ethereum.Network.MAIN,
+    solana: Blockchain.Solana.Network.MAINNET,
   },
   collectionAddress,
   offset,
@@ -62,8 +56,8 @@ export default async function getPools({
 
       return {
         ...pool,
-        utilization: $ETH(utilizationEth),
-        valueLocked: $ETH(valueLockedEth),
+        utilization: Value.$ETH(utilizationEth),
+        valueLocked: Value.$ETH(valueLockedEth),
       }
     })
   )

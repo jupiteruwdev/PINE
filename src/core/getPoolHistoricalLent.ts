@@ -1,5 +1,5 @@
 import BigNumber from 'bignumber.js'
-import { $ETH, Blockchain, Value } from '../entities'
+import { Blockchain, Value } from '../entities'
 import { getEthWeb3 } from '../utils/ethereum'
 import failure from '../utils/failure'
 import { getPoolHistoricalLoanEvents } from './getPoolHistoricalLoanEvents'
@@ -18,7 +18,7 @@ export default async function getPoolHistoricalLent({ blockchain, poolAddress }:
     const totalLentWei = lentWeiPerEvent.reduce((p, c) => p.plus(c), new BigNumber(0))
     const totalLentEth = web3.utils.fromWei(totalLentWei.toFixed())
 
-    return $ETH(totalLentEth)
+    return Value.$ETH(totalLentEth)
   }
   default:
     throw failure('UNSUPPORTED_BLOCKCHAIN')

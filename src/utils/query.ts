@@ -1,6 +1,6 @@
 import { Request } from 'express'
 import _ from 'lodash'
-import { AnyBlockchain, Blockchain, BlockchainFilter, EthBlockchain, SolBlockchain } from '../entities'
+import { Blockchain, AnyBlockchain } from '../entities'
 import { parseEthNetworkId } from './ethereum'
 import failure from './failure'
 
@@ -37,7 +37,7 @@ export function getNumber(query: Request['query'], key: string): number {
 }
 
 /**
- * Parses a request query to look for and generate a {@link BlockchainFilter} dictionary. This
+ * Parses a request query to look for and generate a {@link Blockchain.Filter} dictionary. This
  * function expects the query to have key-value pairs in "<blockchain name>-<network ID>" format.
  *
  * @param query - The request query to parse.
@@ -45,18 +45,18 @@ export function getNumber(query: Request['query'], key: string): number {
  *                           included in the returned dictionary even if it was not specified in
  *                           the query.
  *
- * @returns The {@link BlockchainFilter} dictionary. If no blockchain can be found in the request
+ * @returns The {@link Blockchain.Filter} dictionary. If no blockchain can be found in the request
  *          query, an empty dictionary is simply returned.
  */
-export function getBlockchainFilter<T extends boolean>(query: Request['query'], autofillDefaults: T): T extends true ? Required<BlockchainFilter> : BlockchainFilter
-export function getBlockchainFilter<T extends boolean>(query: Request['query'], autofillDefaults: T): Required<BlockchainFilter> | BlockchainFilter {
+export function getBlockchainFilter<T extends boolean>(query: Request['query'], autofillDefaults: T): T extends true ? Required<Blockchain.Filter> : Blockchain.Filter
+export function getBlockchainFilter<T extends boolean>(query: Request['query'], autofillDefaults: T): Required<Blockchain.Filter> | Blockchain.Filter {
   const ethBlockchain = _.get(query, 'ethereum', _.get(query, 'eth')) === undefined
-    ? autofillDefaults ? EthBlockchain() : undefined
-    : EthBlockchain(parseEthNetworkId(query.ethereum))
+    ? autofillDefaults ? Blockchain.Ethereum() : undefined
+    : Blockchain.Ethereum(parseEthNetworkId(query.ethereum))
 
   const solBlockchain = _.get(query, 'solana', _.get(query, 'sol')) === undefined
-    ? autofillDefaults ? SolBlockchain() : undefined
-    : SolBlockchain(query.solana?.toString())
+    ? autofillDefaults ? Blockchain.Solana() : undefined
+    : Blockchain.Solana(query.solana?.toString())
 
   return {
     ethereum: ethBlockchain?.networkId,
