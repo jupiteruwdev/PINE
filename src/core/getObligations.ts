@@ -1,7 +1,6 @@
 import _ from 'lodash'
 import { findAllPools, findOneCollection } from '../db'
-import { Blockchain, EthereumNetwork } from '../entities'
-import { CollateralizedNFT } from '../entities/lib/CollateralizedNFT'
+import { Blockchain, CollateralizedNFT } from '../entities'
 import { getOpenLoan } from '../subgraph/request'
 import failure from '../utils/failure'
 import getLoanEvent from './getLoanEvent'
@@ -15,7 +14,7 @@ type Params = {
 
 export default async function getObligations({ blockchain, borrowerAddress }: Params) {
   let nfts: CollateralizedNFT[]
-  if (blockchain.networkId === EthereumNetwork.MAIN) {
+  if (blockchain.networkId === Blockchain.Ethereum.Network.MAIN) {
     const { loans } = await getOpenLoan({ borrower: borrowerAddress })
 
     nfts = await Promise.all(loans.map(async (loan: any) => ({

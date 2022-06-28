@@ -1,6 +1,6 @@
 import _ from 'lodash'
 import appConf from '../app.conf'
-import { $ETH, Blockchain, Value } from '../entities'
+import { Blockchain, Value } from '../entities'
 import failure from '../utils/failure'
 import getPoolCapacity from './getPoolCapacity'
 import getPoolContract from './getPoolContract'
@@ -23,7 +23,7 @@ export default async function getFlashLoanSource({ blockchain, poolAddress }: { 
     const sortedPools = poolsWithFundSource.sort((a, b) => b.valueLocked.amount.minus(b.utilization.amount).minus(a.valueLocked.amount.minus(a.utilization.amount)).toNumber())
     return {
       address: sortedPools[0].address,
-      capacity: $ETH(sortedPools[0].valueLocked.amount.minus(sortedPools[0].utilization.amount)),
+      capacity: Value.$ETH(sortedPools[0].valueLocked.amount.minus(sortedPools[0].utilization.amount)),
     }
   }
   else {

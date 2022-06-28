@@ -1,4 +1,4 @@
-import { $ETH, Blockchain, Value } from '../entities'
+import { Blockchain, Value } from '../entities'
 import { getPool } from '../subgraph/request'
 import { getEthWeb3 } from '../utils/ethereum'
 import failure from '../utils/failure'
@@ -22,7 +22,7 @@ export default async function getPoolUtilization({ blockchain, poolAddress }: Pa
 
     const totalUtilizationEth = web3.utils.fromWei(pool ? pool.totalUtilization : '0')
 
-    return $ETH(totalUtilizationEth)
+    return Value.$ETH(totalUtilizationEth)
   }
   default:
     throw failure('UNSUPPORTED_BLOCKCHAIN')

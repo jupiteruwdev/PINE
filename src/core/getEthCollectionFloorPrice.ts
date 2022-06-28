@@ -1,7 +1,7 @@
 import _ from 'lodash'
 import appConf from '../app.conf'
 import { findOneCollection } from '../db'
-import { $ETH, Blockchain, EthereumNetwork, Value } from '../entities'
+import { Blockchain, Value } from '../entities'
 import failure from '../utils/failure'
 import getRequest from '../utils/getRequest'
 import logger from '../utils/logger'
@@ -18,7 +18,7 @@ export default async function getEthCollectionFloorPrice({ blockchain, collectio
   if (!apiKey) throw failure('MISSING_API_KEY')
 
   switch (blockchain.networkId) {
-  case EthereumNetwork.MAIN:
+  case Blockchain.Ethereum.Network.MAIN:
     const res = await getRequest(`https://api.nftbank.ai/estimates-v2/floor_price/${collectionAddress}`, {
       headers: {
         'accept': 'application/json',
@@ -33,11 +33,11 @@ export default async function getEthCollectionFloorPrice({ blockchain, collectio
     const floorPrice = _.get(_.find(floorPrices, { 'currency_symbol': 'ETH' }), 'floor_price')
     if (!floorPrice) throw failure('FETCH_FLOOR_PRICE')
 
-    return $ETH(floorPrice)
-  case EthereumNetwork.RINKEBY:
+    return Value.$ETH(floorPrice)
+  case Blockchain.Ethereum.Network.RINKEBY:
     const collection = await findOneCollection({ blockchain, address: collectionAddress })
-    if (collection?.id.includes('testing2')) return $ETH(1)
-    else if (collection?.id.includes('testing') || collection?.id.includes('testing3')) return $ETH(0.1)
+    if (collection?.id.includes('testing2')) return Value.$ETH(1)
+    else if (collection?.id.includes('testing') || collection?.id.includes('testing3')) return Value.$ETH(0.1)
     throw failure('UNSUPPORTED_COLLECTION')
   default:
     throw failure('UNSUPPORTED_NETWORK')

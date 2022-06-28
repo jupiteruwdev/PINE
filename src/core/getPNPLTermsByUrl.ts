@@ -1,6 +1,6 @@
 import Web3 from 'web3'
 import { findOneCollection } from '../db'
-import { EthBlockchain, EthereumNetwork, PNPLTerms } from '../entities'
+import { PNPLTerms, Blockchain } from '../entities'
 import failure from '../utils/failure'
 import getLooksrarePNPLTerms from './getLooksrarePNPLTerms'
 import getOpenseaPNPLTerms from './getOpenseaPNPLTerms'
@@ -24,12 +24,12 @@ export default async function getPNPLTermsByUrl({ parsedURL }: Params): Promise<
     if (!Web3.utils.isAddress(collectionAddress)) throw failure('PNPL_INVALID_URL')
     if (!collectionAddress || !nftId) throw failure('PNPL_INVALID_URL')
 
-    const collection = await findOneCollection({ address: collectionAddress, blockchain: EthBlockchain(EthereumNetwork.MAIN) })
+    const collection = await findOneCollection({ address: collectionAddress, blockchain: Blockchain.Ethereum(Blockchain.Ethereum.Network.MAIN) })
     if (!collection) throw failure('UNSUPPORTED_COLLECTION')
 
     return getOpenseaPNPLTerms({
       openseaVersion: 'main',
-      blockchain: EthBlockchain(EthereumNetwork.MAIN),
+      blockchain: Blockchain.Ethereum(Blockchain.Ethereum.Network.MAIN),
       collectionId: collection.id,
       nftId,
     })
@@ -39,12 +39,12 @@ export default async function getPNPLTermsByUrl({ parsedURL }: Params): Promise<
     if (!Web3.utils.isAddress(collectionAddress)) throw failure('PNPL_INVALID_URL')
     if (!collectionAddress || !nftId) throw failure('PNPL_INVALID_URL')
 
-    const collection = await findOneCollection({ address: collectionAddress, blockchain: EthBlockchain(EthereumNetwork.RINKEBY) })
+    const collection = await findOneCollection({ address: collectionAddress, blockchain: Blockchain.Ethereum(Blockchain.Ethereum.Network.RINKEBY) })
     if (!collection) throw failure('UNSUPPORTED_COLLECTION')
 
     return getOpenseaPNPLTerms({
       openseaVersion: 'rinkeby',
-      blockchain: EthBlockchain(EthereumNetwork.RINKEBY),
+      blockchain: Blockchain.Ethereum(Blockchain.Ethereum.Network.RINKEBY),
       collectionId: collection.id,
       nftId,
     })
@@ -55,11 +55,11 @@ export default async function getPNPLTermsByUrl({ parsedURL }: Params): Promise<
     if (!Web3.utils.isAddress(collectionAddress)) throw failure('PNPL_INVALID_URL')
     if (!collectionAddress || !nftId) throw failure('PNPL_INVALID_URL')
 
-    const collection = await findOneCollection({ address: collectionAddress, blockchain: EthBlockchain(EthereumNetwork.MAIN) })
+    const collection = await findOneCollection({ address: collectionAddress, blockchain: Blockchain.Ethereum(Blockchain.Ethereum.Network.MAIN) })
     if (!collection) throw failure('UNSUPPORTED_COLLECTION')
 
     return getLooksrarePNPLTerms({
-      blockchain: EthBlockchain(EthereumNetwork.MAIN),
+      blockchain: Blockchain.Ethereum(Blockchain.Ethereum.Network.MAIN),
       collectionId: collection.id,
       nftId,
     })
@@ -70,11 +70,11 @@ export default async function getPNPLTermsByUrl({ parsedURL }: Params): Promise<
     if (!Web3.utils.isAddress(collectionAddress)) throw failure('PNPL_INVALID_URL')
     if (!collectionAddress || !nftId) throw failure('PNPL_INVALID_URL')
 
-    const collection = await findOneCollection({ address: collectionAddress, blockchain: EthBlockchain(EthereumNetwork.RINKEBY) })
+    const collection = await findOneCollection({ address: collectionAddress, blockchain: Blockchain.Ethereum(Blockchain.Ethereum.Network.RINKEBY) })
     if (!collection) throw failure('UNSUPPORTED_COLLECTION')
 
     return getLooksrarePNPLTerms({
-      blockchain: EthBlockchain(EthereumNetwork.RINKEBY),
+      blockchain: Blockchain.Ethereum(Blockchain.Ethereum.Network.RINKEBY),
       collectionId: collection.id,
       nftId,
     })

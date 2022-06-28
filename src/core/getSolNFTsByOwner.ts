@@ -2,7 +2,7 @@ import { Metadata } from '@metaplex-foundation/mpl-token-metadata'
 import { Connection, PublicKey } from '@solana/web3.js'
 import _ from 'lodash'
 import appConf from '../app.conf'
-import { Blockchain, Collection, NFT, NFTMetadata, SolBlockchain } from '../entities'
+import { Blockchain, Collection, NFT, NFTMetadata } from '../entities'
 import failure from '../utils/failure'
 import getRequest from '../utils/getRequest'
 import normalizeNFTImageUri from '../utils/normalizeNFTImageUri'
@@ -44,7 +44,7 @@ async function getNFTDataFromMoralis(id: string, mintAddress: string, networkId:
   return [{
     collection: {
       address: data.metaplex.updateAuthority,
-      blockchain: SolBlockchain(networkId),
+      blockchain: Blockchain.Solana(networkId),
       id: '', // TODO: Remove this
     },
     id,
@@ -62,7 +62,7 @@ async function getNFTDataFromBlockchain(id: string, mintAddress: string, network
   return [{
     collection: {
       address: data.updateAuthority,
-      blockchain: SolBlockchain(networkId),
+      blockchain: Blockchain.Solana(networkId),
       id: '', // TODO: Remove this
     },
     id,

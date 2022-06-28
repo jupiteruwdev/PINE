@@ -1,7 +1,7 @@
 import BigNumber from 'bignumber.js'
 import _ from 'lodash'
 import appConf from '../app.conf'
-import { $WEI, Blockchain, PNPLTerms } from '../entities'
+import { Value, Blockchain, PNPLTerms } from '../entities'
 import failure from '../utils/failure'
 import getRequest from '../utils/getRequest'
 import logger from '../utils/logger'
@@ -40,7 +40,7 @@ export default async function getOpenseaPNPLTerms({ openseaVersion, blockchain, 
         ...loanTerms,
         flashLoanSourceContractAddress: flashLoanSource.address,
         maxFlashLoanValue: flashLoanSource.capacity,
-        listedPrice: $WEI(new BigNumber(openseaInstructions.currentPrice)),
+        listedPrice: Value.$WEI(new BigNumber(openseaInstructions.currentPrice)),
         marketplaceContractAddress: _.get(appConf.openseaContractAddress, blockchain.networkId),
         marketplaceName: 'OpenSea',
         pnplContractAddress,

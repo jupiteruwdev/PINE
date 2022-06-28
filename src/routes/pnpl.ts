@@ -1,6 +1,6 @@
 import { Router } from 'express'
 import getPNPLTermsByUrl from '../core/getPNPLTermsByUrl'
-import { serializePNPLTerms } from '../entities'
+import { PNPLTerms } from '../entities'
 import failure from '../utils/failure'
 import { getString } from '../utils/query'
 
@@ -11,7 +11,7 @@ router.get('/terms', async (req, res, next) => {
     const url = getString(req.query, 'url')
     const parsedURL = new URL(url)
     const pnplTerms = await getPNPLTermsByUrl({ parsedURL })
-    const payload = serializePNPLTerms(pnplTerms)
+    const payload = PNPLTerms.serialize(pnplTerms)
 
     res.status(200).json(payload)
   }

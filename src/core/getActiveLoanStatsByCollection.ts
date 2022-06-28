@@ -1,7 +1,7 @@
 import _ from 'lodash'
 import appConf from '../app.conf'
 import { findAllPools } from '../db'
-import { $ETH, ActiveLoanStats, Blockchain, Pool } from '../entities'
+import { ActiveLoanStats, Blockchain, Pool, Value } from '../entities'
 import { getActiveLoansForPools } from '../subgraph/request'
 import getRequest from '../utils/getRequest'
 
@@ -45,7 +45,7 @@ export default async function getActiveLoanStatsByCollection({ collectionAddress
     result.push({
       id: tokenId,
       thumbnail: '',
-      amountBorrowed: $ETH(loan.borrowedWei),
+      amountBorrowed: Value.$ETH(loan.borrowedWei),
       expiry: loan.loanExpiretimestamp,
       poolOwner: loan.borrower,
     })

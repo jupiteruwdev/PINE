@@ -2,13 +2,12 @@ import axios from 'axios'
 import _ from 'lodash'
 import appConf from '../app.conf'
 import { findOneCollection } from '../db'
-import { $ETH, BlockchainFilter, EthereumNetwork } from '../entities'
-import { Valuation } from '../entities/lib/Valuation'
+import { Blockchain, Valuation, Value } from '../entities'
 import failure from '../utils/failure'
 import logger from '../utils/logger'
 
 type Params = {
-  blockchainFilter: BlockchainFilter
+  blockchainFilter: Blockchain.Filter
   collectionAddresses: string[]
 }
 
@@ -20,7 +19,7 @@ export default async function getEthCollectionFloorPriceBatch({ blockchainFilter
   if (!!blockchainFilter.ethereum && !!blockchainFilter.solana) throw failure('AMBIGUIOUS BLOCKCHAIN')
 
   switch (blockchainFilter.ethereum) {
-  case EthereumNetwork.MAIN:
+  case Blockchain.Ethereum.Network.MAIN:
     const { data: res } = await axios.post('https://api.nftbank.ai/estimates-v2/floor_price/bulk',
       {
         'chain_id': 'ETHEREUM',
@@ -40,26 +39,26 @@ export default async function getEthCollectionFloorPriceBatch({ blockchainFilter
       const collectionAddress = _.get(floorPriceEntity, 'asset_info.contract_address')
       const collectionName = _.get(floorPriceEntity, 'asset_info.name')
       return {
-        collection: await findOneCollection({ blockchain: { network: 'ethereum', networkId: EthereumNetwork.MAIN }, address: collectionAddress }) ?? {
+        collection: await findOneCollection({ blockchain: { network: 'ethereum', networkId: Blockchain.Ethereum.Network.MAIN }, address: collectionAddress }) ?? {
           address: collectionAddress,
           name: collectionName,
           id: '',
-          blockchain: { network: 'ethereum', networkId: EthereumNetwork.MAIN },
+          blockchain: { network: 'ethereum', networkId: Blockchain.Ethereum.Network.MAIN },
         },
-        value1DReference: $ETH(_.get(_.find(floorPrices, { 'currency_symbol': 'ETH' }), 'floor_price')),
+        value1DReference: Value.$ETH(_.get(_.find(floorPrices, { 'currency_symbol': 'ETH' }), 'floor_price')),
       }
     })
 
     if (!floorPrices) throw failure('FETCH_FLOOR_PRICE')
 
     return Promise.all(floorPrices)
-  case EthereumNetwork.RINKEBY:
+  case Blockchain.Ethereum.Network.RINKEBY:
     const floorPricesRinkeby = []
     for (const collectionAddress of collectionAddresses) {
-      const collection = await findOneCollection({ blockchain: { network: 'ethereum', networkId: EthereumNetwork.RINKEBY }, address: collectionAddress })
+      const collection = await findOneCollection({ blockchain: { network: 'ethereum', networkId: Blockchain.Ethereum.Network.RINKEBY }, address: collectionAddress })
       let floorPriceRinkeby
-      if (collection?.id === 'testing2') floorPriceRinkeby = $ETH(1)
-      else if (collection?.id === 'testing' || collection?.id === 'testing3') floorPriceRinkeby = $ETH(0.1)
+      if (collection?.id === 'testing2') floorPriceRinkeby = Value.$ETH(1)
+      else if (collection?.id === 'testing' || collection?.id === 'testing3') floorPriceRinkeby = Value.$ETH(0.1)
       else throw failure('UNSUPPORTED_COLLECTION')
       floorPricesRinkeby.push({
         collection,

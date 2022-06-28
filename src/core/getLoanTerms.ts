@@ -1,7 +1,7 @@
 import BigNumber from 'bignumber.js'
 import { ETHLimits, routerAddresses } from '../config/supportedCollections'
 import { findOneCollection, findOnePool } from '../db'
-import { $ETH, Blockchain, LoanTerms, NFT } from '../entities'
+import { Value, Blockchain, LoanTerms, NFT } from '../entities'
 import failure from '../utils/failure'
 import logger from '../utils/logger'
 import getEthCollectionValuation from './getEthCollectionValuation'
@@ -55,7 +55,7 @@ export default async function getLoanTerms({ blockchain, collectionId, nftId }: 
     }
 
     loanTerms.options.map(option => {
-      option.maxBorrow = $ETH(option.maxLTVBPS.div(10_000).times(loanTerms.valuation.value?.amount ?? 0))
+      option.maxBorrow = Value.$ETH(option.maxLTVBPS.div(10_000).times(loanTerms.valuation.value?.amount ?? 0))
     })
 
     if (ETHLimits[pool.address] && loanTerms.options.some(option => utilization.amount.plus(option.maxBorrow?.amount ?? new BigNumber(0)).gt(new BigNumber(ETHLimits[pool.address])))) throw failure('POOL_OVER_LENDER_DEFINED_UTILIZATION')

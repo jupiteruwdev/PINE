@@ -2,7 +2,7 @@ import BigNumber from 'bignumber.js'
 import _ from 'lodash'
 import appConf from '../app.conf'
 import { findOneCollection } from '../db'
-import { $ETH, Blockchain, EthereumNetwork, Valuation } from '../entities'
+import { Blockchain, Valuation, Value } from '../entities'
 import failure from '../utils/failure'
 import getRequest from '../utils/getRequest'
 import logger from '../utils/logger'
@@ -20,7 +20,7 @@ export default async function getEthCollectionValuation({ blockchain, collection
   if (!collection) throw failure('UNSUPPORTED_COLLECTION')
 
   switch (blockchain.networkId) {
-  case EthereumNetwork.MAIN:
+  case Blockchain.Ethereum.Network.MAIN:
     const matches = collection.id.match(/(.*):(.*)/)
     const venue = matches?.[1]
     const id = matches?.[2]
@@ -46,9 +46,9 @@ export default async function getEthCollectionValuation({ blockchain, collection
         const value = floorPrice.gt(value24Hr) ? value24Hr : floorPrice
         const valuation: Valuation<'ETH'> = {
           collection,
-          value: $ETH(value),
-          value24Hr: $ETH(value24Hr),
-          value1DReference: $ETH(0),
+          value: Value.$ETH(value),
+          value24Hr: Value.$ETH(value24Hr),
+          value1DReference: Value.$ETH(0),
         }
 
         logger.info(`Fetching valuation for Ethereum collection <${collectionAddress}>... OK`, valuation)
@@ -63,12 +63,12 @@ export default async function getEthCollectionValuation({ blockchain, collection
     default:
       throw failure('UNSUPPORTED_MARKETPLACE')
     }
-  case EthereumNetwork.RINKEBY:
+  case Blockchain.Ethereum.Network.RINKEBY:
     if (collection.id.includes('testing') || collection.id.includes('testing3')) {
       const valuation = {
         collection,
-        value: $ETH(0.1),
-        value24Hr: $ETH(1),
+        value: Value.$ETH(0.1),
+        value24Hr: Value.$ETH(1),
         value1DReference: await getEthCollectionFloorPrice({ blockchain, collectionAddress: collection.address }),
       }
 
@@ -79,8 +79,8 @@ export default async function getEthCollectionValuation({ blockchain, collection
     else if (collection.id.includes('testing2')) {
       const valuation = {
         collection,
-        value: $ETH(1),
-        value24Hr: $ETH(1),
+        value: Value.$ETH(1),
+        value24Hr: Value.$ETH(1),
         value1DReference: await getEthCollectionFloorPrice({ blockchain, collectionAddress: collection.address }),
       }
 

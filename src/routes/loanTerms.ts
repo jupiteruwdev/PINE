@@ -3,7 +3,7 @@ import { Router } from 'express'
 import getExistingLoan from '../core/getExistingLoan'
 import getLoanTerms from '../core/getLoanTerms'
 import getRolloverTerms from '../core/getRolloverTerms'
-import { serializeLoanTerms, serializeRolloverTerms } from '../entities'
+import { LoanTerms, RolloverTerms } from '../entities'
 import failure from '../utils/failure'
 import { getBlockchain, getString } from '../utils/query'
 
@@ -19,12 +19,12 @@ router.get('/', async (req, res, next) => {
 
     if (isRollover) {
       const loanTerms = await getRolloverTerms({ blockchain, nftId, collectionId, existingLoan })
-      const payload = serializeRolloverTerms(loanTerms)
+      const payload = RolloverTerms.serialize(loanTerms)
       res.status(200).json(payload)
     }
     else {
       const loanTerms = await getLoanTerms({ blockchain, nftId, collectionId })
-      const payload = serializeLoanTerms(loanTerms)
+      const payload = LoanTerms.serialize(loanTerms)
       res.status(200).json(payload)
     }
   }

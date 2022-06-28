@@ -1,6 +1,6 @@
 import { rolloverAddresses } from '../config/supportedCollections'
 import { findOneCollection, findOnePool } from '../db'
-import { $ETH, Blockchain, NFT, RolloverTerms } from '../entities'
+import { Blockchain, NFT, RolloverTerms, Value } from '../entities'
 import failure from '../utils/failure'
 import logger from '../utils/logger'
 import getEthCollectionValuation from './getEthCollectionValuation'
@@ -56,7 +56,7 @@ export default async function getRolloverTerms({ blockchain, collectionId, nftId
     }
 
     loanTerms.options.map(option => {
-      option.maxBorrow = $ETH(option.maxLTVBPS.div(10_000).times(loanTerms.valuation.value?.amount ?? 0))
+      option.maxBorrow = Value.$ETH(option.maxLTVBPS.div(10_000).times(loanTerms.valuation.value?.amount ?? 0))
       option.fees = [
         {
           type: 'percentage',

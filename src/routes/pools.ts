@@ -3,7 +3,7 @@ import getPool from '../core/getPool'
 import getPoolGroupStats from '../core/getPoolGroupStats'
 import getPools from '../core/getPools'
 import { countAllPools } from '../db'
-import { serializeEntityArray, serializePagination, serializePool, serializePoolGroupStats } from '../entities'
+import { Pagination, Pool, PoolGroupStats, serializeEntityArray } from '../entities'
 import failure from '../utils/failure'
 import { getBlockchain, getBlockchainFilter, getNumber, getString } from '../utils/query'
 import tryOrUndefined from '../utils/tryOrUndefined'
@@ -25,17 +25,17 @@ router.get('/', async (req, res, next) => {
       offset,
       count,
     })
-    const payload = serializeEntityArray(pools, serializePool)
+    const payload = serializeEntityArray(pools, Pool.codingResolver)
     const nextOffset = (offset ?? 0) + pools.length
-    const pagination = serializePagination({ data: payload, totalCount, nextOffset: nextOffset === totalCount - 1 ? undefined : nextOffset })
+    const pagination = Pagination.serialize({ data: payload, totalCount, nextOffset: nextOffset === totalCount - 1 ? undefined : nextOffset })
     res.status(200).json(pagination)
   }
   else {
     try {
       const pools = await getPoolGroupStats({ blockchainFilter, count, offset, collectionName })
-      const payload = serializeEntityArray(pools, serializePoolGroupStats)
+      const payload = serializeEntityArray(pools, PoolGroupStats.codingResolver)
       const nextOffset = (offset ?? 0) + pools.length
-      const pagination = serializePagination({ data: payload, totalCount, nextOffset: nextOffset === totalCount - 1 ? undefined : nextOffset })
+      const pagination = Pagination.serialize({ data: payload, totalCount, nextOffset: nextOffset === totalCount - 1 ? undefined : nextOffset })
       res.status(200).json(pagination)
     }
     catch (err) {
@@ -50,7 +50,7 @@ router.get('/eth/:address', async (req, res, next) => {
 
   try {
     const pool = await getPool({ blockchain, poolAddress })
-    const payload = serializePool(pool)
+    const payload = Pool.serialize(pool)
     res.status(200).json(payload)
   }
   catch (err) {

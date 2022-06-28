@@ -1,4 +1,4 @@
-import { Blockchain, Collection, EthereumNetwork, NFT } from '../entities'
+import { Blockchain, NFT, Collection } from '../entities'
 import failure from '../utils/failure'
 import getEthMainnetNFTsByOwner from './getEthMainnetNFTsByOwner'
 import getEthTestnetNFTsByOwner from './getEthTestnetNFTsByOwner'
@@ -56,7 +56,7 @@ export default async function getNFTsByOwner({
 }: Params): Promise<NFT[]> {
   switch (blockchain.network) {
   case 'ethereum':
-    if (blockchain.networkId === EthereumNetwork.MAIN) {
+    if (blockchain.networkId === Blockchain.Ethereum.Network.MAIN) {
       // TODO: This is bad
       await delay(100 * index)
       return getEthMainnetNFTsByOwner({ collectionOrCollectionAddress, ownerAddress, populateMetadata })
