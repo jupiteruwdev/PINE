@@ -32,7 +32,7 @@ router.get('/rollover', async (req, res, next) => {
     const existingLoan = await getExistingLoan({ blockchain, nftId, collectionId })
     const canRollover = new BigNumber(existingLoan?.borrowedWei).gt(new BigNumber(existingLoan?.returnedWei))
 
-    if (!canRollover) next(failure('INVALID_ROLLOVER'))
+    if (!canRollover) next(failure('ERR_INVALID_ROLLOVER'))
 
     const loanTerms = await getRolloverTerms({ blockchain, nftId, collectionId, existingLoan })
     const payload = RolloverTerms.serialize(loanTerms)

@@ -22,23 +22,23 @@ export default async function getRequest<T = any>(path: string, { controller, ho
 
     const payload = transformPayload ? transformPayload(res.data) : res.data
 
-    logger.debug(`Making request to <${host ?? ''}${path}>... OK [${res.status}]`, payload)
+    logger.info(`Making request to <${host ?? ''}${path}>... ${res.status}`, payload)
 
     return payload
   }
   catch (err) {
     if (axios.isCancel(err)) {
-      logger.warn(`Making request to <${host ?? ''}${path}>...`, 'CANCEL', err)
+      logger.warn(`Making request to <${host ?? ''}${path}>... SKIP:`, err)
       throw failure('ERR_REQUEST_CANCELLED', err)
     }
     else if (axios.isAxiosError(err)) {
       const error = err.response?.status === undefined ? failure('ERR_SYSTEM_OFFLINE') : new SuperError(err.message, err.response?.status.toString(), err.response?.data as any, err)
-      logger.error(`Making request to <${host ?? ''}${path}>...`, `${err.response?.status ?? 'ERR:'} ${String(error)}`)
+      logger.error(`Making request to <${host ?? ''}${path}>... ${err.response?.status ?? 'ERR:'}`, error)
       throw error
     }
     else {
       const error = err instanceof TypeError ? err : failure('UNEXPECTED_PAYLOAD')
-      logger.error(`Making request to <${host ?? ''}${path}>... ERR: ${String(error)}`)
+      logger.error(`Making request to <${host ?? ''}${path}>... ERR:`, error)
       throw error
     }
   }

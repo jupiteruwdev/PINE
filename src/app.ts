@@ -28,13 +28,13 @@ app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
   res.setHeader('Content-Type', 'application/json')
 
   if (status === 404) {
-    logger.warning('Handling 404 error...', 'SKIP', err)
+    logger.warning(`Handling 404 error... SKIP: ${err}`)
   }
   else if (appConf.env === 'production') {
-    logger.error('Handling 500 error...', 'OK', err)
+    logger.error('Handling 500 error... ERR:', err)
   }
   else {
-    logger.error('Handling 500 error...', 'OK')
+    logger.error('Handling 500 error... ERR:')
     /* eslint-disable-next-line no-console */
     console.error(err)
   }
@@ -48,10 +48,10 @@ http
   .createServer(app)
   .listen(appConf.port)
   .on('error', (error: NodeJS.ErrnoException) => {
-    logger.error('Handling Node exception...', 'OK', error)
+    logger.error('Handling Node exception... ERR:', error)
   })
   .on('listening', () => {
-    logger.info(`⚡ Starting service on ${ip.address()}:${appConf.port}...`, 'OK')
+    logger.info(`⚡ Starting service on ${ip.address()}:${appConf.port}... OK`)
   })
 
 export default app
