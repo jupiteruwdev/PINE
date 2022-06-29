@@ -39,7 +39,7 @@ export async function getEthValueUSD(amountEth: number | string | BigNumber = 1)
 
 export async function getEthValueUSD24Hr(amountEth: number | string | BigNumber = 1) {
   const data = await getRequest('https://api.binance.com/api/v3/ticker/24hr?symbol=ETHUSDT')
-    .catch(err => { throw failure('FETCH_ETH_FETCH_USD_24HR_PRICE', err) })
+    .catch(err => { throw failure('ERR_ETH_FETCH_USD_24HR_PRICE', err) })
 
   const amount = new BigNumber(amountEth)
   const price = new BigNumber(_.get(data, 'prevClosePrice'))
