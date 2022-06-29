@@ -43,7 +43,7 @@ router.get('/rollover', async (req, res, next) => {
   }
 })
 
-router.get('/finance', async (req, res, next) => {
+router.get('/pnpl', async (req, res, next) => {
   try {
     const url = getString(req.query, 'url')
     const parsedURL = new URL(url)

@@ -37,7 +37,7 @@ export default async function getRequest<T = any>(path: string, { controller, ho
       throw error
     }
     else {
-      const error = err instanceof TypeError ? err : failure('UNEXPECTED_PAYLOAD')
+      const error = err instanceof TypeError ? err : failure('ERR_UNEXPECTED_PAYLOAD')
       logger.error(`Making request to <${host ?? ''}${path}>... ERR:`, error)
       throw error
     }

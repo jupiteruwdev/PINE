@@ -17,7 +17,7 @@ export default async function getEthCollectionValuation({ blockchain, collection
   logger.info(`Fetching valuation for Ethereum collection <${collectionAddress}>...`)
 
   const collection = await findOneCollection({ blockchain, address: collectionAddress })
-  if (!collection) throw failure('UNSUPPORTED_COLLECTION')
+  if (!collection) throw failure('ERR_UNSUPPORTED_COLLECTION')
 
   switch (blockchain.networkId) {
   case Blockchain.Ethereum.Network.MAIN:
@@ -25,13 +25,13 @@ export default async function getEthCollectionValuation({ blockchain, collection
     const venue = matches?.[1]
     const id = matches?.[2]
 
-    if (!venue || !id) throw failure('UNSUPPORTED_COLLECTION')
+    if (!venue || !id) throw failure('ERR_UNSUPPORTED_COLLECTION')
 
     switch (venue) {
     case 'opensea':
       try {
         const apiKey = appConf.openseaAPIKey
-        if (!apiKey) throw failure('FETCH_OPENSEA_VALUATION_FAILURE')
+        if (!apiKey) throw failure('ERR_MISSING_API_KEY', Error('Missing OpenSea API key'))
 
         const [collectionData] = await Promise.all([
           getRequest(`https://api.opensea.io/api/v1/collection/${id}/stats`, {
@@ -51,17 +51,17 @@ export default async function getEthCollectionValuation({ blockchain, collection
           value1DReference: Value.$ETH(0),
         }
 
-        logger.info(`Fetching valuation for Ethereum collection <${collectionAddress}>... OK`, valuation)
+        logger.info(`Fetching valuation for Ethereum collection <${collectionAddress}>... OK:`, valuation)
 
         return valuation
       }
       catch (err) {
-        logger.error(`Fetching valuation for Ethereum collection <${collectionAddress}>... ERR`, err)
+        logger.error(`Fetching valuation for Ethereum collection <${collectionAddress}>... ERR:`, err)
 
-        throw failure('FETCH_OPENSEA_VALUATION_FAILURE', err)
+        throw err
       }
     default:
-      throw failure('UNSUPPORTED_MARKETPLACE')
+      throw failure('ERR_UNSUPPORTED_MARKETPLACE')
     }
   case Blockchain.Ethereum.Network.RINKEBY:
     if (collection.id.includes('testing') || collection.id.includes('testing3')) {
@@ -72,7 +72,7 @@ export default async function getEthCollectionValuation({ blockchain, collection
         value1DReference: await getEthCollectionFloorPrice({ blockchain, collectionAddress: collection.address }),
       }
 
-      logger.info(`Fetching valuation for Ethereum collection <${collectionAddress}>... OK`, valuation)
+      logger.info(`Fetching valuation for Ethereum collection <${collectionAddress}>... OK:`, valuation)
 
       return valuation
     }
@@ -84,18 +84,18 @@ export default async function getEthCollectionValuation({ blockchain, collection
         value1DReference: await getEthCollectionFloorPrice({ blockchain, collectionAddress: collection.address }),
       }
 
-      logger.info(`Fetching valuation for Ethereum collection <${collectionAddress}>... OK`, valuation)
+      logger.info(`Fetching valuation for Ethereum collection <${collectionAddress}>... OK:`, valuation)
 
       return valuation
     }
     else {
-      const err = failure('UNSUPPORTED_COLLECTION')
-      logger.error(`Fetching valuation for Ethereum collection <${collectionAddress}>... ERR`, err)
+      const err = failure('ERR_UNSUPPORTED_COLLECTION')
+      logger.error(`Fetching valuation for Ethereum collection <${collectionAddress}>... ERR:`, err)
       throw err
     }
   default:
-    const err = failure('UNSUPPORTED_NETWORK')
-    logger.error(`Fetching valuation for Ethereum collection <${collectionAddress}>... ERR`, err)
+    const err = failure('ERR_UNSUPPORTED_BLOCKCHAIN')
+    logger.error(`Fetching valuation for Ethereum collection <${collectionAddress}>... ERR:`, err)
     throw err
   }
 }

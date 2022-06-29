@@ -5,7 +5,6 @@ import { ActiveLoanStats, Blockchain, Pool, Value } from '../entities'
 import { getActiveLoansForPools } from '../subgraph/request'
 import failure from '../utils/failure'
 import getRequest from '../utils/getRequest'
-import logger from '../utils/logger'
 
 type Params = {
   collectionAddress: string
@@ -20,8 +19,6 @@ type ActiveLoan = {
 }
 
 export default async function getActiveLoanStatsByCollection({ collectionAddress, blockchain }: Params) {
-  logger.info(`Fetching active loan stats by collection <${collectionAddress}>...`)
-
   try {
     const pools = await findAllPools({ collectionAddress })
 
@@ -67,7 +64,6 @@ export default async function getActiveLoanStatsByCollection({ collectionAddress
       })))
   }
   catch (err) {
-    logger.error(`Fetching active loan stats by collection ${collectionAddress}... ERR: ${String(err)}`)
     throw failure('ERR_GET_ACTIVE_LOAN_STATS_BY_COLLECTION', err)
   }
 }

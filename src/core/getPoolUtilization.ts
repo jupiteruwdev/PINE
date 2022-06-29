@@ -25,6 +25,6 @@ export default async function getPoolUtilization({ blockchain, poolAddress }: Pa
     return Value.$ETH(totalUtilizationEth)
   }
   default:
-    throw failure('UNSUPPORTED_BLOCKCHAIN')
+    throw failure('ERR_UNSUPPORTED_BLOCKCHAIN')
   }
 }

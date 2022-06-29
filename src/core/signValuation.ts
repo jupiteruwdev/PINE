@@ -45,6 +45,6 @@ export default async function signValuation({ blockchain, nftId, poolAddress, co
     }
   }
   default:
-    throw failure('UNSUPPORTED_BLOCKCHAIN')
+    throw failure('ERR_UNSUPPORTED_BLOCKCHAIN')
   }
 }

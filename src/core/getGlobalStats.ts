@@ -1,7 +1,6 @@
 import BigNumber from 'bignumber.js'
 import { Blockchain, GlobalStats, Value } from '../entities'
 import { getEthValueUSD } from '../utils/ethereum'
-import failure from '../utils/failure'
 import logger from '../utils/logger'
 import getPoolHistoricalLent from './getPoolHistoricalLent'
 import getPools from './getPools'
@@ -37,11 +36,13 @@ export default async function getGlobalStats({ blockchainFilter = { ethereum: Bl
       utilizationRatio: totalUtilizationUSD.div(totalValueLockedUSD),
     }
 
-    logger.info('Fetching global stats... OK', globalStats)
+    logger.info(`Fetching global stats for blockchain filter <${JSON.stringify(blockchainFilter)}>... OK:`, globalStats)
 
     return globalStats
   }
   catch (err) {
-    throw failure('FETCH_GLOBAL_STATS_FAILURE', err)
+    logger.error(`Fetching global stats for blockchain filter <${JSON.stringify(blockchainFilter)}>... ERR:`, err)
+
+    throw err
   }
 }

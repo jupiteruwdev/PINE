@@ -36,6 +36,6 @@ export default async function getPoolContract({ blockchain, poolAddress }: Param
     }
   }
   default:
-    throw failure('UNSUPPORTED_BLOCKCHAIN')
+    throw failure('ERR_UNSUPPORTED_BLOCKCHAIN')
   }
 }

@@ -67,6 +67,6 @@ export default async function getNFTsByOwner({
   case 'solana':
     return getSolNFTsByOwner({ blockchain, collectionOrCollectionAddress, ownerAddress, populateMetadata })
   default:
-    throw failure('UNSUPPORTED_BLOCKCHAIN')
+    throw failure('ERR_UNSUPPORTED_BLOCKCHAIN')
   }
 }

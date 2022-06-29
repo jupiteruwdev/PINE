@@ -1,7 +1,6 @@
 import _ from 'lodash'
 import { Blockchain, PoolGroupStats, Value } from '../entities'
 import { getEthValueUSD } from '../utils/ethereum'
-import failure from '../utils/failure'
 import logger from '../utils/logger'
 import getEthCollectionFloorPriceBatch from './getEthCollectionFloorPriceBatch'
 import getPools from './getPools'
@@ -84,7 +83,8 @@ export default async function getPoolGroupStats({
     return out
   }
   catch (err) {
-    logger.error(`Fetching pool group stats... ERR: ${String(err)}`)
-    throw failure('ERR_GET_POOL_GROUP_STATS', err)
+    logger.error('Fetching pool group stats... ERR:', err)
+
+    throw err
   }
 }

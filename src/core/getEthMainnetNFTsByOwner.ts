@@ -41,7 +41,7 @@ export default async function getEthMainnetNFTsByOwner({
   const collectionAddressFilter = _.isString(collectionOrCollectionAddress) ? collectionOrCollectionAddress : collectionOrCollectionAddress?.address
 
   const apiKey = appConf.moralisAPIKey
-  if (!apiKey) throw failure('MISSING_API_KEY')
+  if (!apiKey) throw failure('ERR_MISSING_API_KEY', 'Missing Moralis API key')
 
   const { result } = await getRequest(`https://deep-index.moralis.io/api/v2/${ownerAddress}/nft`, {
     headers: {

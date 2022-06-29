@@ -20,7 +20,7 @@ type Params = {
  */
 export default async function getPool({ blockchain, poolAddress }: Params): Promise<Required<Pool>> {
   const pool = await findOnePool({ address: poolAddress, blockchain })
-  if (!pool) throw failure('POOL_NOT_FOUND')
+  if (!pool) throw failure('ERR_POOL_NOT_FOUND')
 
   const [
     { amount: utilizationEth },
