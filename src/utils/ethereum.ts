@@ -19,7 +19,7 @@ export function getEthWeb3(networkId: string = Blockchain.Ethereum.Network.MAIN)
 
   const rpc = _.get(appConf.ethRPC, networkId)
 
-  if (!rpc) throw failure('UNSUPPORTED_RPC')
+  if (!rpc) throw failure('ERR_ETH_UNSUPPORTED_RPC', `No RPC set up for network ID ${networkId}`)
 
   const web3 = new Web3(rpc)
   web3s[networkId] = web3
@@ -28,29 +28,23 @@ export function getEthWeb3(networkId: string = Blockchain.Ethereum.Network.MAIN)
 }
 
 export async function getEthValueUSD(amountEth: number | string | BigNumber = 1) {
-  try {
-    const data = await getRequest('https://api.binance.com/api/v3/ticker/price?symbol=ETHUSDT')
-    const amount = new BigNumber(amountEth)
-    const price = new BigNumber(_.get(data, 'price'))
+  const data = await getRequest('https://api.binance.com/api/v3/ticker/price?symbol=ETHUSDT')
+    .catch(err => { throw failure('ERR_ETH_FETCH_USD_PRICE', err) })
 
-    return Value.$USD(amount.times(price))
-  }
-  catch (err) {
-    throw failure('FETCH_ETH_USD_PRICE_FAILURE', err)
-  }
+  const amount = new BigNumber(amountEth)
+  const price = new BigNumber(_.get(data, 'price'))
+
+  return Value.$USD(amount.times(price))
 }
 
 export async function getEthValueUSD24Hr(amountEth: number | string | BigNumber = 1) {
-  try {
-    const data = await getRequest('https://api.binance.com/api/v3/ticker/24hr?symbol=ETHUSDT')
-    const amount = new BigNumber(amountEth)
-    const price = new BigNumber(_.get(data, 'prevClosePrice'))
+  const data = await getRequest('https://api.binance.com/api/v3/ticker/24hr?symbol=ETHUSDT')
+    .catch(err => { throw failure('FETCH_ETH_FETCH_USD_24HR_PRICE', err) })
 
-    return Value.$USD(amount.times(price))
-  }
-  catch (err) {
-    throw failure('FETCH_ETH_USD_24HR_PRICE_FAILURE', err)
-  }
+  const amount = new BigNumber(amountEth)
+  const price = new BigNumber(_.get(data, 'prevClosePrice'))
+
+  return Value.$USD(amount.times(price))
 }
 
 export async function getEthBlockNumber(networkId: string = Blockchain.Ethereum.Network.MAIN): Promise<number> {

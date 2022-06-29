@@ -27,7 +27,7 @@ router.get('/nft', async (req, res, next) => {
     }
   }
   catch (err) {
-    next(failure('FETCH_LOAN_POSITION_FAILURE', err))
+    next(failure('ERR_API_FETCH_LOAN_POSITION_BY_NFT', err))
   }
 })
 
@@ -44,7 +44,7 @@ router.get('/borrower', async (req, res, next) => {
     res.status(200).json(payload)
   }
   catch (err) {
-    next(failure('FETCH_OBLIGATIONS_FAILURE', err))
+    next(failure('ERR_API_FETCH_LOAN_POSITIONS_BY_BORROWER', err))
   }
 })
 
@@ -53,14 +53,14 @@ router.get('/borrower', async (req, res, next) => {
  */
 router.get('/collection', async (req, res, next) => {
   try {
-    const collectionAddress = getString(req.params, 'collectionAddress')
+    const collectionAddress = getString(req.query, 'collectionAddress')
     const blockchain = tryOrUndefined(() => getBlockchain(req.query)) ?? Blockchain.Ethereum()
     const obligation = await getActiveLoanStatsByCollection({ collectionAddress, blockchain })
     const payload = serializeEntityArray(obligation, ActiveLoanStats.codingResolver)
     res.status(200).json(payload)
   }
   catch (err) {
-    next(failure('FETCH_OBLIGATIONS_FAILURE', err))
+    next(failure('ERR_API_FETCH_LOAN_POSITIONS_BY_COLLECTION', err))
   }
 })
 

@@ -20,7 +20,7 @@ router.get('/borrow', async (req, res, next) => {
     res.status(200).json(payload)
   }
   catch (err) {
-    next(failure('FETCH_LOAN_TERMS_FAILURE', err))
+    next(failure('ERR_API_FETCH_LOAN_TERMS', err))
   }
 })
 
@@ -39,7 +39,7 @@ router.get('/rollover', async (req, res, next) => {
     res.status(200).json(payload)
   }
   catch (err) {
-    next(failure('FETCH_LOAN_TERMS_FAILURE', err))
+    next(failure('ERR_API_FETCH_ROLLOVER_TERMS', err))
   }
 })
 
@@ -47,13 +47,21 @@ router.get('/finance', async (req, res, next) => {
   try {
     const url = getString(req.query, 'url')
     const parsedURL = new URL(url)
-    const pnplTerms = await getPNPLTermsByUrl({ parsedURL })
+    let pnplTerms
+
+    try {
+      pnplTerms = await getPNPLTermsByUrl({ parsedURL })
+    }
+    catch (err) {
+      return next(err)
+    }
+
     const payload = PNPLTerms.serialize(pnplTerms)
 
     res.status(200).json(payload)
   }
   catch (err) {
-    next(failure('FETCH_PNPL_TERMS_FAILURE', err))
+    next(failure('ERR_API_FETCH_PNPL_TERMS', err))
   }
 })
 

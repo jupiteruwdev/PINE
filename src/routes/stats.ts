@@ -15,7 +15,7 @@ router.get('/global', async (req, res, next) => {
     res.status(200).json(payload)
   }
   catch (err) {
-    next(failure('FETCH_GLOBAL_STATS_FAILURE', err))
+    next(failure('ERR_API_FETCH_GLOBAL_STATS', err))
   }
 })
 

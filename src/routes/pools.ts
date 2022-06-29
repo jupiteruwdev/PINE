@@ -19,7 +19,7 @@ router.get('/groups/collection', async (req, res, next) => {
     res.status(200).json(payload)
   }
   catch (err) {
-    next(failure('FETCH_POOL_GROUP_STATS_FAILURE', err))
+    next(failure('ERR_API_FETCH_POOL_GROUP_BY_COLLECTION', err))
   }
 })
 
@@ -39,7 +39,7 @@ router.get('/groups/search', async (req, res, next) => {
     res.status(200).json(pagination)
   }
   catch (err) {
-    next(failure('FETCH_POOL_GROUP_STATS_FAILURE', err))
+    next(failure('ERR_API_SEARCH_POOL_GROUPS', err))
   }
 })
 
@@ -53,7 +53,7 @@ router.get('/:poolAddress', async (req, res, next) => {
     res.status(200).json(payload)
   }
   catch (err) {
-    next(failure('FETCH_POOL_FAILURE', err))
+    next(failure('ERR_API_FETCH_POOL', err))
   }
 })
 

@@ -18,7 +18,7 @@ router.get('/', async (req, res, next) => {
     res.status(200).json(payload)
   }
   catch (err) {
-    next(failure('FETCH_POOL_GROUP_STATS_FAILURE', err))
+    next(failure('ERR_API_FETCH_VALUATIONS', err))
   }
 })
 

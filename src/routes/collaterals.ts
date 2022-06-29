@@ -16,7 +16,7 @@ router.get('/', async (req, res, next) => {
     res.status(200).json(payload)
   }
   catch (err) {
-    next(failure('FETCH_COLLATERALS_FAILURE', err))
+    next(failure('ERR_API_FETCH_COLLATERALS', err))
   }
 })
 

@@ -16,6 +16,6 @@ export default function getControlPlaneContract({ blockchain, address }: Params)
     return contract
   }
   default:
-    throw failure('UNSUPPORTED_BLOCKCHAIN')
+    throw failure('ERR_UNSUPPORTED_BLOCKCHAIN')
   }
 }
