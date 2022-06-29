@@ -7,7 +7,7 @@ import { getBlockchainFilter } from '../utils/query'
 
 const router = Router()
 
-router.get('/floor', async (req, res, next) => {
+router.get('/', async (req, res, next) => {
   try {
     const collectionAddresses = req.query.collectionAddresses
     if (!_.isArray(collectionAddresses)) throw failure('BAD_PARAMS_ARRAY')
