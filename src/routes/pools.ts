@@ -9,7 +9,7 @@ import tryOrUndefined from '../utils/tryOrUndefined'
 
 const router = Router()
 
-router.get('/groups', async (req, res, next) => {
+router.get('/groups/collection', async (req, res, next) => {
   try {
     const blockchainFilter = getBlockchainFilter(req.query, true)
     const collectionAddress = getString(req.query, 'collectionAddress')
