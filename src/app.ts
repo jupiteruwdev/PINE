@@ -17,7 +17,7 @@ app.use(cors())
 app.use('/', routes)
 
 app.use('*', (req, res, next) => {
-  const error = new Error(`Handling path <${req.baseUrl}>... ERR: Not found and silently ignored, requester IP is ${req.ip}`)
+  const error = new Error(`Path <${req.baseUrl}> requested by IP ${req.ip} not found`)
   _.set(error, 'status', 404)
   next(error)
 })
@@ -28,13 +28,13 @@ app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
   res.setHeader('Content-Type', 'application/json')
 
   if (status === 404) {
-    logger.warning(`Handling 404 error... SKIP: ${JSON.stringify(err, undefined, 0)}`)
+    logger.warning('Handling 404 error...', 'SKIP', err)
   }
   else if (appConf.env === 'production') {
-    logger.error(`Handling 500 error... OK: ${JSON.stringify(err, undefined, 0)}`)
+    logger.error('Handling 500 error...', 'OK', err)
   }
   else {
-    logger.error('Handling 500 error... OK')
+    logger.error('Handling 500 error...', 'OK')
     /* eslint-disable-next-line no-console */
     console.error(err)
   }
@@ -48,10 +48,10 @@ http
   .createServer(app)
   .listen(appConf.port)
   .on('error', (error: NodeJS.ErrnoException) => {
-    logger.error(error)
+    logger.error('Handling Node exception...', 'OK', error)
   })
   .on('listening', () => {
-    logger.info(`Starting service on ${ip.address()}:${appConf.port}... OK`)
+    logger.info(`⚡ Starting service on ${ip.address()}:${appConf.port}...`, 'OK')
   })
 
 export default app
