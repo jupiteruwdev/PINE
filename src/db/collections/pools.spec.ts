@@ -3,7 +3,7 @@ import { describe, it } from 'mocha'
 import { Blockchain } from '../../entities'
 import * as pools from './pools'
 
-describe('db/collections', () => {
+describe('db/pools', () => {
   it('can find all pools in existence', async () => {
     const res = await pools.findAllPools()
     assert.isArray(res)
