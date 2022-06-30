@@ -334,6 +334,7 @@ export async function findAllPools({
       stages.push({
         $sort: {
           lowestAPR: sortDirection === SortDirection.ASC ? 1 : -1,
+          name: 1,
         },
       })
       break
@@ -341,6 +342,7 @@ export async function findAllPools({
       stages.push({
         $sort: {
           maxLTV: sortDirection === SortDirection.ASC ? 1 : -1,
+          name: 1,
         },
       })
       break
