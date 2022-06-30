@@ -3,7 +3,6 @@
  */
 
 import _ from 'lodash'
-import { PipelineStage } from 'mongoose'
 import getPoolContract from '../../core/getPoolContract'
 import { Blockchain, Pool } from '../../entities'
 import { SortDirection, SortType } from '../../utils/sort'
@@ -270,7 +269,7 @@ export async function findAllPools({
       })
     }
 
-    const stages: PipelineStage[] = [
+    const stages: any[] = [
       {
         $lookup: {
           from: 'nftCollections',
