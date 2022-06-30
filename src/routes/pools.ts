@@ -5,6 +5,7 @@ import { countAllPools } from '../db'
 import { Pagination, Pool, PoolGroupStats, serializeEntityArray } from '../entities'
 import failure from '../utils/failure'
 import { getBlockchain, getBlockchainFilter, getNumber, getString } from '../utils/query'
+import { SortDirection, SortType } from '../utils/sort'
 import tryOrUndefined from '../utils/tryOrUndefined'
 
 const router = Router()
@@ -30,8 +31,10 @@ router.get('/groups/search', async (req, res, next) => {
     const offset = tryOrUndefined(() => getNumber(req.query, 'offset'))
     const count = tryOrUndefined(() => getNumber(req.query, 'count'))
     const collectionName = tryOrUndefined(() => getString(req.query, 'query'))
+    const sortBy = tryOrUndefined(() => getString(req.query, 'sort')) as SortType
+    const sortDirection = tryOrUndefined(() => getString(req.query, 'direction')) as SortDirection
     const totalCount = await countAllPools({ collectionAddress, blockchainFilter, collectionName })
-    const pools = await getPoolGroupStats({ blockchainFilter, count, offset, collectionName })
+    const pools = await getPoolGroupStats({ blockchainFilter, count, offset, collectionName, sortBy, sortDirection })
     const payload = serializeEntityArray(pools, PoolGroupStats.codingResolver)
     const nextOffset = (offset ?? 0) + pools.length
     const pagination = Pagination.serialize({ data: payload, totalCount, nextOffset: nextOffset === totalCount - 1 ? undefined : nextOffset })

@@ -5,6 +5,7 @@
 import _ from 'lodash'
 import getPoolContract from '../../core/getPoolContract'
 import { Blockchain, Pool } from '../../entities'
+import { SortDirection, SortType } from '../../utils/sort'
 import { mapCollection, mapPool } from '../adapters'
 import { PoolModel } from '../models'
 
@@ -24,6 +25,8 @@ type FindAllFilter = {
   offset?: number
   count?: number
   collectionName?: string
+  sortBy?: SortType
+  sortDirection?: SortDirection
 }
 
 // TODO: remove version param when pool is moved into loan optiom
@@ -215,6 +218,8 @@ export async function findAllPools({
   offset,
   count,
   collectionName,
+  sortBy,
+  sortDirection = SortDirection.ASC,
 }: FindAllFilter = {}): Promise<Pool[]> {
   const pools: Pool[] = []
 
@@ -264,7 +269,7 @@ export async function findAllPools({
       })
     }
 
-    const aggregation = PoolModel.aggregate([
+    const stages: any[] = [
       {
         $lookup: {
           from: 'nftCollections',
@@ -281,7 +286,69 @@ export async function findAllPools({
           $and: filter,
         },
       },
-    ])
+      {
+        $addFields: {
+          name: {
+            $toLower: {
+              $trim: {
+                input: '$collection.displayName',
+                chars: '"',
+              },
+            },
+          },
+          interest: {
+            $min: '$loanOptions.interestBpsBlock',
+          },
+          interestOverride: {
+            $min: '$loanOptions.interestBpsBlockOverride',
+          },
+          maxLTV: {
+            $max: '$loanOptions.maxLtvBps',
+          },
+        },
+      },
+      {
+        $addFields: {
+          lowestAPR: {
+            $cond: {
+              if: {
+                $ne: ['$interestOverride', null],
+              },
+              then: '$interestOverride',
+              else: '$interest',
+            },
+          },
+        },
+      },
+    ]
+
+    switch (sortBy) {
+    case SortType.NAME:
+      stages.push({
+        $sort: {
+          name: sortDirection === SortDirection.ASC ? 1 : -1,
+        },
+      })
+      break
+    case SortType.INTEREST:
+      stages.push({
+        $sort: {
+          lowestAPR: sortDirection === SortDirection.ASC ? 1 : -1,
+          name: 1,
+        },
+      })
+      break
+    case SortType.LTV:
+      stages.push({
+        $sort: {
+          maxLTV: sortDirection === SortDirection.ASC ? 1 : -1,
+          name: 1,
+        },
+      })
+      break
+    }
+
+    const aggregation = PoolModel.aggregate(stages)
 
     const poolsData =
       _.isNil(offset) || _.isNil(count)
