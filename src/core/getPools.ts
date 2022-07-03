@@ -2,6 +2,7 @@ import BigNumber from 'bignumber.js'
 import { ETHLimits } from '../config/supportedCollections'
 import { findAllPools } from '../db'
 import { Blockchain, Pool, Value } from '../entities'
+import { SortDirection, SortType } from '../utils/sort'
 import getPoolCapacity from './getPoolCapacity'
 import getPoolUtilization from './getPoolUtilization'
 
@@ -11,6 +12,8 @@ type Params = {
   offset?: number
   count?: number
   collectionName?: string
+  sortBy?: SortType
+  sortDirection?: SortDirection
 }
 
 /**
@@ -29,6 +32,8 @@ export default async function getPools({
   offset,
   count,
   collectionName,
+  sortBy,
+  sortDirection,
 }: Params): Promise<Required<Pool>[]> {
   const pools = await findAllPools({
     blockchainFilter,
@@ -36,6 +41,8 @@ export default async function getPools({
     offset,
     count,
     collectionName,
+    sortBy,
+    sortDirection,
   })
 
   const poolsWithStats = await Promise.all(

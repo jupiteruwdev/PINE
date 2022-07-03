@@ -2,6 +2,7 @@ import _ from 'lodash'
 import { Blockchain, PoolGroupStats, Value } from '../entities'
 import { getEthValueUSD } from '../utils/ethereum'
 import logger from '../utils/logger'
+import { SortDirection, SortType } from '../utils/sort'
 import getEthCollectionFloorPriceBatch from './getEthCollectionFloorPriceBatch'
 import getPools from './getPools'
 
@@ -11,6 +12,8 @@ type Params = {
   offset?: number
   count?: number
   collectionName?: string
+  sortBy?: SortType
+  sortDirection?: SortDirection
 }
 
 export default async function getPoolGroupStats({
@@ -22,6 +25,8 @@ export default async function getPoolGroupStats({
   offset,
   count,
   collectionName,
+  sortBy,
+  sortDirection,
 }: Params) {
   logger.info('Fetching pool group stats...')
 
@@ -34,6 +39,8 @@ export default async function getPoolGroupStats({
         offset,
         count,
         collectionName,
+        sortBy,
+        sortDirection,
       }),
     ])
 
