@@ -1,7 +1,7 @@
 import ERC721EnumerableABI from '../abis/ERC721Enumerable.json'
 import { Blockchain, NFTMetadata } from '../entities'
 import { getEthWeb3 } from '../utils/ethereum'
-import failure from '../utils/failure'
+import fault from '../utils/fault'
 import getRequest from '../utils/getRequest'
 import normalizeNFTImageUri from '../utils/normalizeNFTImageUri'
 
@@ -42,6 +42,6 @@ export default async function getNFTMetadata({ blockchain, collectionAddress, nf
     }
   }
   default:
-    throw failure('ERR_UNSUPPORTED_BLOCKCHAIN')
+    throw fault('ERR_UNSUPPORTED_BLOCKCHAIN')
   }
 }

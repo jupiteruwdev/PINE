@@ -1,5 +1,5 @@
 import { Blockchain } from '../entities'
-import failure from '../utils/failure'
+import fault from '../utils/fault'
 import logger from '../utils/logger'
 import getPoolContract from './getPoolContract'
 
@@ -25,6 +25,6 @@ export default async function getLoanEvent({ blockchain, nftId, poolAddress }: P
   catch (err) {
     logger.error(`Getting loan event for NFT ID <${nftId}>, pool address <${poolAddress}, and blockchain <${JSON.stringify(blockchain)}>... ERR:`, err)
 
-    throw failure('ERR_FETCH_LOAN_EVENTS', err)
+    throw fault('ERR_FETCH_LOAN_EVENTS', undefined, err)
   }
 }

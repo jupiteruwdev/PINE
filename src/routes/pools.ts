@@ -3,7 +3,7 @@ import getPool from '../core/getPool'
 import getPoolGroupStats from '../core/getPoolGroupStats'
 import { countAllPools } from '../db'
 import { Pagination, Pool, PoolGroupStats, serializeEntityArray } from '../entities'
-import failure from '../utils/failure'
+import fault from '../utils/fault'
 import { getBlockchain, getBlockchainFilter, getNumber, getString } from '../utils/query'
 import { SortDirection, SortType } from '../utils/sort'
 import tryOrUndefined from '../utils/tryOrUndefined'
@@ -20,7 +20,7 @@ router.get('/groups/collection', async (req, res, next) => {
     res.status(200).json(payload)
   }
   catch (err) {
-    next(failure('ERR_API_FETCH_POOL_GROUP_BY_COLLECTION', err))
+    next(fault('ERR_API_FETCH_POOL_GROUP_BY_COLLECTION', undefined, err))
   }
 })
 
@@ -42,7 +42,7 @@ router.get('/groups/search', async (req, res, next) => {
     res.status(200).json(pagination)
   }
   catch (err) {
-    next(failure('ERR_API_SEARCH_POOL_GROUPS', err))
+    next(fault('ERR_API_SEARCH_POOL_GROUPS', undefined, err))
   }
 })
 
@@ -56,7 +56,7 @@ router.get('/:poolAddress', async (req, res, next) => {
     res.status(200).json(payload)
   }
   catch (err) {
-    next(failure('ERR_API_FETCH_POOL', err))
+    next(fault('ERR_API_FETCH_POOL', undefined, err))
   }
 })
 

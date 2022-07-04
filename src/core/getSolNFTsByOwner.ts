@@ -3,7 +3,7 @@ import { Connection, PublicKey } from '@solana/web3.js'
 import _ from 'lodash'
 import appConf from '../app.conf'
 import { Blockchain, Collection, NFT, NFTMetadata } from '../entities'
-import failure from '../utils/failure'
+import fault from '../utils/fault'
 import getRequest from '../utils/getRequest'
 import normalizeNFTImageUri from '../utils/normalizeNFTImageUri'
 
@@ -32,7 +32,7 @@ type Params = {
 
 async function getNFTDataFromMoralis(id: string, mintAddress: string, networkId: string): Promise<[NFT, string]> {
   const apiKey = appConf.moralisAPIKey
-  if (!apiKey) throw failure('ERR_MISSING_API_KEY', Error('Missing Moralis API key'))
+  if (!apiKey) throw fault('ERR_MISSING_API_KEY', 'Missing Moralis API key')
 
   const data = await getRequest(`https://solana-gateway.moralis.io/nft/${networkId}/${mintAddress}/metadata`, {
     headers: {
@@ -84,12 +84,12 @@ export default async function getSolNFTsByOwner({
   ownerAddress,
   populateMetadata = false,
 }: Params): Promise<NFT[]> {
-  if (blockchain.network !== 'solana') throw failure('ERR_UNSUPPORTED_BLOCKCHAIN')
+  if (blockchain.network !== 'solana') throw fault('ERR_UNSUPPORTED_BLOCKCHAIN')
 
   const collectionAddressFilter = _.isString(collectionOrCollectionAddress) ? collectionOrCollectionAddress : collectionOrCollectionAddress?.address
 
   const apiKey = appConf.moralisAPIKey
-  if (!apiKey) throw failure('ERR_MISSING_API_KEY', Error('Missing Moralis API key'))
+  if (!apiKey) throw fault('ERR_MISSING_API_KEY', 'Missing Moralis API key')
 
   const result = await getRequest(`https://solana-gateway.moralis.io/account/${blockchain.networkId}/${ownerAddress}/nft`, {
     headers: {

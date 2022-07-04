@@ -2,7 +2,7 @@ import { Request } from 'express'
 import _ from 'lodash'
 import { AnyBlockchain, Blockchain } from '../entities'
 import { parseEthNetworkId } from './ethereum'
-import failure from './failure'
+import fault from './fault'
 
 /**
  * Searches for and returns a string value from a request query based on the specified key.
@@ -16,7 +16,7 @@ import failure from './failure'
  */
 export function getString(query: Request['query'], key: string): string {
   const value = _.get(query, key)?.toString()
-  if (!value) throw failure('ERR_INVALID_QUERY', Error(`Cannot derive string from key "${key}"`))
+  if (!value) throw fault('ERR_INVALID_QUERY', `Cannot derive string from key "${key}"`)
   return value
 }
 
@@ -32,7 +32,7 @@ export function getString(query: Request['query'], key: string): string {
  */
 export function getNumber(query: Request['query'], key: string): number {
   const value = _.get(query, key)?.toString()
-  if (_.isEmpty(value)) throw failure('ERR_INVALID_QUERY', Error(`Cannot derive number from key "${key}"`))
+  if (_.isEmpty(value)) throw fault('ERR_INVALID_QUERY', `Cannot derive number from key "${key}"`)
   return _.toNumber(value)
 }
 
@@ -70,7 +70,7 @@ export function getBlockchain(query: Request['query']): Blockchain<AnyBlockchain
     value === undefined
   )
   if (_.values(blockchainFilter).length !== 1) {
-    throw failure('ERR_AMBIGUOUS_BLOCKCHAIN', Error('Expecting exactly 1 blockchain in query'))
+    throw fault('ERR_AMBIGUOUS_BLOCKCHAIN', 'Expecting exactly 1 blockchain in query')
   }
 
   return {

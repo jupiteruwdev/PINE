@@ -1,7 +1,7 @@
 import Web3 from 'web3'
 import { findOneCollection } from '../db'
 import { Blockchain, PNPLTerms } from '../entities'
-import failure from '../utils/failure'
+import fault from '../utils/fault'
 import getLooksrarePNPLTerms from './getLooksrarePNPLTerms'
 import getOpenseaPNPLTerms from './getOpenseaPNPLTerms'
 
@@ -21,11 +21,11 @@ export default async function getPNPLTermsByUrl({ parsedURL }: Params): Promise<
   switch (hostname) {
   case 'opensea.io': {
     const [, , , collectionAddress, nftId] = parsedURL.pathname.split('/')
-    if (!Web3.utils.isAddress(collectionAddress)) throw failure('ERR_PNPL_INVALID_URL')
-    if (!collectionAddress || !nftId) throw failure('ERR_PNPL_INVALID_URL')
+    if (!Web3.utils.isAddress(collectionAddress)) throw fault('ERR_PNPL_INVALID_URL')
+    if (!collectionAddress || !nftId) throw fault('ERR_PNPL_INVALID_URL')
 
     const collection = await findOneCollection({ address: collectionAddress, blockchain: Blockchain.Ethereum(Blockchain.Ethereum.Network.MAIN) })
-    if (!collection) throw failure('ERR_PNPL_UNSUPPORTED_COLLECTION')
+    if (!collection) throw fault('ERR_PNPL_UNSUPPORTED_COLLECTION')
 
     return getOpenseaPNPLTerms({
       openseaVersion: 'main',
@@ -36,11 +36,11 @@ export default async function getPNPLTermsByUrl({ parsedURL }: Params): Promise<
   }
   case 'testnets.opensea.io': {
     const [, , , collectionAddress, nftId] = parsedURL.pathname.split('/')
-    if (!Web3.utils.isAddress(collectionAddress)) throw failure('ERR_PNPL_INVALID_URL')
-    if (!collectionAddress || !nftId) throw failure('ERR_PNPL_INVALID_URL')
+    if (!Web3.utils.isAddress(collectionAddress)) throw fault('ERR_PNPL_INVALID_URL')
+    if (!collectionAddress || !nftId) throw fault('ERR_PNPL_INVALID_URL')
 
     const collection = await findOneCollection({ address: collectionAddress, blockchain: Blockchain.Ethereum(Blockchain.Ethereum.Network.RINKEBY) })
-    if (!collection) throw failure('ERR_PNPL_UNSUPPORTED_COLLECTION')
+    if (!collection) throw fault('ERR_PNPL_UNSUPPORTED_COLLECTION')
 
     return getOpenseaPNPLTerms({
       openseaVersion: 'rinkeby',
@@ -52,11 +52,11 @@ export default async function getPNPLTermsByUrl({ parsedURL }: Params): Promise<
   case 'looksrare.org': {
     // https://looksrare.org/collections/0x306b1ea3ecdf94aB739F1910bbda052Ed4A9f949/3060
     const [, , collectionAddress, nftId] = parsedURL.pathname.split('/')
-    if (!Web3.utils.isAddress(collectionAddress)) throw failure('ERR_PNPL_INVALID_URL')
-    if (!collectionAddress || !nftId) throw failure('ERR_PNPL_INVALID_URL')
+    if (!Web3.utils.isAddress(collectionAddress)) throw fault('ERR_PNPL_INVALID_URL')
+    if (!collectionAddress || !nftId) throw fault('ERR_PNPL_INVALID_URL')
 
     const collection = await findOneCollection({ address: collectionAddress, blockchain: Blockchain.Ethereum(Blockchain.Ethereum.Network.MAIN) })
-    if (!collection) throw failure('ERR_PNPL_UNSUPPORTED_COLLECTION')
+    if (!collection) throw fault('ERR_PNPL_UNSUPPORTED_COLLECTION')
 
     return getLooksrarePNPLTerms({
       blockchain: Blockchain.Ethereum(Blockchain.Ethereum.Network.MAIN),
@@ -67,11 +67,11 @@ export default async function getPNPLTermsByUrl({ parsedURL }: Params): Promise<
   case 'rinkeby.looksrare.org': {
     // https://looksrare.org/collections/0x306b1ea3ecdf94aB739F1910bbda052Ed4A9f949/3060
     const [, , collectionAddress, nftId] = parsedURL.pathname.split('/')
-    if (!Web3.utils.isAddress(collectionAddress)) throw failure('ERR_PNPL_INVALID_URL')
-    if (!collectionAddress || !nftId) throw failure('ERR_PNPL_INVALID_URL')
+    if (!Web3.utils.isAddress(collectionAddress)) throw fault('ERR_PNPL_INVALID_URL')
+    if (!collectionAddress || !nftId) throw fault('ERR_PNPL_INVALID_URL')
 
     const collection = await findOneCollection({ address: collectionAddress, blockchain: Blockchain.Ethereum(Blockchain.Ethereum.Network.RINKEBY) })
-    if (!collection) throw failure('ERR_PNPL_UNSUPPORTED_COLLECTION')
+    if (!collection) throw fault('ERR_PNPL_UNSUPPORTED_COLLECTION')
 
     return getLooksrarePNPLTerms({
       blockchain: Blockchain.Ethereum(Blockchain.Ethereum.Network.RINKEBY),
@@ -80,6 +80,6 @@ export default async function getPNPLTermsByUrl({ parsedURL }: Params): Promise<
     })
   }
   default:
-    throw failure('ERR_PNPL_UNSUPPORTED_MARKETPLACE')
+    throw fault('ERR_PNPL_UNSUPPORTED_MARKETPLACE')
   }
 }

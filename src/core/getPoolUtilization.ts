@@ -1,7 +1,7 @@
 import { Blockchain, Value } from '../entities'
 import { getPool } from '../subgraph/request'
 import { getEthWeb3 } from '../utils/ethereum'
-import failure from '../utils/failure'
+import fault from '../utils/fault'
 
 type Params = {
   blockchain: Blockchain
@@ -25,6 +25,6 @@ export default async function getPoolUtilization({ blockchain, poolAddress }: Pa
     return Value.$ETH(totalUtilizationEth)
   }
   default:
-    throw failure('ERR_UNSUPPORTED_BLOCKCHAIN')
+    throw fault('ERR_UNSUPPORTED_BLOCKCHAIN')
   }
 }

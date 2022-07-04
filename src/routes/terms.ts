@@ -5,7 +5,7 @@ import getLoanTerms from '../core/getLoanTerms'
 import getPNPLTermsByUrl from '../core/getPNPLTermsByUrl'
 import getRolloverTerms from '../core/getRolloverTerms'
 import { LoanTerms, PNPLTerms, RolloverTerms } from '../entities'
-import failure from '../utils/failure'
+import fault from '../utils/fault'
 import { getBlockchain, getString } from '../utils/query'
 
 const router = Router()
@@ -20,7 +20,7 @@ router.get('/borrow', async (req, res, next) => {
     res.status(200).json(payload)
   }
   catch (err) {
-    next(failure('ERR_API_FETCH_LOAN_TERMS', err))
+    next(fault('ERR_API_FETCH_LOAN_TERMS', undefined, err))
   }
 })
 
@@ -32,14 +32,14 @@ router.get('/rollover', async (req, res, next) => {
     const existingLoan = await getExistingLoan({ blockchain, nftId, collectionId })
     const canRollover = new BigNumber(existingLoan?.borrowedWei).gt(new BigNumber(existingLoan?.returnedWei))
 
-    if (!canRollover) next(failure('ERR_INVALID_ROLLOVER'))
+    if (!canRollover) next(fault('ERR_INVALID_ROLLOVER'))
 
     const loanTerms = await getRolloverTerms({ blockchain, nftId, collectionId, existingLoan })
     const payload = RolloverTerms.serialize(loanTerms)
     res.status(200).json(payload)
   }
   catch (err) {
-    next(failure('ERR_API_FETCH_ROLLOVER_TERMS', err))
+    next(fault('ERR_API_FETCH_ROLLOVER_TERMS', undefined, err))
   }
 })
 
@@ -61,7 +61,7 @@ router.get('/pnpl', async (req, res, next) => {
     res.status(200).json(payload)
   }
   catch (err) {
-    next(failure('ERR_API_FETCH_PNPL_TERMS', err))
+    next(fault('ERR_API_FETCH_PNPL_TERMS', undefined, err))
   }
 })
 

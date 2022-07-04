@@ -1,7 +1,7 @@
 import { Router } from 'express'
 import getGlobalStats from '../core/getGlobalStats'
 import { GlobalStats } from '../entities'
-import failure from '../utils/failure'
+import fault from '../utils/fault'
 import { getBlockchainFilter } from '../utils/query'
 
 const router = Router()
@@ -15,7 +15,7 @@ router.get('/global', async (req, res, next) => {
     res.status(200).json(payload)
   }
   catch (err) {
-    next(failure('ERR_API_FETCH_GLOBAL_STATS', err))
+    next(fault('ERR_API_FETCH_GLOBAL_STATS', undefined, err))
   }
 })
 

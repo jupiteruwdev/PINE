@@ -1,6 +1,6 @@
 import { findOneCollection } from '../db'
 import { Blockchain } from '../entities'
-import failure from '../utils/failure'
+import fault from '../utils/fault'
 import getLoanPosition from './getLoanPosition'
 
 type Params = {
@@ -13,7 +13,7 @@ export default async function getExistingLoan({ blockchain, collectionId, nftId 
   switch (blockchain.network) {
   case 'ethereum': {
     const collection = await findOneCollection({ id: collectionId, blockchain })
-    if (!collection) throw failure('ERR_UNSUPPORTED_COLLECTION')
+    if (!collection) throw fault('ERR_UNSUPPORTED_COLLECTION')
     const position = await getLoanPosition({ blockchain, collectionId, nftId, txSpeedBlocks: 0 })
     return {
       borrowedWei: position?.borrowed.amount.toString(),
@@ -22,6 +22,6 @@ export default async function getExistingLoan({ blockchain, collectionId, nftId 
     }
   }
   default:
-    throw failure('ERR_UNSUPPORTED_BLOCKCHAIN')
+    throw fault('ERR_UNSUPPORTED_BLOCKCHAIN')
   }
 }

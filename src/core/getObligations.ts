@@ -2,7 +2,7 @@ import _ from 'lodash'
 import { findAllPools, findOneCollection } from '../db'
 import { Blockchain, CollateralizedNFT } from '../entities'
 import { getOpenLoan } from '../subgraph/request'
-import failure from '../utils/failure'
+import fault from '../utils/fault'
 import getLoanEvent from './getLoanEvent'
 import getNFTMetadata from './getNFTMetadata'
 import getNFTsByOwner from './getNFTsByOwner'
@@ -27,7 +27,7 @@ export default async function getObligations({ blockchain, borrowerAddress }: Pa
     const pools = await findAllPools({ blockchainFilter: { [blockchain.network]: blockchain.networkId }, includeRetired: true })
     const allCollaterals = _.flatten(await Promise.all(pools.map((pool, index) => getNFTsByOwner({ blockchain, ownerAddress: pool.address, populateMetadata: false, index }))))
     const allEvents = await Promise.all(allCollaterals.map(collateral => {
-      if (!collateral.ownerAddress) throw failure('ERR_FETCH_LOAN_EVENTS')
+      if (!collateral.ownerAddress) throw fault('ERR_FETCH_LOAN_EVENTS')
       return getLoanEvent({ blockchain, nftId: collateral.id, poolAddress: collateral.ownerAddress })
     }))
 

@@ -3,7 +3,7 @@ import _ from 'lodash'
 import Web3 from 'web3'
 import appConf from '../app.conf'
 import { Blockchain, Value } from '../entities'
-import failure from './failure'
+import fault from './fault'
 import getRequest from './getRequest'
 
 const web3s: Record<string, Web3 | undefined> = {
@@ -19,7 +19,7 @@ export function getEthWeb3(networkId: string = Blockchain.Ethereum.Network.MAIN)
 
   const rpc = _.get(appConf.ethRPC, networkId)
 
-  if (!rpc) throw failure('ERR_ETH_UNSUPPORTED_RPC', `No RPC set up for network ID ${networkId}`)
+  if (!rpc) throw fault('ERR_ETH_UNSUPPORTED_RPC', `No RPC set up for network ID ${networkId}`)
 
   const web3 = new Web3(rpc)
   web3s[networkId] = web3
@@ -29,7 +29,7 @@ export function getEthWeb3(networkId: string = Blockchain.Ethereum.Network.MAIN)
 
 export async function getEthValueUSD(amountEth: number | string | BigNumber = 1) {
   const data = await getRequest('https://api.binance.com/api/v3/ticker/price?symbol=ETHUSDT')
-    .catch(err => { throw failure('ERR_ETH_FETCH_USD_PRICE', err) })
+    .catch(err => { throw fault('ERR_ETH_FETCH_USD_PRICE', undefined, err) })
 
   const amount = new BigNumber(amountEth)
   const price = new BigNumber(_.get(data, 'price'))
@@ -39,7 +39,7 @@ export async function getEthValueUSD(amountEth: number | string | BigNumber = 1)
 
 export async function getEthValueUSD24Hr(amountEth: number | string | BigNumber = 1) {
   const data = await getRequest('https://api.binance.com/api/v3/ticker/24hr?symbol=ETHUSDT')
-    .catch(err => { throw failure('ERR_ETH_FETCH_USD_24HR_PRICE', err) })
+    .catch(err => { throw fault('ERR_ETH_FETCH_USD_24HR_PRICE', undefined, err) })
 
   const amount = new BigNumber(amountEth)
   const price = new BigNumber(_.get(data, 'prevClosePrice'))

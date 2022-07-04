@@ -3,7 +3,7 @@ import appConf from '../app.conf'
 import { findAllPools } from '../db'
 import { ActiveLoanStats, Blockchain, Pool, Value } from '../entities'
 import { getActiveLoansForPools } from '../subgraph/request'
-import failure from '../utils/failure'
+import fault from '../utils/fault'
 import getRequest from '../utils/getRequest'
 
 type Params = {
@@ -64,6 +64,6 @@ export default async function getActiveLoanStatsByCollection({ collectionAddress
       })))
   }
   catch (err) {
-    throw failure('ERR_GET_ACTIVE_LOAN_STATS_BY_COLLECTION', err)
+    throw fault('ERR_GET_ACTIVE_LOAN_STATS_BY_COLLECTION', undefined, err)
   }
 }

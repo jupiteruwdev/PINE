@@ -1,7 +1,7 @@
 import { rolloverAddresses } from '../config/supportedCollections'
 import { findOneCollection, findOnePool } from '../db'
 import { Blockchain, NFT, RolloverTerms, Value } from '../entities'
-import failure from '../utils/failure'
+import fault from '../utils/fault'
 import logger from '../utils/logger'
 import getEthCollectionValuation from './getEthCollectionValuation'
 import getFlashLoanSource from './getFlashLoanSource'
@@ -23,11 +23,11 @@ export default async function getRolloverTerms({ blockchain, collectionId, nftId
     switch (blockchain.network) {
     case 'ethereum': {
       const collection = await findOneCollection({ id: collectionId, blockchain })
-      if (!collection) throw failure('ERR_UNSUPPORTED_COLLECTION')
+      if (!collection) throw fault('ERR_UNSUPPORTED_COLLECTION')
 
       const pool = await findOnePool({ address: existingLoan?.pool, blockchain })
       const flashLoanSource = await getFlashLoanSource({ blockchain, poolAddress: existingLoan?.pool })
-      if (!pool) throw failure('ERR_NO_POOLS_AVAILABLE')
+      if (!pool) throw fault('ERR_NO_POOLS_AVAILABLE')
 
       const nft: NFT = {
         collection,
@@ -71,7 +71,7 @@ export default async function getRolloverTerms({ blockchain, collectionId, nftId
       return loanTerms
     }
     default:
-      throw failure('ERR_UNSUPPORTED_BLOCKCHAIN')
+      throw fault('ERR_UNSUPPORTED_BLOCKCHAIN')
     }
   }
   catch (err) {

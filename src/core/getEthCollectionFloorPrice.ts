@@ -2,7 +2,7 @@ import _ from 'lodash'
 import appConf from '../app.conf'
 import { findOneCollection } from '../db'
 import { Blockchain, Value } from '../entities'
-import failure from '../utils/failure'
+import fault from '../utils/fault'
 import getRequest from '../utils/getRequest'
 
 type Params = {
@@ -12,7 +12,7 @@ type Params = {
 
 export default async function getEthCollectionFloorPrice({ blockchain, collectionAddress }: Params): Promise<Value<'ETH'>> {
   const apiKey = appConf.nftbankAPIKey
-  if (!apiKey) throw failure('ERR_MISSING_API_KEY', 'Missing NFTBank API key')
+  if (!apiKey) throw fault('ERR_MISSING_API_KEY', 'Missing NFTBank API key')
 
   switch (blockchain.networkId) {
   case Blockchain.Ethereum.Network.MAIN:
@@ -28,15 +28,15 @@ export default async function getEthCollectionFloorPrice({ blockchain, collectio
 
     const floorPrices = _.get(res, 'data.0.floor_price')
     const floorPrice = _.get(_.find(floorPrices, { 'currency_symbol': 'ETH' }), 'floor_price')
-    if (!floorPrice) throw failure('ERR_FETCH_FLOOR_PRICE')
+    if (!floorPrice) throw fault('ERR_FETCH_FLOOR_PRICE')
 
     return Value.$ETH(floorPrice)
   case Blockchain.Ethereum.Network.RINKEBY:
     const collection = await findOneCollection({ blockchain, address: collectionAddress })
     if (collection?.id.includes('testing2')) return Value.$ETH(1)
     else if (collection?.id.includes('testing') || collection?.id.includes('testing3')) return Value.$ETH(0.1)
-    throw failure('ERR_UNSUPPORTED_COLLECTION')
+    throw fault('ERR_UNSUPPORTED_COLLECTION')
   default:
-    throw failure('ERR_UNSUPPORTED_BLOCKCHAIN')
+    throw fault('ERR_UNSUPPORTED_BLOCKCHAIN')
   }
 }

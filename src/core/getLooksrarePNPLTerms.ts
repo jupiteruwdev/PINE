@@ -2,7 +2,7 @@ import BigNumber from 'bignumber.js'
 import _ from 'lodash'
 import appConf from '../app.conf'
 import { Blockchain, PNPLTerms, Value } from '../entities'
-import failure from '../utils/failure'
+import fault from '../utils/fault'
 import getRequest from '../utils/getRequest'
 import getFlashLoanSource from './getFlashLoanSource'
 import getLoanTerms from './getLoanTerms'
@@ -19,7 +19,7 @@ export default async function getLooksrarePNPLTerms({ blockchain, collectionId, 
   case 'ethereum': {
     const loanTerms = await getLoanTerms({ blockchain, collectionId, nftId })
     const poolContract = await getPoolContract({ blockchain, poolAddress: loanTerms.poolAddress })
-    if ((poolContract.poolVersion || 0) < 2) throw failure('ERR_PNPL_UNSUPPORTED_COLLECTION')
+    if ((poolContract.poolVersion || 0) < 2) throw fault('ERR_PNPL_UNSUPPORTED_COLLECTION')
     const pnplContractAddress = _.get(appConf.pnplContractAddress, blockchain.networkId)
 
     try {
@@ -46,10 +46,10 @@ export default async function getLooksrarePNPLTerms({ blockchain, collectionId, 
       return pnplTerms
     }
     catch (err) {
-      throw failure('ERR_FETCH_PNPL_TERMS', err)
+      throw fault('ERR_FETCH_PNPL_TERMS', undefined, err)
     }
   }
   default:
-    throw failure('ERR_UNSUPPORTED_BLOCKCHAIN')
+    throw fault('ERR_UNSUPPORTED_BLOCKCHAIN')
   }
 }

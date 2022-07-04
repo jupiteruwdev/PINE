@@ -5,7 +5,7 @@ import { repayRouterAddresses } from '../config/supportedCollections'
 import { findAllPools, findOneCollection } from '../db'
 import { Blockchain, LoanPosition, Value } from '../entities'
 import { getEthBlockNumber } from '../utils/ethereum'
-import failure from '../utils/failure'
+import fault from '../utils/fault'
 import logger from '../utils/logger'
 import getControlPlaneContract from './getControlPlaneContract'
 import getEthCollectionValuation from './getEthCollectionValuation'
@@ -27,7 +27,7 @@ export default async function getLoanPosition({ blockchain, collectionId, nftId,
     switch (blockchain.network) {
     case 'ethereum': {
       const collection = await findOneCollection({ id: collectionId, blockchain })
-      if (!collection) throw failure('ERR_UNSUPPORTED_COLLECTION')
+      if (!collection) throw fault('ERR_UNSUPPORTED_COLLECTION')
 
       const [blockNumber, pools, valuation] = await Promise.all([
         getEthBlockNumber(blockchain.networkId),
@@ -35,7 +35,7 @@ export default async function getLoanPosition({ blockchain, collectionId, nftId,
         getEthCollectionValuation({ blockchain: blockchain as Blockchain<'ethereum'>, collectionAddress: collection.address }),
       ])
 
-      if (pools.length === 0) throw failure('ERR_UNSUPPORTED_COLLECTION')
+      if (pools.length === 0) throw fault('ERR_UNSUPPORTED_COLLECTION')
 
       const loanPosition = pools.reduce<Promise<LoanPosition | undefined>>(async (loan, pool) => {
         const rLoan = await loan
@@ -82,7 +82,7 @@ export default async function getLoanPosition({ blockchain, collectionId, nftId,
       return loanPosition
     }
     default:
-      throw failure('ERR_UNSUPPORTED_BLOCKCHAIN')
+      throw fault('ERR_UNSUPPORTED_BLOCKCHAIN')
     }
   }
   catch (err) {

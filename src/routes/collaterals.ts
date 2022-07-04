@@ -1,7 +1,7 @@
 import { Router } from 'express'
 import getNFTsByOwner from '../core/getNFTsByOwner'
 import { NFT, serializeEntityArray } from '../entities'
-import failure from '../utils/failure'
+import fault from '../utils/fault'
 import { getBlockchain, getString } from '../utils/query'
 
 const router = Router()
@@ -16,7 +16,7 @@ router.get('/', async (req, res, next) => {
     res.status(200).json(payload)
   }
   catch (err) {
-    next(failure('ERR_API_FETCH_COLLATERALS', err))
+    next(fault('ERR_API_FETCH_COLLATERALS', undefined, err))
   }
 })
 

@@ -1,6 +1,6 @@
 import { Blockchain, Value } from '../entities'
 import { getEthWeb3 } from '../utils/ethereum'
-import failure from '../utils/failure'
+import fault from '../utils/fault'
 import getPoolContract from './getPoolContract'
 import getTokenContract from './getTokenContract'
 
@@ -18,21 +18,21 @@ export default async function getPoolCapacity({ blockchain, poolAddress }: Param
 
     switch (contract.poolVersion) {
     case 1:
-      const balanceWei = await web3.eth.getBalance(poolAddress).catch(err => { throw failure('ERR_ETH_GET_BALANCE', err) })
+      const balanceWei = await web3.eth.getBalance(poolAddress).catch(err => { throw fault('ERR_ETH_GET_BALANCE', undefined, err) })
       const balanceEth = web3.utils.fromWei(balanceWei)
       return Value.$ETH(balanceEth)
     case 2:
-      const tokenAddress = await contract.methods._supportedCurrency().call().catch((err: unknown) => { throw failure('ERR_CONTRACT_FUNC_SUPPORTED_CURRENCY', err) })
-      const fundSource = await contract.methods._fundSource().call().catch((err: unknown) => { throw failure('ERR_CONTRACT_FUNC_FUND_SOURCE', err) })
+      const tokenAddress = await contract.methods._supportedCurrency().call().catch((err: unknown) => { throw fault('ERR_CONTRACT_FUNC_SUPPORTED_CURRENCY', undefined, err) })
+      const fundSource = await contract.methods._fundSource().call().catch((err: unknown) => { throw fault('ERR_CONTRACT_FUNC_FUND_SOURCE', undefined, err) })
       const tokenContract = getTokenContract({ blockchain, address: tokenAddress })
-      const balanceWethWei = await tokenContract.methods.balanceOf(fundSource).call().catch((err: unknown) => { throw failure('ERR_CONTRACT_FUNC_FUND_SOURCE_BALANCE', err) })
+      const balanceWethWei = await tokenContract.methods.balanceOf(fundSource).call().catch((err: unknown) => { throw fault('ERR_CONTRACT_FUNC_FUND_SOURCE_BALANCE', undefined, err) })
       const balanceWEth = web3.utils.fromWei(balanceWethWei)
       return Value.$ETH(balanceWEth)
     default:
-      failure('ERR_INVALID_POOL_VERSION')
+      fault('ERR_INVALID_POOL_VERSION')
     }
   }
   default:
-    throw failure('ERR_UNSUPPORTED_BLOCKCHAIN')
+    throw fault('ERR_UNSUPPORTED_BLOCKCHAIN')
   }
 }

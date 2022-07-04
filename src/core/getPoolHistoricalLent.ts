@@ -1,7 +1,7 @@
 import BigNumber from 'bignumber.js'
 import { Blockchain, Value } from '../entities'
 import { getEthWeb3 } from '../utils/ethereum'
-import failure from '../utils/failure'
+import fault from '../utils/fault'
 import { getPoolHistoricalLoanEvents } from './getPoolHistoricalLoanEvents'
 
 type Params = {
@@ -21,6 +21,6 @@ export default async function getPoolHistoricalLent({ blockchain, poolAddress }:
     return Value.$ETH(totalLentEth)
   }
   default:
-    throw failure('ERR_UNSUPPORTED_BLOCKCHAIN')
+    throw fault('ERR_UNSUPPORTED_BLOCKCHAIN')
   }
 }
