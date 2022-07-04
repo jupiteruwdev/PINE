@@ -1,4 +1,3 @@
-import { rolloverAddresses } from '../config/supportedCollections'
 import { findOneCollection, findOnePool } from '../db'
 import { Blockchain, NFT, RolloverTerms, Value } from '../entities'
 import failure from '../utils/failure'
@@ -6,7 +5,6 @@ import logger from '../utils/logger'
 import getEthCollectionValuation from './getEthCollectionValuation'
 import getFlashLoanSource from './getFlashLoanSource'
 import getNFTMetadata from './getNFTMetadata'
-import getPoolContract from './getPoolContract'
 import signValuation from './signValuation'
 
 type Params = {
@@ -35,14 +33,12 @@ export default async function getRolloverTerms({ blockchain, collectionId, nftId
       ...await getNFTMetadata({ blockchain, collectionAddress: collection.address, nftId }),
     }
 
-    const contract = await getPoolContract({ blockchain, poolAddress: pool.address })
-
     const valuation = await getEthCollectionValuation({ blockchain: blockchain as Blockchain<'ethereum'>, collectionAddress: collection.address })
     const { signature, issuedAtBlock, expiresAtBlock } = await signValuation({ blockchain, nftId, collectionAddress: collection.address, poolAddress: pool.address, valuation })
 
     const loanTerms: RolloverTerms = {
       // TODO: remove hack!
-      routerAddress: contract.poolVersion === 2 ? rolloverAddresses[Number(blockchain.networkId)] : undefined,
+      routerAddress: pool.rolloverAddress,
       flashLoanSourceContractAddress: flashLoanSource?.address,
       maxFlashLoanValue: flashLoanSource?.capacity,
       valuation,

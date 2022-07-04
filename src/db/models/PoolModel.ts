@@ -19,6 +19,11 @@ const schema = new Schema({
     },
   ],
   poolVersion: Schema.Types.Number,
+  routerAddress: Schema.Types.String,
+  repayRouterAddress: Schema.Types.String,
+  rolloverAddress: Schema.Types.String,
+  defaultFees: Schema.Types.Array,
+  ethLimit: Schema.Types.Decimal128,
   nftCollection: {
     type: Schema.Types.ObjectId,
     ref: 'NFTCollection',

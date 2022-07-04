@@ -1,12 +1,10 @@
 import BigNumber from 'bignumber.js'
-import { ETHLimits, routerAddresses } from '../config/supportedCollections'
 import { findOneCollection, findOnePool } from '../db'
-import { Value, Blockchain, LoanTerms, NFT } from '../entities'
+import { Blockchain, LoanTerms, NFT, Value } from '../entities'
 import failure from '../utils/failure'
 import logger from '../utils/logger'
 import getEthCollectionValuation from './getEthCollectionValuation'
 import getNFTMetadata from './getNFTMetadata'
-import getPoolContract from './getPoolContract'
 import getPoolUtilization from './getPoolUtilization'
 import signValuation from './signValuation'
 
@@ -36,14 +34,12 @@ export default async function getLoanTerms({ blockchain, collectionId, nftId }: 
       ...await getNFTMetadata({ blockchain, collectionAddress: collection.address, nftId }),
     }
 
-    const contract = await getPoolContract({ blockchain, poolAddress: pool.address })
-
     const valuation = await getEthCollectionValuation({ blockchain: blockchain as Blockchain<'ethereum'>, collectionAddress: collection.address })
     const { signature, issuedAtBlock, expiresAtBlock } = await signValuation({ blockchain, nftId, collectionAddress: collection.address, poolAddress: pool.address, valuation })
 
     const loanTerms: LoanTerms = {
       // TODO: remove hack!
-      routerAddress: contract.poolVersion === 2 ? routerAddresses(Number(blockchain.networkId), pool.address) : undefined,
+      routerAddress: pool.routerAddress,
       valuation,
       signature,
       options: pool.loanOptions,
@@ -58,7 +54,7 @@ export default async function getLoanTerms({ blockchain, collectionId, nftId }: 
       option.maxBorrow = Value.$ETH(option.maxLTVBPS.div(10_000).times(loanTerms.valuation.value?.amount ?? 0))
     })
 
-    if (ETHLimits[pool.address] && loanTerms.options.some(option => utilization.amount.plus(option.maxBorrow?.amount ?? new BigNumber(0)).gt(new BigNumber(ETHLimits[pool.address])))) throw failure('POOL_OVER_LENDER_DEFINED_UTILIZATION')
+    if (pool.ethLimit !== undefined && loanTerms.options.some(option => utilization.amount.plus(option.maxBorrow?.amount ?? new BigNumber(0)).gt(new BigNumber(pool.ethLimit ?? 0)))) throw failure('POOL_OVER_LENDER_DEFINED_UTILIZATION')
 
     logger.info(`Fetching loan terms for NFT ID <${nftId}> and collection ID <${collectionId}> on blockchain <${JSON.stringify(blockchain)}>... OK`, loanTerms)
 

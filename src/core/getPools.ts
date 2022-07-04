@@ -1,5 +1,4 @@
 import BigNumber from 'bignumber.js'
-import { ETHLimits } from '../config/supportedCollections'
 import { findAllPools } from '../db'
 import { Blockchain, Pool, Value } from '../entities'
 import { SortDirection, SortType } from '../utils/sort'
@@ -59,7 +58,7 @@ export default async function getPools({
           }),
         ])
 
-      const valueLockedEth = capacityEth.plus(utilizationEth).gt(new BigNumber(ETHLimits[pool.address])) ? new BigNumber(ETHLimits[pool.address]) : capacityEth.plus(utilizationEth)
+      const valueLockedEth = capacityEth.plus(utilizationEth).gt(new BigNumber(pool.ethLimit ?? Number.POSITIVE_INFINITY)) ? new BigNumber(pool.ethLimit ?? 0) : capacityEth.plus(utilizationEth)
 
       return {
         ...pool,

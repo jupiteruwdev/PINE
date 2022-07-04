@@ -1,13 +1,11 @@
 import BigNumber from 'bignumber.js'
 import _ from 'lodash'
-import { defaultFees } from '../../config/supportedCollections'
-import { LoanOption, Pool } from '../../entities'
+import { Fee, LoanOption, Pool } from '../../entities'
 import failure from '../../utils/failure'
 
 function mapLoanOption(
   data: Record<string, any>,
-  version: number,
-  poolAddress: string
+  defaultFees: Fee[]
 ): LoanOption {
   try {
     const interestBPSPerBlock = new BigNumber(_.get(data, 'interestBpsBlock'))
@@ -18,7 +16,6 @@ function mapLoanOption(
     const loanDurationBlocks = _.toNumber(_.get(data, 'loanDurationBlock'))
     const loanDurationSeconds = _.toNumber(_.get(data, 'loanDurationSecond'))
     const maxLTVBPS = new BigNumber(_.get(data, 'maxLtvBps'))
-    const fees = defaultFees('ETH', version, poolAddress)
 
     return {
       interestBPSPerBlockOverride,
@@ -26,7 +23,7 @@ function mapLoanOption(
       loanDurationBlocks,
       loanDurationSeconds,
       maxLTVBPS,
-      fees,
+      fees: defaultFees,
     }
   }
   catch (err) {
@@ -39,14 +36,23 @@ export default function mapPool(data: Record<string, any>): Pool {
   const address = _.get(data, 'address')
   const blockchain = _.get(data, 'blockchain')
   const collection = _.get(data, 'collection')
+  const routerAddress = _.get(data, 'routerAddress')
+  const repayRouterAddress = _.get(data, 'repayRouterAddress')
+  const rolloverAddress = _.get(data, 'rolloverAddress')
+  const defaultFees = _.get(data, 'defaultFees')
+  const ethLimit = _.get(data, 'ethLimit', 0)
   const loanOptions = _.get(data, 'loanOptions', []).map((t: any) =>
-    mapLoanOption(t, version, address)
+    mapLoanOption(t, defaultFees)
   )
 
   if (!_.isString(address)) throw TypeError('Failed to map key "address"')
   if (!blockchain) throw TypeError('Failed to map key "blockchain"')
   if (!collection) throw TypeError('Failed to map key "collection"')
   if (!loanOptions) throw TypeError('Failed to map key "loanOptions"')
+  if (!routerAddress) throw TypeError('Failed to map key "routerAddress"')
+  if (!repayRouterAddress) throw TypeError('Failed to map key "repayRouterAddress"')
+  if (!rolloverAddress) throw TypeError('Failed to map key "rolloverAddress"')
+  if (!defaultFees) throw TypeError('Failed to map key "defaultFees"')
 
   return {
     version,
@@ -54,5 +60,9 @@ export default function mapPool(data: Record<string, any>): Pool {
     blockchain,
     collection,
     loanOptions,
+    routerAddress,
+    repayRouterAddress,
+    rolloverAddress,
+    ethLimit,
   }
 }
