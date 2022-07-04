@@ -10,7 +10,7 @@ type Params = {
 export async function getPoolHistoricalLoanEvents({ blockchain, poolAddress }: Params) {
   switch (blockchain.network) {
   case 'ethereum': {
-    const poolContract = await getPoolContract({ blockchain, poolAddress }).catch(err => { throw fault('ERR_FETCH_POOL_CONTRACT', err) })
+    const poolContract = await getPoolContract({ blockchain, poolAddress }).catch(err => { throw fault('ERR_FETCH_POOL_CONTRACT', undefined, err) })
     const events = await poolContract.getPastEvents('LoanInitiated', { fromBlock: 0, toBlock: 'latest' }).catch(err => { throw fault('ERR_FETCH_POOL_EVENTS', err) })
     return events
   }
