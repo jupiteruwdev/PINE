@@ -1,9 +1,8 @@
 import BigNumber from 'bignumber.js'
 import _ from 'lodash'
 import appConf from '../app.conf'
-import { repayRouterAddresses } from '../config/supportedCollections'
 import { findAllPools, findOneCollection } from '../db'
-import { Value, Blockchain, LoanPosition } from '../entities'
+import { Blockchain, LoanPosition, Value } from '../entities'
 import { getEthBlockNumber } from '../utils/ethereum'
 import failure from '../utils/failure'
 import logger from '../utils/logger'
@@ -57,8 +56,7 @@ export default async function getLoanPosition({ blockchain, collectionId, nftId,
       }
 
       return {
-        // TODO: remove hack!
-        routerAddress: contract.poolVersion === 2 ? repayRouterAddresses(Number(blockchain.networkId), pool.address) : undefined,
+        routerAddress: pool.repayRouterAddress,
         accuredInterest: Value.$WEI(event.accuredInterestWei),
         borrowed: Value.$WEI(event.borrowedWei),
         borrowerAddress: event.borrower,
