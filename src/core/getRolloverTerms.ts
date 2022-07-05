@@ -37,7 +37,6 @@ export default async function getRolloverTerms({ blockchain, collectionId, nftId
     const { signature, issuedAtBlock, expiresAtBlock } = await signValuation({ blockchain, nftId, collectionAddress: collection.address, poolAddress: pool.address, valuation })
 
     const loanTerms: RolloverTerms = {
-      // TODO: remove hack!
       routerAddress: pool.rolloverAddress,
       flashLoanSourceContractAddress: flashLoanSource?.address,
       maxFlashLoanValue: flashLoanSource?.capacity,

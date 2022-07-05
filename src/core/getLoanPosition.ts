@@ -56,7 +56,6 @@ export default async function getLoanPosition({ blockchain, collectionId, nftId,
       }
 
       return {
-        // TODO: remove hack!
         routerAddress: pool.repayRouterAddress,
         accuredInterest: Value.$WEI(event.accuredInterestWei),
         borrowed: Value.$WEI(event.borrowedWei),

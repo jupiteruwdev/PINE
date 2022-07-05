@@ -38,7 +38,6 @@ export default async function getLoanTerms({ blockchain, collectionId, nftId }: 
     const { signature, issuedAtBlock, expiresAtBlock } = await signValuation({ blockchain, nftId, collectionAddress: collection.address, poolAddress: pool.address, valuation })
 
     const loanTerms: LoanTerms = {
-      // TODO: remove hack!
       routerAddress: pool.routerAddress,
       valuation,
       signature,
