@@ -54,8 +54,8 @@ export default async function getEthCollectionFloorPriceBatch({ blockchainFilter
     for (const collectionAddress of collectionAddresses) {
       const collection = await findOneCollection({ blockchain: { network: 'ethereum', networkId: Blockchain.Ethereum.Network.RINKEBY }, address: collectionAddress })
       let floorPriceRinkeby
-      if (collection?.id === 'testing:testing2') floorPriceRinkeby = Value.$ETH(1)
-      else if (collection?.id === 'testing:testing' || collection?.id === 'testing:testing3') floorPriceRinkeby = Value.$ETH(0.1)
+      if (collection?.id === 'testing2:testing2') floorPriceRinkeby = Value.$ETH(1)
+      else if (collection?.id === 'testing:testing' || collection?.id === 'testing3:testing3') floorPriceRinkeby = Value.$ETH(0.1)
       else throw fault('ERR_UNSUPPORTED_COLLECTION')
       floorPricesRinkeby.push({
         collection,
