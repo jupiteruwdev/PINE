@@ -42,7 +42,7 @@ export default async function getEthCollectionValuation({ blockchain, collection
         ])
 
         const floorPrice = new BigNumber(_.get(collectionData, 'stats.floor_price'))
-        const value24Hr = new BigNumber(_.get(collectionData, 'stats.one_day_average_price'))
+        const value24Hr = new BigNumber(_.get(collectionData, 'stats.seven_day_average_price'))
         const value = floorPrice.gt(value24Hr) ? value24Hr : floorPrice
         const valuation: Valuation<'ETH'> = {
           collection,
