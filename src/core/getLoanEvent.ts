@@ -1,5 +1,5 @@
 import { Blockchain } from '../entities'
-import failure from '../utils/failure'
+import fault from '../utils/fault'
 import logger from '../utils/logger'
 import getPoolContract from './getPoolContract'
 
@@ -18,13 +18,13 @@ export default async function getLoanEvent({ blockchain, nftId, poolAddress }: P
     const params = [nftId]
     const event = await contract.methods[func].apply(undefined, params).call()
 
-    logger.info(`Getting loan event for NFT ID <${nftId}>, pool address <${poolAddress}, and blockchain <${JSON.stringify(blockchain)}>... OK: ${JSON.stringify(event)}`)
+    logger.info(`Getting loan event for NFT ID <${nftId}>, pool address <${poolAddress}, and blockchain <${JSON.stringify(blockchain)}>... OK`, event)
 
     return event
   }
   catch (err) {
-    logger.error(`Getting loan event for NFT ID <${nftId}>, pool address <${poolAddress}, and blockchain <${JSON.stringify(blockchain)}>... ERR: ${err}`)
+    logger.error(`Getting loan event for NFT ID <${nftId}>, pool address <${poolAddress}, and blockchain <${JSON.stringify(blockchain)}>... ERR:`, err)
 
-    throw failure('FETCH_LOAN_EVENTS_FAILURE', err)
+    throw fault('ERR_FETCH_LOAN_EVENTS', undefined, err)
   }
 }

@@ -1,7 +1,7 @@
 import ControlPlaneABI from '../abis/ControlPlane.json'
 import { Blockchain } from '../entities'
 import { getEthWeb3 } from '../utils/ethereum'
-import failure from '../utils/failure'
+import fault from '../utils/fault'
 
 type Params = {
   blockchain: Blockchain
@@ -16,6 +16,6 @@ export default function getControlPlaneContract({ blockchain, address }: Params)
     return contract
   }
   default:
-    throw failure('UNSUPPORTED_BLOCKCHAIN')
+    throw fault('ERR_UNSUPPORTED_BLOCKCHAIN')
   }
 }

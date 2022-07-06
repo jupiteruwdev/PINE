@@ -10,11 +10,11 @@ export const initDb = () => {
     mongoose.connect(appConf.mongoUri, { autoIndex: false })
 
     const db = mongoose.connection
-    db.on('error', () => logger.error('connection error:'))
-    db.once('open', () => logger.info('connected!'))
+    db.on('error', err => logger.error('Handling database connection error... ERR:', err))
+    db.once('open', () => logger.info('Establishing database connection... OK'))
   }
-  catch (err: any) {
-    logger.error(err.message)
+  catch (err) {
+    logger.error('Establishing database conection... ERR:', err)
     throw err
   }
 }

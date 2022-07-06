@@ -3,8 +3,7 @@ import _ from 'lodash'
 import appConf from '../app.conf'
 import { findOneCollection } from '../db'
 import { Blockchain, Valuation, Value } from '../entities'
-import failure from '../utils/failure'
-import logger from '../utils/logger'
+import fault from '../utils/fault'
 
 type Params = {
   blockchainFilter: Blockchain.Filter
@@ -12,11 +11,9 @@ type Params = {
 }
 
 export default async function getEthCollectionFloorPriceBatch({ blockchainFilter, collectionAddresses }: Params): Promise<Valuation[]> {
-  logger.info(`Fetching floor price for Ethereum collection <${collectionAddresses}>...`)
-
   const apiKey = appConf.nftbankAPIKey
-  if (!apiKey) throw failure('MISSING_API_KEY')
-  if (!!blockchainFilter.ethereum && !!blockchainFilter.solana) throw failure('AMBIGUIOUS BLOCKCHAIN')
+  if (!apiKey) throw fault('ERR_MISSING_API_KEY', 'Missing NFTBank API key')
+  if (!!blockchainFilter.ethereum && !!blockchainFilter.solana) throw fault('ERR_AMBIGUIOUS_BLOCKCHAIN')
 
   switch (blockchainFilter.ethereum) {
   case Blockchain.Ethereum.Network.MAIN:
@@ -49,7 +46,7 @@ export default async function getEthCollectionFloorPriceBatch({ blockchainFilter
       }
     })
 
-    if (!floorPrices) throw failure('FETCH_FLOOR_PRICE')
+    if (!floorPrices) throw fault('ERR_FETCH_FLOOR_PRICES')
 
     return Promise.all(floorPrices)
   case Blockchain.Ethereum.Network.RINKEBY:
@@ -57,9 +54,9 @@ export default async function getEthCollectionFloorPriceBatch({ blockchainFilter
     for (const collectionAddress of collectionAddresses) {
       const collection = await findOneCollection({ blockchain: { network: 'ethereum', networkId: Blockchain.Ethereum.Network.RINKEBY }, address: collectionAddress })
       let floorPriceRinkeby
-      if (collection?.id === 'testing:testing2') floorPriceRinkeby = Value.$ETH(1)
-      else if (collection?.id === 'testing:testing' || collection?.id === 'testing:testing3') floorPriceRinkeby = Value.$ETH(0.1)
-      else throw failure('UNSUPPORTED_COLLECTION')
+      if (collection?.id === 'testing2:testing2') floorPriceRinkeby = Value.$ETH(1)
+      else if (collection?.id === 'testing:testing' || collection?.id === 'testing3:testing3') floorPriceRinkeby = Value.$ETH(0.1)
+      else throw fault('ERR_UNSUPPORTED_COLLECTION')
       floorPricesRinkeby.push({
         collection,
         value1DReference: floorPriceRinkeby,
@@ -67,6 +64,6 @@ export default async function getEthCollectionFloorPriceBatch({ blockchainFilter
     }
     return floorPricesRinkeby
   default:
-    throw failure('UNSUPPORTED_NETWORK')
+    throw fault('ERR_UNSUPPORTED_BLOCKCHAIN')
   }
 }

@@ -1,7 +1,7 @@
 import ERC20 from '../abis/ERC20.json'
 import { Blockchain } from '../entities'
 import { getEthWeb3 } from '../utils/ethereum'
-import failure from '../utils/failure'
+import fault from '../utils/fault'
 
 type Params = {
   blockchain: Blockchain
@@ -16,6 +16,6 @@ export default function getTokenContract({ blockchain, address }: Params) {
     return contract
   }
   default:
-    throw failure('UNSUPPORTED_BLOCKCHAIN')
+    throw fault('ERR_UNSUPPORTED_BLOCKCHAIN')
   }
 }

@@ -1,5 +1,5 @@
 import { Blockchain, NFT, Collection } from '../entities'
-import failure from '../utils/failure'
+import fault from '../utils/fault'
 import getEthMainnetNFTsByOwner from './getEthMainnetNFTsByOwner'
 import getEthTestnetNFTsByOwner from './getEthTestnetNFTsByOwner'
 import getSolNFTsByOwner from './getSolNFTsByOwner'
@@ -67,6 +67,6 @@ export default async function getNFTsByOwner({
   case 'solana':
     return getSolNFTsByOwner({ blockchain, collectionOrCollectionAddress, ownerAddress, populateMetadata })
   default:
-    throw failure('UNSUPPORTED_BLOCKCHAIN')
+    throw fault('ERR_UNSUPPORTED_BLOCKCHAIN')
   }
 }

@@ -1,7 +1,7 @@
 import _ from 'lodash'
 import appConf from '../app.conf'
 import { Blockchain, Value } from '../entities'
-import failure from '../utils/failure'
+import fault from '../utils/fault'
 import getPoolCapacity from './getPoolCapacity'
 import getPoolContract from './getPoolContract'
 import getPools from './getPools'
@@ -29,7 +29,7 @@ export default async function getFlashLoanSource({ blockchain, poolAddress }: { 
   else {
     const tmpContract = await getPoolContract({ blockchain, poolAddress: _.get(appConf.flashLoanSourceContractAddress, blockchain.networkId) })
     const fundSource2 = await tmpContract.methods._fundSource().call()
-    if (fundSource === fundSource2) throw failure('NO_FLASHLOAN_POOL')
+    if (fundSource === fundSource2) throw fault('ERR_NO_FLASHLOAN_POOL')
     const capacityEth = await getPoolCapacity({ blockchain, poolAddress: _.get(appConf.flashLoanSourceContractAddress, blockchain.networkId) })
     return {
       address: _.get(appConf.flashLoanSourceContractAddress, blockchain.networkId),

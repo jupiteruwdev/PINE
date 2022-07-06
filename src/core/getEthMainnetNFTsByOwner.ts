@@ -2,7 +2,7 @@ import _ from 'lodash'
 import appConf from '../app.conf'
 import { findOneCollection } from '../db'
 import { Blockchain, Collection, NFT, NFTMetadata } from '../entities'
-import failure from '../utils/failure'
+import fault from '../utils/fault'
 import getRequest from '../utils/getRequest'
 import normalizeNFTImageUri from '../utils/normalizeNFTImageUri'
 import getNFTMetadata from './getNFTMetadata'
@@ -41,7 +41,7 @@ export default async function getEthMainnetNFTsByOwner({
   const collectionAddressFilter = _.isString(collectionOrCollectionAddress) ? collectionOrCollectionAddress : collectionOrCollectionAddress?.address
 
   const apiKey = appConf.moralisAPIKey
-  if (!apiKey) throw failure('MISSING_API_KEY')
+  if (!apiKey) throw fault('ERR_MISSING_API_KEY', 'Missing Moralis API key')
 
   const { result } = await getRequest(`https://deep-index.moralis.io/api/v2/${ownerAddress}/nft`, {
     headers: {
