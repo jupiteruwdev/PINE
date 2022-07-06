@@ -1,10 +1,9 @@
 import BigNumber from 'bignumber.js'
 import _ from 'lodash'
 import appConf from '../app.conf'
-import { Value, Blockchain, PNPLTerms } from '../entities'
-import failure from '../utils/failure'
+import { Blockchain, PNPLTerms, Value } from '../entities'
+import fault from '../utils/fault'
 import getRequest from '../utils/getRequest'
-import logger from '../utils/logger'
 import getFlashLoanSource from './getFlashLoanSource'
 import getLoanTerms from './getLoanTerms'
 import getPoolContract from './getPoolContract'
@@ -17,13 +16,11 @@ type Params = {
 }
 
 export default async function getOpenseaPNPLTerms({ openseaVersion, blockchain, collectionId, nftId }: Params): Promise<PNPLTerms> {
-  logger.info(`Fetching OpenSea PNPL terms for NFT ID <${ nftId }> and collection ID <${ collectionId }> on blockchain <${ JSON.stringify(blockchain) }>...`)
-
   switch (blockchain.network) {
   case 'ethereum': {
     const loanTerms = await getLoanTerms({ blockchain, collectionId, nftId })
     const poolContract = await getPoolContract({ blockchain, poolAddress: loanTerms.poolAddress })
-    if ((poolContract.poolVersion || 0) < 2) throw failure('UNSUPPORTED_COLLECTION')
+    if ((poolContract.poolVersion || 0) < 2) throw fault('ERR_PNPL_UNSUPPORTED_COLLECTION')
     const pnplContractAddress = _.get(appConf.pnplContractAddress, blockchain.networkId)
 
     try {
@@ -50,10 +47,10 @@ export default async function getOpenseaPNPLTerms({ openseaVersion, blockchain, 
       return pnplTerms
     }
     catch (err) {
-      throw failure('FETCH_PNPL_TERMS_FAILURE', err)
+      throw fault('ERR_FETCH_PNPL_TERMS', undefined, err)
     }
   }
   default:
-    throw failure('UNSUPPORTED_BLOCKCHAIN')
+    throw fault('ERR_UNSUPPORTED_BLOCKCHAIN')
   }
 }

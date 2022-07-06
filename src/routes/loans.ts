@@ -4,7 +4,7 @@ import getActiveLoanStatsByCollection from '../core/getActiveLoanStatsByCollecti
 import getLoanPosition from '../core/getLoanPosition'
 import getObligations from '../core/getObligations'
 import { ActiveLoanStats, Blockchain, CollateralizedNFT, LoanPosition, serializeEntityArray } from '../entities'
-import failure from '../utils/failure'
+import fault from '../utils/fault'
 import { getBlockchain, getString } from '../utils/query'
 import tryOrUndefined from '../utils/tryOrUndefined'
 
@@ -27,7 +27,7 @@ router.get('/nft', async (req, res, next) => {
     }
   }
   catch (err) {
-    next(failure('FETCH_LOAN_POSITION_FAILURE', err))
+    next(fault('ERR_API_FETCH_LOAN_POSITION_BY_NFT', undefined, err))
   }
 })
 
@@ -44,7 +44,7 @@ router.get('/borrower', async (req, res, next) => {
     res.status(200).json(payload)
   }
   catch (err) {
-    next(failure('FETCH_OBLIGATIONS_FAILURE', err))
+    next(fault('ERR_API_FETCH_LOAN_POSITIONS_BY_BORROWER', undefined, err))
   }
 })
 
@@ -53,14 +53,14 @@ router.get('/borrower', async (req, res, next) => {
  */
 router.get('/collection', async (req, res, next) => {
   try {
-    const collectionAddress = getString(req.params, 'collectionAddress')
+    const collectionAddress = getString(req.query, 'collectionAddress')
     const blockchain = tryOrUndefined(() => getBlockchain(req.query)) ?? Blockchain.Ethereum()
     const obligation = await getActiveLoanStatsByCollection({ collectionAddress, blockchain })
     const payload = serializeEntityArray(obligation, ActiveLoanStats.codingResolver)
     res.status(200).json(payload)
   }
   catch (err) {
-    next(failure('FETCH_OBLIGATIONS_FAILURE', err))
+    next(fault('ERR_API_FETCH_LOAN_POSITIONS_BY_COLLECTION', undefined, err))
   }
 })
 

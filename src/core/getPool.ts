@@ -1,7 +1,7 @@
 import BigNumber from 'bignumber.js'
 import { findOnePool } from '../db'
 import { Blockchain, Pool, Value } from '../entities'
-import failure from '../utils/failure'
+import fault from '../utils/fault'
 import getPoolCapacity from './getPoolCapacity'
 import getPoolUtilization from './getPoolUtilization'
 
@@ -19,7 +19,7 @@ type Params = {
  */
 export default async function getPool({ blockchain, poolAddress }: Params): Promise<Required<Pool>> {
   const pool = await findOnePool({ address: poolAddress, blockchain })
-  if (!pool) throw failure('POOL_NOT_FOUND')
+  if (!pool) throw fault('ERR_POOL_NOT_FOUND')
 
   const [
     { amount: utilizationEth },

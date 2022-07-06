@@ -1,7 +1,7 @@
 import BigNumber from 'bignumber.js'
 import _ from 'lodash'
 import { Fee, LoanOption, Pool } from '../../entities'
-import failure from '../../utils/failure'
+import fault from '../../utils/fault'
 
 function mapLoanOption(
   data: Record<string, any>,
@@ -27,7 +27,7 @@ function mapLoanOption(
     }
   }
   catch (err) {
-    throw failure('PARSE_LOAN_OPTION_FAILURE', err)
+    throw fault('ERR_PARSE_LOAN_OPTION_FAILURE', undefined, err)
   }
 }
 

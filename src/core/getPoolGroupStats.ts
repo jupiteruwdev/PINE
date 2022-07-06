@@ -28,67 +28,70 @@ export default async function getPoolGroupStats({
   sortBy,
   sortDirection,
 }: Params) {
-  logger.info(
-    `Fetching pool group stats with blockchain filter <${JSON.stringify(
-      blockchainFilter
-    )}>...`
-  )
+  logger.info('Fetching pool group stats...')
 
-  const [ethValueUSD, pools] = await Promise.all([
-    getEthValueUSD(),
-    getPools({
-      blockchainFilter,
-      collectionAddress,
-      offset,
-      count,
-      collectionName,
-      sortBy,
-      sortDirection,
-    }),
-  ])
+  try {
+    const [ethValueUSD, pools] = await Promise.all([
+      getEthValueUSD(),
+      getPools({
+        blockchainFilter,
+        collectionAddress,
+        offset,
+        count,
+        collectionName,
+        sortBy,
+        sortDirection,
+      }),
+    ])
 
-  const stats: PoolGroupStats[] = _.compact(
-    pools.map(pool => {
-      if (!pool.collection) return undefined
+    const stats: PoolGroupStats[] = _.compact(
+      pools.map(pool => {
+        if (!pool.collection) return undefined
 
+        return {
+          collection: pool.collection,
+          pools: [pool],
+          totalValueLent: Value.$USD(pool.utilization.amount.times(ethValueUSD.amount)),
+          totalValueLocked: Value.$USD(
+            pool.valueLocked.amount.times(ethValueUSD.amount)
+          ),
+        }
+      })
+    )
+
+    const ethereumCollectionAddresses = _.filter(
+      stats,
+      stat => stat.collection.blockchain.network === 'ethereum'
+    ).reduce(
+      (cur: any, stat: PoolGroupStats) => [
+        ...cur,
+        stat.collection.address,
+      ],
+      []
+    )
+
+    const floorPrices = await getEthCollectionFloorPriceBatch({
+      blockchainFilter: {
+        ethereum: Blockchain.Ethereum().networkId,
+      },
+      collectionAddresses: ethereumCollectionAddresses,
+    })
+
+    const out = stats.map((stat, i) => {
+      const curIndex = _.findIndex(ethereumCollectionAddresses, collectionAddress => collectionAddress === stat.collection.address)
       return {
-        collection: pool.collection,
-        pools: [pool],
-        totalValueLent: Value.$USD(pool.utilization.amount.times(ethValueUSD.amount)),
-        totalValueLocked: Value.$USD(
-          pool.valueLocked.amount.times(ethValueUSD.amount)
-        ),
+        ...stat,
+        floorPrice: floorPrices.length > curIndex && curIndex !== -1 ? floorPrices[curIndex].value1DReference : undefined,
       }
     })
-  )
 
-  const ethereumCollectionAddresses = _.filter(
-    stats,
-    stat => stat.collection.blockchain.network === 'ethereum'
-  ).reduce(
-    (cur: any, stat: PoolGroupStats) => [
-      ...cur,
-      stat.collection.address,
-    ],
-    []
-  )
+    logger.info('Fetching pool group stats... OK', out)
 
-  const floorPrices = await getEthCollectionFloorPriceBatch({
-    blockchainFilter: {
-      ethereum: Blockchain.Ethereum().networkId,
-    },
-    collectionAddresses: ethereumCollectionAddresses,
-  })
+    return out
+  }
+  catch (err) {
+    logger.error('Fetching pool group stats... ERR:', err)
 
-  const out = stats.map((stat, i) => {
-    const curIndex = _.findIndex(ethereumCollectionAddresses, collectionAddress => collectionAddress === stat.collection.address)
-    return {
-      ...stat,
-      floorPrice: floorPrices.length > curIndex && curIndex !== -1 ? floorPrices[curIndex].value1DReference : undefined,
-    }
-  })
-
-  logger.info('Fetching pool group stats... OK', out)
-
-  return out
+    throw err
+  }
 }
