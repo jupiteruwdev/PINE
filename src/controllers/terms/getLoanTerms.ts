@@ -9,17 +9,17 @@ import { getEthCollectionValuation, signValuation } from '../valuations'
 
 type Params = {
   blockchain: Blockchain
-  collectionId: string
+  collectionAddress: string
   nftId: string
 }
 
-export default async function getLoanTerms({ blockchain, collectionId, nftId }: Params): Promise<LoanTerms> {
-  logger.info(`Fetching loan terms for NFT ID <${nftId}> and collection ID <${collectionId}> on blockchain <${JSON.stringify(blockchain)}>...`)
+export default async function getLoanTerms({ blockchain, collectionAddress, nftId }: Params): Promise<LoanTerms> {
+  logger.info(`Fetching loan terms for NFT ID <${nftId}> and collection Address <${collectionAddress}> on blockchain <${JSON.stringify(blockchain)}>...`)
 
   try {
     switch (blockchain.network) {
     case 'ethereum': {
-      const collection = await findOneCollection({ id: collectionId, blockchain })
+      const collection = await findOneCollection({ address: collectionAddress, blockchain })
       if (!collection) throw fault('ERR_UNSUPPORTED_COLLECTION')
 
       const pool = await findOnePool({ collectionAddress: collection.address, blockchain })
@@ -53,9 +53,9 @@ export default async function getLoanTerms({ blockchain, collectionId, nftId }: 
         option.maxBorrow = Value.$ETH(option.maxLTVBPS.div(10_000).times(loanTerms.valuation.value?.amount ?? 0))
       })
 
-      if (pool.ethLimit !== undefined && loanTerms.options.some(option => utilization.amount.plus(option.maxBorrow?.amount ?? new BigNumber(0)).gt(new BigNumber(pool.ethLimit ?? 0)))) throw fault('ERR_POOL_OVER_LENDER_DEFINED_UTILIZATION')
+      if (pool.ethLimit !== 0 && loanTerms.options.some(option => utilization.amount.plus(option.maxBorrow?.amount ?? new BigNumber(0)).gt(new BigNumber(pool.ethLimit ?? 0)))) throw fault('ERR_POOL_OVER_LENDER_DEFINED_UTILIZATION')
 
-      logger.info(`Fetching loan terms for NFT ID <${nftId}> and collection ID <${collectionId}> on blockchain <${JSON.stringify(blockchain)}>... OK:`, loanTerms)
+      logger.info(`Fetching loan terms for NFT ID <${nftId}> and collection address <${collectionAddress}> on blockchain <${JSON.stringify(blockchain)}>... OK:`, loanTerms)
 
       return loanTerms
     }
@@ -64,7 +64,7 @@ export default async function getLoanTerms({ blockchain, collectionId, nftId }: 
     }
   }
   catch (err) {
-    logger.error(`Fetching loan terms for NFT ID <${nftId}> and collection ID <${collectionId}> on blockchain <${JSON.stringify(blockchain)}>... ERR:`, err)
+    logger.error(`Fetching loan terms for NFT ID <${nftId}> and collection address <${collectionAddress}> on blockchain <${JSON.stringify(blockchain)}>... ERR:`, err)
 
     throw err
   }

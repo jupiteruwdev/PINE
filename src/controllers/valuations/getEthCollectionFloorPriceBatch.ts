@@ -39,7 +39,6 @@ export default async function getEthCollectionFloorPriceBatch({ blockchainFilter
         collection: await findOneCollection({ blockchain: { network: 'ethereum', networkId: Blockchain.Ethereum.Network.MAIN }, address: collectionAddress }) ?? {
           address: collectionAddress,
           name: collectionName,
-          id: '',
           blockchain: { network: 'ethereum', networkId: Blockchain.Ethereum.Network.MAIN },
         },
         value1DReference: Value.$ETH(_.get(_.find(floorPrices, { 'currency_symbol': 'ETH' }), 'floor_price')),
@@ -53,12 +52,17 @@ export default async function getEthCollectionFloorPriceBatch({ blockchainFilter
     const floorPricesRinkeby = []
     for (const collectionAddress of collectionAddresses) {
       const collection = await findOneCollection({ blockchain: { network: 'ethereum', networkId: Blockchain.Ethereum.Network.RINKEBY }, address: collectionAddress })
+      const id = _.values(collection?.vendorIds)?.[0]
+
       let floorPriceRinkeby
-      if (collection?.id === 'testing2:testing2') floorPriceRinkeby = Value.$ETH(1)
-      else if (collection?.id === 'testing:testing' || collection?.id === 'testing3:testing3') floorPriceRinkeby = Value.$ETH(0.1)
+      if (id === 'testing2') floorPriceRinkeby = Value.$ETH(1)
+      else if (id === 'testing' || id === 'testing3') floorPriceRinkeby = Value.$ETH(0.1)
       else throw fault('ERR_UNSUPPORTED_COLLECTION')
       floorPricesRinkeby.push({
-        collection,
+        collection: collection ?? {
+          address: collectionAddress,
+          blockchain: { network: 'ethereum', networkId: Blockchain.Ethereum.Network.RINKEBY },
+        },
         value1DReference: floorPriceRinkeby,
       })
     }

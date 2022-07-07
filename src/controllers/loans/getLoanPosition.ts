@@ -13,23 +13,23 @@ import getLoanEvent from './getLoanEvent'
 
 type Params = {
   blockchain: Blockchain
-  collectionId: string
+  collectionAddress: string
   nftId: string
   txSpeedBlocks: number
 }
 
-export default async function getLoanPosition({ blockchain, collectionId, nftId, txSpeedBlocks }: Params): Promise<LoanPosition | undefined> {
-  logger.info(`Fetching loan position for collection ID <${collectionId}>, NFT ID <${nftId}>, txSpeedBlocks <${txSpeedBlocks}> and blockchain <${JSON.stringify(blockchain)}>...`)
+export default async function getLoanPosition({ blockchain, collectionAddress, nftId, txSpeedBlocks }: Params): Promise<LoanPosition | undefined> {
+  logger.info(`Fetching loan position for collection address <${collectionAddress}>, NFT ID <${nftId}>, txSpeedBlocks <${txSpeedBlocks}> and blockchain <${JSON.stringify(blockchain)}>...`)
 
   try {
     switch (blockchain.network) {
     case 'ethereum': {
-      const collection = await findOneCollection({ id: collectionId, blockchain })
+      const collection = await findOneCollection({ address: collectionAddress, blockchain })
       if (!collection) throw fault('ERR_UNSUPPORTED_COLLECTION')
 
       const [blockNumber, pools, valuation] = await Promise.all([
         getEthBlockNumber(blockchain.networkId),
-        findAllPools({ collectionId, blockchainFilter: { ethereum: blockchain.networkId }, includeRetired: true }),
+        findAllPools({ collectionAddress, blockchainFilter: { ethereum: blockchain.networkId }, includeRetired: true }),
         getEthCollectionValuation({ blockchain: blockchain as Blockchain<'ethereum'>, collectionAddress: collection.address }),
       ])
 
@@ -74,7 +74,7 @@ export default async function getLoanPosition({ blockchain, collectionId, nftId,
         }
       }, new Promise(resolve => resolve(undefined)))
 
-      logger.info(`Fetching loan position for collection ID <${collectionId}>, NFT ID <${nftId}>, txSpeedBlocks <${txSpeedBlocks}> and blockchain <${JSON.stringify(blockchain)}>... OK:`, loanPosition)
+      logger.info(`Fetching loan position for collection address <${collectionAddress}>, NFT ID <${nftId}>, txSpeedBlocks <${txSpeedBlocks}> and blockchain <${JSON.stringify(blockchain)}>... OK:`, loanPosition)
 
       return loanPosition
     }
@@ -83,7 +83,7 @@ export default async function getLoanPosition({ blockchain, collectionId, nftId,
     }
   }
   catch (err) {
-    logger.error(`Fetching loan position for collection ID <${collectionId}>, NFT ID <${nftId}>, txSpeedBlocks <${txSpeedBlocks}> and blockchain <${JSON.stringify(blockchain)}>... ERR:`, err)
+    logger.error(`Fetching loan position for collection address <${collectionAddress}>, NFT ID <${nftId}>, txSpeedBlocks <${txSpeedBlocks}> and blockchain <${JSON.stringify(blockchain)}>... ERR:`, err)
     throw err
   }
 }

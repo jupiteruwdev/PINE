@@ -67,7 +67,6 @@ export default async function getEthMainnetNFTsByOwner({
     const collection = collectionFromDB ?? {
       address: collectionAddress,
       blockchain: Blockchain.Ethereum(1),
-      id: '',
     }
 
     let metadata: NFTMetadata | undefined

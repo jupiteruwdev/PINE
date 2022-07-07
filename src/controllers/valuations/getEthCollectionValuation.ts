@@ -19,12 +19,11 @@ export default async function getEthCollectionValuation({ blockchain, collection
   const collection = await findOneCollection({ blockchain, address: collectionAddress })
   if (!collection) throw fault('ERR_UNSUPPORTED_COLLECTION')
 
+  const venue = _.keys(collection.vendorIds)?.[0]
+  const id = _.values(collection.vendorIds)?.[0]
+
   switch (blockchain.networkId) {
   case Blockchain.Ethereum.Network.MAIN:
-    const matches = collection.id.match(/(.*):(.*)/)
-    const venue = matches?.[1]
-    const id = matches?.[2]
-
     if (!venue || !id) throw fault('ERR_UNSUPPORTED_COLLECTION')
 
     switch (venue) {
@@ -64,7 +63,8 @@ export default async function getEthCollectionValuation({ blockchain, collection
       throw fault('ERR_UNSUPPORTED_MARKETPLACE')
     }
   case Blockchain.Ethereum.Network.RINKEBY:
-    if (collection.id.includes('testing') || collection.id.includes('testing3')) {
+
+    if (id === 'testing' || id === 'testing3') {
       const valuation = {
         collection,
         value: Value.$ETH(0.1),
@@ -76,7 +76,7 @@ export default async function getEthCollectionValuation({ blockchain, collection
 
       return valuation
     }
-    else if (collection.id.includes('testing2')) {
+    else if (id === 'testing2') {
       const valuation = {
         collection,
         value: Value.$ETH(1),

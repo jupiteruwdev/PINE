@@ -8,18 +8,18 @@ import getFlashLoanSource from './getFlashLoanSource'
 
 type Params = {
   blockchain: Blockchain
-  collectionId: string
+  collectionAddress: string
   nftId: string
   existingLoan: any
 }
 
-export default async function getRolloverTerms({ blockchain, collectionId, nftId, existingLoan }: Params): Promise<RolloverTerms> {
-  logger.info(`Fetching rollover terms for NFT ID <${nftId}> and collection ID <${collectionId}> on blockchain <${JSON.stringify(blockchain)}>...`)
+export default async function getRolloverTerms({ blockchain, collectionAddress, nftId, existingLoan }: Params): Promise<RolloverTerms> {
+  logger.info(`Fetching rollover terms for NFT ID <${nftId}> and collection address <${collectionAddress}> on blockchain <${JSON.stringify(blockchain)}>...`)
 
   try {
     switch (blockchain.network) {
     case 'ethereum': {
-      const collection = await findOneCollection({ id: collectionId, blockchain })
+      const collection = await findOneCollection({ address: collectionAddress, blockchain })
       if (!collection) throw fault('ERR_UNSUPPORTED_COLLECTION')
 
       const pool = await findOnePool({ address: existingLoan?.pool, blockchain })
@@ -60,7 +60,7 @@ export default async function getRolloverTerms({ blockchain, collectionId, nftId
         ]
       })
 
-      logger.info(`Fetching rollover terms for NFT ID <${nftId}> and collection ID <${collectionId}> on blockchain <${JSON.stringify(blockchain)}>... OK:`, loanTerms)
+      logger.info(`Fetching rollover terms for NFT ID <${nftId}> and collection address <${collectionAddress}> on blockchain <${JSON.stringify(blockchain)}>... OK:`, loanTerms)
 
       return loanTerms
     }
@@ -69,7 +69,7 @@ export default async function getRolloverTerms({ blockchain, collectionId, nftId
     }
   }
   catch (err) {
-    logger.error(`Fetching rollover terms for NFT ID <${nftId}> and collection ID <${collectionId}> on blockchain <${JSON.stringify(blockchain)}>... ERR:`, err)
+    logger.error(`Fetching rollover terms for NFT ID <${nftId}> and collection address <${collectionAddress}> on blockchain <${JSON.stringify(blockchain)}>... ERR:`, err)
 
     throw err
   }
