@@ -1,5 +1,5 @@
 import { Router } from 'express'
-import getNFTsByOwner from '../controllers/getNFTsByOwner'
+import { getNFTsByOwner } from '../controllers'
 import { NFT, serializeEntityArray } from '../entities'
 import fault from '../utils/fault'
 import { getBlockchain, getString } from '../utils/query'

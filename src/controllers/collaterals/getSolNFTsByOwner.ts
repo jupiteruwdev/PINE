@@ -1,11 +1,11 @@
 import { Metadata } from '@metaplex-foundation/mpl-token-metadata'
 import { Connection, PublicKey } from '@solana/web3.js'
 import _ from 'lodash'
-import appConf from '../app.conf'
-import { Blockchain, Collection, NFT, NFTMetadata } from '../entities'
-import fault from '../utils/fault'
-import getRequest from '../utils/getRequest'
-import normalizeNFTImageUri from '../utils/normalizeNFTImageUri'
+import appConf from '../../app.conf'
+import { Blockchain, Collection, NFT, NFTMetadata } from '../../entities'
+import fault from '../../utils/fault'
+import getRequest from '../../utils/getRequest'
+import normalizeNFTImageUri from '../../utils/normalizeNFTImageUri'
 
 type Params = {
   /**

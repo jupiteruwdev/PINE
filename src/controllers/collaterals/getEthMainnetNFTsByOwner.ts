@@ -1,10 +1,10 @@
 import _ from 'lodash'
-import appConf from '../app.conf'
-import { findOneCollection } from '../db'
-import { Blockchain, Collection, NFT, NFTMetadata } from '../entities'
-import fault from '../utils/fault'
-import getRequest from '../utils/getRequest'
-import normalizeNFTImageUri from '../utils/normalizeNFTImageUri'
+import appConf from '../../app.conf'
+import { findOneCollection } from '../../db'
+import { Blockchain, Collection, NFT, NFTMetadata } from '../../entities'
+import fault from '../../utils/fault'
+import getRequest from '../../utils/getRequest'
+import normalizeNFTImageUri from '../../utils/normalizeNFTImageUri'
 import getNFTMetadata from './getNFTMetadata'
 
 type Params = {

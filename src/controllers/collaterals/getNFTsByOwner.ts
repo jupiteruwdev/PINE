@@ -1,5 +1,5 @@
-import { Blockchain, NFT, Collection } from '../entities'
-import fault from '../utils/fault'
+import { Blockchain, Collection, NFT } from '../../entities'
+import fault from '../../utils/fault'
 import getEthMainnetNFTsByOwner from './getEthMainnetNFTsByOwner'
 import getEthTestnetNFTsByOwner from './getEthTestnetNFTsByOwner'
 import getSolNFTsByOwner from './getSolNFTsByOwner'

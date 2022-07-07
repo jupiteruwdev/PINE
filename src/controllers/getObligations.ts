@@ -3,9 +3,8 @@ import { findAllPools, findOneCollection } from '../db'
 import { Blockchain, CollateralizedNFT } from '../entities'
 import { getOpenLoan } from '../subgraph/request'
 import fault from '../utils/fault'
+import { getNFTMetadata, getNFTsByOwner } from './collaterals'
 import getLoanEvent from './getLoanEvent'
-import getNFTMetadata from './getNFTMetadata'
-import getNFTsByOwner from './getNFTsByOwner'
 
 type Params = {
   blockchain: Blockchain
