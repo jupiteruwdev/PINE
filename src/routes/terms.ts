@@ -1,12 +1,9 @@
 import BigNumber from 'bignumber.js'
 import { Router } from 'express'
-import getExistingLoan from '../core/getExistingLoan'
-import getLoanTerms from '../core/getLoanTerms'
-import getPNPLTermsByUrl from '../core/getPNPLTermsByUrl'
-import getRolloverTerms from '../core/getRolloverTerms'
+import { getExistingLoan, getLoanTerms, getPNPLTermsByUrl, getRolloverTerms } from '../controllers'
 import { LoanTerms, PNPLTerms, RolloverTerms } from '../entities'
 import fault from '../utils/fault'
-import { getBlockchain, getString } from '../utils/query'
+import { getBlockchain, getString } from './utils/query'
 
 const router = Router()
 

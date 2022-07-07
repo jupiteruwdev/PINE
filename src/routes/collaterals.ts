@@ -1,8 +1,8 @@
 import { Router } from 'express'
-import getNFTsByOwner from '../core/getNFTsByOwner'
+import { getNFTsByOwner } from '../controllers'
 import { NFT, serializeEntityArray } from '../entities'
 import fault from '../utils/fault'
-import { getBlockchain, getString } from '../utils/query'
+import { getBlockchain, getString } from './utils/query'
 
 const router = Router()
 
