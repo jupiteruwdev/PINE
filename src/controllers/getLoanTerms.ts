@@ -5,7 +5,7 @@ import fault from '../utils/fault'
 import logger from '../utils/logger'
 import { getNFTMetadata } from './collaterals'
 import getEthCollectionValuation from './getEthCollectionValuation'
-import getPoolUtilization from './getPoolUtilization'
+import { getPoolUtilization } from './pools'
 import signValuation from './signValuation'
 
 type Params = {

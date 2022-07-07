@@ -1,6 +1,6 @@
-import { Blockchain } from '../entities'
-import fault from '../utils/fault'
-import { getPoolContract } from './contracts'
+import { Blockchain } from '../../entities'
+import fault from '../../utils/fault'
+import { getPoolContract } from '../contracts'
 
 type Params = {
   blockchain: Blockchain

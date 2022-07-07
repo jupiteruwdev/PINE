@@ -1,7 +1,7 @@
 import BigNumber from 'bignumber.js'
-import { findAllPools } from '../db'
-import { Blockchain, Pool, Value } from '../entities'
-import { SortDirection, SortType } from '../utils/sort'
+import { findAllPools } from '../../db'
+import { Blockchain, Pool, Value } from '../../entities'
+import { SortDirection, SortType } from '../../utils/sort'
 import getPoolCapacity from './getPoolCapacity'
 import getPoolUtilization from './getPoolUtilization'
 

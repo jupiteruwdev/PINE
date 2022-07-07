@@ -3,8 +3,7 @@ import appConf from '../app.conf'
 import { Blockchain, Value } from '../entities'
 import fault from '../utils/fault'
 import { getPoolContract } from './contracts'
-import getPoolCapacity from './getPoolCapacity'
-import getPools from './getPools'
+import { getPoolCapacity, getPools } from './pools'
 
 export default async function getFlashLoanSource({ blockchain, poolAddress }: { blockchain: Blockchain; poolAddress: string }): Promise<{ address: string; capacity: Value }> {
   const contract = await getPoolContract({ blockchain, poolAddress })

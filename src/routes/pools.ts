@@ -1,6 +1,5 @@
 import { Router } from 'express'
-import getPool from '../controllers/getPool'
-import searchPoolGroups from '../controllers/searchPoolGroups'
+import { getPool, searchPoolGroups } from '../controllers'
 import { countAllPools } from '../db'
 import { Pagination, Pool, PoolGroup, serializeEntityArray } from '../entities'
 import fault from '../utils/fault'
