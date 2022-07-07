@@ -33,7 +33,6 @@ describe('routes /collaterals', () => {
         })
         .expect('Content-Type', /json/)
         .expect(200)
-      console.log(res)
 
       expect(res.length).to.equal(2)
       for (let i = 0; i < 2; i += 1) {
