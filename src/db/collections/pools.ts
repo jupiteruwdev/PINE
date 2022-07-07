@@ -12,14 +12,12 @@ import { PoolModel } from '../models'
 type FindOneFilter = {
   address?: string
   collectionAddress?: string
-  collectionId?: string
   blockchain?: Blockchain
   includeRetired?: boolean
 }
 
 type FindAllFilter = {
   collectionAddress?: string
-  collectionId?: string
   blockchainFilter?: Blockchain.Filter
   includeRetired?: boolean
   offset?: number
@@ -41,7 +39,6 @@ type FindAllFilter = {
 export async function findOnePool({
   address,
   collectionAddress,
-  collectionId,
   blockchain = Blockchain.Ethereum(),
   includeRetired = false,
 }: FindOneFilter = {}): Promise<Pool | undefined> {
@@ -57,17 +54,6 @@ export async function findOnePool({
   if (collectionAddress !== undefined) {
     filter.push({
       'collection.address': collectionAddress,
-    })
-  }
-
-  if (collectionId !== undefined) {
-    const matches = collectionId.match(/(.*):(.*)/)
-    const venue = matches?.[1] ?? ''
-    const id = matches?.[2] ?? ''
-    filter.push({
-      'collection.vendorIds': {
-        [venue]: id,
-      },
     })
   }
 
@@ -120,7 +106,6 @@ export async function findOnePool({
 
 export async function countAllPools({
   collectionAddress,
-  collectionId,
   blockchainFilter = {
     ethereum: Blockchain.Ethereum.Network.MAIN,
     solana: Blockchain.Solana.Network.MAINNET,
@@ -156,16 +141,6 @@ export async function countAllPools({
       })
     }
 
-    if (collectionId !== undefined) {
-      const matches = collectionId.match(/(.*):(.*)/)
-      const venue = matches?.[1] ?? ''
-      const id = matches?.[2] ?? ''
-      filter.push({
-        'collection.vendorIds': {
-          [venue]: id,
-        },
-      })
-    }
     if (!includeRetired) {
       filter.push({
         retired: {
@@ -209,7 +184,6 @@ export async function countAllPools({
  */
 export async function findAllPools({
   collectionAddress,
-  collectionId,
   blockchainFilter = {
     ethereum: Blockchain.Ethereum.Network.MAIN,
     solana: Blockchain.Solana.Network.MAINNET,
@@ -246,17 +220,6 @@ export async function findAllPools({
         'collection.displayName': {
           $regex: `.*${collectionName}.*`,
           $options: 'i',
-        },
-      })
-    }
-
-    if (collectionId !== undefined) {
-      const matches = collectionId.match(/(.*):(.*)/)
-      const venue = matches?.[1] ?? ''
-      const id = matches?.[2] ?? ''
-      filter.push({
-        'collection.vendorIds': {
-          [venue]: id,
         },
       })
     }

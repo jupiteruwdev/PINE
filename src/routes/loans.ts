@@ -13,10 +13,10 @@ const router = Router()
 router.get('/nft', async (req, res, next) => {
   try {
     const nftId = getString(req.query, 'nftId')
-    const collectionId = getString(req.query, 'collectionId')
+    const collectionAddress = getString(req.query, 'collectionAddress')
     const txSpeedBlocks = _.toNumber(req.query.txSpeedBlocks ?? 0)
     const blockchain = getBlockchain(req.query)
-    const loanPosition = await getLoanPosition({ blockchain, nftId, collectionId, txSpeedBlocks })
+    const loanPosition = await getLoanPosition({ blockchain, nftId, collectionAddress, txSpeedBlocks })
 
     if (loanPosition === undefined) {
       res.status(404).send()

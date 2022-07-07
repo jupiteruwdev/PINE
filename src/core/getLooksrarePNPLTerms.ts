@@ -10,14 +10,14 @@ import getPoolContract from './getPoolContract'
 
 type Params = {
   blockchain: Blockchain
-  collectionId: string
+  collectionAddress: string
   nftId: string
 }
 
-export default async function getLooksrarePNPLTerms({ blockchain, collectionId, nftId }: Params): Promise<PNPLTerms> {
+export default async function getLooksrarePNPLTerms({ blockchain, collectionAddress, nftId }: Params): Promise<PNPLTerms> {
   switch (blockchain.network) {
   case 'ethereum': {
-    const loanTerms = await getLoanTerms({ blockchain, collectionId, nftId })
+    const loanTerms = await getLoanTerms({ blockchain, collectionAddress, nftId })
     const poolContract = await getPoolContract({ blockchain, poolAddress: loanTerms.poolAddress })
     if ((poolContract.poolVersion || 0) < 2) throw fault('ERR_PNPL_UNSUPPORTED_COLLECTION')
     const pnplContractAddress = _.get(appConf.pnplContractAddress, blockchain.networkId)
