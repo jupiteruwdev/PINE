@@ -1,8 +1,8 @@
 import { assert } from 'chai'
 import _ from 'lodash'
 import { describe, it } from 'mocha'
-import { findAllCollections } from '../db'
-import { Blockchain, Valuation } from '../entities'
+import { findAllCollections } from '../../db'
+import { Blockchain, Valuation } from '../../entities'
 import getEthCollectionValuation from './getEthCollectionValuation'
 
 describe('core/getEthCollectionValuation', () => {

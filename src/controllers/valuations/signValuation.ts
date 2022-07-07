@@ -1,9 +1,9 @@
 import _ from 'lodash'
-import appConf from '../app.conf'
-import { Blockchain, Valuation } from '../entities'
-import { getEthBlockNumber, getEthWeb3 } from '../utils/ethereum'
-import fault from '../utils/fault'
-import { getPoolContract } from './contracts'
+import appConf from '../../app.conf'
+import { Blockchain, Valuation } from '../../entities'
+import { getEthBlockNumber, getEthWeb3 } from '../../utils/ethereum'
+import fault from '../../utils/fault'
+import { getPoolContract } from '../contracts'
 
 type Params = {
   blockchain: Blockchain

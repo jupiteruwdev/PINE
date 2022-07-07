@@ -3,8 +3,7 @@ import { Blockchain, NFT, RolloverTerms, Value } from '../../entities'
 import fault from '../../utils/fault'
 import logger from '../../utils/logger'
 import { getNFTMetadata } from '../collaterals'
-import getEthCollectionValuation from '../getEthCollectionValuation'
-import signValuation from '../signValuation'
+import { getEthCollectionValuation, signValuation } from '../valuations'
 import getFlashLoanSource from './getFlashLoanSource'
 
 type Params = {

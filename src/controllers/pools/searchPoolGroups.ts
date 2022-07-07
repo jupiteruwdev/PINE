@@ -3,7 +3,7 @@ import { Blockchain, PoolGroup, Value } from '../../entities'
 import { getEthValueUSD } from '../../utils/ethereum'
 import logger from '../../utils/logger'
 import { SortDirection, SortType } from '../../utils/sort'
-import getEthCollectionFloorPriceBatch from '../getEthCollectionFloorPriceBatch'
+import { getEthCollectionFloorPriceBatch } from '../valuations'
 import getPools from './getPools'
 
 type Params = {

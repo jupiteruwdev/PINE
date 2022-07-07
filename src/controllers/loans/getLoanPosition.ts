@@ -8,7 +8,7 @@ import fault from '../../utils/fault'
 import logger from '../../utils/logger'
 import { getNFTMetadata } from '../collaterals'
 import { getControlPlaneContract, getPoolContract } from '../contracts'
-import getEthCollectionValuation from '../getEthCollectionValuation'
+import { getEthCollectionValuation } from '../valuations'
 import getLoanEvent from './getLoanEvent'
 
 type Params = {

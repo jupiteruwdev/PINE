@@ -4,9 +4,8 @@ import { Blockchain, LoanTerms, NFT, Value } from '../../entities'
 import fault from '../../utils/fault'
 import logger from '../../utils/logger'
 import { getNFTMetadata } from '../collaterals'
-import getEthCollectionValuation from '../getEthCollectionValuation'
 import { getPoolUtilization } from '../pools'
-import signValuation from '../signValuation'
+import { getEthCollectionValuation, signValuation } from '../valuations'
 
 type Params = {
   blockchain: Blockchain
