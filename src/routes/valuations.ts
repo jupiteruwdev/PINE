@@ -1,6 +1,6 @@
 import { Router } from 'express'
 import _ from 'lodash'
-import getEthCollectionFloorPriceBatch from '../core/getEthCollectionFloorPriceBatch'
+import getEthCollectionFloorPriceBatch from '../controllers/getEthCollectionFloorPriceBatch'
 import { serializeEntityArray, Valuation } from '../entities'
 import fault from '../utils/fault'
 import { getBlockchainFilter } from '../utils/query'
