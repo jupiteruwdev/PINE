@@ -1,6 +1,6 @@
 import _ from 'lodash'
 import { Blockchain } from '../../entities'
-import { getPoolHistoricalLoanEvents } from './getPoolHistoricalLoanEvents'
+import getPoolHistoricalLoanEvents from './getPoolHistoricalLoanEvents'
 
 type Params = {
   blockchain: Blockchain

@@ -1,9 +1,9 @@
 import Web3 from 'web3'
-import { findOneCollection } from '../db'
-import { Blockchain, PNPLTerms } from '../entities'
-import fault from '../utils/fault'
-import getLooksrarePNPLTerms from './getLooksrarePNPLTerms'
-import getOpenseaPNPLTerms from './getOpenseaPNPLTerms'
+import { findOneCollection } from '../../db'
+import { Blockchain, PNPLTerms } from '../../entities'
+import fault from '../../utils/fault'
+import getLooksRarePNPLTerms from './getLooksRarePNPLTerms'
+import getOpenSeaPNPLTerms from './getOpenSeaPNPLTerms'
 
 type Params = {
   parsedURL: URL
@@ -27,7 +27,7 @@ export default async function getPNPLTermsByUrl({ parsedURL }: Params): Promise<
     const collection = await findOneCollection({ address: collectionAddress, blockchain: Blockchain.Ethereum(Blockchain.Ethereum.Network.MAIN) })
     if (!collection) throw fault('ERR_PNPL_UNSUPPORTED_COLLECTION')
 
-    return getOpenseaPNPLTerms({
+    return getOpenSeaPNPLTerms({
       openseaVersion: 'main',
       blockchain: Blockchain.Ethereum(Blockchain.Ethereum.Network.MAIN),
       collectionId: collection.id,
@@ -42,7 +42,7 @@ export default async function getPNPLTermsByUrl({ parsedURL }: Params): Promise<
     const collection = await findOneCollection({ address: collectionAddress, blockchain: Blockchain.Ethereum(Blockchain.Ethereum.Network.RINKEBY) })
     if (!collection) throw fault('ERR_PNPL_UNSUPPORTED_COLLECTION')
 
-    return getOpenseaPNPLTerms({
+    return getOpenSeaPNPLTerms({
       openseaVersion: 'rinkeby',
       blockchain: Blockchain.Ethereum(Blockchain.Ethereum.Network.RINKEBY),
       collectionId: collection.id,
@@ -58,7 +58,7 @@ export default async function getPNPLTermsByUrl({ parsedURL }: Params): Promise<
     const collection = await findOneCollection({ address: collectionAddress, blockchain: Blockchain.Ethereum(Blockchain.Ethereum.Network.MAIN) })
     if (!collection) throw fault('ERR_PNPL_UNSUPPORTED_COLLECTION')
 
-    return getLooksrarePNPLTerms({
+    return getLooksRarePNPLTerms({
       blockchain: Blockchain.Ethereum(Blockchain.Ethereum.Network.MAIN),
       collectionId: collection.id,
       nftId,
@@ -73,7 +73,7 @@ export default async function getPNPLTermsByUrl({ parsedURL }: Params): Promise<
     const collection = await findOneCollection({ address: collectionAddress, blockchain: Blockchain.Ethereum(Blockchain.Ethereum.Network.RINKEBY) })
     if (!collection) throw fault('ERR_PNPL_UNSUPPORTED_COLLECTION')
 
-    return getLooksrarePNPLTerms({
+    return getLooksRarePNPLTerms({
       blockchain: Blockchain.Ethereum(Blockchain.Ethereum.Network.RINKEBY),
       collectionId: collection.id,
       nftId,

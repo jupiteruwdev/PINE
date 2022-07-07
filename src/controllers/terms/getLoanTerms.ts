@@ -1,12 +1,12 @@
 import BigNumber from 'bignumber.js'
-import { findOneCollection, findOnePool } from '../db'
-import { Blockchain, LoanTerms, NFT, Value } from '../entities'
-import fault from '../utils/fault'
-import logger from '../utils/logger'
-import { getNFTMetadata } from './collaterals'
-import getEthCollectionValuation from './getEthCollectionValuation'
-import { getPoolUtilization } from './pools'
-import signValuation from './signValuation'
+import { findOneCollection, findOnePool } from '../../db'
+import { Blockchain, LoanTerms, NFT, Value } from '../../entities'
+import fault from '../../utils/fault'
+import logger from '../../utils/logger'
+import { getNFTMetadata } from '../collaterals'
+import getEthCollectionValuation from '../getEthCollectionValuation'
+import { getPoolUtilization } from '../pools'
+import signValuation from '../signValuation'
 
 type Params = {
   blockchain: Blockchain

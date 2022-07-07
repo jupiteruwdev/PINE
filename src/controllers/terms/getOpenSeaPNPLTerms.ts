@@ -1,20 +1,21 @@
 import BigNumber from 'bignumber.js'
 import _ from 'lodash'
-import appConf from '../app.conf'
-import { Blockchain, PNPLTerms, Value } from '../entities'
-import fault from '../utils/fault'
-import getRequest from '../utils/getRequest'
-import { getPoolContract } from './contracts'
+import appConf from '../../app.conf'
+import { Blockchain, PNPLTerms, Value } from '../../entities'
+import fault from '../../utils/fault'
+import getRequest from '../../utils/getRequest'
+import { getPoolContract } from '../contracts'
 import getFlashLoanSource from './getFlashLoanSource'
 import getLoanTerms from './getLoanTerms'
 
 type Params = {
+  openseaVersion: 'main' | 'rinkeby'
   blockchain: Blockchain
   collectionId: string
   nftId: string
 }
 
-export default async function getLooksrarePNPLTerms({ blockchain, collectionId, nftId }: Params): Promise<PNPLTerms> {
+export default async function getOpenSeaPNPLTerms({ openseaVersion, blockchain, collectionId, nftId }: Params): Promise<PNPLTerms> {
   switch (blockchain.network) {
   case 'ethereum': {
     const loanTerms = await getLoanTerms({ blockchain, collectionId, nftId })
@@ -23,11 +24,11 @@ export default async function getLooksrarePNPLTerms({ blockchain, collectionId, 
     const pnplContractAddress = _.get(appConf.pnplContractAddress, blockchain.networkId)
 
     try {
-      const lookrareInstructions = await getRequest('https://northamerica-northeast1-pinedefi.cloudfunctions.net/looksrare-purchase-generator', {
+      const openseaInstructions = await getRequest('https://us-central1-pinedefi.cloudfunctions.net/opensea-purchase-generator', {
         params: {
           'nft_address': loanTerms.collection.address,
           'token_id': nftId,
-          'network_id': blockchain.networkId,
+          'network_name': openseaVersion,
           'account_address': pnplContractAddress,
         },
       })
@@ -36,11 +37,11 @@ export default async function getLooksrarePNPLTerms({ blockchain, collectionId, 
         ...loanTerms,
         flashLoanSourceContractAddress: flashLoanSource.address,
         maxFlashLoanValue: flashLoanSource.capacity,
-        listedPrice: Value.$WEI(new BigNumber(lookrareInstructions.currentPrice)),
-        marketplaceContractAddress: _.get(appConf.looksrareContractAddress, blockchain.networkId),
-        marketplaceName: 'Looksrare',
+        listedPrice: Value.$WEI(new BigNumber(openseaInstructions.currentPrice)),
+        marketplaceContractAddress: _.get(appConf.openseaContractAddress, blockchain.networkId),
+        marketplaceName: 'OpenSea',
         pnplContractAddress,
-        purchaseInstruction: lookrareInstructions.calldata,
+        purchaseInstruction: openseaInstructions.calldata,
       }
 
       return pnplTerms

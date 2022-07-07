@@ -1,11 +1,11 @@
-import { findOneCollection, findOnePool } from '../db'
-import { Blockchain, NFT, RolloverTerms, Value } from '../entities'
-import fault from '../utils/fault'
-import logger from '../utils/logger'
-import { getNFTMetadata } from './collaterals'
-import getEthCollectionValuation from './getEthCollectionValuation'
+import { findOneCollection, findOnePool } from '../../db'
+import { Blockchain, NFT, RolloverTerms, Value } from '../../entities'
+import fault from '../../utils/fault'
+import logger from '../../utils/logger'
+import { getNFTMetadata } from '../collaterals'
+import getEthCollectionValuation from '../getEthCollectionValuation'
+import signValuation from '../signValuation'
 import getFlashLoanSource from './getFlashLoanSource'
-import signValuation from './signValuation'
 
 type Params = {
   blockchain: Blockchain

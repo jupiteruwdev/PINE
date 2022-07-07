@@ -7,7 +7,7 @@ type Params = {
   poolAddress: string
 }
 
-export async function getPoolHistoricalLoanEvents({ blockchain, poolAddress }: Params) {
+export default async function getPoolHistoricalLoanEvents({ blockchain, poolAddress }: Params) {
   switch (blockchain.network) {
   case 'ethereum': {
     const poolContract = await getPoolContract({ blockchain, poolAddress }).catch(err => { throw fault('ERR_FETCH_POOL_CONTRACT', undefined, err) })

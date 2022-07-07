@@ -1,9 +1,9 @@
 import _ from 'lodash'
-import appConf from '../app.conf'
-import { Blockchain, Value } from '../entities'
-import fault from '../utils/fault'
-import { getPoolContract } from './contracts'
-import { getPoolCapacity, getPools } from './pools'
+import appConf from '../../app.conf'
+import { Blockchain, Value } from '../../entities'
+import fault from '../../utils/fault'
+import { getPoolContract } from '../contracts'
+import { getPoolCapacity, getPools } from '../pools'
 
 export default async function getFlashLoanSource({ blockchain, poolAddress }: { blockchain: Blockchain; poolAddress: string }): Promise<{ address: string; capacity: Value }> {
   const contract = await getPoolContract({ blockchain, poolAddress })

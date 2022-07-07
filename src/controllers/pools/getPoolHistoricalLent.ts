@@ -2,7 +2,7 @@ import BigNumber from 'bignumber.js'
 import { Blockchain, Value } from '../../entities'
 import { getEthWeb3 } from '../../utils/ethereum'
 import fault from '../../utils/fault'
-import { getPoolHistoricalLoanEvents } from './getPoolHistoricalLoanEvents'
+import getPoolHistoricalLoanEvents from './getPoolHistoricalLoanEvents'
 
 type Params = {
   blockchain: Blockchain
