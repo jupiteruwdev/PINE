@@ -61,7 +61,7 @@ describe('routes/pools', () => {
       await Promise.all(collectionAddresss.map(async collectionAddress => {
         const { body: res } = await request(app).get('/pools/groups/collection')
           .query({
-            ethereum: 1,
+            ethereum: 4,
             collectionAddress,
           })
           .expect('Content-Type', /json/)
