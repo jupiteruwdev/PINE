@@ -1,22 +1,20 @@
 import { Router } from 'express'
 import _ from 'lodash'
-import getActiveLoanStatsByCollection from '../core/getActiveLoanStatsByCollection'
-import getLoanPosition from '../core/getLoanPosition'
-import getObligations from '../core/getObligations'
+import { getActiveLoanStatsByCollection, getLoanPosition, getObligations } from '../controllers'
 import { ActiveLoanStats, Blockchain, CollateralizedNFT, LoanPosition, serializeEntityArray } from '../entities'
 import fault from '../utils/fault'
-import { getBlockchain, getString } from '../utils/query'
 import tryOrUndefined from '../utils/tryOrUndefined'
+import { getBlockchain, getString } from './utils/query'
 
 const router = Router()
 
 router.get('/nft', async (req, res, next) => {
   try {
     const nftId = getString(req.query, 'nftId')
-    const collectionId = getString(req.query, 'collectionId')
+    const collectionAddress = getString(req.query, 'collectionAddress')
     const txSpeedBlocks = _.toNumber(req.query.txSpeedBlocks ?? 0)
     const blockchain = getBlockchain(req.query)
-    const loanPosition = await getLoanPosition({ blockchain, nftId, collectionId, txSpeedBlocks })
+    const loanPosition = await getLoanPosition({ blockchain, nftId, collectionAddress, txSpeedBlocks })
 
     if (loanPosition === undefined) {
       res.status(404).send()

@@ -1,21 +1,18 @@
 import BigNumber from 'bignumber.js'
 import { Router } from 'express'
-import getExistingLoan from '../core/getExistingLoan'
-import getLoanTerms from '../core/getLoanTerms'
-import getPNPLTermsByUrl from '../core/getPNPLTermsByUrl'
-import getRolloverTerms from '../core/getRolloverTerms'
+import { getExistingLoan, getLoanTerms, getPNPLTermsByUrl, getRolloverTerms } from '../controllers'
 import { LoanTerms, PNPLTerms, RolloverTerms } from '../entities'
 import fault from '../utils/fault'
-import { getBlockchain, getString } from '../utils/query'
+import { getBlockchain, getString } from './utils/query'
 
 const router = Router()
 
 router.get('/borrow', async (req, res, next) => {
   try {
     const nftId = getString(req.query, 'nftId')
-    const collectionId = getString(req.query, 'collectionId')
+    const collectionAddress = getString(req.query, 'collectionAddress')
     const blockchain = getBlockchain(req.query)
-    const loanTerms = await getLoanTerms({ blockchain, nftId, collectionId })
+    const loanTerms = await getLoanTerms({ blockchain, nftId, collectionAddress })
     const payload = LoanTerms.serialize(loanTerms)
     res.status(200).json(payload)
   }
@@ -27,14 +24,14 @@ router.get('/borrow', async (req, res, next) => {
 router.get('/rollover', async (req, res, next) => {
   try {
     const nftId = getString(req.query, 'nftId')
-    const collectionId = getString(req.query, 'collectionId')
+    const collectionAddress = getString(req.query, 'collectionAddress')
     const blockchain = getBlockchain(req.query)
-    const existingLoan = await getExistingLoan({ blockchain, nftId, collectionId })
+    const existingLoan = await getExistingLoan({ blockchain, nftId, collectionAddress })
     const canRollover = new BigNumber(existingLoan?.borrowedWei).gt(new BigNumber(existingLoan?.returnedWei))
 
     if (!canRollover) next(fault('ERR_INVALID_ROLLOVER'))
 
-    const loanTerms = await getRolloverTerms({ blockchain, nftId, collectionId, existingLoan })
+    const loanTerms = await getRolloverTerms({ blockchain, nftId, collectionAddress, existingLoan })
     const payload = RolloverTerms.serialize(loanTerms)
     res.status(200).json(payload)
   }

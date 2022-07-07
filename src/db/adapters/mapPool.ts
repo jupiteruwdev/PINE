@@ -40,7 +40,7 @@ export default function mapPool(data: Record<string, any>): Pool {
   const repayRouterAddress = _.get(data, 'repayRouterAddress')
   const rolloverAddress = _.get(data, 'rolloverAddress')
   const defaultFees = _.get(data, 'defaultFees')
-  const ethLimit = _.get(data, 'ethLimit', 0)
+  const ethLimit = _.toNumber(_.get(data, 'ethLimit', 0))
   const loanOptions = _.get(data, 'loanOptions', []).map((t: any) =>
     mapLoanOption(t, defaultFees)
   )

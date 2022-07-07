@@ -1,12 +1,11 @@
 import { Router } from 'express'
-import getPool from '../core/getPool'
-import getPoolGroupStats from '../core/getPoolGroupStats'
+import { getPool, searchPoolGroups } from '../controllers'
 import { countAllPools } from '../db'
-import { Pagination, Pool, PoolGroupStats, serializeEntityArray } from '../entities'
+import { Pagination, Pool, PoolGroup, serializeEntityArray } from '../entities'
 import fault from '../utils/fault'
-import { getBlockchain, getBlockchainFilter, getNumber, getString } from '../utils/query'
 import { SortDirection, SortType } from '../utils/sort'
 import tryOrUndefined from '../utils/tryOrUndefined'
+import { getBlockchain, getBlockchainFilter, getNumber, getString } from './utils/query'
 
 const router = Router()
 
@@ -14,8 +13,8 @@ router.get('/groups/collection', async (req, res, next) => {
   try {
     const blockchainFilter = getBlockchainFilter(req.query, true)
     const collectionAddress = getString(req.query, 'collectionAddress')
-    const poolGroups = await getPoolGroupStats({ blockchainFilter, collectionAddress })
-    const payload = serializeEntityArray(poolGroups, PoolGroupStats.codingResolver)
+    const poolGroups = await searchPoolGroups({ blockchainFilter, collectionAddress })
+    const payload = serializeEntityArray(poolGroups, PoolGroup.codingResolver)
 
     res.status(200).json(payload)
   }
@@ -34,9 +33,9 @@ router.get('/groups/search', async (req, res, next) => {
     const sortBy = tryOrUndefined(() => getString(req.query, 'sort')) as SortType
     const sortDirection = tryOrUndefined(() => getString(req.query, 'direction')) as SortDirection
     const totalCount = await countAllPools({ collectionAddress, blockchainFilter, collectionName })
-    const pools = await getPoolGroupStats({ collectionAddress, blockchainFilter, count, offset, collectionName, sortBy, sortDirection })
-    const payload = serializeEntityArray(pools, PoolGroupStats.codingResolver)
-    const nextOffset = (offset ?? 0) + pools.length
+    const poolGroups = await searchPoolGroups({ collectionAddress, blockchainFilter, count, offset, collectionName, sortBy, sortDirection })
+    const payload = serializeEntityArray(poolGroups, PoolGroup.codingResolver)
+    const nextOffset = (offset ?? 0) + poolGroups.length
     const pagination = Pagination.serialize({ data: payload, totalCount, nextOffset: nextOffset === totalCount - 1 ? undefined : nextOffset })
 
     res.status(200).json(pagination)
