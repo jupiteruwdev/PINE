@@ -1,5 +1,5 @@
 import _ from 'lodash'
-import { Blockchain, PoolGroupStats, Value } from '../entities'
+import { Blockchain, PoolGroup, Value } from '../entities'
 import { getEthValueUSD } from '../utils/ethereum'
 import logger from '../utils/logger'
 import { SortDirection, SortType } from '../utils/sort'
@@ -16,7 +16,7 @@ type Params = {
   sortDirection?: SortDirection
 }
 
-export default async function getPoolGroupStats({
+export default async function searchPoolGroups({
   blockchainFilter = {
     ethereum: Blockchain.Ethereum.Network.MAIN,
     solana: Blockchain.Solana.Network.MAINNET,
@@ -28,7 +28,7 @@ export default async function getPoolGroupStats({
   sortBy,
   sortDirection,
 }: Params) {
-  logger.info('Fetching pool group stats...')
+  logger.info('Fetching pool groups...')
 
   try {
     const [ethValueUSD, pools] = await Promise.all([
@@ -44,7 +44,7 @@ export default async function getPoolGroupStats({
       }),
     ])
 
-    const stats: PoolGroupStats[] = _.compact(
+    const poolGroups: PoolGroup[] = _.compact(
       pools.map(pool => {
         if (!pool.collection) return undefined
 
@@ -60,10 +60,10 @@ export default async function getPoolGroupStats({
     )
 
     const ethereumCollectionAddresses = _.filter(
-      stats,
+      poolGroups,
       stat => stat.collection.blockchain.network === 'ethereum'
     ).reduce(
-      (cur: any, stat: PoolGroupStats) => [
+      (cur: any, stat: PoolGroup) => [
         ...cur,
         stat.collection.address,
       ],
@@ -77,7 +77,7 @@ export default async function getPoolGroupStats({
       collectionAddresses: ethereumCollectionAddresses,
     })
 
-    const out = stats.map((stat, i) => {
+    const out = poolGroups.map((stat, i) => {
       const curIndex = _.findIndex(ethereumCollectionAddresses, collectionAddress => collectionAddress === stat.collection.address)
       return {
         ...stat,
@@ -85,12 +85,12 @@ export default async function getPoolGroupStats({
       }
     })
 
-    logger.info('Fetching pool group stats... OK', out)
+    logger.info('Fetching pool groups... OK', out)
 
     return out
   }
   catch (err) {
-    logger.error('Fetching pool group stats... ERR:', err)
+    logger.error('Fetching pool groups... ERR:', err)
 
     throw err
   }
