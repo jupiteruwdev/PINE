@@ -1,6 +1,6 @@
 import BigNumber from 'bignumber.js'
 import { Router } from 'express'
-import getExistingLoan from '../controllers/getExistingLoan'
+import { getExistingLoan } from '../controllers'
 import getLoanTerms from '../controllers/getLoanTerms'
 import getPNPLTermsByUrl from '../controllers/getPNPLTermsByUrl'
 import getRolloverTerms from '../controllers/getRolloverTerms'

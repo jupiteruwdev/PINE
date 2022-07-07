@@ -1,6 +1,6 @@
-import { findOneCollection } from '../db'
-import { Blockchain } from '../entities'
-import fault from '../utils/fault'
+import { findOneCollection } from '../../db'
+import { Blockchain } from '../../entities'
+import fault from '../../utils/fault'
 import getLoanPosition from './getLoanPosition'
 
 type Params = {
