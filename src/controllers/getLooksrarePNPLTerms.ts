@@ -4,9 +4,9 @@ import appConf from '../app.conf'
 import { Blockchain, PNPLTerms, Value } from '../entities'
 import fault from '../utils/fault'
 import getRequest from '../utils/getRequest'
+import { getPoolContract } from './contracts'
 import getFlashLoanSource from './getFlashLoanSource'
 import getLoanTerms from './getLoanTerms'
-import getPoolContract from './getPoolContract'
 
 type Params = {
   blockchain: Blockchain

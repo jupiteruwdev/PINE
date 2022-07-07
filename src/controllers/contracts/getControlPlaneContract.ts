@@ -1,7 +1,7 @@
-import ControlPlaneABI from '../abis/ControlPlane.json'
-import { Blockchain } from '../entities'
-import { getEthWeb3 } from '../utils/ethereum'
-import fault from '../utils/fault'
+import ControlPlaneABI from '../../abis/ControlPlane.json'
+import { Blockchain } from '../../entities'
+import { getEthWeb3 } from '../../utils/ethereum'
+import fault from '../../utils/fault'
 
 type Params = {
   blockchain: Blockchain

@@ -3,7 +3,7 @@
  */
 
 import _ from 'lodash'
-import getPoolContract from '../../controllers/getPoolContract'
+import { getPoolContract } from '../../controllers'
 import { Blockchain, Pool } from '../../entities'
 import { SortDirection, SortType } from '../../utils/sort'
 import { mapCollection, mapPool } from '../adapters'

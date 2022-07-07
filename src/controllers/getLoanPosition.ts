@@ -6,11 +6,10 @@ import { Blockchain, LoanPosition, Value } from '../entities'
 import { getEthBlockNumber } from '../utils/ethereum'
 import fault from '../utils/fault'
 import logger from '../utils/logger'
-import getControlPlaneContract from './getControlPlaneContract'
+import { getControlPlaneContract, getPoolContract } from './contracts'
 import getEthCollectionValuation from './getEthCollectionValuation'
 import getLoanEvent from './getLoanEvent'
 import getNFTMetadata from './getNFTMetadata'
-import getPoolContract from './getPoolContract'
 
 type Params = {
   blockchain: Blockchain
