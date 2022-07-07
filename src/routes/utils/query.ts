@@ -1,8 +1,11 @@
 import { Request } from 'express'
 import _ from 'lodash'
-import { AnyBlockchain, Blockchain } from '../entities'
-import { parseEthNetworkId } from './ethereum'
-import fault from './fault'
+import { AnyBlockchain, Blockchain } from '../../entities'
+import fault from '../../utils/fault'
+
+export function parseEthNetworkId(value: any): string {
+  return _.toString(_.toNumber(value))
+}
 
 /**
  * Searches for and returns a string value from a request query based on the specified key.

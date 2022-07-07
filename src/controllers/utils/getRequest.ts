@@ -1,7 +1,7 @@
 import SuperError from '@andrewscwei/super-error'
 import axios from 'axios'
-import fault from './fault'
-import logger from './logger'
+import fault from '../../utils/fault'
+import logger from '../../utils/logger'
 
 type Options<T> = {
   controller?: AbortController

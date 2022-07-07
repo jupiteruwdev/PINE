@@ -4,8 +4,8 @@ import _ from 'lodash'
 import appConf from '../../app.conf'
 import { Blockchain, Collection, NFT, NFTMetadata } from '../../entities'
 import fault from '../../utils/fault'
-import getRequest from '../../utils/getRequest'
-import normalizeNFTImageUri from '../../utils/normalizeNFTImageUri'
+import getRequest from '../utils/getRequest'
+import normalizeNFTImageUri from '../utils/normalizeNFTImageUri'
 
 type Params = {
   /**

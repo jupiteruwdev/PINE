@@ -4,8 +4,8 @@ import appConf from '../../app.conf'
 import { findOneCollection } from '../../db'
 import { Blockchain, Valuation, Value } from '../../entities'
 import fault from '../../utils/fault'
-import getRequest from '../../utils/getRequest'
 import logger from '../../utils/logger'
+import getRequest from '../utils/getRequest'
 import getEthCollectionFloorPrice from './getEthCollectionFloorPrice'
 
 type Params = {

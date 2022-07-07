@@ -2,7 +2,7 @@ import BigNumber from 'bignumber.js'
 import { assert, expect } from 'chai'
 import _ from 'lodash'
 import { describe, it } from 'mocha'
-import { Blockchain } from '../entities'
+import { Blockchain } from '../../entities'
 import { getEthBlockNumber, getEthValueUSD, getEthWeb3 } from './ethereum'
 
 describe('utils/ethereum', () => {

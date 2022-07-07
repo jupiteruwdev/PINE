@@ -1,9 +1,9 @@
 import BigNumber from 'bignumber.js'
 import _ from 'lodash'
 import Web3 from 'web3'
-import appConf from '../app.conf'
-import { Blockchain, Value } from '../entities'
-import fault from './fault'
+import appConf from '../../app.conf'
+import { Blockchain, Value } from '../../entities'
+import fault from '../../utils/fault'
 import getRequest from './getRequest'
 
 const web3s: Record<string, Web3 | undefined> = {
@@ -52,8 +52,4 @@ export async function getEthBlockNumber(networkId: string = Blockchain.Ethereum.
   const blockNumber = await web3.eth.getBlockNumber()
 
   return blockNumber
-}
-
-export function parseEthNetworkId(value: any): string {
-  return _.toString(_.toNumber(value))
 }

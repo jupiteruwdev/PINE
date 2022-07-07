@@ -3,9 +3,9 @@ import { getPool, searchPoolGroups } from '../controllers'
 import { countAllPools } from '../db'
 import { Pagination, Pool, PoolGroup, serializeEntityArray } from '../entities'
 import fault from '../utils/fault'
-import { getBlockchain, getBlockchainFilter, getNumber, getString } from '../utils/query'
 import { SortDirection, SortType } from '../utils/sort'
 import tryOrUndefined from '../utils/tryOrUndefined'
+import { getBlockchain, getBlockchainFilter, getNumber, getString } from './utils/query'
 
 const router = Router()
 

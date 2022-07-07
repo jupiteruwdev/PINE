@@ -3,7 +3,7 @@ import appConf from '../../app.conf'
 import { findOneCollection } from '../../db'
 import { Blockchain, Value } from '../../entities'
 import fault from '../../utils/fault'
-import getRequest from '../../utils/getRequest'
+import getRequest from '../utils/getRequest'
 
 type Params = {
   blockchain: Blockchain<'ethereum'>

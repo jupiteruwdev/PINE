@@ -1,9 +1,9 @@
 import ERC721EnumerableABI from '../../abis/ERC721Enumerable.json'
 import { Blockchain, NFTMetadata } from '../../entities'
-import { getEthWeb3 } from '../../utils/ethereum'
 import fault from '../../utils/fault'
-import getRequest from '../../utils/getRequest'
-import normalizeNFTImageUri from '../../utils/normalizeNFTImageUri'
+import { getEthWeb3 } from '../utils/ethereum'
+import getRequest from '../utils/getRequest'
+import normalizeNFTImageUri from '../utils/normalizeNFTImageUri'
 
 type Params = {
   blockchain: Blockchain

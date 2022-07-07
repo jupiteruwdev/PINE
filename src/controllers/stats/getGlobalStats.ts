@@ -1,8 +1,8 @@
 import BigNumber from 'bignumber.js'
 import { Blockchain, GlobalStats, Value } from '../../entities'
-import { getEthValueUSD } from '../../utils/ethereum'
 import logger from '../../utils/logger'
 import { getPoolHistoricalLent, getPools } from '../pools'
+import { getEthValueUSD } from '../utils/ethereum'
 
 type Params = {
   blockchainFilter?: Blockchain.Filter

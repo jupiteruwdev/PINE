@@ -2,8 +2,8 @@ import _ from 'lodash'
 import appConf from '../../app.conf'
 import { findAllCollections, findOneCollection } from '../../db'
 import { Blockchain, Collection, NFT } from '../../entities'
-import getRequest from '../../utils/getRequest'
-import normalizeNFTImageUri from '../../utils/normalizeNFTImageUri'
+import getRequest from '../utils/getRequest'
+import normalizeNFTImageUri from '../utils/normalizeNFTImageUri'
 
 type Params = {
   /**

@@ -3,8 +3,8 @@ import _ from 'lodash'
 import { getActiveLoanStatsByCollection, getLoanPosition, getObligations } from '../controllers'
 import { ActiveLoanStats, Blockchain, CollateralizedNFT, LoanPosition, serializeEntityArray } from '../entities'
 import fault from '../utils/fault'
-import { getBlockchain, getString } from '../utils/query'
 import tryOrUndefined from '../utils/tryOrUndefined'
+import { getBlockchain, getString } from './utils/query'
 
 const router = Router()
 

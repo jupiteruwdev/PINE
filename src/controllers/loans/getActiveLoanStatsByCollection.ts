@@ -4,7 +4,7 @@ import { findAllPools } from '../../db'
 import { ActiveLoanStats, Blockchain, Pool, Value } from '../../entities'
 import { getActiveLoansForPools } from '../../subgraph/request'
 import fault from '../../utils/fault'
-import getRequest from '../../utils/getRequest'
+import getRequest from '../utils/getRequest'
 
 type Params = {
   collectionAddress: string
