@@ -21,7 +21,7 @@ export const repayRouterAddresses = (x: number, poolAddress: string) => {
 }
 
 export const ETHLimits : Record<string, number> = {
-  '0x609fee5870739611fea720ad5d86be458b47596a': 5.5
+  '0x609fee5870739611fea720ad5d86be458b47596a': 7.6
 }
 
 export const defaultFees = (currency: AnyCurrency, poolVersion: number, poolAddress: string): Fee[] => {
