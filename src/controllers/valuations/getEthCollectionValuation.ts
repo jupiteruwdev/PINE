@@ -11,9 +11,10 @@ import getEthCollectionFloorPrice from './getEthCollectionFloorPrice'
 type Params = {
   blockchain: Blockchain<'ethereum'>
   collectionAddress: string
+  tokenId: string
 }
 
-export default async function getEthCollectionValuation({ blockchain, collectionAddress }: Params): Promise<Valuation> {
+export default async function getEthCollectionValuation({ blockchain, collectionAddress, tokenId }: Params): Promise<Valuation> {
   logger.info(`Fetching valuation for Ethereum collection <${collectionAddress}>...`)
 
   const collection = await findOneCollection({ blockchain, address: collectionAddress })
@@ -32,7 +33,12 @@ export default async function getEthCollectionValuation({ blockchain, collection
         const apiKey = appConf.openseaAPIKey
         if (!apiKey) throw fault('ERR_MISSING_API_KEY', 'Missing OpenSea API key')
 
-        const [collectionData] = await Promise.all([
+        const [collectionData, collectionFloorPrice] = await Promise.all([
+          getRequest(`https://api.opensea.io/api/v1/asset/${collectionAddress}/${tokenId}`, {
+            headers: {
+              'X-API-KEY': apiKey,
+            },
+          }),
           getRequest(`https://api.opensea.io/api/v1/collection/${id}/stats`, {
             headers: {
               'X-API-KEY': apiKey,
@@ -40,8 +46,15 @@ export default async function getEthCollectionValuation({ blockchain, collection
           }),
         ])
 
-        const floorPrice = new BigNumber(_.get(collectionData, 'stats.floor_price'))
-        const value24Hr = new BigNumber(_.get(collectionData, 'stats.one_day_average_price'))
+        const collectionSlug = _.get(collectionData, 'collection.slug')
+        if (_.isArray(id)) {
+          if (id.length !== 0 || !id.includes(collectionSlug)) throw fault('ERR_UNSUPPORTED_COLLECTION')
+        }
+        else if (_.isString(id)) {
+          if (id !== collectionSlug) throw fault('ERR_UNSUPPORTED_COLLECTION')
+        }
+        const floorPrice = new BigNumber(_.get(collectionFloorPrice, 'stats.floor_price'))
+        const value24Hr = new BigNumber(_.get(collectionFloorPrice, 'stats.one_day_average_price'))
         const value = floorPrice.gt(value24Hr) ? value24Hr : floorPrice
         const valuation: Valuation<'ETH'> = {
           collection,
