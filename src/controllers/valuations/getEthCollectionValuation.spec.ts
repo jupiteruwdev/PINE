@@ -10,10 +10,11 @@ describe('core/getEthCollectionValuation', () => {
     const blockchain = Blockchain.Ethereum(Blockchain.Ethereum.Network.MAIN)
     const collections = await findAllCollections({ blockchainFilter: { [blockchain.network]: blockchain.networkId } })
     const collection = _.sample(collections)
+    const tokenId = '1000'
 
     if (!collection) throw 0
 
-    await getEthCollectionValuation({ blockchain, collectionAddress: collection.address })
+    await getEthCollectionValuation({ blockchain, collectionAddress: collection.address, tokenId })
   })
 
   it('can get the valuation of all supported Ethereum collections on Mainnet', async () => {
@@ -22,11 +23,12 @@ describe('core/getEthCollectionValuation', () => {
     const blockchain = Blockchain.Ethereum(Blockchain.Ethereum.Network.MAIN)
     const collections = await findAllCollections({ blockchainFilter: { [blockchain.network]: blockchain.networkId } })
     const valuations: Valuation[] = []
+    const tokenId = '1000'
 
     for (let i = 0, n = collections.length; i < n; i++) {
       await delayToAvoidOpenSea429(1000)
       const collection = collections[i]
-      const valuation = await getEthCollectionValuation({ blockchain, collectionAddress: collection.address })
+      const valuation = await getEthCollectionValuation({ blockchain, collectionAddress: collection.address, tokenId })
       valuations.push(valuation)
     }
 
@@ -38,16 +40,18 @@ describe('core/getEthCollectionValuation', () => {
     const blockchain = Blockchain.Ethereum(Blockchain.Ethereum.Network.RINKEBY)
     const collections = await findAllCollections({ blockchainFilter: { [blockchain.network]: blockchain.networkId } })
     const collection = _.sample(collections)
+    const tokenId = '1000'
 
     if (!collection) throw 0
 
-    await getEthCollectionValuation({ blockchain, collectionAddress: collection.address })
+    await getEthCollectionValuation({ blockchain, collectionAddress: collection.address, tokenId })
   })
 
   it('can get the valuation of all supported Ethereum collections on Rinkeby Testnet', async () => {
     const blockchain = Blockchain.Ethereum(Blockchain.Ethereum.Network.RINKEBY)
     const collections = await findAllCollections({ blockchainFilter: { [blockchain.network]: blockchain.networkId } })
-    const valuations: Valuation[] = await Promise.all(collections.map(collection => getEthCollectionValuation({ blockchain, collectionAddress: collection.address })))
+    const tokenId = '1000'
+    const valuations: Valuation[] = await Promise.all(collections.map(collection => getEthCollectionValuation({ blockchain, collectionAddress: collection.address, tokenId })))
 
     assert.isArray(valuations)
     assert.isNotEmpty(valuations)
