@@ -78,7 +78,7 @@ export default async function searchPoolGroups({
     })
 
     const out = poolGroups.map((stat, i) => {
-      const curIndex = _.findIndex(ethereumCollectionAddresses, collectionAddress => collectionAddress === stat.collection.address)
+      const curIndex = _.findIndex(floorPrices, fp => fp.collection.address.toLowerCase() === stat.collection.address.toLowerCase())
       return {
         ...stat,
         floorPrice: floorPrices.length > curIndex && curIndex !== -1 ? floorPrices[curIndex].value1DReference : undefined,
