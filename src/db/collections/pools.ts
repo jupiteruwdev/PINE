@@ -169,7 +169,7 @@ export async function countAllPools({
     ])
 
     const poolsCount = await aggregation.count('count').exec()
-    count = poolsCount[0].count
+    if (poolsCount?.length) { count = poolsCount[0].count }
   }
   return count
 }

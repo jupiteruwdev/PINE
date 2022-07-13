@@ -72,7 +72,7 @@ export default async function searchPoolGroups({
 
     const floorPrices = await getEthCollectionFloorPriceBatch({
       blockchainFilter: {
-        ethereum: Blockchain.Ethereum().networkId,
+        ethereum: blockchainFilter.ethereum,
       },
       collectionAddresses: ethereumCollectionAddresses,
     })
