@@ -5,7 +5,7 @@ import { describe, it } from 'mocha'
 import { Blockchain } from '../../entities'
 import { getEthBlockNumber, getEthValueUSD, getEthWeb3 } from './ethereum'
 
-describe('utils/ethereum', () => {
+describe('controllers/utils/ethereum', () => {
   it('can create Web3 object for Mainnet', async () => {
     assert(getEthWeb3(Blockchain.Ethereum.Network.MAIN))
   })

@@ -4,7 +4,7 @@ import { findAllCollections } from '../../db'
 import { Blockchain, Value } from '../../entities'
 import getEthCollectionFloorPrice from './getEthCollectionFloorPrice'
 
-describe('core/getEthCollectionFloorPrice', () => {
+describe('controllers/valuations/getEthCollectionFloorPrice', () => {
   it('can get the floor price of all supported Ethereum collections on Mainnet', async () => {
     const blockchain = Blockchain.Ethereum(Blockchain.Ethereum.Network.MAIN)
     const collections = await findAllCollections({ blockchainFilter: { [blockchain.network]: blockchain.networkId } })
