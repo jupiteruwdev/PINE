@@ -1,7 +1,7 @@
 import { Router } from 'express'
 import _ from 'lodash'
-import { getActiveLoanStatsByCollection, getLoanPosition, getObligations } from '../controllers'
-import { ActiveLoanStats, Blockchain, CollateralizedNFT, LoanPosition, serializeEntityArray } from '../entities'
+import { getLoan, getLoans, getObligations } from '../controllers'
+import { Blockchain, CollateralizedNFT, Loan, serializeEntityArray } from '../entities'
 import fault from '../utils/fault'
 import tryOrUndefined from '../utils/tryOrUndefined'
 import { getBlockchain, getString } from './utils/query'
@@ -14,13 +14,13 @@ router.get('/nft', async (req, res, next) => {
     const collectionAddress = getString(req.query, 'collectionAddress')
     const txSpeedBlocks = _.toNumber(req.query.txSpeedBlocks ?? 0)
     const blockchain = getBlockchain(req.query)
-    const loanPosition = await getLoanPosition({ blockchain, nftId, collectionAddress, txSpeedBlocks })
+    const loan = await getLoan({ blockchain, nftId, collectionAddress, txSpeedBlocks })
 
-    if (loanPosition === undefined) {
+    if (loan === undefined) {
       res.status(404).send()
     }
     else {
-      const payload = LoanPosition.serialize(loanPosition)
+      const payload = Loan.serialize(loan)
       res.status(200).json(payload)
     }
   }
@@ -30,7 +30,7 @@ router.get('/nft', async (req, res, next) => {
 })
 
 /**
- * @todo This should return `LoanPosition[]`
+ * @todo This should return `Loan[]`
  */
 router.get('/borrower', async (req, res, next) => {
   try {
@@ -47,14 +47,14 @@ router.get('/borrower', async (req, res, next) => {
 })
 
 /**
- * @todo This should return `LoanPosition[]`
+ * @todo This should return `Loan[]`
  */
 router.get('/collection', async (req, res, next) => {
   try {
     const collectionAddress = getString(req.query, 'collectionAddress')
     const blockchain = tryOrUndefined(() => getBlockchain(req.query)) ?? Blockchain.Ethereum()
-    const obligation = await getActiveLoanStatsByCollection({ collectionAddress, blockchain })
-    const payload = serializeEntityArray(obligation, ActiveLoanStats.codingResolver)
+    const obligation = await getLoans({ collectionAddress, blockchain })
+    const payload = serializeEntityArray(obligation, Loan.codingResolver)
     res.status(200).json(payload)
   }
   catch (err) {

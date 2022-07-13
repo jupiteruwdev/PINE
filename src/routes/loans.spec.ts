@@ -71,9 +71,9 @@ describe('routes /loans', () => {
       for (let i = 0; i < 2; i += 1) {
         expect(res[i]).to.have.property('id')
         expect(res[i]).to.have.property('thumbnail')
-        expect(res[i]).to.have.property('amountBorrowed')
-        expect(res[i]).to.have.property('expiry')
-        expect(res[i]).to.have.property('poolOwner')
+        expect(res[i]).to.have.property('borrowed')
+        expect(res[i]).to.have.property('expiresAt')
+        expect(res[i]).to.have.property('borrower')
       }
     })
   })

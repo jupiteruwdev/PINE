@@ -1,7 +1,8 @@
 import _ from 'lodash'
 import appConf from '../../app.conf'
 import { findAllPools } from '../../db'
-import { ActiveLoanStats, Blockchain, Pool, Value } from '../../entities'
+import { Blockchain, Pool, Value } from '../../entities'
+import Loan from '../../entities/lib/Loan'
 import { getActiveLoansForPools } from '../../subgraph/request'
 import fault from '../../utils/fault'
 import getRequest from '../utils/getRequest'
@@ -18,7 +19,7 @@ type ActiveLoan = {
   borrower: string
 }
 
-export default async function getActiveLoanStatsByCollection({ collectionAddress, blockchain }: Params) {
+export default async function getLoans({ collectionAddress, blockchain }: Params) {
   try {
     const pools = await findAllPools({ collectionAddress })
 
@@ -29,7 +30,7 @@ export default async function getActiveLoanStatsByCollection({ collectionAddress
 
     const { loans }: { loans: ActiveLoan[] } = await getActiveLoansForPools({ pools: addresses })
     const promises: Promise<any>[] = []
-    const result: ActiveLoanStats[] = []
+    const result: Loan[] = []
 
     _.map(loans, ((loan: ActiveLoan) => {
       const contractAddress = loan.id.split('/')[0]
@@ -51,9 +52,9 @@ export default async function getActiveLoanStatsByCollection({ collectionAddress
       result.push({
         id: tokenId,
         thumbnail: '',
-        amountBorrowed: Value.$ETH(loan.borrowedWei),
-        expiry: loan.loanExpiretimestamp,
-        poolOwner: loan.borrower,
+        borrowed: Value.$ETH(loan.borrowedWei),
+        expiresAt: new Date(loan.loanExpiretimestamp),
+        borrowerAddress: loan.borrower,
       })
     }))
 
