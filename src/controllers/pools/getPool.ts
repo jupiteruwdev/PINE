@@ -29,7 +29,7 @@ export default async function getPool({ blockchain, poolAddress }: Params): Prom
     getPoolCapacity({ blockchain, poolAddress }),
   ])
 
-  const valueLockedEth = capacityEth.plus(utilizationEth).gt(new BigNumber(pool.ethLimit ?? Number.POSITIVE_INFINITY)) ? new BigNumber(pool.ethLimit ?? 0) : capacityEth.plus(utilizationEth)
+  const valueLockedEth = capacityEth.plus(utilizationEth).gt(new BigNumber(pool.ethLimit || Number.POSITIVE_INFINITY)) ? new BigNumber(pool.ethLimit ?? 0) : capacityEth.plus(utilizationEth)
 
   return {
     ...pool,
