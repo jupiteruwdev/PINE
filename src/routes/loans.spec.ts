@@ -66,7 +66,7 @@ describe('routes /loans', () => {
         .expect('Content-Type', /json/)
         .expect(200)
 
-      expect(res.length).to.equal(18)
+      expect(res.length).to.equal(3)
 
       for (const item of res) {
         expect(item).to.have.property('id')
