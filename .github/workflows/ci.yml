@@ -13,6 +13,8 @@ env:
   ALCHEMY_API_MAINNET_URL: ${{ secrets.ALCHEMY_API_MAINNET_URL }}
   ALCHEMY_API_RINKEBY_URL: ${{ secrets.ALCHEMY_API_RINKEBY_URL }}
   SUBGRAPH_API_URL: ${{ secrets.SUBGRAPH_API_URL }}
+  MONGO_URI: ${{ secrets.MONGO_URI }}
+  TESTING_MAINNET_WALLET: ${{ secrets.TESTING_MAINNET_WALLET }}
 jobs:
   build:
     name: Build/Test
@@ -50,10 +52,10 @@ jobs:
           context: .
           load: true
           push: false
-          tags: image:test
+          tags: image:test-${{ github.sha }}
           target: test
       - name: Run tests
-        run: IMAGE_NAME=image IMAGE_TAG=test docker-compose -f docker-compose.test.yml up --exit-code-from app
+        run: IMAGE_NAME=image IMAGE_TAG=test-${{ github.sha }} docker-compose -f docker-compose.test.yml up --exit-code-from app
       - name: Build release target
         uses: docker/build-push-action@v2
         with:
