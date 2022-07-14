@@ -45,13 +45,13 @@ describe('routes /loans', () => {
 
       expect(res.length).to.equal(2)
 
-      for (let i = 0; i < 2; i += 1) {
-        expect(res[i]).to.have.property('collection')
-        expect(res[i]).to.have.property('id')
-        expect(res[i]).to.have.property('isSupported')
-        expect(res[i]).to.have.property('imageUrl')
-        expect(res[i]).to.have.property('name')
-        expect(res[i]).to.have.property('loanExpireTimestamp')
+      for (const item of res) {
+        expect(item).to.have.property('collection')
+        expect(item).to.have.property('id')
+        expect(item).to.have.property('isSupported')
+        expect(item).to.have.property('imageUrl')
+        expect(item).to.have.property('name')
+        expect(item).to.have.property('loanExpireTimestamp')
       }
     })
   })
@@ -66,14 +66,14 @@ describe('routes /loans', () => {
         .expect('Content-Type', /json/)
         .expect(200)
 
-      expect(res.length).to.equal(2)
+      expect(res.length).to.equal(3)
 
-      for (let i = 0; i < 2; i += 1) {
-        expect(res[i]).to.have.property('id')
-        expect(res[i]).to.have.property('thumbnail')
-        expect(res[i]).to.have.property('borrowed')
-        expect(res[i]).to.have.property('expiresAt')
-        expect(res[i]).to.have.property('borrower')
+      for (const item of res) {
+        expect(item).to.have.property('id')
+        expect(item).to.have.property('thumbnail')
+        expect(item).to.have.property('amountBorrowed')
+        expect(item).to.have.property('expiry')
+        expect(item).to.have.property('poolOwner')
       }
     })
   })

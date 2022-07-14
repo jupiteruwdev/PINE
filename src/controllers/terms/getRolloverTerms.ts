@@ -33,7 +33,7 @@ export default async function getRolloverTerms({ blockchain, collectionAddress, 
         ...await getNFTMetadata({ blockchain, collectionAddress: collection.address, nftId }),
       }
 
-      const valuation = await getEthCollectionValuation({ blockchain: blockchain as Blockchain<'ethereum'>, collectionAddress: collection.address })
+      const valuation = await getEthCollectionValuation({ blockchain: blockchain as Blockchain<'ethereum'>, collectionAddress: collection.address, tokenId: nftId })
       const { signature, issuedAtBlock, expiresAtBlock } = await signValuation({ blockchain, nftId, collectionAddress: collection.address, poolAddress: pool.address, valuation })
 
       const loanTerms: RolloverTerms = {

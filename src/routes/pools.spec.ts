@@ -41,12 +41,14 @@ describe('routes/pools', () => {
           .expect('Content-Type', /json/)
           .expect(200)
 
-        expect(res.length).to.equal(1)
-        expect(res[0]).to.have.property('collection')
-        expect(res[0]).to.have.property('floorPrice')
-        expect(res[0]).to.have.property('pools')
-        expect(res[0]).to.have.property('totalValueLent')
-        expect(res[0]).to.have.property('totalValueLocked')
+        if (res.length) {
+          expect(res.length).to.equal(1)
+          expect(res[0]).to.have.property('collection')
+          expect(res[0]).to.have.property('floorPrice')
+          expect(res[0]).to.have.property('pools')
+          expect(res[0]).to.have.property('totalValueLent')
+          expect(res[0]).to.have.property('totalValueLocked')
+        }
       }))
     })
 
@@ -66,13 +68,14 @@ describe('routes/pools', () => {
           })
           .expect('Content-Type', /json/)
           .expect(200)
-
-        expect(res.length).to.equal(1)
-        expect(res[0]).to.have.property('collection')
-        expect(res[0]).to.have.property('floorPrice')
-        expect(res[0]).to.have.property('pools')
-        expect(res[0]).to.have.property('totalValueLent')
-        expect(res[0]).to.have.property('totalValueLocked')
+        if (res.length) {
+          expect(res.length).to.equal(1)
+          expect(res[0]).to.have.property('collection')
+          expect(res[0]).to.have.property('floorPrice')
+          expect(res[0]).to.have.property('pools')
+          expect(res[0]).to.have.property('totalValueLent')
+          expect(res[0]).to.have.property('totalValueLocked')
+        }
       }))
     })
 
@@ -89,12 +92,14 @@ describe('routes/pools', () => {
           .expect('Content-Type', /json/)
           .expect(200)
 
-        expect(res.length).to.equal(1)
-        expect(res[0]).to.have.property('collection')
-        expect(res[0]).to.have.property('floorPrice')
-        expect(res[0]).to.have.property('pools')
-        expect(res[0]).to.have.property('totalValueLent')
-        expect(res[0]).to.have.property('totalValueLocked')
+        if (res.length) {
+          expect(res.length).to.equal(1)
+          expect(res[0]).to.have.property('collection')
+          expect(res[0]).to.have.property('floorPrice')
+          expect(res[0]).to.have.property('pools')
+          expect(res[0]).to.have.property('totalValueLent')
+          expect(res[0]).to.have.property('totalValueLocked')
+        }
       }))
     })
   })
@@ -115,14 +120,16 @@ describe('routes/pools', () => {
           .expect('Content-Type', /json/)
           .expect(200)
 
-        expect(res.data.length).to.equal(1)
-        expect(res.totalCount).to.equal(1)
-        expect(res.nextOffset).to.equal(1)
-        expect(res.data[0]).to.have.property('collection')
-        expect(res.data[0]).to.have.property('totalValueLent')
-        expect(res.data[0]).to.have.property('pools')
-        expect(res.data[0]).to.have.property('floorPrice')
-        expect(res.data[0]).to.have.property('totalValueLocked')
+        if (res.data.length) {
+          expect(res.data.length).to.equal(1)
+          expect(res.totalCount).to.equal(1)
+          expect(res.nextOffset).to.equal(1)
+          expect(res.data[0]).to.have.property('collection')
+          expect(res.data[0]).to.have.property('totalValueLent')
+          expect(res.data[0]).to.have.property('pools')
+          expect(res.data[0]).to.have.property('floorPrice')
+          expect(res.data[0]).to.have.property('totalValueLocked')
+        }
       }))
     })
 
@@ -138,14 +145,16 @@ describe('routes/pools', () => {
         .expect('Content-Type', /json/)
         .expect(200)
 
-      expect(res.data.length).to.equal(10)
-      expect(res.totalCount).to.equal(totalCount)
-      expect(res.nextOffset).to.equal(10)
-      expect(res.data[0]).to.have.property('collection')
-      expect(res.data[0]).to.have.property('totalValueLent')
-      expect(res.data[0]).to.have.property('pools')
-      expect(res.data[0]).to.have.property('floorPrice')
-      expect(res.data[0]).to.have.property('totalValueLocked')
+      if (res.data.length) {
+        expect(res.data.length).to.equal(10)
+        expect(res.totalCount).to.equal(totalCount)
+        expect(res.nextOffset).to.equal(10)
+        expect(res.data[0]).to.have.property('collection')
+        expect(res.data[0]).to.have.property('totalValueLent')
+        expect(res.data[0]).to.have.property('pools')
+        expect(res.data[0]).to.have.property('floorPrice')
+        expect(res.data[0]).to.have.property('totalValueLocked')
+      }
     })
 
     it('can get all ethereum mainnet pools with collection name & pagination', async () => {
@@ -159,14 +168,16 @@ describe('routes/pools', () => {
         .expect('Content-Type', /json/)
         .expect(200)
 
-      expect(res.data.length).to.equal(1)
-      expect(res.totalCount).to.equal(1)
-      expect(res.nextOffset).to.equal(1)
-      expect(res.data[0]).to.have.property('collection')
-      expect(res.data[0]).to.have.property('totalValueLent')
-      expect(res.data[0]).to.have.property('pools')
-      expect(res.data[0]).to.have.property('floorPrice')
-      expect(res.data[0]).to.have.property('totalValueLocked')
+      if (res.data.length) {
+        expect(res.data.length).to.equal(1)
+        expect(res.totalCount).to.equal(1)
+        expect(res.nextOffset).to.equal(1)
+        expect(res.data[0]).to.have.property('collection')
+        expect(res.data[0]).to.have.property('totalValueLent')
+        expect(res.data[0]).to.have.property('pools')
+        expect(res.data[0]).to.have.property('floorPrice')
+        expect(res.data[0]).to.have.property('totalValueLocked')
+      }
     })
 
     it('can get all ethereum mainnet pools with sorting & pagination', async () => {
@@ -182,15 +193,16 @@ describe('routes/pools', () => {
         })
         .expect('Content-Type', /json/)
         .expect(200)
-
-      expect(res.data.length).to.equal(10)
-      expect(res.totalCount).to.equal(totalCount)
-      expect(res.nextOffset).to.equal(10)
-      expect(res.data[0]).to.have.property('collection')
-      expect(res.data[0]).to.have.property('totalValueLent')
-      expect(res.data[0]).to.have.property('pools')
-      expect(res.data[0]).to.have.property('floorPrice')
-      expect(res.data[0]).to.have.property('totalValueLocked')
+      if (res.data.length) {
+        expect(res.data.length).to.equal(10)
+        expect(res.totalCount).to.equal(totalCount)
+        expect(res.nextOffset).to.equal(10)
+        expect(res.data[0]).to.have.property('collection')
+        expect(res.data[0]).to.have.property('totalValueLent')
+        expect(res.data[0]).to.have.property('pools')
+        expect(res.data[0]).to.have.property('floorPrice')
+        expect(res.data[0]).to.have.property('totalValueLocked')
+      }
     })
   })
 })

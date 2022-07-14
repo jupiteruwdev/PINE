@@ -34,7 +34,7 @@ export default async function getLoan({ blockchain, collectionAddress, nftId, tx
       const [blockNumber, pools, valuation] = await Promise.all([
         getEthBlockNumber(blockchain.networkId),
         findAllPools({ collectionAddress, blockchainFilter: { ethereum: blockchain.networkId }, includeRetired: true }),
-        getEthCollectionValuation({ blockchain: blockchain as Blockchain<'ethereum'>, collectionAddress: collection.address }),
+        getEthCollectionValuation({ blockchain: blockchain as Blockchain<'ethereum'>, collectionAddress: collection.address, tokenId: nftId }),
       ])
 
       if (pools.length === 0) throw fault('ERR_UNSUPPORTED_COLLECTION')

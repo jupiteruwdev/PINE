@@ -1,4 +1,4 @@
-import { Metadata } from '@metaplex-foundation/mpl-token-metadata'
+import { Metadata, PROGRAM_ID } from '@metaplex-foundation/mpl-token-metadata'
 import { Connection, PublicKey } from '@solana/web3.js'
 import _ from 'lodash'
 import appConf from '../../app.conf'
@@ -54,19 +54,19 @@ async function getNFTDataFromMoralis(id: string, mintAddress: string, networkId:
 
 async function getNFTDataFromBlockchain(id: string, mintAddress: string, networkId: string): Promise<[NFT, string]> {
   const connection = new Connection('https://api.mainnet-beta.solana.com') // TODO: Handle different networks
-  const mintPubkey = new PublicKey(mintAddress)
-  const metadataPubKey = await Metadata.getPDA(mintPubkey)
-  const { data } = await Metadata.load(connection, metadataPubKey)
+  const mintPubicKey = new PublicKey(mintAddress)
+  const [metadataPubicKey] = await PublicKey.findProgramAddress([Buffer.from('metadata'), PROGRAM_ID.toBuffer(), mintPubicKey.toBuffer()], PROGRAM_ID)
+  const metadata = await Metadata.fromAccountAddress(connection, metadataPubicKey)
 
   return [{
     collection: {
-      address: data.updateAuthority,
+      address: metadata.updateAuthority.toString(),
       blockchain: Blockchain.Solana(networkId),
     },
     id,
     mintAddress,
     isSupported: false,
-  }, data.data.uri]
+  }, metadata.data.uri]
 }
 
 /**

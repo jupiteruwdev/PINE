@@ -15,13 +15,13 @@ describe('routes /collaterals', () => {
         .expect(200)
 
       expect(res.length).to.equal(4)
-      for (let i = 0; i < 4; i += 1) {
-        expect(res[i]).to.have.property('collection')
-        expect(res[i]).to.have.property('id')
-        expect(res[i]).to.have.property('isSupported')
-        expect(res[i]).to.have.property('ownerAddress')
-        expect(res[i]).to.have.property('imageUrl')
-        expect(res[i]).to.have.property('name')
+      for (const item of res) {
+        expect(item).to.have.property('collection')
+        expect(item).to.have.property('id')
+        expect(item).to.have.property('isSupported')
+        expect(item).to.have.property('ownerAddress')
+        expect(item).to.have.property('imageUrl')
+        expect(item).to.have.property('name')
       }
     })
 
@@ -35,13 +35,13 @@ describe('routes /collaterals', () => {
         .expect(200)
 
       expect(res.length).to.equal(2)
-      for (let i = 0; i < 2; i += 1) {
-        expect(res[i]).to.have.property('collection')
-        expect(res[i]).to.have.property('id')
-        expect(res[i]).to.have.property('isSupported')
-        expect(res[i]).to.have.property('ownerAddress')
-        expect(res[i]).to.have.property('imageUrl')
-        expect(res[i]).to.have.property('name')
+      for (const item of res) {
+        expect(item).to.have.property('collection')
+        expect(item).to.have.property('id')
+        expect(item).to.have.property('isSupported')
+        expect(item).to.have.property('ownerAddress')
+        expect(item).to.have.property('imageUrl')
+        expect(item).to.have.property('name')
       }
     })
   })

@@ -24,7 +24,7 @@ export default async function getOpenSeaPNPLTerms({ openseaVersion, blockchain, 
     const pnplContractAddress = _.get(appConf.pnplContractAddress, blockchain.networkId)
 
     try {
-      const openseaInstructions = await getRequest('https://us-central1-pinedefi.cloudfunctions.net/opensea-purchase-generator', {
+      const openseaInstructions = await getRequest('https://opensea-purchase-generator.herokuapp.com', {
         params: {
           'nft_address': loanTerms.collection.address,
           'token_id': nftId,
