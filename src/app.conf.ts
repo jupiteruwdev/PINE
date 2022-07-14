@@ -31,7 +31,7 @@ export default {
   },
   openseaContractAddress: {
     [Blockchain.Ethereum.Network.RINKEBY]: '0xdD54D660178B28f6033a953b0E55073cFA7e3744',
-    [Blockchain.Ethereum.Network.MAIN]: '0x7f268357A8c2552623316e2562D90e642bB538E5',
+    [Blockchain.Ethereum.Network.MAIN]: '0x00000000006c3852cbEf3e08E8dF289169EdE581',
   },
   looksrareContractAddress: {
     [Blockchain.Ethereum.Network.RINKEBY]: '0x1AA777972073Ff66DCFDeD85749bDD555C0665dA',
