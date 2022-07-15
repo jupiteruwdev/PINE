@@ -66,14 +66,14 @@ describe('routes /loans', () => {
         .expect('Content-Type', /json/)
         .expect(200)
 
-      expect(res.length).to.equal(3)
+      expect(res.length).to.equal(4)
 
       for (const item of res) {
         expect(item).to.have.property('id')
         expect(item).to.have.property('thumbnail')
-        expect(item).to.have.property('amountBorrowed')
-        expect(item).to.have.property('expiry')
-        expect(item).to.have.property('poolOwner')
+        expect(item).to.have.property('borrowed')
+        expect(item).to.have.property('expiresAt')
+        expect(item).to.have.property('borrowerAddress')
       }
     })
   })
