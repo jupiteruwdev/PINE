@@ -4,9 +4,18 @@ export const GET_ACTIVE_LOANS_FOR_POOLS = gql`
   query loans($pools: [String]) {
     loans(where: {pool_in: $pools, status: "open"}) {
       id
+      loanStartBlock
       loanExpiretimestamp
+      interestBPS1000000XBlock
+      maxLTVBPS
       borrowedWei
+      returnedWei
+      accuredInterestWei
+      repaidInterestWei
       borrower
+      pool
+      erc721
+      status
     }
   }
 `

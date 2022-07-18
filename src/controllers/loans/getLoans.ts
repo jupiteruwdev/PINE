@@ -1,3 +1,4 @@
+import BigNumber from 'bignumber.js'
 import _ from 'lodash'
 import appConf from '../../app.conf'
 import { findAllPools } from '../../db'
@@ -12,13 +13,6 @@ type Params = {
   blockchain: Blockchain
 }
 
-type ActiveLoan = {
-  id: string
-  loanExpiretimestamp: string
-  borrowedWei: string
-  borrower: string
-}
-
 export default async function getLoans({ collectionAddress, blockchain }: Params) {
   try {
     const pools = await findAllPools({ collectionAddress })
@@ -28,11 +22,11 @@ export default async function getLoans({ collectionAddress, blockchain }: Params
       return prev
     }, [])
 
-    const { loans }: { loans: ActiveLoan[] } = await getActiveLoansForPools({ pools: addresses })
+    const { loans } = await getActiveLoansForPools({ pools: addresses })
     const promises: Promise<any>[] = []
     const result: Loan[] = []
 
-    _.map(loans, ((loan: ActiveLoan) => {
+    _.map(loans, (loan => {
       const contractAddress = loan.id.split('/')[0] ?? ''
       const tokenId = loan.id.split('/')[1] ?? ''
 
@@ -51,8 +45,15 @@ export default async function getLoans({ collectionAddress, blockchain }: Params
 
       result.push({
         borrowed: Value.$ETH(loan.borrowedWei),
+        accuredInterest: Value.$WEI(loan.accuredInterestWei),
         expiresAt: new Date(loan.loanExpiretimestamp),
         borrowerAddress: loan.borrower,
+        interestBPSPerBlock: new BigNumber(loan.interestBPS1000000XBlock).dividedBy(new BigNumber(1_000_000)),
+        loanStartBlock: loan.loanStartBlock,
+        maxLTVBPS: new BigNumber(loan.maxLTVBPS),
+        poolAddress: loan.pool,
+        repaidInterest: Value.$WEI(loan.repaidInterestWei),
+        returned: Value.$WEI(loan.returnedWei),
         nft: {
           collection: {
             address: contractAddress,
