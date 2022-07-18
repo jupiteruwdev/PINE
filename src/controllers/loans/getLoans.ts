@@ -33,8 +33,8 @@ export default async function getLoans({ collectionAddress, blockchain }: Params
     const result: Loan[] = []
 
     _.map(loans, ((loan: ActiveLoan) => {
-      const contractAddress = loan.id.split('/')[0]
-      const tokenId = loan.id.split('/')[1]
+      const contractAddress = loan.id.split('/')[0] ?? ''
+      const tokenId = loan.id.split('/')[1] ?? ''
 
       promises.push(new Promise((resolve, reject) => {
         const alchemyUrl = _.get(appConf.alchemyAPIUrl, blockchain.networkId)
@@ -50,18 +50,30 @@ export default async function getLoans({ collectionAddress, blockchain }: Params
       }))
 
       result.push({
-        id: tokenId,
-        thumbnail: '',
         borrowed: Value.$ETH(loan.borrowedWei),
         expiresAt: new Date(loan.loanExpiretimestamp),
         borrowerAddress: loan.borrower,
+        nft: {
+          collection: {
+            address: contractAddress,
+            blockchain,
+          },
+          id: tokenId,
+          imageUrl: '',
+          name: '',
+          isSupported: true,
+        },
       })
     }))
 
     return Promise.all(promises)
       .then(res => _.map(res, (token, index: number) => ({
         ...result[index],
-        thumbnail: token.metadata.image,
+        nft: {
+          ...result[index].nft,
+          imageUrl: token.metadata.image as string,
+          name: token.metadata.name as string,
+        },
       })))
   }
   catch (err) {

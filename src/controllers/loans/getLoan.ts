@@ -58,7 +58,6 @@ export default async function getLoan({ blockchain, collectionAddress, nftId, tx
         }
 
         return {
-          id: loanValues.id,
           routerAddress: pool.repayRouterAddress,
           accuredInterest: Value.$WEI(loanValues.accuredInterestWei),
           borrowed: Value.$WEI(loanValues.borrowedWei),

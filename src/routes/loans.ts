@@ -53,8 +53,8 @@ router.get('/collection', async (req, res, next) => {
   try {
     const collectionAddress = getString(req.query, 'collectionAddress')
     const blockchain = tryOrUndefined(() => getBlockchain(req.query)) ?? Blockchain.Ethereum()
-    const obligation = await getLoans({ collectionAddress, blockchain })
-    const payload = serializeEntityArray(obligation, Loan.codingResolver)
+    const loans = await getLoans({ collectionAddress, blockchain })
+    const payload = serializeEntityArray(loans, Loan.codingResolver)
     res.status(200).json(payload)
   }
   catch (err) {
