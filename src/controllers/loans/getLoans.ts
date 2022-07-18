@@ -46,7 +46,7 @@ export default async function getLoans({ collectionAddress, blockchain }: Params
       result.push({
         borrowed: Value.$ETH(loan.borrowedWei),
         accuredInterest: Value.$WEI(loan.accuredInterestWei),
-        expiresAt: new Date(Number(loan.loanExpiretimestamp)),
+        expiresAt: new Date(_.toNumber(loan.loanExpiretimestamp) * 1000),
         borrowerAddress: loan.borrower,
         interestBPSPerBlock: new BigNumber(loan.interestBPS1000000XBlock).dividedBy(new BigNumber(1_000_000)),
         loanStartBlock: loan.loanStartBlock,
