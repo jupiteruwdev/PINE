@@ -25,7 +25,7 @@ router.get('/nft', async (req, res, next) => {
     }
   }
   catch (err) {
-    next(fault('ERR_API_FETCH_LOAN_POSITION_BY_NFT', undefined, err))
+    next(fault('ERR_API_FETCH_LOAN_BY_NFT', undefined, err))
   }
 })
 
@@ -42,7 +42,7 @@ router.get('/borrower', async (req, res, next) => {
     res.status(200).json(payload)
   }
   catch (err) {
-    next(fault('ERR_API_FETCH_LOAN_POSITIONS_BY_BORROWER', undefined, err))
+    next(fault('ERR_API_FETCH_LOANS_BY_BORROWER', undefined, err))
   }
 })
 
@@ -58,7 +58,7 @@ router.get('/collection', async (req, res, next) => {
     res.status(200).json(payload)
   }
   catch (err) {
-    next(fault('ERR_API_FETCH_LOAN_POSITIONS_BY_COLLECTION', undefined, err))
+    next(fault('ERR_API_FETCH_LOANS_BY_COLLECTION', undefined, err))
   }
 })
 
