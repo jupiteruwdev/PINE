@@ -1,11 +1,12 @@
 import { gql } from 'graphql-request'
+import fault from '../utils/fault'
 import getRequest, { Options } from './utils/getRequest'
 
 type Params = {
   borrowerAddress: string
 }
 
-export default function getOnChainLoanByBorrower({ borrowerAddress }: Params, options: Options) {
+export default async function getOnChainLoanByBorrower({ borrowerAddress }: Params, options: Options) {
   const request = getRequest(gql`
     query loans($borrower: String) {
       loans(where: {borrower: $borrower, status: "open"}) {
@@ -21,4 +22,7 @@ export default function getOnChainLoanByBorrower({ borrowerAddress }: Params, op
   `)
 
   return request({ borrower: borrowerAddress.toLowerCase() }, options)
+    .catch(err => {
+      throw fault('ERR_GQL_BAD_REQUEST', undefined, err)
+    })
 }

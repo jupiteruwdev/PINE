@@ -1,11 +1,12 @@
 import { gql } from 'graphql-request'
+import fault from '../utils/fault'
 import getRequest, { Options } from './utils/getRequest'
 
 type Params = {
   poolAddresses: string[]
 }
 
-export default function getOnChainLoansByPools({ poolAddresses }: Params, options: Options) {
+export default async function getOnChainLoansByPools({ poolAddresses }: Params, options: Options) {
   const request = getRequest(gql`
     query loans($pools: [String]) {
       loans(where: {pool_in: $pools, status: "open"}) {
@@ -27,4 +28,7 @@ export default function getOnChainLoansByPools({ poolAddresses }: Params, option
   `)
 
   return request({ pools: poolAddresses.map(t => t.toLowerCase()) }, options)
+    .catch(err => {
+      throw fault('ERR_GQL_BAD_REQUEST', undefined, err)
+    })
 }
