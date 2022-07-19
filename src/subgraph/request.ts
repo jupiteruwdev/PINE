@@ -1,6 +1,6 @@
 import { request } from 'graphql-request'
 import appConf from '../app.conf'
-import { GET_ACTIVE_LOANS_FOR_POOLS, GET_OPEN_LOAN, GET_POOL } from './gql'
+import { GET_ACTIVE_LOANS_FOR_POOLS, GET_LOAN, GET_OPEN_LOAN, GET_POOL } from './gql'
 
 export const getActiveLoansForPools = async ({
   pools,
@@ -26,4 +26,11 @@ export const getOpenLoan = async (
 ) =>
   request(appConf.subgraphAPIUrl ?? '', GET_OPEN_LOAN, {
     borrower,
+  })
+
+export const getLoanById = async (
+  id: string
+) =>
+  request(appConf.subgraphAPIUrl ?? '', GET_LOAN, {
+    id,
   })

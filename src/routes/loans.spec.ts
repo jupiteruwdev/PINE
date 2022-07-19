@@ -37,7 +37,7 @@ describe('routes /loans', () => {
     it('Get NFT loan with borrower for ethereum mainnet', async () => {
       const { body: res } = await request(app).get('/loans/borrower')
         .query({
-          borrowerAddress: appConf.testingMainnetWallet,
+          borrowerAddress: appConf.tests.walletAddress,
           ethereum: 1,
         })
         .expect('Content-Type', /json/)
@@ -70,11 +70,17 @@ describe('routes /loans', () => {
 
       if (res.length > 0) {
         for (const item of res) {
-          expect(item).to.have.property('id')
-          expect(item).to.have.property('thumbnail')
-          expect(item).to.have.property('amountBorrowed')
-          expect(item).to.have.property('expiry')
-          expect(item).to.have.property('poolOwner')
+          expect(item).to.have.property('borrowed')
+          expect(item).to.have.property('expiresAt')
+          expect(item).to.have.property('nft')
+          expect(item).to.have.property('accuredInterest')
+          expect(item).to.have.property('borrowerAddress')
+          expect(item).to.have.property('returned')
+          expect(item).to.have.property('repaidInterest')
+          expect(item).to.have.property('maxLTVBPS')
+          expect(item).to.have.property('poolAddress')
+          expect(item).to.have.property('loanStartBlock')
+          expect(item).to.have.property('interestBPSPerBlock')
         }
       }
     })
