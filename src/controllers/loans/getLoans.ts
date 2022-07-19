@@ -4,7 +4,7 @@ import appConf from '../../app.conf'
 import { findAllPools } from '../../db'
 import { Blockchain, Pool, Value } from '../../entities'
 import Loan from '../../entities/lib/Loan'
-import { getActiveLoansForPools } from '../../subgraph/request'
+import { getOnChainLoansByPools } from '../../subgraph'
 import fault from '../../utils/fault'
 import getRequest from '../utils/getRequest'
 
@@ -17,12 +17,12 @@ export default async function getLoans({ collectionAddress, blockchain }: Params
   try {
     const pools = await findAllPools({ collectionAddress })
 
-    const addresses = _.reduce(pools, (prev: string[], cur: Pool) => {
+    const poolAddresses = _.reduce(pools, (prev: string[], cur: Pool) => {
       prev.push(cur.address)
       return prev
     }, [])
 
-    const { loans } = await getActiveLoansForPools({ pools: addresses })
+    const { loans } = await getOnChainLoansByPools({ poolAddresses }, { networkId: blockchain.networkId })
     const promises: Promise<any>[] = []
     const result: Loan[] = []
 
