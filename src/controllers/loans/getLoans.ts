@@ -78,6 +78,6 @@ export default async function getLoans({ collectionAddress, blockchain }: Params
       })))
   }
   catch (err) {
-    throw fault('ERR_GET_ACTIVE_LOAN_STATS_BY_COLLECTION', undefined, err)
+    throw fault('ERR_GET_LOANS_BY_COLLECTION', undefined, err)
   }
 }
