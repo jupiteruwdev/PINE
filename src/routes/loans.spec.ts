@@ -37,7 +37,7 @@ describe('routes /loans', () => {
     it('Get NFT loan with borrower for ethereum mainnet', async () => {
       const { body: res } = await request(app).get('/loans/borrower')
         .query({
-          borrowerAddress: appConf.testingMainnetWallet,
+          borrowerAddress: appConf.tests.walletAddress,
           ethereum: 1,
         })
         .expect('Content-Type', /json/)
