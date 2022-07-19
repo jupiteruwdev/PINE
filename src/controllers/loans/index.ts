@@ -1,5 +1,5 @@
-export { default as getActiveLoanStatsByCollection } from './getActiveLoanStatsByCollection'
 export { default as getExistingLoan } from './getExistingLoan'
+export { default as getLoan } from './getLoan'
 export { default as getLoanEvent } from './getLoanEvent'
-export { default as getLoanPosition } from './getLoanPosition'
+export { default as getLoans } from './getLoans'
 export { default as getObligations } from './getObligations'

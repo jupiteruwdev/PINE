@@ -46,5 +46,7 @@ export default {
     [Blockchain.Ethereum.Network.MAIN]: '0x90dFb72736481BBacc7938d2D3673590B92647AE',
   },
   mongoUri: process.env.MONGO_URI ?? '',
-  testingMainnetWallet: process.env.TESTING_MAINNET_WALLET ?? '',
+  tests: {
+    walletAddress: process.env.TESTS_WALLET_ADDRESS ?? '',
+  },
 }

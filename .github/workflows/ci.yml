@@ -14,7 +14,7 @@ env:
   ALCHEMY_API_RINKEBY_URL: ${{ secrets.ALCHEMY_API_RINKEBY_URL }}
   SUBGRAPH_API_URL: ${{ secrets.SUBGRAPH_API_URL }}
   MONGO_URI: ${{ secrets.MONGO_URI }}
-  TESTING_MAINNET_WALLET: ${{ secrets.TESTING_MAINNET_WALLET }}
+  TESTS_WALLET_ADDRESS: ${{ secrets.TESTS_WALLET_ADDRESS }}
 jobs:
   build:
     name: Build/Test
