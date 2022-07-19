@@ -62,7 +62,7 @@ export default async function getLoan({ blockchain, collectionAddress, nftId, tx
           accuredInterest: Value.$WEI(loanValues.accuredInterestWei),
           borrowed: Value.$WEI(loanValues.borrowedWei),
           borrowerAddress: loanValues.borrower,
-          expiresAt: new Date(_.toNumber(loanValues.loanExpireTimestamp) * 1000),
+          expiresAt: new Date(_.toNumber(loanValues.loanExpiretimestamp) * 1000),
           interestBPSPerBlock: new BigNumber(loanValues.interestBPS1000000XBlock).dividedBy(new BigNumber(1_000_000)),
           loanStartBlock: loanValues.loanStartBlock,
           maxLTVBPS: new BigNumber(loanValues.maxLTVBPS),
