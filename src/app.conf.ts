@@ -14,7 +14,10 @@ export default {
     [Blockchain.Ethereum.Network.RINKEBY]: process.env.ALCHEMY_API_RINKEBY_URL,
     [Blockchain.Ethereum.Network.MAIN]: process.env.ALCHEMY_API_MAINNET_URL,
   },
-  subgraphAPIUrl: process.env.SUBGRAPH_API_URL ?? '',
+  subgraphAPIUrl: {
+    [Blockchain.Ethereum.Network.RINKEBY]: process.env.SUBGRAPH_API_RINKEBY_URL,
+    [Blockchain.Ethereum.Network.MAIN]: process.env.SUBGRAPH_API_MAINNET_URL,
+  },
   ethRPC: {
     [Blockchain.Ethereum.Network.RINKEBY]: process.env.ETH_RPC_RINKEBY,
     [Blockchain.Ethereum.Network.MAIN]: process.env.ETH_RPC_MAINNET,
@@ -46,5 +49,7 @@ export default {
     [Blockchain.Ethereum.Network.MAIN]: '0x90dFb72736481BBacc7938d2D3673590B92647AE',
   },
   mongoUri: process.env.MONGO_URI ?? '',
-  testingMainnetWallet: process.env.TESTING_MAINNET_WALLET ?? '',
+  tests: {
+    walletAddress: process.env.TESTS_WALLET_ADDRESS ?? '',
+  },
 }

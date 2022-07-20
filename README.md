@@ -17,8 +17,18 @@ ETH_RPC_RINKEBY=
 MORALIS_API_KEY=
 NFTBANK_API_KEY=
 OPENSEA_API_KEY=
-SUBGRAPH_API_URL=
+SUBGRAPH_API_MAINNET_URL=
+SUBGRAPH_API_RINKEBY_URL=
+MONGO_URI=
 VALUATION_SIGNER=
+```
+
+The following are environment variables used by unit and integration tests:
+
+```sh
+# .env
+
+TESTS_WALLET_ADDRESS=
 ```
 
 ## Usage

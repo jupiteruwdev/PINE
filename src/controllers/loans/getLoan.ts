@@ -2,14 +2,15 @@ import BigNumber from 'bignumber.js'
 import _ from 'lodash'
 import appConf from '../../app.conf'
 import { findAllPools, findOneCollection } from '../../db'
-import { Blockchain, LoanPosition, Value } from '../../entities'
+import { Blockchain, Value } from '../../entities'
+import Loan from '../../entities/lib/Loan'
+import { getOnChainLoanById } from '../../subgraph'
 import fault from '../../utils/fault'
 import logger from '../../utils/logger'
 import { getNFTMetadata } from '../collaterals'
 import { getControlPlaneContract, getPoolContract } from '../contracts'
 import { getEthBlockNumber } from '../utils/ethereum'
 import { getEthCollectionValuation } from '../valuations'
-import getLoanEvent from './getLoanEvent'
 
 type Params = {
   blockchain: Blockchain
@@ -18,12 +19,15 @@ type Params = {
   txSpeedBlocks: number
 }
 
-export default async function getLoanPosition({ blockchain, collectionAddress, nftId, txSpeedBlocks }: Params): Promise<LoanPosition | undefined> {
+export default async function getLoan({ blockchain, collectionAddress, nftId, txSpeedBlocks }: Params): Promise<Loan | undefined> {
   logger.info(`Fetching loan position for collection address <${collectionAddress}>, NFT ID <${nftId}>, txSpeedBlocks <${txSpeedBlocks}> and blockchain <${JSON.stringify(blockchain)}>...`)
 
   try {
     switch (blockchain.network) {
     case 'ethereum': {
+      const loanId = `${collectionAddress.toLowerCase()}/${nftId}`
+      const { loan: loanValues } = await getOnChainLoanById({ loanId }, { networkId: blockchain.networkId })
+
       const collection = await findOneCollection({ address: collectionAddress, blockchain })
       if (!collection) throw fault('ERR_UNSUPPORTED_COLLECTION')
 
@@ -35,18 +39,16 @@ export default async function getLoanPosition({ blockchain, collectionAddress, n
 
       if (pools.length === 0) throw fault('ERR_UNSUPPORTED_COLLECTION')
 
-      const loanPosition = pools.reduce<Promise<LoanPosition | undefined>>(async (loan, pool) => {
-        const rLoan = await loan
-        if (rLoan) return rLoan
+      const loan = pools.reduce<Promise<Loan | undefined>>(async (l, pool) => {
+        const rL = await l
+        if (rL) return rL
         const contract = await getPoolContract({ blockchain, poolAddress: pool.address })
-        const event = await getLoanEvent({ blockchain, nftId, poolAddress: pool.address })
         const loanDetails = await contract.methods._loans(nftId).call()
         const controlPlaneContract = getControlPlaneContract({ blockchain, address: _.get(appConf.controlPlaneContractAddress, blockchain.networkId) })
         const outstandingWithInterestWei = new BigNumber(await controlPlaneContract.methods.outstanding(loanDetails, txSpeedBlocks).call())
 
         // Early exit if loan is fully repaid.
         if (outstandingWithInterestWei.lte(new BigNumber(0))) return undefined
-
         const nft = {
           collection,
           id: nftId,
@@ -57,26 +59,26 @@ export default async function getLoanPosition({ blockchain, collectionAddress, n
 
         return {
           routerAddress: pool.repayRouterAddress,
-          accuredInterest: Value.$WEI(event.accuredInterestWei),
-          borrowed: Value.$WEI(event.borrowedWei),
-          borrowerAddress: event.borrower,
-          expiresAt: new Date(_.toNumber(event.loanExpireTimestamp) * 1000),
-          interestBPSPerBlock: new BigNumber(event.interestBPS1000000XBlock).dividedBy(new BigNumber(1_000_000)),
-          loanStartBlock: event.loanStartBlock,
-          maxLTVBPS: new BigNumber(event.maxLTVBPS),
+          accuredInterest: Value.$WEI(loanValues.accuredInterestWei),
+          borrowed: Value.$WEI(loanValues.borrowedWei),
+          borrowerAddress: loanValues.borrower,
+          expiresAt: new Date(_.toNumber(loanValues.loanExpiretimestamp) * 1000),
+          interestBPSPerBlock: new BigNumber(loanValues.interestBPS1000000XBlock).dividedBy(new BigNumber(1_000_000)),
+          loanStartBlock: loanValues.loanStartBlock,
+          maxLTVBPS: new BigNumber(loanValues.maxLTVBPS),
           nft,
           outstanding: Value.$WEI(outstandingWithInterestWei),
           poolAddress: pool.address,
-          repaidInterest: Value.$WEI(event.repaidInterestWei),
-          returned: Value.$WEI(event.returnedWei),
+          repaidInterest: Value.$WEI(loanValues.repaidInterestWei),
+          returned: Value.$WEI(loanValues.returnedWei),
           valuation,
           updatedAtBlock: blockNumber,
         }
       }, new Promise(resolve => resolve(undefined)))
 
-      logger.info(`Fetching loan position for collection address <${collectionAddress}>, NFT ID <${nftId}>, txSpeedBlocks <${txSpeedBlocks}> and blockchain <${JSON.stringify(blockchain)}>... OK:`, loanPosition)
+      logger.info(`Fetching loan position for collection address <${collectionAddress}>, NFT ID <${nftId}>, txSpeedBlocks <${txSpeedBlocks}> and blockchain <${JSON.stringify(blockchain)}>... OK:`, loan)
 
-      return loanPosition
+      return loan
     }
     default:
       throw fault('ERR_UNSUPPORTED_BLOCKCHAIN')

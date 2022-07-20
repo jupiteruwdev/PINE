@@ -9,7 +9,7 @@ describe('routes /collaterals', () => {
       const { body: res } = await request(app).get('/collaterals')
         .query({
           ethereum: 1,
-          owner: appConf.testingMainnetWallet,
+          owner: appConf.tests.walletAddress,
         })
         .expect('Content-Type', /json/)
         .expect(200)
@@ -29,7 +29,7 @@ describe('routes /collaterals', () => {
       const { body: res } = await request(app).get('/collaterals')
         .query({
           ethereum: 4,
-          owner: appConf.testingMainnetWallet,
+          owner: appConf.tests.walletAddress,
         })
         .expect('Content-Type', /json/)
         .expect(200)
