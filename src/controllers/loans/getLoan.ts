@@ -4,7 +4,7 @@ import appConf from '../../app.conf'
 import { findAllPools, findOneCollection } from '../../db'
 import { Blockchain, Value } from '../../entities'
 import Loan from '../../entities/lib/Loan'
-import { getLoanById } from '../../subgraph/request'
+import { getOnChainLoanById } from '../../subgraph'
 import fault from '../../utils/fault'
 import logger from '../../utils/logger'
 import { getNFTMetadata } from '../collaterals'
@@ -25,8 +25,8 @@ export default async function getLoan({ blockchain, collectionAddress, nftId, tx
   try {
     switch (blockchain.network) {
     case 'ethereum': {
-      const id = `${collectionAddress.toLowerCase()}/${nftId}`
-      const { loan: loanValues } = await getLoanById(id)
+      const loanId = `${collectionAddress.toLowerCase()}/${nftId}`
+      const { loan: loanValues } = await getOnChainLoanById({ loanId }, { networkId: blockchain.networkId })
 
       const collection = await findOneCollection({ address: collectionAddress, blockchain })
       if (!collection) throw fault('ERR_UNSUPPORTED_COLLECTION')
