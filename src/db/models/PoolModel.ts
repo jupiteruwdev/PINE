@@ -24,7 +24,6 @@ const schema = new Schema({
   rolloverAddress: Schema.Types.String,
   defaultFees: Schema.Types.Array,
   ethLimit: Schema.Types.Decimal128,
-  published: Schema.Types.Boolean,
   nftCollection: {
     type: Schema.Types.ObjectId,
     ref: 'NFTCollection',
