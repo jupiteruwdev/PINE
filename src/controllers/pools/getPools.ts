@@ -8,6 +8,7 @@ import getPoolUtilization from './getPoolUtilization'
 type Params = {
   blockchainFilter?: Blockchain.Filter
   collectionAddress?: string
+  lenderAddress?: string
   offset?: number
   count?: number
   collectionName?: string
@@ -28,6 +29,7 @@ export default async function getPools({
     solana: Blockchain.Solana.Network.MAINNET,
   },
   collectionAddress,
+  lenderAddress,
   offset,
   count,
   collectionName,
@@ -37,6 +39,7 @@ export default async function getPools({
   const pools = await findAllPools({
     blockchainFilter,
     collectionAddress,
+    lenderAddress,
     offset,
     count,
     collectionName,
