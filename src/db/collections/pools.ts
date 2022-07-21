@@ -12,12 +12,14 @@ import { PoolModel } from '../models'
 type FindOneFilter = {
   address?: string
   collectionAddress?: string
+  lenderAddress?: string
   blockchain?: Blockchain
   includeRetired?: boolean
 }
 
 type FindAllFilter = {
   collectionAddress?: string
+  lenderAddress?: string
   blockchainFilter?: Blockchain.Filter
   includeRetired?: boolean
   offset?: number
@@ -39,6 +41,7 @@ type FindAllFilter = {
 export async function findOnePool({
   address,
   collectionAddress,
+  lenderAddress,
   blockchain = Blockchain.Ethereum(),
   includeRetired = false,
 }: FindOneFilter = {}): Promise<Pool | undefined> {
@@ -54,6 +57,12 @@ export async function findOnePool({
   if (collectionAddress !== undefined) {
     filter.push({
       'collection.address': collectionAddress,
+    })
+  }
+
+  if (lenderAddress !== undefined) {
+    filter.push({
+      lenderAddress,
     })
   }
 
@@ -184,6 +193,7 @@ export async function countAllPools({
  */
 export async function findAllPools({
   collectionAddress,
+  lenderAddress,
   blockchainFilter = {
     ethereum: Blockchain.Ethereum.Network.MAIN,
     solana: Blockchain.Solana.Network.MAINNET,
@@ -212,6 +222,12 @@ export async function findAllPools({
     if (collectionAddress !== undefined) {
       filter.push({
         'collection.address': collectionAddress,
+      })
+    }
+
+    if (lenderAddress !== undefined) {
+      filter.push({
+        lenderAddress,
       })
     }
 

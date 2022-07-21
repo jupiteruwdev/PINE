@@ -19,6 +19,7 @@ const schema = new Schema({
     },
   ],
   poolVersion: Schema.Types.Number,
+  lenderAddress: Schema.Types.String,
   routerAddress: Schema.Types.String,
   repayRouterAddress: Schema.Types.String,
   rolloverAddress: Schema.Types.String,
