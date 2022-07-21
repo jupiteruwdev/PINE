@@ -1,6 +1,5 @@
 import { Router } from 'express'
-import { getPool, searchPoolGroups } from '../controllers'
-import { countAllPools } from '../db'
+import { countPools, getPool, searchPoolGroups } from '../controllers'
 import { Pagination, Pool, PoolGroup, serializeEntityArray } from '../entities'
 import fault from '../utils/fault'
 import { SortDirection, SortType } from '../utils/sort'
@@ -32,7 +31,7 @@ router.get('/groups/search', async (req, res, next) => {
     const collectionName = tryOrUndefined(() => getString(req.query, 'query'))
     const sortBy = tryOrUndefined(() => getString(req.query, 'sort')) as SortType
     const sortDirection = tryOrUndefined(() => getString(req.query, 'direction')) as SortDirection
-    const totalCount = await countAllPools({ collectionAddress, blockchainFilter, collectionName })
+    const totalCount = await countPools({ collectionAddress, blockchainFilter, collectionName })
     const poolGroups = await searchPoolGroups({ collectionAddress, blockchainFilter, count, offset, collectionName, sortBy, sortDirection })
     const payload = serializeEntityArray(poolGroups, PoolGroup.codingResolver)
     const nextOffset = (offset ?? 0) + poolGroups.length
