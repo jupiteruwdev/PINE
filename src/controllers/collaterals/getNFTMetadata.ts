@@ -18,7 +18,7 @@ export default async function getNFTMetadata({ blockchain, collectionAddress, nf
   case 'ethereum': {
     const alchemyUrl = _.get(appConf.alchemyAPIUrl, blockchain.networkId)
     const nftRes = await getRequest(`${alchemyUrl}${appConf.alchemyAPIKey}/getNFTMetadata?contractAddress=${collectionAddress}&tokenId=${nftId}`)
-    if (!nftRes.error) {
+    if (!nftRes.error && nftRes.metadata && nftRes.metadata.name && nftRes.metadata.image_url) {
       return {
         imageUrl: _.get(nftRes, 'metadata.image_url'),
         name: _.get(nftRes, 'metadata.name'),
