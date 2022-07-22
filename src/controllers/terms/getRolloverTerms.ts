@@ -19,7 +19,7 @@ export default async function getRolloverTerms({ blockchain, collectionAddress, 
   try {
     switch (blockchain.network) {
     case 'ethereum': {
-      const collection = await findOneCollection({ address: collectionAddress, blockchain })
+      const collection = await findOneCollection({ address: collectionAddress, blockchain, nftId })
       if (!collection) throw fault('ERR_UNSUPPORTED_COLLECTION')
 
       const pool = await findOnePool({ address: existingLoan?.pool, blockchain })

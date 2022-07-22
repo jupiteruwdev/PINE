@@ -12,7 +12,7 @@ type Params = {
 export default async function getExistingLoan({ blockchain, collectionAddress, nftId }: Params): Promise<any> {
   switch (blockchain.network) {
   case 'ethereum': {
-    const collection = await findOneCollection({ address: collectionAddress, blockchain })
+    const collection = await findOneCollection({ address: collectionAddress, blockchain, nftId })
     if (!collection) throw fault('ERR_UNSUPPORTED_COLLECTION')
     const loan = await getLoan({ blockchain, collectionAddress, nftId, txSpeedBlocks: 0 })
     return {

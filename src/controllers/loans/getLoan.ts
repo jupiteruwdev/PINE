@@ -28,7 +28,7 @@ export default async function getLoan({ blockchain, collectionAddress, nftId, tx
       const loanId = `${collectionAddress.toLowerCase()}/${nftId}`
       const { loan: loanValues } = await getOnChainLoanById({ loanId }, { networkId: blockchain.networkId })
 
-      const collection = await findOneCollection({ address: collectionAddress, blockchain })
+      const collection = await findOneCollection({ address: collectionAddress, blockchain, nftId })
       if (!collection) throw fault('ERR_UNSUPPORTED_COLLECTION')
 
       const [blockNumber, pools, valuation] = await Promise.all([
