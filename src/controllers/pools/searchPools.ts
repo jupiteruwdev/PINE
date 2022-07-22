@@ -41,7 +41,7 @@ async function searchPools<IncludeStats extends boolean = false>({
   ...params
 }: Params<IncludeStats> = {}): Promise<Pool[]> {
   const aggregation = PoolModel.aggregate(getPipelineStages({
-    ...params
+    ...params,
   }))
 
   const docs = paginateBy === undefined ? await aggregation.exec() : await aggregation.skip(paginateBy.offset).limit(paginateBy.count).exec()
@@ -98,7 +98,7 @@ function getPipelineStages({
     ...collectionName === undefined ? [] : [{ 'collection.displayName': {
       $regex: `.*${collectionName}.*`,
       $options: 'i',
-    }}],
+    } }],
   ]
 
   const stages: PipelineStage[] = [{

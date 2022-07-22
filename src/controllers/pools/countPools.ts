@@ -35,7 +35,7 @@ function getPipelineStages({
     ...collectionName === undefined ? [] : [{ 'collection.displayName': {
       $regex: `.*${collectionName}.*`,
       $options: 'i',
-    }}],
+    } }],
   ]
 
   return [{
