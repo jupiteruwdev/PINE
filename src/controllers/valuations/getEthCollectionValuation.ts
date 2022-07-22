@@ -18,7 +18,7 @@ type Params = {
 export default async function getEthCollectionValuation({ blockchain, collectionAddress, tokenId }: Params): Promise<Valuation> {
   logger.info(`Fetching valuation for Ethereum collection <${collectionAddress}>...`)
 
-  const collection = await findOneCollection({ blockchain, address: collectionAddress })
+  const collection = await findOneCollection({ blockchain, address: collectionAddress, nftId: tokenId })
   if (!collection) throw fault('ERR_UNSUPPORTED_COLLECTION')
 
   const venue = _.keys(collection.vendorIds)?.[0]
