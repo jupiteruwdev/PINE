@@ -79,10 +79,10 @@ export default async function getEthCollectionValuation({ blockchain, collection
         if (!apiKey) throw fault('ERR_MISSING_API_KEY', 'Missing GEMXYZ key')
 
         const reqData = `{"filters":{"traits":${id},"traitsRange":{},"address":"${collectionAddress}","rankRange":{},"price":{}},"sort":{"currentEthPrice":"asc"},"fields":{"id":1,"name":1,"address":1,"collectionName":1,"collectionSymbol":1,"externalLink":1,"imageUrl":1,"smallImageUrl":1,"animationUrl":1,"standard":1,"market":1,"pendingTrxs":1,"currentBasePrice":1,"paymentToken":1,"marketUrl":1,"marketplace":1,"tokenId":1,"priceInfo":1,"tokenReserves":1,"ethReserves":1,"sellOrders":1,"startingPrice":1,"rarityScore":1},"offset":0,"limit":30,"markets":[],"status":["buy_now"]}`
-
         const [collectionDataRaw] = await Promise.all([
           postRequest('https://gem-public-api.herokuapp.com/assets', reqData, {
             headers: {
+              'Content-Type': 'application/json',
               'X-API-KEY': apiKey,
             },
           }),
@@ -90,7 +90,7 @@ export default async function getEthCollectionValuation({ blockchain, collection
 
         const collectionData = _.get(collectionDataRaw, 'data[0]')
 
-        const floorPrice = new BigNumber(_.get(collectionData, 'currentBasePrice'))
+        const floorPrice = new BigNumber(_.get(collectionData, 'currentBasePrice')).div(new BigNumber(10).pow(new BigNumber(18)))
 
         const valuation: Valuation<'ETH'> = {
           collection,
