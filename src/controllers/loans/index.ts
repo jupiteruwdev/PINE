@@ -1,4 +1,3 @@
-export { default as getExistingLoan } from './getExistingLoan'
 export { default as getLoan } from './getLoan'
 export { default as getLoanEvent } from './getLoanEvent'
 export { default as getLoans } from './getLoans'

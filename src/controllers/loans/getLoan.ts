@@ -17,10 +17,15 @@ type Params = {
   blockchain: Blockchain
   collectionAddress: string
   nftId: string
-  txSpeedBlocks: number
+  txSpeedBlocks?: number
 }
 
-export default async function getLoan({ blockchain, collectionAddress, nftId, txSpeedBlocks }: Params): Promise<Loan | undefined> {
+export default async function getLoan({
+  blockchain,
+  collectionAddress,
+  nftId,
+  txSpeedBlocks = 0,
+}: Params): Promise<Loan | undefined> {
   logger.info(`Fetching loan position for collection address <${collectionAddress}>, NFT ID <${nftId}>, txSpeedBlocks <${txSpeedBlocks}> and blockchain <${JSON.stringify(blockchain)}>...`)
 
   try {
