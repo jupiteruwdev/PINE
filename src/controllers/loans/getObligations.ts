@@ -18,7 +18,7 @@ export default async function getObligations({ blockchain, borrowerAddress }: Pa
     const { loans } = await getOnChainLoanByBorrower({ borrowerAddress }, { networkId: blockchain.networkId })
 
     nfts = await Promise.all(loans.map(async (loan: any) => ({
-      collection: await findOneCollection({ address: loan.erc721 }),
+      collection: await findOneCollection({ address: loan.erc721, nftId: loan.id.split('/')[1] }),
       id: loan.id.split('/')[1],
       loanExpireTimestamp: loan.loanExpiretimestamp,
     })))

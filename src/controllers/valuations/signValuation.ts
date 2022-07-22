@@ -30,7 +30,7 @@ export default async function signValuation({ blockchain, nftId, poolAddress, co
     const contractFunc = 'getMessageHash'
     const contractParams = [
       collectionAddress,
-      _.toNumber(nftId),
+      nftId,
       web3.utils.toWei(_.toString(valuation.value?.amount)),
       expiresAtBlock,
     ]
