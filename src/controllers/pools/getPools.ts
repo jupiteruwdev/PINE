@@ -1,5 +1,4 @@
 import BigNumber from 'bignumber.js'
-import _ from 'lodash'
 import { PipelineStage } from 'mongoose'
 import { PoolModel } from '../../db'
 import { mapPool } from '../../db/adapters'
@@ -23,12 +22,14 @@ type Params<IncludeStats> = {
   blockchainFilter?: Blockchain.Filter
   collectionAddress?: string
   collectionName?: string
-  count?: number
   includeRetired?: boolean,
-  includeStats?: IncludeStats,
+  includeStats?: IncludeStats
   lenderAddress?: string
-  offset?: number
-  sort?: {
+  paginateBy?: {
+    count: number
+    offset: number
+  }
+  sortBy?: {
     type: PoolSortType
     direction: PoolSortDirection
   }
@@ -41,13 +42,12 @@ async function getPools<IncludeStats extends boolean = false>({
     solana: Blockchain.Solana.Network.MAINNET,
   },
   collectionAddress,
-  lenderAddress,
+  collectionName,
   includeRetired = false,
   includeStats,
-  offset,
-  count,
-  collectionName,
-  sort,
+  lenderAddress,
+  paginateBy,
+  sortBy,
 }: Params<IncludeStats> = {}): Promise<Pool[]> {
   const aggregation = PoolModel.aggregate(getPipelineStages({
     blockchainFilter,
@@ -55,10 +55,10 @@ async function getPools<IncludeStats extends boolean = false>({
     collectionName,
     includeRetired,
     lenderAddress,
-    sort,
+    sortBy,
   }))
 
-  const docs = _.isNil(offset) || _.isNil(count) ? await aggregation.exec() : await aggregation.skip(offset).limit(count).exec()
+  const docs = paginateBy === undefined ? await aggregation.exec() : await aggregation.skip(paginateBy.offset).limit(paginateBy.count).exec()
   const pools = docs.map(mapPool)
 
   if (includeStats !== true) return pools
@@ -101,7 +101,7 @@ function getPipelineStages({
   collectionName,
   includeRetired = false,
   lenderAddress,
-  sort,
+  sortBy,
 }: Params<never> = {}): PipelineStage[] {
   const blockchain = Blockchain.Ethereum(blockchainFilter.ethereum)
 
@@ -187,18 +187,18 @@ function getPipelineStages({
     },
   }]
 
-  switch (sort?.type) {
+  switch (sortBy?.type) {
   case PoolSortType.NAME:
     stages.push({
       $sort: {
-        name: sort?.direction === PoolSortDirection.DESC ? -1 : 1,
+        name: sortBy?.direction === PoolSortDirection.DESC ? -1 : 1,
       },
     })
     break
   case PoolSortType.INTEREST:
     stages.push({
       $sort: {
-        lowestAPR: sort?.direction === PoolSortDirection.DESC ? -1 : 1,
+        lowestAPR: sortBy?.direction === PoolSortDirection.DESC ? -1 : 1,
         name: 1,
       },
     })
@@ -206,7 +206,7 @@ function getPipelineStages({
   case PoolSortType.LTV:
     stages.push({
       $sort: {
-        maxLTV: sort?.direction === PoolSortDirection.DESC ? -1 : 1,
+        maxLTV: sortBy?.direction === PoolSortDirection.DESC ? -1 : 1,
         name: 1,
       },
     })

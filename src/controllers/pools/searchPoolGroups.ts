@@ -11,7 +11,11 @@ type Params = {
   offset?: number
   count?: number
   collectionName?: string
-  sort?: {
+  paginateBy?: {
+    count: number
+    offset: number
+  }
+  sortBy?: {
     type: PoolSortType
     direction: PoolSortDirection
   }
@@ -23,10 +27,9 @@ export default async function searchPoolGroups({
     solana: Blockchain.Solana.Network.MAINNET,
   },
   collectionAddress,
-  offset,
-  count,
   collectionName,
-  sort,
+  paginateBy,
+  sortBy,
 }: Params) {
   logger.info('Fetching pool groups...')
 
@@ -37,10 +40,9 @@ export default async function searchPoolGroups({
         blockchainFilter,
         collectionAddress,
         collectionName,
-        count,
         includeStats: true,
-        offset,
-        sort,
+        paginateBy,
+        sortBy,
       }),
     ])
 

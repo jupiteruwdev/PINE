@@ -26,16 +26,17 @@ router.get('/groups/search', async (req, res, next) => {
   try {
     const blockchainFilter = getBlockchainFilter(req.query, true)
     const collectionAddress = tryOrUndefined(() => getString(req.query, 'collectionAddress'))
-    const offset = tryOrUndefined(() => getNumber(req.query, 'offset'))
-    const count = tryOrUndefined(() => getNumber(req.query, 'count'))
     const collectionName = tryOrUndefined(() => getString(req.query, 'query'))
-    const sortType = tryOrUndefined(() => getString(req.query, 'sort') as PoolSortType)
-    const sortDirection = tryOrUndefined(() => getString(req.query, 'direction') as PoolSortDirection)
-    const sort = sortType !== undefined ? { type: sortType, direction: sortDirection ?? PoolSortDirection.ASC } : undefined
+    const sortByType = tryOrUndefined(() => getString(req.query, 'sort') as PoolSortType)
+    const sortByDirection = tryOrUndefined(() => getString(req.query, 'direction') as PoolSortDirection)
+    const sortBy = sortByType !== undefined ? { type: sortByType, direction: sortByDirection ?? PoolSortDirection.ASC } : undefined
+    const paginateByOffset = tryOrUndefined(() => getNumber(req.query, 'offset'))
+    const paginateByCount = tryOrUndefined(() => getNumber(req.query, 'count'))
+    const paginateBy = paginateByOffset !== undefined && paginateByCount !== undefined ? { count: paginateByCount, offset: paginateByOffset } : undefined
     const totalCount = await countPools({ collectionAddress, blockchainFilter, collectionName })
-    const poolGroups = await searchPoolGroups({ collectionAddress, blockchainFilter, count, offset, collectionName, sort })
+    const poolGroups = await searchPoolGroups({ collectionAddress, collectionName, blockchainFilter, paginateBy, sortBy })
     const payload = serializeEntityArray(poolGroups, PoolGroup.codingResolver)
-    const nextOffset = (offset ?? 0) + poolGroups.length
+    const nextOffset = (paginateBy?.count ?? 0) + poolGroups.length
     const pagination = Pagination.serialize({ data: payload, totalCount, nextOffset: nextOffset === totalCount - 1 ? undefined : nextOffset })
 
     res.status(200).json(pagination)
