@@ -63,7 +63,7 @@ export default async function getEthMainnetNFTsByOwner({
 
     if (collectionAddressFilter && collectionAddressFilter.toLowerCase() !== collectionAddress.toLowerCase()) return undefined
 
-    const collectionFromDB = await findOneCollection({ address: collectionAddress })
+    const collectionFromDB = await findOneCollection({ address: collectionAddress, nftId })
     const collection = collectionFromDB ?? {
       address: collectionAddress,
       blockchain: Blockchain.Ethereum(1),
