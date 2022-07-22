@@ -41,6 +41,7 @@ export default async function searchPoolGroups({
         collectionName,
         sortBy,
         sortDirection,
+        includeStats: true,
       }),
     ])
 

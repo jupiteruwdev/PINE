@@ -1,10 +1,10 @@
 import BigNumber from 'bignumber.js'
-import { findOneCollection, findOnePool } from '../../db'
+import { findOneCollection } from '../../db'
 import { Blockchain, LoanTerms, NFT, Value } from '../../entities'
 import fault from '../../utils/fault'
 import logger from '../../utils/logger'
 import { getNFTMetadata } from '../collaterals'
-import { getPoolUtilization } from '../pools'
+import { getPool } from '../pools'
 import { getEthCollectionValuation, signValuation } from '../valuations'
 
 type Params = {
@@ -22,10 +22,8 @@ export default async function getLoanTerms({ blockchain, collectionAddress, nftI
       const collection = await findOneCollection({ address: collectionAddress, blockchain })
       if (!collection) throw fault('ERR_UNSUPPORTED_COLLECTION')
 
-      const pool = await findOnePool({ collectionAddress: collection.address, blockchain })
+      const pool = await getPool({ collectionAddress: collection.address, blockchain, includeStats: true })
       if (!pool) throw fault('ERR_NO_POOLS_AVAILABLE')
-
-      const utilization = await getPoolUtilization({ blockchain, poolAddress: pool.address })
 
       const nft: NFT = {
         collection,
@@ -53,7 +51,7 @@ export default async function getLoanTerms({ blockchain, collectionAddress, nftI
         option.maxBorrow = Value.$ETH(option.maxLTVBPS.div(10_000).times(loanTerms.valuation.value?.amount ?? 0))
       })
 
-      if (pool.ethLimit !== 0 && loanTerms.options.some(option => utilization.amount.plus(option.maxBorrow?.amount ?? new BigNumber(0)).gt(new BigNumber(pool.ethLimit ?? 0)))) throw fault('ERR_POOL_OVER_LENDER_DEFINED_UTILIZATION')
+      if (pool.ethLimit !== 0 && loanTerms.options.some(option => pool.utilization.amount.plus(option.maxBorrow?.amount ?? new BigNumber(0)).gt(new BigNumber(pool.ethLimit ?? 0)))) throw fault('ERR_POOL_OVER_LENDER_DEFINED_UTILIZATION')
 
       logger.info(`Fetching loan terms for NFT ID <${nftId}> and collection address <${collectionAddress}> on blockchain <${JSON.stringify(blockchain)}>... OK:`, loanTerms)
 

@@ -17,7 +17,7 @@ export default async function getGlobalStats({ blockchainFilter = { ethereum: Bl
       pools,
     ] = await Promise.all([
       getEthValueUSD(),
-      getPools({ blockchainFilter }),
+      getPools({ blockchainFilter, includeStats: true }),
     ])
 
     const totalUtilizationUSD = pools.reduce((p, c) => p.plus(c.utilization.amount), new BigNumber(0)).times(ethValueUSD.amount)

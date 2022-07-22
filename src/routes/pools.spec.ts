@@ -3,17 +3,18 @@ import _ from 'lodash'
 import { describe, it } from 'mocha'
 import request from 'supertest'
 import app from '../app'
-import { findAllCollections, findAllPools } from '../db'
+import { getPools } from '../controllers'
+import { findAllCollections } from '../db'
+import { Blockchain } from '../entities'
 import { SortDirection, SortType } from '../utils/sort'
 
 describe('routes/pools', () => {
   describe('GET /pools/:poolAddress', () => {
     it('can get all Ethereum loan pools on Mainnet', async () => {
-      const pools = await findAllPools()
-      const poolAddresses = _.compact(_.flatMap(pools, data => (data.collection.blockchain.network === 'ethereum' && parseInt(data.collection.blockchain.networkId, 10) === 1) ? data.address : undefined))
+      const pools = await getPools({ blockchainFilter: { ethereum: Blockchain.Ethereum.Network.MAIN } })
 
-      await Promise.all(poolAddresses.map(async poolAddress => {
-        const { body: res } = await request(app).get(`/pools/${poolAddress}`)
+      await Promise.all(pools.map(async pool => {
+        const { body: res } = await request(app).get(`/pools/${pool.address}`)
           .query({
             ethereum: 1,
           })
@@ -134,7 +135,7 @@ describe('routes/pools', () => {
     })
 
     it('can get all ethereum mainnet pools with pagination', async () => {
-      const pools = await findAllPools()
+      const pools = await getPools()
       const totalCount = pools.filter(pool => pool.collection.blockchain.network === 'ethereum' && parseInt(pool.collection.blockchain.networkId, 10) === 1).length
       const { body: res } = await request(app).get('/pools/groups/search')
         .query({
@@ -181,7 +182,7 @@ describe('routes/pools', () => {
     })
 
     it('can get all ethereum mainnet pools with sorting & pagination', async () => {
-      const pools = await findAllPools()
+      const pools = await getPools()
       const totalCount = pools.filter(pool => pool.collection.blockchain.network === 'ethereum' && parseInt(pool.collection.blockchain.networkId, 10) === 1).length
       const { body: res } = await request(app).get('/pools/groups/search')
         .query({

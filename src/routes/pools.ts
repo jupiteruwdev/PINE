@@ -48,7 +48,7 @@ router.get('/:poolAddress', async (req, res, next) => {
   try {
     const blockchain = getBlockchain(req.query)
     const poolAddress = getString(req.params, 'poolAddress')
-    const pool = await getPool({ blockchain, poolAddress })
+    const pool = await getPool({ blockchain, address: poolAddress, includeStats: true })
     const payload = Pool.serialize(pool)
 
     res.status(200).json(payload)
