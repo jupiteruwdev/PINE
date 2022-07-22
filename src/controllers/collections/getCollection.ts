@@ -10,7 +10,7 @@ type Params = {
   nftId?: string
 }
 
-export default async function findOneCollection({
+export default async function getCollection({
   address,
   blockchain = Blockchain.Ethereum(),
   nftId,
