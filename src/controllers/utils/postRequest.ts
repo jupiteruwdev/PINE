@@ -11,7 +11,7 @@ type Options<T> = {
   transformPayload?: (data: any) => T
 }
 
-export default async function postRequest<T = any>(path: string, data: string, { controller, host, headers, params, transformPayload }: Options<T> = {}): Promise<T> {
+export default async function postRequest<T = any>(path: string, data: Record<string, any>, { controller, host, headers, params, transformPayload }: Options<T> = {}): Promise<T> {
   try {
     const res = await axios.post(path, data, {
       baseURL: host,
