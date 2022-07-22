@@ -17,12 +17,11 @@ export enum PoolSortDirection {
   DESC = 'desc',
 }
 
-
 type Params<IncludeStats> = {
   blockchainFilter?: Blockchain.Filter
   collectionAddress?: string
   collectionName?: string
-  includeRetired?: boolean,
+  includeRetired?: boolean
   includeStats?: IncludeStats
   lenderAddress?: string
   paginateBy?: {
