@@ -28,11 +28,11 @@ describe('routes/pools', () => {
   })
 
   describe('GET /pools/groups/collection', () => {
-    it('can get all ethereum mainnet pools with collection address', async () => {
+    it('can get all Ethereum Mainnet pools with collection address', async () => {
       const collections = await findAllCollections()
-      const collectionAddresss = _.compact(_.flatMap(collections, data => data.blockchain.network === 'ethereum' && parseInt(data.blockchain.networkId, 10) === 1 ? data.address : undefined))
+      const collectionAddresses = _.compact(_.flatMap(collections, data => data.blockchain.network === 'ethereum' && parseInt(data.blockchain.networkId, 10) === 1 ? data.address : undefined))
 
-      await Promise.all(collectionAddresss.map(async collectionAddress => {
+      await Promise.all(collectionAddresses.map(async collectionAddress => {
         const { body: res } = await request(app).get('/pools/groups/collection')
           .query({
             ethereum: 1,
@@ -52,15 +52,15 @@ describe('routes/pools', () => {
       }))
     })
 
-    it('can get all ethereum rinkeby pools with collection address', async () => {
+    it('can get all Ethereum Rinkeby pools with collection address', async () => {
       const collections = await findAllCollections({
         blockchainFilter: {
           'ethereum': '0x4',
         },
       })
-      const collectionAddresss = _.compact(_.flatMap(collections, data => data.blockchain.network === 'ethereum' && parseInt(data.blockchain.networkId, 10) === 4 ? data.address : undefined))
+      const collectionAddresses = _.compact(_.flatMap(collections, data => data.blockchain.network === 'ethereum' && parseInt(data.blockchain.networkId, 10) === 4 ? data.address : undefined))
 
-      await Promise.all(collectionAddresss.map(async collectionAddress => {
+      await Promise.all(collectionAddresses.map(async collectionAddress => {
         const { body: res } = await request(app).get('/pools/groups/collection')
           .query({
             ethereum: 4,
@@ -79,11 +79,11 @@ describe('routes/pools', () => {
       }))
     })
 
-    it('can get all solana mainnet pools with collection address', async () => {
+    it('can get all Solana Mainnet pools with collection address', async () => {
       const collections = await findAllCollections()
-      const collectionAddresss = _.compact(_.flatMap(collections, data => data.blockchain.network === 'solana' && data.blockchain.networkId === 'mainnet' ? data.address : undefined))
+      const collectionAddresses = _.compact(_.flatMap(collections, data => data.blockchain.network === 'solana' && data.blockchain.networkId === 'mainnet' ? data.address : undefined))
 
-      await Promise.all(collectionAddresss.map(async collectionAddress => {
+      await Promise.all(collectionAddresses.map(async collectionAddress => {
         const { body: res } = await request(app).get('/pools/groups/collection')
           .query({
             ethereum: 1,
@@ -105,11 +105,11 @@ describe('routes/pools', () => {
   })
 
   describe('GET /pools/groups/search', () => {
-    it('can get all ethereum mainnet pools with collection address & pagination', async () => {
+    it('can get all Ethereum Mainnet pools with collection address & pagination', async () => {
       const collections = await findAllCollections()
-      const collectionAddresss = _.compact(_.flatMap(collections, data => data.blockchain.network === 'ethereum' && parseInt(data.blockchain.networkId, 10) === 1 ? data.address : undefined))
+      const collectionAddresses = _.compact(_.flatMap(collections, data => data.blockchain.network === 'ethereum' && parseInt(data.blockchain.networkId, 10) === 1 ? data.address : undefined))
 
-      await Promise.all(collectionAddresss.map(async collectionAddress => {
+      await Promise.all(collectionAddresses.map(async collectionAddress => {
         const { body: res } = await request(app).get('/pools/groups/search')
           .query({
             ethereum: 1,
@@ -133,7 +133,7 @@ describe('routes/pools', () => {
       }))
     })
 
-    it('can get all ethereum mainnet pools with pagination', async () => {
+    it('can get all Ethereum Mainnet pools with pagination', async () => {
       const pools = await searchPools()
       const totalCount = pools.filter(pool => pool.collection.blockchain.network === 'ethereum' && parseInt(pool.collection.blockchain.networkId, 10) === 1).length
       const { body: res } = await request(app).get('/pools/groups/search')
@@ -157,7 +157,7 @@ describe('routes/pools', () => {
       }
     })
 
-    it('can get all ethereum mainnet pools with collection name & pagination', async () => {
+    it('can get all Ethereum Mainnet pools with collection name & pagination', async () => {
       const { body: res } = await request(app).get('/pools/groups/search')
         .query({
           ethereum: 1,
@@ -180,7 +180,7 @@ describe('routes/pools', () => {
       }
     })
 
-    it('can get all ethereum mainnet pools with sorting & pagination', async () => {
+    it('can get all Ethereum Mainnet pools with sorting & pagination', async () => {
       const pools = await searchPools()
       const totalCount = pools.filter(pool => pool.collection.blockchain.network === 'ethereum' && parseInt(pool.collection.blockchain.networkId, 10) === 1).length
       const { body: res } = await request(app).get('/pools/groups/search')

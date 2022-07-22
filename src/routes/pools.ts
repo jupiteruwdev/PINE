@@ -36,7 +36,7 @@ router.get('/groups/search', async (req, res, next) => {
     const totalCount = await countPools({ collectionAddress, blockchainFilter, collectionName })
     const poolGroups = await searchPoolGroups({ collectionAddress, collectionName, blockchainFilter, paginateBy, sortBy })
     const payload = serializeEntityArray(poolGroups, PoolGroup.codingResolver)
-    const nextOffset = (paginateBy?.count ?? 0) + poolGroups.length
+    const nextOffset = (paginateBy?.offset ?? 0) + poolGroups.length
     const pagination = Pagination.serialize({ data: payload, totalCount, nextOffset: nextOffset === totalCount - 1 ? undefined : nextOffset })
 
     res.status(200).json(pagination)
