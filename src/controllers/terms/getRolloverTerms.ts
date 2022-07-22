@@ -1,8 +1,9 @@
-import { findOneCollection, findOnePool } from '../../db'
+import { findOneCollection } from '../../db'
 import { Blockchain, NFT, RolloverTerms, Value } from '../../entities'
 import fault from '../../utils/fault'
 import logger from '../../utils/logger'
 import { getNFTMetadata } from '../collaterals'
+import { getPool } from '../pools'
 import { getEthCollectionValuation, signValuation } from '../valuations'
 import getFlashLoanSource from './getFlashLoanSource'
 
@@ -22,7 +23,7 @@ export default async function getRolloverTerms({ blockchain, collectionAddress, 
       const collection = await findOneCollection({ address: collectionAddress, blockchain })
       if (!collection) throw fault('ERR_UNSUPPORTED_COLLECTION')
 
-      const pool = await findOnePool({ address: existingLoan?.pool, blockchain })
+      const pool = await getPool({ address: existingLoan?.pool, blockchain, includeStats: true })
       const flashLoanSource = await getFlashLoanSource({ blockchain, poolAddress: existingLoan?.pool })
       if (!pool) throw fault('ERR_NO_POOLS_AVAILABLE')
 

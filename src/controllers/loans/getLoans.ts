@@ -1,11 +1,11 @@
 import BigNumber from 'bignumber.js'
 import _ from 'lodash'
 import appConf from '../../app.conf'
-import { findAllPools } from '../../db'
 import { Blockchain, Pool, Value } from '../../entities'
 import Loan from '../../entities/lib/Loan'
 import { getOnChainLoansByPools } from '../../subgraph'
 import fault from '../../utils/fault'
+import { searchPools } from '../pools'
 import getRequest from '../utils/getRequest'
 
 type Params = {
@@ -15,7 +15,7 @@ type Params = {
 
 export default async function getLoans({ collectionAddress, blockchain }: Params) {
   try {
-    const pools = await findAllPools({ collectionAddress })
+    const pools = await searchPools({ collectionAddress })
 
     const poolAddresses = _.reduce(pools, (prev: string[], cur: Pool) => {
       prev.push(cur.address)

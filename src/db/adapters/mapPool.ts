@@ -2,6 +2,7 @@ import BigNumber from 'bignumber.js'
 import _ from 'lodash'
 import { Fee, LoanOption, Pool } from '../../entities'
 import fault from '../../utils/fault'
+import mapCollection from './mapCollection'
 
 function mapLoanOption(
   data: Record<string, any>,
@@ -32,10 +33,11 @@ function mapLoanOption(
 }
 
 export default function mapPool(data: Record<string, any>): Pool {
-  const version = _.get(data, 'version')
+  const version = _.get(data, 'poolVersion')
   const address = _.get(data, 'address')
-  const blockchain = _.get(data, 'blockchain')
-  const collection = _.get(data, 'collection')
+  const networkType = _.get(data, 'networkType', 'ethereum')
+  const networkId = _.get(data, 'networkId', '1')
+  const collection = mapCollection(_.get(data, 'collection'))
   const routerAddress = _.get(data, 'routerAddress')
   const repayRouterAddress = _.get(data, 'repayRouterAddress')
   const rolloverAddress = _.get(data, 'rolloverAddress')
@@ -48,7 +50,8 @@ export default function mapPool(data: Record<string, any>): Pool {
   )
 
   if (!_.isString(address)) throw TypeError('Failed to map key "address"')
-  if (!blockchain) throw TypeError('Failed to map key "blockchain"')
+  if (!networkType) throw TypeError('Failed to map key "networkType"')
+  if (!networkId) throw TypeError('Failed to map key "networkId"')
   if (!collection) throw TypeError('Failed to map key "collection"')
   if (!loanOptions) throw TypeError('Failed to map key "loanOptions"')
   if (!routerAddress) throw TypeError('Failed to map key "routerAddress"')
@@ -59,7 +62,7 @@ export default function mapPool(data: Record<string, any>): Pool {
   return {
     version,
     address,
-    blockchain,
+    blockchain: { network: networkType, networkId },
     collection,
     loanOptions,
     routerAddress,
