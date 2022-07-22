@@ -7,6 +7,7 @@ export default {
   build: process.env.BUILD_NUMBER ?? '0',
   port: process.env.PORT ?? 8080,
   openseaAPIKey: process.env.OPENSEA_API_KEY,
+  gemxyzAPIKey: process.env.GEMXYZ_API_KEY,
   moralisAPIKey: process.env.MORALIS_API_KEY,
   nftbankAPIKey: process.env.NFTBANK_API_KEY,
   alchemyAPIKey: process.env.ALCHEMY_API_KEY,
