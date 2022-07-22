@@ -1,6 +1,6 @@
-import { findOneCollection } from '../../db'
 import { Blockchain } from '../../entities'
 import fault from '../../utils/fault'
+import { getCollection } from '../collections'
 import getLoan from './getLoan'
 
 type Params = {
@@ -12,7 +12,7 @@ type Params = {
 export default async function getExistingLoan({ blockchain, collectionAddress, nftId }: Params): Promise<any> {
   switch (blockchain.network) {
   case 'ethereum': {
-    const collection = await findOneCollection({ address: collectionAddress, blockchain, nftId })
+    const collection = await getCollection({ address: collectionAddress, blockchain, nftId })
     if (!collection) throw fault('ERR_UNSUPPORTED_COLLECTION')
     const loan = await getLoan({ blockchain, collectionAddress, nftId, txSpeedBlocks: 0 })
     return {

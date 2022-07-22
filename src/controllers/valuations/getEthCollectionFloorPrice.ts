@@ -1,8 +1,8 @@
 import _ from 'lodash'
 import appConf from '../../app.conf'
-import { findOneCollection } from '../../db'
 import { Blockchain, Value } from '../../entities'
 import fault from '../../utils/fault'
+import { getCollection } from '../collections'
 import getRequest from '../utils/getRequest'
 
 type Params = {
@@ -32,7 +32,7 @@ export default async function getEthCollectionFloorPrice({ blockchain, collectio
 
     return Value.$ETH(floorPrice)
   case Blockchain.Ethereum.Network.RINKEBY:
-    const collection = await findOneCollection({ blockchain, address: collectionAddress })
+    const collection = await getCollection({ blockchain, address: collectionAddress })
     const id = _.values(collection?.vendorIds)?.[0]
 
     if (id === 'testing2') return Value.$ETH(1)

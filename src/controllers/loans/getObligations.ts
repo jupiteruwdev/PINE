@@ -1,9 +1,9 @@
 import _ from 'lodash'
-import { findOneCollection } from '../../db'
 import { Blockchain, CollateralizedNFT } from '../../entities'
 import { getOnChainLoanByBorrower } from '../../subgraph'
 import fault from '../../utils/fault'
 import { getNFTMetadata, getNFTsByOwner } from '../collaterals'
+import { getCollection } from '../collections'
 import { searchPools } from '../pools'
 import getLoanEvent from './getLoanEvent'
 
@@ -18,7 +18,7 @@ export default async function getObligations({ blockchain, borrowerAddress }: Pa
     const { loans } = await getOnChainLoanByBorrower({ borrowerAddress }, { networkId: blockchain.networkId })
 
     nfts = await Promise.all(loans.map(async (loan: any) => ({
-      collection: await findOneCollection({ address: loan.erc721, nftId: loan.id.split('/')[1] }),
+      collection: await getCollection({ address: loan.erc721, nftId: loan.id.split('/')[1] }),
       id: loan.id.split('/')[1],
       loanExpireTimestamp: loan.loanExpiretimestamp,
     })))
