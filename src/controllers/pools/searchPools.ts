@@ -36,25 +36,12 @@ type Params<IncludeStats> = {
 
 async function searchPools<IncludeStats extends boolean = false>(params?: Params<IncludeStats>): Promise<IncludeStats extends true ? Required<Pool>[] : Pool[]>
 async function searchPools<IncludeStats extends boolean = false>({
-  blockchainFilter = {
-    ethereum: Blockchain.Ethereum.Network.MAIN,
-    solana: Blockchain.Solana.Network.MAINNET,
-  },
-  collectionAddress,
-  collectionName,
-  includeRetired = false,
   includeStats,
-  lenderAddress,
   paginateBy,
-  sortBy,
+  ...params
 }: Params<IncludeStats> = {}): Promise<Pool[]> {
   const aggregation = PoolModel.aggregate(getPipelineStages({
-    blockchainFilter,
-    collectionAddress,
-    collectionName,
-    includeRetired,
-    lenderAddress,
-    sortBy,
+    ...params
   }))
 
   const docs = paginateBy === undefined ? await aggregation.exec() : await aggregation.skip(paginateBy.offset).limit(paginateBy.count).exec()
@@ -104,42 +91,24 @@ function getPipelineStages({
 }: Params<never> = {}): PipelineStage[] {
   const blockchain = Blockchain.Ethereum(blockchainFilter.ethereum)
 
-  const filter: Record<string, any>[] = [{
-    'collection.networkType': blockchain.network,
-  }, {
-    'collection.networkId': parseInt(blockchain.networkId, 10),
-  }]
-
-  if (collectionAddress !== undefined) {
-    filter.push({
+  const collectionFilter = [
+    ...collectionAddress === undefined ? [] : [{
       'collection.address': collectionAddress,
-    })
-  }
-
-  if (lenderAddress !== undefined) {
-    filter.push({
-      lenderAddress,
-    })
-  }
-
-  if (collectionName !== undefined) {
-    filter.push({
-      'collection.displayName': {
-        $regex: `.*${collectionName}.*`,
-        $options: 'i',
-      },
-    })
-  }
-
-  if (!includeRetired) {
-    filter.push({
-      retired: {
-        $ne: true,
-      },
-    })
-  }
+    }],
+    ...collectionName === undefined ? [] : [{ 'collection.displayName': {
+      $regex: `.*${collectionName}.*`,
+      $options: 'i',
+    }}],
+  ]
 
   const stages: PipelineStage[] = [{
+    $match: {
+      'networkType': blockchain.network,
+      'networkId': parseInt(blockchain.networkId, 10),
+      ...lenderAddress === undefined ? {} : { lenderAddress },
+      ...includeRetired === true ? {} : { retired: { $ne: true } },
+    },
+  }, {
     $lookup: {
       from: 'nftCollections',
       localField: 'nftCollection',
@@ -148,11 +117,12 @@ function getPipelineStages({
     },
   }, {
     $unwind: '$collection',
-  }, {
+  },
+  ...collectionFilter.length === 0 ? [] : [{
     $match: {
-      $and: filter,
+      $and: collectionFilter,
     },
-  }, {
+  }], {
     $addFields: {
       name: {
         $toLower: {

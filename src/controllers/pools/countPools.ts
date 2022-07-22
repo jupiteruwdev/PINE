@@ -1,3 +1,4 @@
+import { PipelineStage } from 'mongoose'
 import { PoolModel } from '../../db'
 import { Blockchain } from '../../entities'
 
@@ -8,7 +9,15 @@ type Params = {
   includeRetired?: boolean
 }
 
-export default async function countPools({
+export default async function countPools(params: Params = {}): Promise<number> {
+  const aggregation = PoolModel.aggregate(getPipelineStages(params))
+  const res = await aggregation.count('count').exec()
+  const count = res[0]?.count ?? 0
+
+  return count
+}
+
+function getPipelineStages({
   blockchainFilter = {
     ethereum: Blockchain.Ethereum.Network.MAIN,
     solana: Blockchain.Solana.Network.MAINNET,
@@ -16,64 +25,38 @@ export default async function countPools({
   collectionAddress,
   collectionName,
   includeRetired = false,
-}: Params = {}): Promise<number> {
-  let count = 0
-  if (blockchainFilter.ethereum !== undefined) {
-    const blockchain = Blockchain.Ethereum(blockchainFilter.ethereum)
+}: Params): PipelineStage[] {
+  const blockchain = Blockchain.Ethereum(blockchainFilter.ethereum)
 
-    const filter: Record<string, any>[] = [
-      {
-        'collection.networkType': blockchain.network,
-      },
-      {
-        'collection.networkId': parseInt(blockchain.networkId, 10),
-      },
-    ]
+  const collectionFilter = [
+    ...collectionAddress === undefined ? [] : [{
+      'collection.address': collectionAddress,
+    }],
+    ...collectionName === undefined ? [] : [{ 'collection.displayName': {
+      $regex: `.*${collectionName}.*`,
+      $options: 'i',
+    }}],
+  ]
 
-    if (collectionAddress !== undefined) {
-      filter.push({
-        'collection.address': collectionAddress,
-      })
-    }
-
-    if (collectionName !== undefined) {
-      filter.push({
-        'collection.displayName': {
-          $regex: `.*${collectionName}.*`,
-          $options: 'i',
-        },
-      })
-    }
-
-    if (!includeRetired) {
-      filter.push({
-        retired: {
-          $ne: true,
-        },
-      })
-    }
-
-    const aggregation = PoolModel.aggregate([
-      {
-        $lookup: {
-          from: 'nftCollections',
-          localField: 'nftCollection',
-          foreignField: '_id',
-          as: 'collection',
-        },
-      },
-      {
-        $unwind: '$collection',
-      },
-      {
-        $match: {
-          $and: filter,
-        },
-      },
-    ])
-
-    const poolsCount = await aggregation.count('count').exec()
-    if (poolsCount?.length) { count = poolsCount[0].count }
-  }
-  return count
+  return [{
+    $match: {
+      'networkType': blockchain.network,
+      'networkId': parseInt(blockchain.networkId, 10),
+      ...includeRetired === true ? {} : { retired: { $ne: true } },
+    },
+  }, {
+    $lookup: {
+      from: 'nftCollections',
+      localField: 'nftCollection',
+      foreignField: '_id',
+      as: 'collection',
+    },
+  }, {
+    $unwind: '$collection',
+  },
+  ...collectionFilter.length === 0 ? [] : [{
+    $match: {
+      $and: collectionFilter,
+    },
+  }]]
 }
