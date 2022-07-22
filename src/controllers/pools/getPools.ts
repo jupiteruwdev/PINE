@@ -4,9 +4,20 @@ import { PipelineStage } from 'mongoose'
 import { PoolModel } from '../../db'
 import { mapPool } from '../../db/adapters'
 import { Blockchain, Pool, Value } from '../../entities'
-import { SortDirection, SortType } from '../../utils/sort'
 import getPoolCapacity from './getPoolCapacity'
 import getPoolUtilization from './getPoolUtilization'
+
+export enum PoolSortType {
+  NAME = 'name',
+  LTV = 'ltv',
+  INTEREST = 'interest',
+}
+
+export enum PoolSortDirection {
+  ASC = 'asc',
+  DESC = 'desc',
+}
+
 
 type Params<IncludeStats> = {
   blockchainFilter?: Blockchain.Filter
@@ -17,8 +28,10 @@ type Params<IncludeStats> = {
   includeStats?: IncludeStats,
   lenderAddress?: string
   offset?: number
-  sortBy?: SortType
-  sortDirection?: SortDirection
+  sort?: {
+    type: PoolSortType
+    direction: PoolSortDirection
+  }
 }
 
 async function getPools<IncludeStats extends boolean = false>(params?: Params<IncludeStats>): Promise<IncludeStats extends true ? Required<Pool>[] : Pool[]>
@@ -34,8 +47,7 @@ async function getPools<IncludeStats extends boolean = false>({
   offset,
   count,
   collectionName,
-  sortBy,
-  sortDirection,
+  sort,
 }: Params<IncludeStats> = {}): Promise<Pool[]> {
   const aggregation = PoolModel.aggregate(getPipelineStages({
     blockchainFilter,
@@ -43,8 +55,7 @@ async function getPools<IncludeStats extends boolean = false>({
     collectionName,
     includeRetired,
     lenderAddress,
-    sortBy,
-    sortDirection,
+    sort,
   }))
 
   const docs = _.isNil(offset) || _.isNil(count) ? await aggregation.exec() : await aggregation.skip(offset).limit(count).exec()
@@ -90,8 +101,7 @@ function getPipelineStages({
   collectionName,
   includeRetired = false,
   lenderAddress,
-  sortBy,
-  sortDirection = SortDirection.ASC,
+  sort,
 }: Params<never> = {}): PipelineStage[] {
   const blockchain = Blockchain.Ethereum(blockchainFilter.ethereum)
 
@@ -177,26 +187,26 @@ function getPipelineStages({
     },
   }]
 
-  switch (sortBy) {
-  case SortType.NAME:
+  switch (sort?.type) {
+  case PoolSortType.NAME:
     stages.push({
       $sort: {
-        name: sortDirection === SortDirection.ASC ? 1 : -1,
+        name: sort?.direction === PoolSortDirection.DESC ? -1 : 1,
       },
     })
     break
-  case SortType.INTEREST:
+  case PoolSortType.INTEREST:
     stages.push({
       $sort: {
-        lowestAPR: sortDirection === SortDirection.ASC ? 1 : -1,
+        lowestAPR: sort?.direction === PoolSortDirection.DESC ? -1 : 1,
         name: 1,
       },
     })
     break
-  case SortType.LTV:
+  case PoolSortType.LTV:
     stages.push({
       $sort: {
-        maxLTV: sortDirection === SortDirection.ASC ? 1 : -1,
+        maxLTV: sort?.direction === PoolSortDirection.DESC ? -1 : 1,
         name: 1,
       },
     })

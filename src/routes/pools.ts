@@ -1,8 +1,8 @@
 import { Router } from 'express'
 import { countPools, getPool, searchPoolGroups } from '../controllers'
+import { PoolSortDirection, PoolSortType } from '../controllers/pools/getPools'
 import { Pagination, Pool, PoolGroup, serializeEntityArray } from '../entities'
 import fault from '../utils/fault'
-import { SortDirection, SortType } from '../utils/sort'
 import tryOrUndefined from '../utils/tryOrUndefined'
 import { getBlockchain, getBlockchainFilter, getNumber, getString } from './utils/query'
 
@@ -29,10 +29,11 @@ router.get('/groups/search', async (req, res, next) => {
     const offset = tryOrUndefined(() => getNumber(req.query, 'offset'))
     const count = tryOrUndefined(() => getNumber(req.query, 'count'))
     const collectionName = tryOrUndefined(() => getString(req.query, 'query'))
-    const sortBy = tryOrUndefined(() => getString(req.query, 'sort')) as SortType
-    const sortDirection = tryOrUndefined(() => getString(req.query, 'direction')) as SortDirection
+    const sortType = tryOrUndefined(() => getString(req.query, 'sort') as PoolSortType)
+    const sortDirection = tryOrUndefined(() => getString(req.query, 'direction') as PoolSortDirection)
+    const sort = sortType !== undefined ? { type: sortType, direction: sortDirection ?? PoolSortDirection.ASC } : undefined
     const totalCount = await countPools({ collectionAddress, blockchainFilter, collectionName })
-    const poolGroups = await searchPoolGroups({ collectionAddress, blockchainFilter, count, offset, collectionName, sortBy, sortDirection })
+    const poolGroups = await searchPoolGroups({ collectionAddress, blockchainFilter, count, offset, collectionName, sort })
     const payload = serializeEntityArray(poolGroups, PoolGroup.codingResolver)
     const nextOffset = (offset ?? 0) + poolGroups.length
     const pagination = Pagination.serialize({ data: payload, totalCount, nextOffset: nextOffset === totalCount - 1 ? undefined : nextOffset })

@@ -6,7 +6,6 @@ import app from '../app'
 import { getPools } from '../controllers'
 import { findAllCollections } from '../db'
 import { Blockchain } from '../entities'
-import { SortDirection, SortType } from '../utils/sort'
 
 describe('routes/pools', () => {
   describe('GET /pools/:poolAddress', () => {
@@ -187,8 +186,8 @@ describe('routes/pools', () => {
       const { body: res } = await request(app).get('/pools/groups/search')
         .query({
           ethereum: 1,
-          sort: SortType.NAME,
-          direction: SortDirection.DESC,
+          sort: 'name',
+          direction: 'desc',
           offset: 0,
           count: 10,
         })

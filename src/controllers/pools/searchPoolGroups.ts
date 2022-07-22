@@ -1,10 +1,9 @@
 import _ from 'lodash'
 import { Blockchain, PoolGroup, Value } from '../../entities'
 import logger from '../../utils/logger'
-import { SortDirection, SortType } from '../../utils/sort'
 import { getEthValueUSD } from '../utils/ethereum'
 import { getEthCollectionFloorPriceBatch } from '../valuations'
-import getPools from './getPools'
+import getPools, { PoolSortDirection, PoolSortType } from './getPools'
 
 type Params = {
   blockchainFilter?: Blockchain.Filter
@@ -12,8 +11,10 @@ type Params = {
   offset?: number
   count?: number
   collectionName?: string
-  sortBy?: SortType
-  sortDirection?: SortDirection
+  sort?: {
+    type: PoolSortType
+    direction: PoolSortDirection
+  }
 }
 
 export default async function searchPoolGroups({
@@ -25,8 +26,7 @@ export default async function searchPoolGroups({
   offset,
   count,
   collectionName,
-  sortBy,
-  sortDirection,
+  sort,
 }: Params) {
   logger.info('Fetching pool groups...')
 
@@ -36,12 +36,11 @@ export default async function searchPoolGroups({
       getPools({
         blockchainFilter,
         collectionAddress,
-        offset,
-        count,
         collectionName,
-        sortBy,
-        sortDirection,
+        count,
         includeStats: true,
+        offset,
+        sort,
       }),
     ])
 
