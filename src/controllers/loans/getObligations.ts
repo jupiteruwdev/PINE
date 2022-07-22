@@ -9,10 +9,8 @@ type Params = {
 }
 
 export default async function getObligations({ blockchain, borrowerAddress }: Params) {
-  let nfts: CollateralizedNFT[]
   const { loans } = await getOnChainLoanByBorrower({ borrowerAddress }, { networkId: blockchain.networkId })
-
-  nfts = await Promise.all(loans.map(async (loan: any) => ({
+  const nfts: CollateralizedNFT[] = await Promise.all(loans.map(async (loan: any) => ({
     collection: await getCollection({
       address: loan.erc721,
       blockchain,
