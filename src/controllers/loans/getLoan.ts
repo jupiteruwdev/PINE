@@ -9,7 +9,7 @@ import fault from '../../utils/fault'
 import logger from '../../utils/logger'
 import { getNFTMetadata } from '../collaterals'
 import { getControlPlaneContract, getPoolContract } from '../contracts'
-import { getPools } from '../pools'
+import { searchPools } from '../pools'
 import { getEthBlockNumber } from '../utils/ethereum'
 import { getEthCollectionValuation } from '../valuations'
 
@@ -34,7 +34,7 @@ export default async function getLoan({ blockchain, collectionAddress, nftId, tx
 
       const [blockNumber, pools, valuation] = await Promise.all([
         getEthBlockNumber(blockchain.networkId),
-        getPools({ collectionAddress, blockchainFilter: { ethereum: blockchain.networkId }, includeRetired: true }),
+        searchPools({ collectionAddress, blockchainFilter: { ethereum: blockchain.networkId }, includeRetired: true }),
         getEthCollectionValuation({ blockchain: blockchain as Blockchain<'ethereum'>, collectionAddress: collection.address, tokenId: nftId }),
       ])
 

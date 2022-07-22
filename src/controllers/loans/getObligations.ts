@@ -4,7 +4,7 @@ import { Blockchain, CollateralizedNFT } from '../../entities'
 import { getOnChainLoanByBorrower } from '../../subgraph'
 import fault from '../../utils/fault'
 import { getNFTMetadata, getNFTsByOwner } from '../collaterals'
-import { getPools } from '../pools'
+import { searchPools } from '../pools'
 import getLoanEvent from './getLoanEvent'
 
 type Params = {
@@ -24,7 +24,7 @@ export default async function getObligations({ blockchain, borrowerAddress }: Pa
     })))
   }
   else {
-    const pools = await getPools({ blockchainFilter: { [blockchain.network]: blockchain.networkId }, includeRetired: true })
+    const pools = await searchPools({ blockchainFilter: { [blockchain.network]: blockchain.networkId }, includeRetired: true })
     const allCollaterals = _.flatten(await Promise.all(pools.map((pool, index) => getNFTsByOwner({ blockchain, ownerAddress: pool.address, populateMetadata: false, index }))))
     const allEvents = await Promise.all(allCollaterals.map(collateral => {
       if (!collateral.ownerAddress) throw fault('ERR_FETCH_LOAN_EVENTS')

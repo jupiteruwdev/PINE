@@ -5,7 +5,7 @@ import { Blockchain, Pool, Value } from '../../entities'
 import Loan from '../../entities/lib/Loan'
 import { getOnChainLoansByPools } from '../../subgraph'
 import fault from '../../utils/fault'
-import { getPools } from '../pools'
+import { searchPools } from '../pools'
 import getRequest from '../utils/getRequest'
 
 type Params = {
@@ -15,7 +15,7 @@ type Params = {
 
 export default async function getLoans({ collectionAddress, blockchain }: Params) {
   try {
-    const pools = await getPools({ collectionAddress })
+    const pools = await searchPools({ collectionAddress })
 
     const poolAddresses = _.reduce(pools, (prev: string[], cur: Pool) => {
       prev.push(cur.address)

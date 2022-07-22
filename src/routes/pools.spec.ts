@@ -3,14 +3,14 @@ import _ from 'lodash'
 import { describe, it } from 'mocha'
 import request from 'supertest'
 import app from '../app'
-import { getPools } from '../controllers'
+import { searchPools } from '../controllers'
 import { findAllCollections } from '../db'
 import { Blockchain } from '../entities'
 
 describe('routes/pools', () => {
   describe('GET /pools/:poolAddress', () => {
     it('can get all Ethereum loan pools on Mainnet', async () => {
-      const pools = await getPools({ blockchainFilter: { ethereum: Blockchain.Ethereum.Network.MAIN } })
+      const pools = await searchPools({ blockchainFilter: { ethereum: Blockchain.Ethereum.Network.MAIN } })
 
       await Promise.all(pools.map(async pool => {
         const { body: res } = await request(app).get(`/pools/${pool.address}`)
@@ -134,7 +134,7 @@ describe('routes/pools', () => {
     })
 
     it('can get all ethereum mainnet pools with pagination', async () => {
-      const pools = await getPools()
+      const pools = await searchPools()
       const totalCount = pools.filter(pool => pool.collection.blockchain.network === 'ethereum' && parseInt(pool.collection.blockchain.networkId, 10) === 1).length
       const { body: res } = await request(app).get('/pools/groups/search')
         .query({
@@ -181,7 +181,7 @@ describe('routes/pools', () => {
     })
 
     it('can get all ethereum mainnet pools with sorting & pagination', async () => {
-      const pools = await getPools()
+      const pools = await searchPools()
       const totalCount = pools.filter(pool => pool.collection.blockchain.network === 'ethereum' && parseInt(pool.collection.blockchain.networkId, 10) === 1).length
       const { body: res } = await request(app).get('/pools/groups/search')
         .query({

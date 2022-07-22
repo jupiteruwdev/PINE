@@ -3,7 +3,7 @@ import { Blockchain, PoolGroup, Value } from '../../entities'
 import logger from '../../utils/logger'
 import { getEthValueUSD } from '../utils/ethereum'
 import { getEthCollectionFloorPriceBatch } from '../valuations'
-import getPools, { PoolSortDirection, PoolSortType } from './getPools'
+import searchPools, { PoolSortDirection, PoolSortType } from './searchPools'
 
 type Params = {
   blockchainFilter?: Blockchain.Filter
@@ -36,7 +36,7 @@ export default async function searchPoolGroups({
   try {
     const [ethValueUSD, pools] = await Promise.all([
       getEthValueUSD(),
-      getPools({
+      searchPools({
         blockchainFilter,
         collectionAddress,
         collectionName,

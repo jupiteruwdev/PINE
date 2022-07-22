@@ -35,8 +35,8 @@ type Params<IncludeStats> = {
   }
 }
 
-async function getPools<IncludeStats extends boolean = false>(params?: Params<IncludeStats>): Promise<IncludeStats extends true ? Required<Pool>[] : Pool[]>
-async function getPools<IncludeStats extends boolean = false>({
+async function searchPools<IncludeStats extends boolean = false>(params?: Params<IncludeStats>): Promise<IncludeStats extends true ? Required<Pool>[] : Pool[]>
+async function searchPools<IncludeStats extends boolean = false>({
   blockchainFilter = {
     ethereum: Blockchain.Ethereum.Network.MAIN,
     solana: Blockchain.Solana.Network.MAINNET,
@@ -90,7 +90,7 @@ async function getPools<IncludeStats extends boolean = false>({
   return poolsWithStats
 }
 
-export default getPools
+export default searchPools
 
 function getPipelineStages({
   blockchainFilter = {
