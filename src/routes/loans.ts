@@ -1,7 +1,7 @@
 import { Router } from 'express'
 import _ from 'lodash'
-import { getLoan, getLoans, getObligations } from '../controllers'
-import { Blockchain, CollateralizedNFT, Loan, serializeEntityArray } from '../entities'
+import { getLoan, getLoansByBorrower, getLoansByCollection } from '../controllers'
+import { Blockchain, Loan, serializeEntityArray } from '../entities'
 import fault from '../utils/fault'
 import tryOrUndefined from '../utils/tryOrUndefined'
 import { getBlockchain, getString } from './utils/query'
@@ -29,15 +29,12 @@ router.get('/nft', async (req, res, next) => {
   }
 })
 
-/**
- * @todo This should return `Loan[]`
- */
 router.get('/borrower', async (req, res, next) => {
   try {
     const borrowerAddress = getString(req.query, 'borrowerAddress')
     const blockchain = getBlockchain(req.query)
-    const obligations = await getObligations({ blockchain, borrowerAddress })
-    const payload = serializeEntityArray(obligations, CollateralizedNFT.codingResolver)
+    const loans = await getLoansByBorrower({ blockchain, borrowerAddress })
+    const payload = serializeEntityArray(loans, Loan.codingResolver)
 
     res.status(200).json(payload)
   }
@@ -53,7 +50,7 @@ router.get('/collection', async (req, res, next) => {
   try {
     const collectionAddress = getString(req.query, 'collectionAddress')
     const blockchain = tryOrUndefined(() => getBlockchain(req.query)) ?? Blockchain.Ethereum()
-    const loans = await getLoans({ collectionAddress, blockchain })
+    const loans = await getLoansByCollection({ collectionAddress, blockchain })
     const payload = serializeEntityArray(loans, Loan.codingResolver)
     res.status(200).json(payload)
   }
