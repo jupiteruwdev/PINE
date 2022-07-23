@@ -2,6 +2,7 @@ import { expect } from 'chai'
 import request from 'supertest'
 import app from '../app'
 import appConf from '../app.conf'
+import { Loan } from '../entities'
 
 describe('routes /loans', () => {
   describe('GET /loans/nft', () => {
@@ -45,13 +46,13 @@ describe('routes /loans', () => {
 
       expect(res.length).to.equal(2)
 
+      const codingResolver = Loan.codingResolver
+
       for (const item of res) {
-        expect(item).to.have.property('collection')
-        expect(item).to.have.property('id')
-        expect(item).to.have.property('isSupported')
-        expect(item).to.have.property('imageUrl')
-        expect(item).to.have.property('name')
-        expect(item).to.have.property('loanExpireTimestamp')
+        for (const k of Object.keys(codingResolver)) {
+          if (codingResolver[k as keyof typeof codingResolver].options.optional === true) continue
+          expect(item).to.have.property(k)
+        }
       }
     })
   })
