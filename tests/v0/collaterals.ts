@@ -1,12 +1,12 @@
 import { expect } from 'chai'
 import request from 'supertest'
-import app from '../app'
-import appConf from '../app.conf'
+import app from '../../src/app'
+import appConf from '../../src/app.conf'
 
-describe('routes /collaterals', () => {
+describe('routes/v0/collaterals', () => {
   describe('GET /collaterals', () => {
-    it('can get all Ethereum mainnet collaterals', async () => {
-      const { body: res } = await request(app).get('/collaterals')
+    it('can get all ethereum mainnet collaterals', async () => {
+      const { body: res } = await request(app).get('/v0/collaterals')
         .query({
           ethereum: 1,
           owner: appConf.tests.walletAddress,
@@ -25,8 +25,8 @@ describe('routes /collaterals', () => {
       }
     })
 
-    it('can get all Ethereum rinkeby collaterals', async () => {
-      const { body: res } = await request(app).get('/collaterals')
+    it('can get all ethereum rinkeby collaterals', async () => {
+      const { body: res } = await request(app).get('/v0/collaterals')
         .query({
           ethereum: 4,
           owner: appConf.tests.walletAddress,

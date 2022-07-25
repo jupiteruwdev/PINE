@@ -1,10 +1,10 @@
 import { Router } from 'express'
-import { countPools, getPool, searchPoolGroups } from '../controllers'
-import { PoolSortDirection, PoolSortType } from '../controllers/pools/searchPools'
-import { Pagination, Pool, PoolGroup, serializeEntityArray } from '../entities'
-import fault from '../utils/fault'
-import tryOrUndefined from '../utils/tryOrUndefined'
-import { getBlockchain, getBlockchainFilter, getNumber, getString } from './utils/query'
+import { countPools, getPool, searchPoolGroups } from '../../controllers'
+import { PoolSortDirection, PoolSortType } from '../../controllers/pools/searchPools'
+import { Pagination, Pool, PoolGroup, serializeEntityArray } from '../../entities'
+import fault from '../../utils/fault'
+import tryOrUndefined from '../../utils/tryOrUndefined'
+import { getBlockchain, getBlockchainFilter, getNumber, getString } from '../utils/query'
 
 const router = Router()
 

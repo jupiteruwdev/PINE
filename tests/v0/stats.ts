@@ -1,12 +1,12 @@
 import { expect } from 'chai'
 import { describe, it } from 'mocha'
 import request from 'supertest'
-import app from '../app'
+import app from '../../src/app'
 
-describe('routes/stats', () => {
+describe('routes/v0/stats', () => {
   describe('GET /stats/global', () => {
     it('can get global stats', async () => {
-      const { body: res } = await request(app).get('/stats/global')
+      const { body: res } = await request(app).get('/v0/stats/global')
         .expect('Content-Type', /json/)
         .expect(200)
 
