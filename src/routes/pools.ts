@@ -1,5 +1,5 @@
 import { Router } from 'express'
-import { countPools, getPool, getPools, searchPoolGroups } from '../controllers'
+import { countPools, getPool, searchPoolGroups, searchPools } from '../controllers'
 import getUnPublishedPoolsByLenderAddress from '../controllers/pools/getUnPublishedPoolsByLenderAddress'
 import { PoolSortDirection, PoolSortType } from '../controllers/pools/searchPools'
 import { Pagination, Pool, PoolGroup, serializeEntityArray } from '../entities'
@@ -65,7 +65,7 @@ router.get('/lender/:lenderAddress', async (req, res, next) => {
   try {
     const blockchainFilter = getBlockchainFilter(req.query, true)
     const lenderAddress = getString(req.params, 'lenderAddress')
-    const publishedPools = await getPools({
+    const publishedPools = await searchPools({
       blockchainFilter,
       lenderAddress,
     })

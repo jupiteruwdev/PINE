@@ -1,9 +1,9 @@
 import _ from 'lodash'
-import { findOneCollection } from '../../db'
 import { Blockchain, Pool } from '../../entities'
 import getOnChainPoolsByLenderAddress from '../../subgraph/getOnChainPoolsByLenderAddress'
 import fault from '../../utils/fault'
 import logger from '../../utils/logger'
+import { getCollection } from '../collections'
 
 type Params = {
   blockchainFilter?: Blockchain.Filter
@@ -28,7 +28,7 @@ export default async function getUnPublishedPoolsByLenderAddress({
       const { pools: poolMainnet } = await getOnChainPoolsByLenderAddress({ lenderAddress }, { networkId: blockchain.networkId })
 
       poolsData = await Promise.all(_.map(poolMainnet, (async pool => {
-        const collection = await findOneCollection({ address: pool.collection, blockchain })
+        const collection = await getCollection({ address: pool.collection, blockchain })
         return {
           version: 2,
           collection,
@@ -47,7 +47,7 @@ export default async function getUnPublishedPoolsByLenderAddress({
     case Blockchain.Ethereum.Network.RINKEBY:
       const { pools: poolsRinkeby } = await getOnChainPoolsByLenderAddress({ lenderAddress }, { networkId: blockchain.networkId })
       poolsData = await Promise.all(_.map(poolsRinkeby, (async pool => {
-        const collection = await findOneCollection({ address: pool.collection, blockchain })
+        const collection = await getCollection({ address: pool.collection, blockchain })
         return {
           version: 2,
           collection,
