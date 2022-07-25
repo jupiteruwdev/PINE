@@ -26,13 +26,13 @@ export default async function getLoan({
   nftId,
   txSpeedBlocks = 0,
 }: Params): Promise<Loan | undefined> {
-  logger.info(`Fetching loan position for collection address <${collectionAddress}>, NFT ID <${nftId}>, txSpeedBlocks <${txSpeedBlocks}> and blockchain <${JSON.stringify(blockchain)}>...`)
+  logger.info(`Fetching loan for collection address <${collectionAddress}>, NFT ID <${nftId}>, txSpeedBlocks <${txSpeedBlocks}> and blockchain <${JSON.stringify(blockchain)}>...`)
 
   try {
     switch (blockchain.network) {
     case 'ethereum': {
       const loanId = `${collectionAddress.toLowerCase()}/${nftId}`
-      const { loan: loanValues } = await getOnChainLoanById({ loanId }, { networkId: blockchain.networkId })
+      const onChainLoan = await getOnChainLoanById({ loanId }, { networkId: blockchain.networkId })
 
       const collection = await getCollection({ address: collectionAddress, blockchain, nftId })
       if (!collection) throw fault('ERR_UNSUPPORTED_COLLECTION')
@@ -55,6 +55,7 @@ export default async function getLoan({
 
         // Early exit if loan is fully repaid.
         if (outstandingWithInterestWei.lte(new BigNumber(0))) return undefined
+
         const nft = {
           collection,
           id: nftId,
@@ -65,24 +66,24 @@ export default async function getLoan({
 
         return {
           routerAddress: pool.repayRouterAddress,
-          accuredInterest: Value.$WEI(loanValues.accuredInterestWei),
-          borrowed: Value.$WEI(loanValues.borrowedWei),
-          borrowerAddress: loanValues.borrower,
-          expiresAt: new Date(_.toNumber(loanValues.loanExpiretimestamp) * 1000),
-          interestBPSPerBlock: new BigNumber(loanValues.interestBPS1000000XBlock).dividedBy(new BigNumber(1_000_000)),
-          loanStartBlock: loanValues.loanStartBlock,
-          maxLTVBPS: new BigNumber(loanValues.maxLTVBPS),
+          accuredInterest: Value.$WEI(onChainLoan.accuredInterestWei),
+          borrowed: Value.$WEI(onChainLoan.borrowedWei),
+          borrowerAddress: onChainLoan.borrower,
+          expiresAt: new Date(_.toNumber(onChainLoan.loanExpiretimestamp) * 1000),
+          interestBPSPerBlock: new BigNumber(onChainLoan.interestBPS1000000XBlock).dividedBy(new BigNumber(1_000_000)),
+          loanStartBlock: onChainLoan.loanStartBlock,
+          maxLTVBPS: new BigNumber(onChainLoan.maxLTVBPS),
           nft,
           outstanding: Value.$WEI(outstandingWithInterestWei),
           poolAddress: pool.address,
-          repaidInterest: Value.$WEI(loanValues.repaidInterestWei),
-          returned: Value.$WEI(loanValues.returnedWei),
+          repaidInterest: Value.$WEI(onChainLoan.repaidInterestWei),
+          returned: Value.$WEI(onChainLoan.returnedWei),
           valuation,
           updatedAtBlock: blockNumber,
         }
       }, new Promise(resolve => resolve(undefined)))
 
-      logger.info(`Fetching loan position for collection address <${collectionAddress}>, NFT ID <${nftId}>, txSpeedBlocks <${txSpeedBlocks}> and blockchain <${JSON.stringify(blockchain)}>... OK:`, loan)
+      logger.info(`Fetching loan for collection address <${collectionAddress}>, NFT ID <${nftId}>, txSpeedBlocks <${txSpeedBlocks}> and blockchain <${JSON.stringify(blockchain)}>... OK:`, loan)
 
       return loan
     }
@@ -91,7 +92,7 @@ export default async function getLoan({
     }
   }
   catch (err) {
-    logger.error(`Fetching loan position for collection address <${collectionAddress}>, NFT ID <${nftId}>, txSpeedBlocks <${txSpeedBlocks}> and blockchain <${JSON.stringify(blockchain)}>... ERR:`, err)
+    logger.error(`Fetching loan for collection address <${collectionAddress}>, NFT ID <${nftId}>, txSpeedBlocks <${txSpeedBlocks}> and blockchain <${JSON.stringify(blockchain)}>... ERR:`, err)
     throw err
   }
 }
