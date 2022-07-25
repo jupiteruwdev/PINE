@@ -1,9 +1,9 @@
 import axios from 'axios'
 import _ from 'lodash'
 import appConf from '../../app.conf'
-import { findOneCollection } from '../../db'
 import { Blockchain, Valuation, Value } from '../../entities'
 import fault from '../../utils/fault'
+import { getCollection } from '../collections'
 
 type Params = {
   blockchainFilter: Blockchain.Filter
@@ -36,7 +36,7 @@ export default async function getEthCollectionFloorPriceBatch({ blockchainFilter
       const collectionAddress = _.get(floorPriceEntity, 'asset_info.contract_address')
       const collectionName = _.get(floorPriceEntity, 'asset_info.name')
       return {
-        collection: await findOneCollection({ blockchain: { network: 'ethereum', networkId: Blockchain.Ethereum.Network.MAIN }, address: collectionAddress }) ?? {
+        collection: await getCollection({ blockchain: { network: 'ethereum', networkId: Blockchain.Ethereum.Network.MAIN }, address: collectionAddress }) ?? {
           address: collectionAddress,
           name: collectionName,
           blockchain: { network: 'ethereum', networkId: Blockchain.Ethereum.Network.MAIN },
@@ -51,7 +51,7 @@ export default async function getEthCollectionFloorPriceBatch({ blockchainFilter
   case Blockchain.Ethereum.Network.RINKEBY:
     const floorPricesRinkeby = []
     for (const collectionAddress of collectionAddresses) {
-      const collection = await findOneCollection({ blockchain: { network: 'ethereum', networkId: Blockchain.Ethereum.Network.RINKEBY }, address: collectionAddress })
+      const collection = await getCollection({ blockchain: { network: 'ethereum', networkId: Blockchain.Ethereum.Network.RINKEBY }, address: collectionAddress })
       const id = _.values(collection?.vendorIds)?.[0]
 
       let floorPriceRinkeby

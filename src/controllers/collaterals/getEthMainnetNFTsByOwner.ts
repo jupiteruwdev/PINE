@@ -1,8 +1,8 @@
 import _ from 'lodash'
 import appConf from '../../app.conf'
-import { findOneCollection } from '../../db'
 import { Blockchain, Collection, NFT, NFTMetadata } from '../../entities'
 import fault from '../../utils/fault'
+import { getCollection } from '../collections'
 import getRequest from '../utils/getRequest'
 import normalizeNFTImageUri from '../utils/normalizeNFTImageUri'
 import getNFTMetadata from './getNFTMetadata'
@@ -63,7 +63,7 @@ export default async function getEthMainnetNFTsByOwner({
 
     if (collectionAddressFilter && collectionAddressFilter.toLowerCase() !== collectionAddress.toLowerCase()) return undefined
 
-    const collectionFromDB = await findOneCollection({ address: collectionAddress })
+    const collectionFromDB = await getCollection({ address: collectionAddress, nftId })
     const collection = collectionFromDB ?? {
       address: collectionAddress,
       blockchain: Blockchain.Ethereum(1),

@@ -2,12 +2,12 @@ import { expect } from 'chai'
 import _ from 'lodash'
 import request from 'supertest'
 import app from '../app'
-import { findAllCollections } from '../db'
+import { getCollections } from '../controllers/collections'
 
 describe('routes/valuations', () => {
   describe('GET /valuations', () => {
     it('can get floor prices for ethereum mainnet colletion addresses', async () => {
-      const collections = await findAllCollections()
+      const collections = await getCollections()
       const collectionAddresses = _.compact(_.flatMap(collections, data => data.blockchain.network === 'ethereum' && parseInt(data.blockchain.networkId, 10) === 1 ? data.address : undefined)).slice(0, 10)
 
       const { body: res } = await request(app).get('/valuations')
@@ -27,7 +27,7 @@ describe('routes/valuations', () => {
     })
 
     it('can get floor prices for ethereum rinkeby colletion addresses', async () => {
-      const collections = await findAllCollections({ blockchainFilter: {
+      const collections = await getCollections({ blockchainFilter: {
         'ethereum': '0x4',
       } })
       const collectionAddresses = _.compact(_.flatMap(collections, data => data.blockchain.network === 'ethereum' && parseInt(data.blockchain.networkId, 10) === 4 ? data.address : undefined))

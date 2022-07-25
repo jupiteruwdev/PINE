@@ -10,7 +10,7 @@
     "build": "npm run clean && tsc",
     "build:test": "npm run clean && tsc --project tsconfig.test.json",
     "test": "cross-env NODE_ENV=test mocha -c --timeout 100000 --extension spec.js --recursive --exit --ignore \"build/entities/**/*\" \"build/$npm_config_files\"",
-    "test:ts": "cross-env NODE_ENV=test mocha -r ts-node/register -c --diff --timeout 100000 --extension spec.ts --recursive --exit --ignore \"src/entities/**/*\" \"src/$npm_config_files\"",
+    "test:ts": "cross-env NODE_ENV=test mocha -r ts-node/register -b -c --diff --timeout 100000 --extension spec.ts --recursive --exit --ignore \"src/entities/**/*\" \"src/$npm_config_files\"",
     "lint": "eslint --ext .ts --ignore-pattern entities src",
     "lint:fix": "npm run lint -- --fix"
   },

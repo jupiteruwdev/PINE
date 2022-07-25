@@ -1,10 +1,9 @@
 import _ from 'lodash'
 import { Blockchain, PoolGroup, Value } from '../../entities'
 import logger from '../../utils/logger'
-import { SortDirection, SortType } from '../../utils/sort'
 import { getEthValueUSD } from '../utils/ethereum'
 import { getEthCollectionFloorPriceBatch } from '../valuations'
-import getPools from './getPools'
+import searchPools, { PoolSortDirection, PoolSortType } from './searchPools'
 
 type Params = {
   blockchainFilter?: Blockchain.Filter
@@ -12,8 +11,14 @@ type Params = {
   offset?: number
   count?: number
   collectionName?: string
-  sortBy?: SortType
-  sortDirection?: SortDirection
+  paginateBy?: {
+    count: number
+    offset: number
+  }
+  sortBy?: {
+    type: PoolSortType
+    direction: PoolSortDirection
+  }
 }
 
 export default async function searchPoolGroups({
@@ -22,25 +27,22 @@ export default async function searchPoolGroups({
     solana: Blockchain.Solana.Network.MAINNET,
   },
   collectionAddress,
-  offset,
-  count,
   collectionName,
+  paginateBy,
   sortBy,
-  sortDirection,
 }: Params) {
   logger.info('Fetching pool groups...')
 
   try {
     const [ethValueUSD, pools] = await Promise.all([
       getEthValueUSD(),
-      getPools({
+      searchPools({
         blockchainFilter,
         collectionAddress,
-        offset,
-        count,
         collectionName,
+        includeStats: true,
+        paginateBy,
         sortBy,
-        sortDirection,
       }),
     ])
 
