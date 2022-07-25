@@ -1,5 +1,6 @@
 import { Router } from 'express'
-import { getPool, searchPoolGroups } from '../controllers'
+import { getPool, getPools, searchPoolGroups } from '../controllers'
+import getUnPublishedPoolsByLenderAddress from '../controllers/pools/getUnPublishedPoolsByLenderAddress'
 import { countAllPools } from '../db'
 import { Pagination, Pool, PoolGroup, serializeEntityArray } from '../entities'
 import fault from '../utils/fault'
@@ -56,6 +57,26 @@ router.get('/:poolAddress', async (req, res, next) => {
   }
   catch (err) {
     next(fault('ERR_API_FETCH_POOL', undefined, err))
+  }
+})
+
+router.get('/lender/:lenderAddress', async (req, res, next) => {
+  try {
+    const blockchainFilter = getBlockchainFilter(req.query, true)
+    const lenderAddress = getString(req.params, 'lenderAddress')
+    const publishedPools = await getPools({
+      blockchainFilter,
+      lenderAddress,
+    })
+    const unpublishedPools = await getUnPublishedPoolsByLenderAddress({
+      blockchainFilter, lenderAddress,
+    })
+    const payload = serializeEntityArray([...publishedPools, ...unpublishedPools], Pool.codingResolver)
+
+    res.status(200).json(payload)
+  }
+  catch (err) {
+    next(fault('ERR_API_FETCH_POOL_BY_LENDER_ADDRESS', undefined, err))
   }
 })
 
