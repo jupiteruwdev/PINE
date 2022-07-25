@@ -2,7 +2,6 @@ import mongoose from 'mongoose'
 import appConf from '../app.conf'
 import logger from '../utils/logger'
 
-export * from './collections'
 export * from './models'
 
 export const initDb = () => {

@@ -1,9 +1,9 @@
 import BigNumber from 'bignumber.js'
-import { findOneCollection } from '../../db'
 import { Blockchain, LoanTerms, NFT, Value } from '../../entities'
 import fault from '../../utils/fault'
 import logger from '../../utils/logger'
 import { getNFTMetadata } from '../collaterals'
+import { getCollection } from '../collections'
 import { getPool } from '../pools'
 import { getEthCollectionValuation, signValuation } from '../valuations'
 
@@ -19,7 +19,7 @@ export default async function getLoanTerms({ blockchain, collectionAddress, nftI
   try {
     switch (blockchain.network) {
     case 'ethereum': {
-      const collection = await findOneCollection({ address: collectionAddress, blockchain, nftId })
+      const collection = await getCollection({ address: collectionAddress, blockchain, nftId })
       if (!collection) throw fault('ERR_UNSUPPORTED_COLLECTION')
 
       const pool = await getPool({ collectionAddress: collection.address, blockchain, includeStats: true })

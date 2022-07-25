@@ -4,7 +4,7 @@ import { describe, it } from 'mocha'
 import request from 'supertest'
 import app from '../app'
 import { searchPools } from '../controllers'
-import { findAllCollections } from '../db'
+import { getCollections } from '../controllers/collections'
 import { Blockchain } from '../entities'
 
 describe('routes/pools', () => {
@@ -29,7 +29,7 @@ describe('routes/pools', () => {
 
   describe('GET /pools/groups/collection', () => {
     it('can get all Ethereum Mainnet pools with collection address', async () => {
-      const collections = await findAllCollections()
+      const collections = await getCollections()
       const collectionAddresses = _.compact(_.flatMap(collections, data => data.blockchain.network === 'ethereum' && parseInt(data.blockchain.networkId, 10) === 1 ? data.address : undefined))
 
       await Promise.all(collectionAddresses.map(async collectionAddress => {
@@ -53,7 +53,7 @@ describe('routes/pools', () => {
     })
 
     it('can get all Ethereum Rinkeby pools with collection address', async () => {
-      const collections = await findAllCollections({
+      const collections = await getCollections({
         blockchainFilter: {
           'ethereum': '0x4',
         },
@@ -80,7 +80,7 @@ describe('routes/pools', () => {
     })
 
     it('can get all Solana Mainnet pools with collection address', async () => {
-      const collections = await findAllCollections()
+      const collections = await getCollections()
       const collectionAddresses = _.compact(_.flatMap(collections, data => data.blockchain.network === 'solana' && data.blockchain.networkId === 'mainnet' ? data.address : undefined))
 
       await Promise.all(collectionAddresses.map(async collectionAddress => {
@@ -106,7 +106,7 @@ describe('routes/pools', () => {
 
   describe('GET /pools/groups/search', () => {
     it('can get all Ethereum Mainnet pools with collection address & pagination', async () => {
-      const collections = await findAllCollections()
+      const collections = await getCollections()
       const collectionAddresses = _.compact(_.flatMap(collections, data => data.blockchain.network === 'ethereum' && parseInt(data.blockchain.networkId, 10) === 1 ? data.address : undefined))
 
       await Promise.all(collectionAddresses.map(async collectionAddress => {

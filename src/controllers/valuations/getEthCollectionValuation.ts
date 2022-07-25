@@ -1,10 +1,10 @@
 import BigNumber from 'bignumber.js'
 import _ from 'lodash'
 import appConf from '../../app.conf'
-import { findOneCollection } from '../../db'
 import { Blockchain, Valuation, Value } from '../../entities'
 import fault from '../../utils/fault'
 import logger from '../../utils/logger'
+import { getCollection } from '../collections'
 import getRequest from '../utils/getRequest'
 import postRequest from '../utils/postRequest'
 import getEthCollectionFloorPrice from './getEthCollectionFloorPrice'
@@ -18,7 +18,7 @@ type Params = {
 export default async function getEthCollectionValuation({ blockchain, collectionAddress, tokenId }: Params): Promise<Valuation> {
   logger.info(`Fetching valuation for Ethereum collection <${collectionAddress}>...`)
 
-  const collection = await findOneCollection({ blockchain, address: collectionAddress, nftId: tokenId })
+  const collection = await getCollection({ blockchain, address: collectionAddress, nftId: tokenId })
   if (!collection) throw fault('ERR_UNSUPPORTED_COLLECTION')
 
   const venue = _.keys(collection.vendorIds)?.[0]

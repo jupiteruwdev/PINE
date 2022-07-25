@@ -1,7 +1,7 @@
 import _ from 'lodash'
 import appConf from '../../app.conf'
-import { findAllCollections, findOneCollection } from '../../db'
 import { Blockchain, Collection, NFT } from '../../entities'
+import { getCollection, getCollections } from '../collections'
 import getRequest from '../utils/getRequest'
 import normalizeNFTImageUri from '../utils/normalizeNFTImageUri'
 
@@ -37,7 +37,7 @@ type Params = {
  */
 export default async function getEthTestnetNFTsByOwner({ blockchain, collectionOrCollectionAddress, ownerAddress, populateMetadata }: Params): Promise<NFT[]> {
   if (collectionOrCollectionAddress) {
-    const collection = _.isString(collectionOrCollectionAddress) ? await findOneCollection({ address: collectionOrCollectionAddress, blockchain }) : collectionOrCollectionAddress
+    const collection = _.isString(collectionOrCollectionAddress) ? await getCollection({ address: collectionOrCollectionAddress, blockchain }) : collectionOrCollectionAddress
     if (!collection) return []
     const alchemyUrl = _.get(appConf.alchemyAPIUrl, blockchain.networkId)
     const nftsRes = await getRequest(`${alchemyUrl}${appConf.alchemyAPIKey}/getNFTs?owner=${ownerAddress}&contractAddresses[]=${collection.address}`)
@@ -58,7 +58,7 @@ export default async function getEthTestnetNFTsByOwner({ blockchain, collectionO
     return nfts
   }
   else {
-    const collections = await findAllCollections({ blockchainFilter: { [blockchain.network]: blockchain.networkId } })
+    const collections = await getCollections({ blockchainFilter: { [blockchain.network]: blockchain.networkId } })
     const nftsPerCollection = await Promise.all(collections.map(collection => getEthTestnetNFTsByOwner({ blockchain, ownerAddress, collectionOrCollectionAddress: collection, populateMetadata })))
 
     return _.flatten(nftsPerCollection)

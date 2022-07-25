@@ -1,14 +1,14 @@
 import { assert } from 'chai'
 import _ from 'lodash'
 import { describe, it } from 'mocha'
-import { findAllCollections } from '../../db'
 import { Blockchain, Valuation } from '../../entities'
+import { getCollections } from '../collections'
 import getEthCollectionValuation from './getEthCollectionValuation'
 
 describe('controllers/valuations/getEthCollectionValuation', () => {
   it('can get the valuation of a random supported Ethereum collection on Mainnet', async () => {
     const blockchain = Blockchain.Ethereum(Blockchain.Ethereum.Network.MAIN)
-    const collections = await findAllCollections({ blockchainFilter: { [blockchain.network]: blockchain.networkId } })
+    const collections = await getCollections({ blockchainFilter: { [blockchain.network]: blockchain.networkId } })
     const collection = _.sample(collections)
     const tokenId = '1000'
 
@@ -39,7 +39,7 @@ describe('controllers/valuations/getEthCollectionValuation', () => {
 
   it('can get the valuation of a random supported Ethereum collection on Rinkeby Testnet', async () => {
     const blockchain = Blockchain.Ethereum(Blockchain.Ethereum.Network.RINKEBY)
-    const collections = await findAllCollections({ blockchainFilter: { [blockchain.network]: blockchain.networkId } })
+    const collections = await getCollections({ blockchainFilter: { [blockchain.network]: blockchain.networkId } })
     const collection = _.sample(collections)
     const tokenId = '1000'
 
@@ -50,7 +50,7 @@ describe('controllers/valuations/getEthCollectionValuation', () => {
 
   it('can get the valuation of all supported Ethereum collections on Rinkeby Testnet', async () => {
     const blockchain = Blockchain.Ethereum(Blockchain.Ethereum.Network.RINKEBY)
-    const collections = await findAllCollections({ blockchainFilter: { [blockchain.network]: blockchain.networkId } })
+    const collections = await getCollections({ blockchainFilter: { [blockchain.network]: blockchain.networkId } })
     const tokenId = '1000'
     const valuations: Valuation[] = await Promise.all(collections.map(collection => getEthCollectionValuation({ blockchain, collectionAddress: collection.address, tokenId })))
 

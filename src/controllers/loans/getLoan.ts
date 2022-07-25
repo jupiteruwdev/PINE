@@ -1,13 +1,13 @@
 import BigNumber from 'bignumber.js'
 import _ from 'lodash'
 import appConf from '../../app.conf'
-import { findOneCollection } from '../../db'
 import { Blockchain, Value } from '../../entities'
 import Loan from '../../entities/lib/Loan'
 import { getOnChainLoanById } from '../../subgraph'
 import fault from '../../utils/fault'
 import logger from '../../utils/logger'
 import { getNFTMetadata } from '../collaterals'
+import { getCollection } from '../collections'
 import { getControlPlaneContract, getPoolContract } from '../contracts'
 import { searchPools } from '../pools'
 import { getEthBlockNumber } from '../utils/ethereum'
@@ -17,10 +17,15 @@ type Params = {
   blockchain: Blockchain
   collectionAddress: string
   nftId: string
-  txSpeedBlocks: number
+  txSpeedBlocks?: number
 }
 
-export default async function getLoan({ blockchain, collectionAddress, nftId, txSpeedBlocks }: Params): Promise<Loan | undefined> {
+export default async function getLoan({
+  blockchain,
+  collectionAddress,
+  nftId,
+  txSpeedBlocks = 0,
+}: Params): Promise<Loan | undefined> {
   logger.info(`Fetching loan position for collection address <${collectionAddress}>, NFT ID <${nftId}>, txSpeedBlocks <${txSpeedBlocks}> and blockchain <${JSON.stringify(blockchain)}>...`)
 
   try {
@@ -29,7 +34,7 @@ export default async function getLoan({ blockchain, collectionAddress, nftId, tx
       const loanId = `${collectionAddress.toLowerCase()}/${nftId}`
       const { loan: loanValues } = await getOnChainLoanById({ loanId }, { networkId: blockchain.networkId })
 
-      const collection = await findOneCollection({ address: collectionAddress, blockchain, nftId })
+      const collection = await getCollection({ address: collectionAddress, blockchain, nftId })
       if (!collection) throw fault('ERR_UNSUPPORTED_COLLECTION')
 
       const [blockNumber, pools, valuation] = await Promise.all([
