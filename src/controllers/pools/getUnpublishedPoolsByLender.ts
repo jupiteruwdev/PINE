@@ -1,6 +1,6 @@
 import _ from 'lodash'
 import { Blockchain, Pool } from '../../entities'
-import getOnChainPoolsByLenderAddress from '../../subgraph/getOnChainPoolsByLenderAddress'
+import getOnChainPoolsByLenderAddress from '../../subgraph/getOnChainPoolsByLender'
 import fault from '../../utils/fault'
 import logger from '../../utils/logger'
 import { getCollection } from '../collections'
@@ -10,7 +10,33 @@ type Params = {
   lenderAddress: string
 }
 
-export default async function getUnPublishedPoolsByLenderAddress({
+type MapPoolParams = {
+  blockchain: Blockchain
+  pools: any[]
+}
+
+async function mapPool({ blockchain, pools }: MapPoolParams): Promise<Pool[]> {
+  const poolsData = await Promise.all(_.map(pools, (async pool => {
+    const collection = await getCollection({ address: pool.collection, blockchain })
+    return Pool.factory({
+      version: 2,
+      collection,
+      address: pool.id,
+      blockchain,
+      loanOptions: [],
+      lenderAddress: pool.lenderAddress,
+      routerAddress: '',
+      repayRouterAddress: '',
+      rolloverAddress: '',
+      ethLimit: 0,
+      published: false,
+    })
+  })))
+
+  return poolsData
+}
+
+export default async function getUnpublishedPoolsByLender({
   blockchainFilter = {
     ethereum: Blockchain.Ethereum.Network.MAIN,
     solana: Blockchain.Solana.Network.MAINNET,
@@ -26,42 +52,11 @@ export default async function getUnPublishedPoolsByLenderAddress({
     switch (blockchain.networkId) {
     case Blockchain.Ethereum.Network.MAIN:
       const { pools: poolMainnet } = await getOnChainPoolsByLenderAddress({ lenderAddress }, { networkId: blockchain.networkId })
-
-      poolsData = await Promise.all(_.map(poolMainnet, (async pool => {
-        const collection = await getCollection({ address: pool.collection, blockchain })
-        return {
-          version: 2,
-          collection,
-          address: pool.id,
-          blockchain,
-          loanOptions: [],
-          lenderAddress: pool.lenderAddress,
-          routerAddress: '',
-          repayRouterAddress: '',
-          rolloverAddress: '',
-          ethLimit: 0,
-          published: false,
-        } as Pool
-      })))
+      poolsData = await mapPool({ blockchain, pools: poolMainnet })
       break
     case Blockchain.Ethereum.Network.RINKEBY:
       const { pools: poolsRinkeby } = await getOnChainPoolsByLenderAddress({ lenderAddress }, { networkId: blockchain.networkId })
-      poolsData = await Promise.all(_.map(poolsRinkeby, (async pool => {
-        const collection = await getCollection({ address: pool.collection, blockchain })
-        return {
-          version: 2,
-          collection,
-          address: pool.id,
-          blockchain,
-          loanOptions: [],
-          lenderAddress: pool.lenderAddress,
-          routerAddress: '',
-          repayRouterAddress: '',
-          rolloverAddress: '',
-          ethLimit: 0,
-          published: false,
-        } as Pool
-      })))
+      poolsData = await mapPool({ blockchain, pools: poolsRinkeby })
     }
   }
   else {

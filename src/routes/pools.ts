@@ -1,6 +1,6 @@
 import { Router } from 'express'
 import { countPools, getPool, searchPoolGroups, searchPools } from '../controllers'
-import getUnPublishedPoolsByLenderAddress from '../controllers/pools/getUnPublishedPoolsByLenderAddress'
+import getUnpublishedPoolsByLender from '../controllers/pools/getUnpublishedPoolsByLender'
 import { PoolSortDirection, PoolSortType } from '../controllers/pools/searchPools'
 import { Pagination, Pool, PoolGroup, serializeEntityArray } from '../entities'
 import fault from '../utils/fault'
@@ -69,7 +69,7 @@ router.get('/lender/:lenderAddress', async (req, res, next) => {
       blockchainFilter,
       lenderAddress,
     })
-    const unpublishedPools = await getUnPublishedPoolsByLenderAddress({
+    const unpublishedPools = await getUnpublishedPoolsByLender({
       blockchainFilter, lenderAddress,
     })
     const payload = serializeEntityArray([...publishedPools, ...unpublishedPools], Pool.codingResolver)

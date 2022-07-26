@@ -6,7 +6,7 @@ type Params = {
   lenderAddress: string
 }
 
-export default async function getOnChainPoolsByLenderAddress({ lenderAddress }: Params, options: Options) {
+export default async function getOnChainPoolsByLender({ lenderAddress }: Params, options: Options) {
   const request = getRequest(gql`
     query pools($lenderAddress: String!) {
       pools(where: {lenderAddress: $lenderAddress}) {
@@ -26,6 +26,6 @@ export default async function getOnChainPoolsByLenderAddress({ lenderAddress }: 
 
   return request({ lenderAddress: lenderAddress.toLowerCase() }, options)
     .catch(err => {
-      throw fault('ER_GQL_BAD_REQUEST', undefined, err)
+      throw fault('ERR_GQL_BAD_REQUEST', undefined, err)
     })
 }
