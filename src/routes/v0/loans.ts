@@ -3,7 +3,6 @@ import _ from 'lodash'
 import { getLoan, getLoansByBorrower, getLoansByCollection } from '../../controllers'
 import { Blockchain, Loan, serializeEntityArray } from '../../entities'
 import fault from '../../utils/fault'
-import tryOrUndefined from '../../utils/tryOrUndefined'
 import { getBlockchain, getString } from '../utils/query'
 
 const router = Router()
@@ -43,13 +42,10 @@ router.get('/borrower', async (req, res, next) => {
   }
 })
 
-/**
- * @todo This should return `Loan[]`
- */
 router.get('/collection', async (req, res, next) => {
   try {
     const collectionAddress = getString(req.query, 'collectionAddress')
-    const blockchain = tryOrUndefined(() => getBlockchain(req.query)) ?? Blockchain.Ethereum()
+    const blockchain = getBlockchain(req.query, { optional: true }) ?? Blockchain.Ethereum()
     const loans = await getLoansByCollection({ collectionAddress, blockchain })
     const payload = serializeEntityArray(loans, Loan.codingResolver)
     res.status(200).json(payload)
