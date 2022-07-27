@@ -12,7 +12,7 @@ export default async function getGlobalStats({
   blockchainFilter = {
     ethereum: Blockchain.Ethereum.Network.MAIN,
     solana: Blockchain.Solana.Network.MAINNET,
-  }
+  },
 }: Params = {}): Promise<GlobalStats> {
   try {
     logger.info(`Fetching global stats for blockchain filter <${JSON.stringify(blockchainFilter)}>...`)

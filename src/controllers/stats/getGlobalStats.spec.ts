@@ -1,5 +1,4 @@
 import { expect } from 'chai'
-import { before, describe, it } from 'mocha'
 import { initDb } from '../../db'
 import { GlobalStats } from '../../entities'
 import getGlobalStats from './getGlobalStats'
