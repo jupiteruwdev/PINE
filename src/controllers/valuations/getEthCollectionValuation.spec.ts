@@ -1,11 +1,16 @@
 import { assert } from 'chai'
 import _ from 'lodash'
 import { describe, it } from 'mocha'
+import { initDb } from '../../db'
 import { Blockchain, Valuation } from '../../entities'
 import { getCollections } from '../collections'
 import getEthCollectionValuation from './getEthCollectionValuation'
 
 describe('controllers/valuations/getEthCollectionValuation', () => {
+  before('connect to db', async () => {
+    await initDb()
+  })
+
   it('can get the valuation of a random supported Ethereum collection on Mainnet', async () => {
     const blockchain = Blockchain.Ethereum(Blockchain.Ethereum.Network.MAIN)
     const collections = await getCollections({ blockchainFilter: { [blockchain.network]: blockchain.networkId } })

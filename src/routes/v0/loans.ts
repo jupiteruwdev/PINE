@@ -1,10 +1,10 @@
 import { Router } from 'express'
 import _ from 'lodash'
-import { getLoan, getLoansByBorrower, getLoansByCollection } from '../controllers'
-import { Blockchain, Loan, serializeEntityArray } from '../entities'
-import fault from '../utils/fault'
-import tryOrUndefined from '../utils/tryOrUndefined'
-import { getBlockchain, getString } from './utils/query'
+import { getLoan, getLoansByBorrower, getLoansByCollection } from '../../controllers'
+import { Blockchain, Loan, serializeEntityArray } from '../../entities'
+import fault from '../../utils/fault'
+import tryOrUndefined from '../../utils/tryOrUndefined'
+import { getBlockchain, getString } from '../utils/query'
 
 const router = Router()
 

@@ -1,11 +1,11 @@
 import { expect } from 'chai'
 import request from 'supertest'
-import app from '../app'
+import app from '../../src/app'
 
-describe('routes /terms', () => {
+describe('routes/v0/terms', () => {
   describe('GET /terms/borrow', () => {
-    it('Can get borrow term with collection address and nft id for ethereum mainnet', async () => {
-      const { body: res } = await request(app).get('/terms/borrow')
+    it('can get borrow term with collection address and nft id for ethereum mainnet', async () => {
+      const { body: res } = await request(app).get('/v0/terms/borrow')
         .query({
           collectionAddress: '0x3acce66cd37518a6d77d9ea3039e00b3a2955460',
           nftId: 6739,
@@ -27,8 +27,8 @@ describe('routes /terms', () => {
   })
 
   describe('GET /terms/rollover', () => {
-    it('Can get rollover term with collection address and nft id for ethereum mainnet', async () => {
-      const { body: res } = await request(app).get('/terms/rollover')
+    it('can get rollover term with collection address and nft id for ethereum mainnet', async () => {
+      const { body: res } = await request(app).get('/v0/terms/rollover')
         .query({
           collectionAddress: '0x3acce66cd37518a6d77d9ea3039e00b3a2955460',
           nftId: 6739,

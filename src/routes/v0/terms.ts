@@ -1,8 +1,8 @@
 import { Router } from 'express'
-import { getLoanTerms, getPNPLTermsByUrl, getRolloverTerms } from '../controllers'
-import { LoanTerms, PNPLTerms, RolloverTerms } from '../entities'
-import fault from '../utils/fault'
-import { getBlockchain, getString } from './utils/query'
+import { getLoanTerms, getPNPLTermsByUrl, getRolloverTerms } from '../../controllers'
+import { LoanTerms, PNPLTerms, RolloverTerms } from '../../entities'
+import fault from '../../utils/fault'
+import { getBlockchain, getString } from '../utils/query'
 
 const router = Router()
 

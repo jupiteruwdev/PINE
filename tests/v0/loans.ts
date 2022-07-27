@@ -1,13 +1,13 @@
 import { expect } from 'chai'
 import request from 'supertest'
-import app from '../app'
-import appConf from '../app.conf'
-import { Loan } from '../entities'
+import app from '../../src/app'
+import appConf from '../../src/app.conf'
+import { Loan } from '../../src/entities'
 
-describe('routes /loans', () => {
+describe('routes/v0/loans', () => {
   describe('GET /loans/nft', () => {
-    it('Get loan by collection address and nft id for ethereum mainnet', async () => {
-      const { body: res } = await request(app).get('/loans/nft')
+    it('can get loan by collection address and nft id for ethereum mainnet', async () => {
+      const { body: res } = await request(app).get('/v0/loans/nft')
         .query({
           collectionAddress: '0x3acce66cd37518a6d77d9ea3039e00b3a2955460',
           nftId: 6739,
@@ -35,8 +35,8 @@ describe('routes /loans', () => {
   })
 
   describe('GET /loans/borrower', () => {
-    it('Get NFT loan with borrower for ethereum mainnet', async () => {
-      const { body: res } = await request(app).get('/loans/borrower')
+    it('can get nft loan with borrower for ethereum mainnet', async () => {
+      const { body: res } = await request(app).get('/v0/loans/borrower')
         .query({
           borrowerAddress: appConf.tests.walletAddress,
           ethereum: 1,
@@ -58,8 +58,8 @@ describe('routes /loans', () => {
   })
 
   describe('GET /loans/collection', () => {
-    it('Get NFT loan with collection for ethereum mainnet', async () => {
-      const { body: res } = await request(app).get('/loans/collection')
+    it('can get nft loan with collection for ethereum mainnet', async () => {
+      const { body: res } = await request(app).get('/v0/loans/collection')
         .query({
           collectionAddress: '0x3acce66cd37518a6d77d9ea3039e00b3a2955460',
           ethereum: 1,

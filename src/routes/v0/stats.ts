@@ -1,8 +1,8 @@
 import { Router } from 'express'
-import { getGlobalStats } from '../controllers'
-import { GlobalStats } from '../entities'
-import fault from '../utils/fault'
-import { getBlockchainFilter } from './utils/query'
+import { getGlobalStats } from '../../controllers'
+import { GlobalStats } from '../../entities'
+import fault from '../../utils/fault'
+import { getBlockchainFilter } from '../utils/query'
 
 const router = Router()
 
