@@ -51,6 +51,7 @@ export default {
   },
   mongoUri: process.env.MONGO_URI ?? '',
   tests: {
+    verboseLogging: process.env.TESTS_VERBOSE_LOGGING === 'true' ? true : false,
     walletAddress: process.env.TESTS_WALLET_ADDRESS ?? '',
   },
 }
