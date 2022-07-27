@@ -12,7 +12,7 @@ const web3s: Record<string, Web3 | undefined> = {
   [Blockchain.Ethereum.Network.KOVAN]: undefined,
 }
 
-export function getEthWeb3(networkId: string = Blockchain.Ethereum.Network.MAIN) {
+export default function getEthWeb3(networkId: string = Blockchain.Ethereum.Network.MAIN) {
   if (web3s[networkId] !== undefined) return web3s[networkId] as Web3
 
   const rpc = _.get(appConf.ethRPC, networkId)
@@ -23,11 +23,4 @@ export function getEthWeb3(networkId: string = Blockchain.Ethereum.Network.MAIN)
   web3s[networkId] = web3
 
   return web3
-}
-
-export async function getEthBlockNumber(networkId: string = Blockchain.Ethereum.Network.MAIN): Promise<number> {
-  const web3 = getEthWeb3(networkId)
-  const blockNumber = await web3.eth.getBlockNumber()
-
-  return blockNumber
 }
