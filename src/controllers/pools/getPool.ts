@@ -63,10 +63,16 @@ function getPipelineStages({
   ]
 
   const stages: PipelineStage[] = [{
+    $addFields: {
+      '_address': {
+        $toLower: '$address',
+      },
+    },
+  }, {
     $match: {
       'networkType': blockchain.network,
       'networkId': parseInt(blockchain.networkId, 10),
-      ...address === undefined ? {} : { address },
+      ...address === undefined ? {} : { _address: address.toLowerCase() },
       ...lenderAddress === undefined ? {} : { lenderAddress },
       ...includeRetired === true ? {} : { retired: { $ne: true } },
     },

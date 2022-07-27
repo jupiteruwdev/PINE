@@ -55,7 +55,7 @@ function getPipelineStages({
     $match: {
       'networkType': blockchain.network,
       'networkId': parseInt(blockchain.networkId, 10),
-      ...address === undefined ? {} : { _address: address.toLocaleLowerCase() },
+      ...address === undefined ? {} : { _address: address.toLowerCase() },
     },
   }]
 }
