@@ -4,7 +4,7 @@
 
 import { expect } from 'chai'
 import { initDb } from '../../db'
-import { Pool } from '../../entities'
+import { Blockchain, Pool } from '../../entities'
 import searchPools, { PoolSortDirection, PoolSortType } from './searchPools'
 
 describe('controllers/pools/searchPools', () => {
@@ -14,6 +14,18 @@ describe('controllers/pools/searchPools', () => {
 
   it('can search all pools with default params', async () => {
     const pools = await searchPools()
+
+    assertPoolArray(pools)
+  })
+
+  it('can search all pools on Ethereum Mainnet', async () => {
+    const pools = await searchPools({ blockchainFilter: { ethereum: Blockchain.Ethereum.Network.MAIN } })
+
+    assertPoolArray(pools)
+  })
+
+  it('can search all pools on Ethereum Rinkeby', async () => {
+    const pools = await searchPools({ blockchainFilter: { ethereum: Blockchain.Ethereum.Network.RINKEBY } })
 
     assertPoolArray(pools)
   })

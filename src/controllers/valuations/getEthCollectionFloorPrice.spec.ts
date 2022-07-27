@@ -19,7 +19,7 @@ describe('controllers/valuations/getEthCollectionFloorPrice', () => {
     assert.isNotEmpty(floorPrices)
   })
 
-  it('can get the floor price of all supported Ethereum collections on Rinkeby Testnet', async () => {
+  it('can get the floor price of all supported Ethereum collections on Rinkeby', async () => {
     const blockchain = Blockchain.Ethereum(Blockchain.Ethereum.Network.RINKEBY)
     const collections = await getCollections({ blockchainFilter: { [blockchain.network]: blockchain.networkId } })
     const floorPrices: Value<'ETH'>[] = await Promise.all(collections.map(collection => getEthCollectionFloorPrice({ blockchain, collectionAddress: collection.address })))
