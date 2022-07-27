@@ -1,10 +1,8 @@
-import BigNumber from 'bignumber.js'
 import _ from 'lodash'
 import Web3 from 'web3'
 import appConf from '../../app.conf'
-import { Blockchain, Value } from '../../entities'
+import { Blockchain } from '../../entities'
 import fault from '../../utils/fault'
-import getRequest from './getRequest'
 
 const web3s: Record<string, Web3 | undefined> = {
   [Blockchain.Ethereum.Network.MAIN]: undefined,
@@ -25,26 +23,6 @@ export function getEthWeb3(networkId: string = Blockchain.Ethereum.Network.MAIN)
   web3s[networkId] = web3
 
   return web3
-}
-
-export async function getEthValueUSD(amountEth: number | string | BigNumber = 1) {
-  const data = await getRequest('https://api.binance.com/api/v3/ticker/price?symbol=ETHUSDT')
-    .catch(err => { throw fault('ERR_ETH_FETCH_USD_PRICE', undefined, err) })
-
-  const amount = new BigNumber(amountEth)
-  const price = new BigNumber(_.get(data, 'price'))
-
-  return Value.$USD(amount.times(price))
-}
-
-export async function getEthValueUSD24Hr(amountEth: number | string | BigNumber = 1) {
-  const data = await getRequest('https://api.binance.com/api/v3/ticker/24hr?symbol=ETHUSDT')
-    .catch(err => { throw fault('ERR_ETH_FETCH_USD_24HR_PRICE', undefined, err) })
-
-  const amount = new BigNumber(amountEth)
-  const price = new BigNumber(_.get(data, 'prevClosePrice'))
-
-  return Value.$USD(amount.times(price))
 }
 
 export async function getEthBlockNumber(networkId: string = Blockchain.Ethereum.Network.MAIN): Promise<number> {
