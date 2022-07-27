@@ -1,7 +1,7 @@
 import _ from 'lodash'
 import { Blockchain, PoolGroup, Value } from '../../entities'
 import logger from '../../utils/logger'
-import { getEthValueUSD } from '../utils/ethereum'
+import getEthValueUSD from '../utils/getEthValueUSD'
 import { getEthCollectionFloorPriceBatch } from '../valuations'
 import searchPools, { PoolSortDirection, PoolSortType } from './searchPools'
 
