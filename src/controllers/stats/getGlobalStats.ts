@@ -2,13 +2,18 @@ import BigNumber from 'bignumber.js'
 import { Blockchain, GlobalStats, Value } from '../../entities'
 import logger from '../../utils/logger'
 import { getPoolHistoricalLent, searchPools } from '../pools'
-import { getEthValueUSD } from '../utils/ethereum'
+import getEthValueUSD from '../utils/getEthValueUSD'
 
 type Params = {
   blockchainFilter?: Blockchain.Filter
 }
 
-export default async function getGlobalStats({ blockchainFilter = { ethereum: Blockchain.Ethereum.Network.MAIN, solana: Blockchain.Solana.Network.MAINNET } }: Params = {}): Promise<GlobalStats> {
+export default async function getGlobalStats({
+  blockchainFilter = {
+    ethereum: Blockchain.Ethereum.Network.MAIN,
+    solana: Blockchain.Solana.Network.MAINNET,
+  },
+}: Params = {}): Promise<GlobalStats> {
   try {
     logger.info(`Fetching global stats for blockchain filter <${JSON.stringify(blockchainFilter)}>...`)
 
@@ -41,7 +46,6 @@ export default async function getGlobalStats({ blockchainFilter = { ethereum: Bl
   }
   catch (err) {
     logger.error(`Fetching global stats for blockchain filter <${JSON.stringify(blockchainFilter)}>... ERR:`, err)
-
     throw err
   }
 }

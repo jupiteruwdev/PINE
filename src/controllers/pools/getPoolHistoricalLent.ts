@@ -2,7 +2,7 @@ import BigNumber from 'bignumber.js'
 import { Blockchain, Value } from '../../entities'
 import fault from '../../utils/fault'
 import { getPoolContract } from '../contracts'
-import { getEthWeb3 } from '../utils/ethereum'
+import getEthWeb3 from '../utils/getEthWeb3'
 
 type Params = {
   blockchain: Blockchain

@@ -1,11 +1,11 @@
+import _ from 'lodash'
 import ERC721EnumerableABI from '../../abis/ERC721Enumerable.json'
 import appConf from '../../app.conf'
 import { Blockchain, NFTMetadata } from '../../entities'
 import fault from '../../utils/fault'
-import { getEthWeb3 } from '../utils/ethereum'
+import getEthWeb3 from '../utils/getEthWeb3'
 import getRequest from '../utils/getRequest'
 import normalizeNFTImageUri from '../utils/normalizeNFTImageUri'
-import _ from 'lodash'
 
 type Params = {
   blockchain: Blockchain

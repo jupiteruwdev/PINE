@@ -1,7 +1,7 @@
 import { Blockchain, Value } from '../../entities'
 import fault from '../../utils/fault'
 import { getPoolContract, getTokenContract } from '../contracts'
-import { getEthWeb3 } from '../utils/ethereum'
+import getEthWeb3 from '../utils/getEthWeb3'
 
 type Params = {
   blockchain: Blockchain
