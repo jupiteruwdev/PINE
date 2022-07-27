@@ -1,7 +1,7 @@
 {
   "name": "core-service",
   "version": "1.0.0",
-  "description": "",
+  "description": " Core web service and API gateway",
   "scripts": {
     "start": "node build/app",
     "clean": "rimraf build",
