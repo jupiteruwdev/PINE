@@ -19,6 +19,8 @@ export default async function getCollectionsBySearchText({ searchText, blockchai
     const collectionData = await postRequest('https://gem-public-api.herokuapp.com/collections',
       {
         filters: { searchText },
+        sort: { sevenDayVolume: -1 },
+        limit: 10,
       },
       {
         headers: {
