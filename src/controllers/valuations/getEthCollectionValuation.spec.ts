@@ -1,11 +1,16 @@
 import { assert } from 'chai'
 import _ from 'lodash'
 import { describe, it } from 'mocha'
+import { initDb } from '../../db'
 import { Blockchain, Valuation } from '../../entities'
 import { getCollections } from '../collections'
 import getEthCollectionValuation from './getEthCollectionValuation'
 
 describe('controllers/valuations/getEthCollectionValuation', () => {
+  before('connect to db', async () => {
+    await initDb()
+  })
+
   it('can get the valuation of a random supported Ethereum collection on Mainnet', async () => {
     const blockchain = Blockchain.Ethereum(Blockchain.Ethereum.Network.MAIN)
     const collections = await getCollections({ blockchainFilter: { [blockchain.network]: blockchain.networkId } })
@@ -37,7 +42,7 @@ describe('controllers/valuations/getEthCollectionValuation', () => {
   //   assert.isNotEmpty(valuations)
   // })
 
-  it('can get the valuation of a random supported Ethereum collection on Rinkeby Testnet', async () => {
+  it('can get the valuation of a random supported Ethereum collection on Rinkeby', async () => {
     const blockchain = Blockchain.Ethereum(Blockchain.Ethereum.Network.RINKEBY)
     const collections = await getCollections({ blockchainFilter: { [blockchain.network]: blockchain.networkId } })
     const collection = _.sample(collections)
@@ -48,7 +53,7 @@ describe('controllers/valuations/getEthCollectionValuation', () => {
     await getEthCollectionValuation({ blockchain, collectionAddress: collection.address, tokenId })
   })
 
-  it('can get the valuation of all supported Ethereum collections on Rinkeby Testnet', async () => {
+  it('can get the valuation of all supported Ethereum collections on Rinkeby', async () => {
     const blockchain = Blockchain.Ethereum(Blockchain.Ethereum.Network.RINKEBY)
     const collections = await getCollections({ blockchainFilter: { [blockchain.network]: blockchain.networkId } })
     const tokenId = '1000'

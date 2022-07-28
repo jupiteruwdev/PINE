@@ -1,12 +1,10 @@
 import { Router } from 'express'
-import { countPools, getPool, searchPoolGroups, searchPools } from '../controllers'
-import getUnpublishedPoolsByLender from '../controllers/pools/getUnpublishedPoolsByLender'
-import publishPool from '../controllers/pools/publishPool'
-import { PoolSortDirection, PoolSortType } from '../controllers/pools/searchPools'
-import { Pagination, Pool, PoolGroup, serializeEntityArray } from '../entities'
-import fault from '../utils/fault'
-import tryOrUndefined from '../utils/tryOrUndefined'
-import { getBlockchain, getBlockchainFilter, getNumber, getString } from './utils/query'
+import { countPools, getPool, getUnpublishedPoolsByLender, searchPoolGroups } from '../../controllers'
+import publishPool from '../../controllers/pools/publishPool'
+import searchPools, { PoolSortDirection, PoolSortType } from '../../controllers/pools/searchPools'
+import { Pagination, Pool, PoolGroup, serializeEntityArray } from '../../entities'
+import fault from '../../utils/fault'
+import { getBlockchain, getBlockchainFilter, getNumber, getString } from '../utils/query'
 
 const router = Router()
 
@@ -27,13 +25,13 @@ router.get('/groups/collection', async (req, res, next) => {
 router.get('/groups/search', async (req, res, next) => {
   try {
     const blockchainFilter = getBlockchainFilter(req.query, true)
-    const collectionAddress = tryOrUndefined(() => getString(req.query, 'collectionAddress'))
-    const collectionName = tryOrUndefined(() => getString(req.query, 'query'))
-    const sortByType = tryOrUndefined(() => getString(req.query, 'sort') as PoolSortType)
-    const sortByDirection = tryOrUndefined(() => getString(req.query, 'direction') as PoolSortDirection)
+    const collectionAddress = getString(req.query, 'collectionAddress', { optional: true })
+    const collectionName = getString(req.query, 'query', { optional: true })
+    const sortByType = getString(req.query, 'sort', { optional: true }) as PoolSortType
+    const sortByDirection = getString(req.query, 'direction', { optional: true }) as PoolSortDirection
     const sortBy = sortByType !== undefined ? { type: sortByType, direction: sortByDirection ?? PoolSortDirection.ASC } : undefined
-    const paginateByOffset = tryOrUndefined(() => getNumber(req.query, 'offset'))
-    const paginateByCount = tryOrUndefined(() => getNumber(req.query, 'count'))
+    const paginateByOffset = getNumber(req.query, 'offset', { optional: true })
+    const paginateByCount = getNumber(req.query, 'count', { optional: true })
     const paginateBy = paginateByOffset !== undefined && paginateByCount !== undefined ? { count: paginateByCount, offset: paginateByOffset } : undefined
     const totalCount = await countPools({ collectionAddress, blockchainFilter, collectionName })
     const poolGroups = await searchPoolGroups({ collectionAddress, collectionName, blockchainFilter, paginateBy, sortBy })

@@ -3,7 +3,7 @@ import ERC721LendingABI from '../../abis/ERC721Lending.json'
 import ERC721LendingABIV2 from '../../abis/ERC721LendingV2.json'
 import { Blockchain } from '../../entities'
 import fault from '../../utils/fault'
-import { getEthWeb3 } from '../utils/ethereum'
+import getEthWeb3 from '../utils/getEthWeb3'
 
 type Params = {
   blockchain: Blockchain

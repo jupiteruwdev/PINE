@@ -3,7 +3,7 @@ import appConf from '../../app.conf'
 import { Blockchain, Valuation } from '../../entities'
 import fault from '../../utils/fault'
 import { getPoolContract } from '../contracts'
-import { getEthBlockNumber, getEthWeb3 } from '../utils/ethereum'
+import getEthWeb3 from '../utils/getEthWeb3'
 
 type Params = {
   blockchain: Blockchain
@@ -23,7 +23,7 @@ export default async function signValuation({ blockchain, nftId, poolAddress, co
   switch (blockchain.network) {
   case 'ethereum': {
     const web3 = getEthWeb3(blockchain.networkId)
-    const blockNumber = await getEthBlockNumber(blockchain.networkId)
+    const blockNumber = await web3.eth.getBlockNumber()
     const expiresAtBlock = blockNumber + appConf.ethValuationExpiryBlocks
 
     const contract = await getPoolContract({ blockchain, poolAddress: _.get(appConf.valuationSignerMessageHashAddress, blockchain.networkId) })

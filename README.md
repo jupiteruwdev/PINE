@@ -49,7 +49,7 @@ $ npm test
 $ npm run build
 $ npm start
 
-# Build the image for test and run unit tests
+# Build the image for test and run integration/unit tests
 $ docker build -t ${IMAGE_NAME:-core-service}:${IMAGE_TAG:-test} .
 $ docker-compose -f docker-compose.test.yml up --abort-on-container-exit
 
