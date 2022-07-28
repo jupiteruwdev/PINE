@@ -6,19 +6,19 @@ import logger from '../../utils/logger'
 import postRequest from '../utils/postRequest'
 
 type Params = {
-  searchText: string
+  query: string
   blockchain: Blockchain
 }
 
-export default async function getCollectionsBySearchText({ searchText, blockchain }: Params): Promise<Collection[]> {
-  logger.info(`Fetching collection by search text <${searchText}>...`)
+export default async function searchCollections({ query, blockchain }: Params): Promise<Collection[]> {
+  logger.info(`Fetching collection by search text <${query}>...`)
   const apiKey = appConf.gemxyzAPIKey
 
   switch (blockchain.networkId) {
   case Blockchain.Ethereum.Network.MAIN:
     const collectionData = await postRequest('https://gem-public-api.herokuapp.com/collections',
       {
-        filters: { searchText },
+        filters: { searchText: query },
         sort: { sevenDayVolume: -1 },
         limit: 10,
       },
@@ -28,7 +28,7 @@ export default async function getCollectionsBySearchText({ searchText, blockchai
         },
       })
     const collections = _.get(collectionData, 'data')
-    return collections.filter((cd: any) => cd.chainId === '1').map((cd: any): Collection => ({
+    return collections.filter((cd: any) => cd.chainId === '1').map((cd: any) => Collection.factory({
       address: _.get(cd, 'addresses[0].address'),
       blockchain,
       vendorIds: { opensea: cd.slug },
@@ -37,7 +37,7 @@ export default async function getCollectionsBySearchText({ searchText, blockchai
     }))
   default:
     const err = fault('ERR_UNSUPPORTED_BLOCKCHAIN')
-    logger.error(`Fetching collection for search text <${searchText}>... ERR:`, err)
+    logger.error(`Fetching collection for search text <${query}>... ERR:`, err)
     throw err
   }
 }
