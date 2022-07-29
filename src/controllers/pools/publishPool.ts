@@ -22,10 +22,10 @@ async function savePool({ poolData, blockchain }: SavePoolParams) {
   }).lean()
 
   if (collection === undefined) {
-    collection = await saveCollection({ collectionAddress: poolData.collection.toLowerCase(), blockchain })
+    collection = await saveCollection({ collectionAddress: poolData, blockchain })
   }
 
-  const res = await PoolModel.insertMany([{
+  const res = await PoolModel.create({
     retired: false,
     address: poolData.id.toLowerCase(),
     networkType: blockchain.network,
@@ -38,7 +38,7 @@ async function savePool({ poolData, blockchain }: SavePoolParams) {
     rolloverAddress: '',
     ethLimit: 0,
     nftCollection: collection,
-  }])
+  })
 
   return mapPool(res)
 }
@@ -70,6 +70,7 @@ export default async function publishPool({
       default:
         throw fault('ERR_UNSUPPORTED_BLOCKCHAIN')
       }
+      break;
     default:
       throw fault('ERR_UNSUPPORTED_BLOCKCHAIN')
     }

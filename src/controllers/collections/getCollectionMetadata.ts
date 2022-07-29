@@ -1,6 +1,6 @@
 import _ from 'lodash'
 import appConf from '../../app.conf'
-import { Blockchain } from '../../entities'
+import { Blockchain, CollectionMetaData } from '../../entities'
 import fault from '../../utils/fault'
 import logger from '../../utils/logger'
 import getRequest from '../utils/getRequest'
@@ -8,12 +8,6 @@ import getRequest from '../utils/getRequest'
 type Params = {
   collectionAddress: string
   blockchain: Blockchain
-}
-
-type CollectionMetaData = {
-  vendorIds: Record<string, any>
-  name: string
-  image: string
 }
 
 async function getCollectionMetadata(url: string): Promise<CollectionMetaData> {
@@ -31,25 +25,31 @@ async function getCollectionMetadata(url: string): Promise<CollectionMetaData> {
       opensea: collectionSlug,
     },
     name: collectionName,
-    image: collectionImage,
+    imageUrl: collectionImage,
   }
 }
 
 export default async function getCollectionMetadataByAddress({ collectionAddress, blockchain }: Params): Promise<CollectionMetaData> {
-  logger.info(`Fetching vendor ids for Ethereum collection <${collectionAddress}>...`)
+  logger.info(`Fetching metadata for collection <${collectionAddress}>...`)
   let collectionMetadata: CollectionMetaData
 
-  switch (blockchain.networkId) {
-  case Blockchain.Ethereum.Network.MAIN:
-    collectionMetadata = await getCollectionMetadata(`https://api.opensea.io/api/v1/asset_contract/${collectionAddress}`)
-    break
-  case Blockchain.Ethereum.Network.RINKEBY:
-    collectionMetadata = await getCollectionMetadata(`https://testnets-api.opensea.io/api/v1/asset_contract/${collectionAddress}`)
+  switch (blockchain.network) {
+  case 'ethereum':
+    switch (blockchain.networkId) {
+    case Blockchain.Ethereum.Network.MAIN:
+      collectionMetadata = await getCollectionMetadata(`https://api.opensea.io/api/v1/asset_contract/${collectionAddress}`)
+      break
+    case Blockchain.Ethereum.Network.RINKEBY:
+      collectionMetadata = await getCollectionMetadata(`https://testnets-api.opensea.io/api/v1/asset_contract/${collectionAddress}`)
+      break
+    default:
+      const err = fault('ERR_UNSUPPORTED_BLOCKCHAIN')
+      logger.error(`Fetching metadata fro collection <${collectionAddress}>... ERR:`, err)
+      throw err
+    }
     break
   default:
-    const err = fault('ERR_UNSUPPORTED_BLOCKCHAIN')
-    logger.error(`Fetching vendor ids for Ethereum collection <${collectionAddress}>... ERR:`, err)
-    throw err
+    throw fault('ERR_UNSUPPORTED_BLOCKCHAIN')
   }
 
   return collectionMetadata

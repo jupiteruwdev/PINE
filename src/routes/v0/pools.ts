@@ -60,7 +60,7 @@ router.get('/:poolAddress', async (req, res, next) => {
   }
 })
 
-router.post('/:poolAddress/publish', async (req, res, next) => {
+router.post('/:poolAddress', async (req, res, next) => {
   try {
     const blockchain = getBlockchain(req.query)
     const poolAddress = getString(req.params, 'poolAddress')
@@ -69,7 +69,7 @@ router.post('/:poolAddress/publish', async (req, res, next) => {
     res.status(200).json(pool)
   }
   catch (err) {
-    next(fault('ERR_API_FETCH_POOL', undefined, err))
+    next(fault('ERR_API_PUBLISH_POOL', undefined, err))
   }
 })
 

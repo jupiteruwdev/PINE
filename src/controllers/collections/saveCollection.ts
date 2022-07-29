@@ -1,7 +1,8 @@
+import { getCollectionMetadata } from '.'
 import { NFTCollectionModel } from '../../db'
 import { Blockchain } from '../../entities'
+import fault from '../../utils/fault'
 import logger from '../../utils/logger'
-import getCollectionMetadataByAddress from './getCollectionMetadataByAddress'
 
 type Params = {
   collectionAddress: string
@@ -10,22 +11,19 @@ type Params = {
 
 export default async function saveCollection({ collectionAddress, blockchain }: Params): Promise<any> {
   logger.info(`Saving collection for address <${collectionAddress}>`)
-  const collectionMetadata = await getCollectionMetadataByAddress({ collectionAddress: collectionAddress.toLowerCase(), blockchain })
-
-  const collection = new Promise<any>((resolve, reject) => NFTCollectionModel.insertMany([{
-    vendorIds: collectionMetadata.vendorIds,
-    address: collectionAddress.toLowerCase(),
-    displayName: collectionMetadata.name,
-    imageUrl: collectionMetadata.image,
-    networkType: blockchain.network,
-    networkId: blockchain.networkId,
-  }]).finally(async () => {
-    const collection = await NFTCollectionModel.findOne({
+  try {
+    const collectionMetadata = await getCollectionMetadata({ collectionAddress: collectionAddress.toLowerCase(), blockchain })
+    const res = NFTCollectionModel.create({
+      vendorIds: collectionMetadata.vendorIds,
       address: collectionAddress.toLowerCase(),
-    }).lean()
+      displayName: collectionMetadata.name,
+      imageUrl: collectionMetadata.imageUrl,
+      networkType: blockchain.network,
+      networkId: blockchain.networkId,
+    })
 
-    resolve(collection)
-  }))
-
-  return collection
+    return res
+  } catch (err) {
+    throw fault('ERR_SAVE_COLLECTION', undefined, err)
+  }
 }
