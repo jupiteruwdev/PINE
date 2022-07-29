@@ -37,7 +37,7 @@ async function savePool({ poolData, blockchain }: SavePoolParams) {
     repayRouterAddress: '',
     rolloverAddress: '',
     ethLimit: 0,
-    nftCollection: collection,
+    nftCollection: collection?._id,
   })
 
   return mapPool(res)
