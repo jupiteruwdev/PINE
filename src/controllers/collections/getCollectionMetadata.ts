@@ -1,6 +1,6 @@
 import _ from 'lodash'
 import appConf from '../../app.conf'
-import { Blockchain, CollectionMetaData } from '../../entities'
+import { Blockchain, CollectionMetadata } from '../../entities'
 import fault from '../../utils/fault'
 import logger from '../../utils/logger'
 import getRequest from '../utils/getRequest'
@@ -10,7 +10,7 @@ type Params = {
   blockchain: Blockchain
 }
 
-async function getCollectionMetadata(url: string): Promise<CollectionMetaData> {
+async function getCollectionMetadata(url: string): Promise<CollectionMetadata> {
   const apiKey = appConf.openseaAPIKey
   const collectionData = await getRequest(url, {
     headers: {
@@ -29,9 +29,9 @@ async function getCollectionMetadata(url: string): Promise<CollectionMetaData> {
   }
 }
 
-export default async function getCollectionMetadataByAddress({ collectionAddress, blockchain }: Params): Promise<CollectionMetaData> {
+export default async function getCollectionMetadataByAddress({ collectionAddress, blockchain }: Params): Promise<CollectionMetadata> {
   logger.info(`Fetching metadata for collection <${collectionAddress}>...`)
-  let collectionMetadata: CollectionMetaData
+  let collectionMetadata: CollectionMetadata
 
   switch (blockchain.network) {
   case 'ethereum':
