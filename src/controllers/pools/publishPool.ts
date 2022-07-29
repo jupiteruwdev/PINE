@@ -70,7 +70,7 @@ export default async function publishPool({
       default:
         throw fault('ERR_UNSUPPORTED_BLOCKCHAIN')
       }
-      break;
+      break
     default:
       throw fault('ERR_UNSUPPORTED_BLOCKCHAIN')
     }

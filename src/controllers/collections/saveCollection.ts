@@ -23,7 +23,8 @@ export default async function saveCollection({ collectionAddress, blockchain }: 
     })
 
     return res
-  } catch (err) {
+  }
+  catch (err) {
     throw fault('ERR_SAVE_COLLECTION', undefined, err)
   }
 }
