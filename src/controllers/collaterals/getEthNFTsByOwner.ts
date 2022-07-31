@@ -1,7 +1,8 @@
 import { Blockchain, NFT } from '../../entities'
+import { composeDataSources } from '../../utils/dataSources'
 import logger from '../../utils/logger'
-import useAlchemyEthNFTFetcher from './plugins/useAlchemyEthNFTFetcher'
-import useMoralisEthNFTFetcher from './plugins/useMoralisEthNFTFetcher'
+import * as alchemy from './dataSources/alchemy'
+import * as moralis from './dataSources/moralis'
 
 type Params = {
   blockchain: Blockchain
@@ -12,15 +13,7 @@ type Params = {
 export default async function getEthNFTsByOwner({ blockchain, ownerAddress, populateMetadata }: Params): Promise<NFT[]> {
   logger.info(`Fetching Ethereum NFTs by owner <${ownerAddress}> on network <${blockchain.networkId}>...`)
 
-  let nfts
-
-  try {
-    nfts = await useMoralisEthNFTFetcher({ blockchain, ownerAddress, populateMetadata })
-  }
-  catch (err) {
-    logger.warning(`Fetching Ethereum NFTs by owner <${ownerAddress}> on network <${blockchain.networkId}>... WARN: Fetch attempt failed on Moralis, falling back to Alchemy`)
-    nfts = await useAlchemyEthNFTFetcher({ blockchain, ownerAddress, populateMetadata })
-  }
+  const nfts = await composeDataSources(alchemy.fetchEthNFTsByOwner, moralis.fetchEthNFTsByOwner)({ blockchain, ownerAddress, populateMetadata })
 
   logger.info(`Fetching Ethereum NFTs by owner <${ownerAddress}> on network <${blockchain.networkId}>... OK: ${nfts.length} result(s)`)
 

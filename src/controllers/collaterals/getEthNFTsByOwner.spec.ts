@@ -1,4 +1,5 @@
 import { expect } from 'chai'
+import _ from 'lodash'
 import { describe, it } from 'mocha'
 import appConf from '../../app.conf'
 import { initDb } from '../../db'
@@ -20,14 +21,14 @@ describe('controllers/collaterals/getEthNFTsByOwner', () => {
       const nfts = await getEthNFTsByOwner({ blockchain: MAINNET, ownerAddress: TEST_WALLET_ADDRESS, populateMetadata: false })
 
       expect(nfts).to.have.length.greaterThan(0)
-      nfts.every(nft => expect(nft).to.have.any.keys(...Object.keys(NFT.codingResolver)))
+      nfts.every(nft => expect(nft).to.have.all.keys(...Object.keys(_.omitBy(NFT.codingResolver, coder => coder.options.optional === true))))
     })
 
     it(`can get NFTs for test wallet <${TEST_WALLET_ADDRESS}> with metadata`, async () => {
       const nfts = await getEthNFTsByOwner({ blockchain: MAINNET, ownerAddress: TEST_WALLET_ADDRESS, populateMetadata: true })
 
       expect(nfts).to.have.length.greaterThan(0)
-      nfts.every(nft => expect(nft).to.have.any.keys(...Object.keys(NFT.codingResolver)))
+      nfts.every(nft => expect(nft).to.have.all.keys('imageUrl', 'name', ...Object.keys(_.omitBy(NFT.codingResolver, coder => coder.options.optional === true))))
     })
 
     WHALE_WALLET_ADDRESSES.forEach(address => {
@@ -35,47 +36,31 @@ describe('controllers/collaterals/getEthNFTsByOwner', () => {
         const nfts = await getEthNFTsByOwner({ blockchain: MAINNET, ownerAddress: address, populateMetadata: false })
 
         expect(nfts).to.have.length.greaterThan(0)
-        nfts.every(nft => expect(nft).to.have.any.keys(...Object.keys(NFT.codingResolver)))
+        nfts.every(nft => expect(nft).to.have.all.keys(...Object.keys(_.omitBy(NFT.codingResolver, coder => coder.options.optional === true))))
       })
 
       it(`can get NFTs for whale wallet <${address}> with metadata`, async () => {
         const nfts = await getEthNFTsByOwner({ blockchain: MAINNET, ownerAddress: address, populateMetadata: true })
 
         expect(nfts).to.have.length.greaterThan(0)
-        nfts.every(nft => expect(nft).to.have.any.keys(...Object.keys(NFT.codingResolver)))
+        nfts.every(nft => expect(nft).to.have.all.keys('imageUrl', 'name', ...Object.keys(_.omitBy(NFT.codingResolver, coder => coder.options.optional === true))))
       })
     })
   })
 
   describe('Rinkeby', () => {
-    it(`can get NFTs for test wallet <${TEST_WALLET_ADDRESS}> with metadata`, async () => {
-      const nfts = await getEthNFTsByOwner({ blockchain: RINKEBY, ownerAddress: TEST_WALLET_ADDRESS, populateMetadata: true })
-
-      expect(nfts).to.have.length.greaterThan(0)
-      nfts.every(nft => expect(nft).to.have.any.keys(...Object.keys(NFT.codingResolver)))
-    })
-
     it(`can get NFTs for test wallet <${TEST_WALLET_ADDRESS}> without metadata`, async () => {
       const nfts = await getEthNFTsByOwner({ blockchain: RINKEBY, ownerAddress: TEST_WALLET_ADDRESS, populateMetadata: false })
 
       expect(nfts).to.have.length.greaterThan(0)
-      nfts.every(nft => expect(nft).to.have.any.keys(...Object.keys(NFT.codingResolver)))
+      nfts.every(nft => expect(nft).to.have.all.keys(...Object.keys(_.omitBy(NFT.codingResolver, coder => coder.options.optional === true))))
     })
 
-    WHALE_WALLET_ADDRESSES.forEach(address => {
-      it(`can get NFTs for whale wallet <${address}> without metadata`, async () => {
-        const nfts = await getEthNFTsByOwner({ blockchain: RINKEBY, ownerAddress: address, populateMetadata: false })
+    it(`can get NFTs for test wallet <${TEST_WALLET_ADDRESS}> with metadata`, async () => {
+      const nfts = await getEthNFTsByOwner({ blockchain: RINKEBY, ownerAddress: TEST_WALLET_ADDRESS, populateMetadata: true })
 
-        expect(nfts).to.have.length.greaterThan(0)
-        nfts.every(nft => expect(nft).to.have.any.keys(...Object.keys(NFT.codingResolver)))
-      })
-
-      it(`can get NFTs for whale wallet <${address}> with metadata`, async () => {
-        const nfts = await getEthNFTsByOwner({ blockchain: RINKEBY, ownerAddress: address, populateMetadata: true })
-
-        expect(nfts).to.have.length.greaterThan(0)
-        nfts.every(nft => expect(nft).to.have.any.keys(...Object.keys(NFT.codingResolver)))
-      })
+      expect(nfts).to.have.length.greaterThan(0)
+      nfts.every(nft => expect(nft).to.have.all.keys('imageUrl', 'name', ...Object.keys(_.omitBy(NFT.codingResolver, coder => coder.options.optional === true))))
     })
   })
 })

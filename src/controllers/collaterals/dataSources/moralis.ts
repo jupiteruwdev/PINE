@@ -1,6 +1,7 @@
 import _ from 'lodash'
 import appConf from '../../../app.conf'
 import { Blockchain, Collection, NFT } from '../../../entities'
+import { DataSource } from '../../../utils/dataSources'
 import fault from '../../../utils/fault'
 import logger from '../../../utils/logger'
 import rethrow from '../../../utils/rethrow'
@@ -13,7 +14,7 @@ type Params = {
   populateMetadata: boolean
 }
 
-export default async function useMoralisEthNFTFetcher({ blockchain, ownerAddress, populateMetadata }: Params): Promise<NFT[]> {
+export const fetchEthNFTsByOwner: DataSource<Params, NFT[]> = async ({ blockchain, ownerAddress, populateMetadata }) => {
   if (blockchain.network !== 'ethereum') throw fault('ERR_UNSUPPORTED_BLOCKCHAIN')
 
   const apiKey = appConf.moralisAPIKey ?? rethrow('Missing Moralis API key')
@@ -30,37 +31,40 @@ export default async function useMoralisEthNFTFetcher({ blockchain, ownerAddress
 
   if (!_.isArray(res)) throw fault('ERR_MORALIS_FETCH_NFTS_BY_OWNER', 'Bad request or unrecognized payload when fetching NFTs from Moralis API')
 
-  const nfts = _.compact(await Promise.all(res.map(async (t: any) => {
-    const tokenId = _.get(t, 'token_id')
-    const collectionAddress = _.get(t, 'token_address')
+  const nfts = res.reduce<NFT[]>((prev, curr) => {
+    const tokenId = _.get(curr, 'token_id')
+    const collectionAddress = _.get(curr, 'token_address')
 
     if (tokenId === undefined || collectionAddress === undefined) {
-      logger.warning(`Fetching NFTs by owner <${ownerAddress}> using Moralis API... dropping NFT ${JSON.stringify(t)} due to missing address or token ID`)
-      return undefined
+      logger.warning(`Fetching NFTs by owner <${ownerAddress}> using Moralis API... dropping NFT ${JSON.stringify(curr)} due to missing address or token ID`)
+      return prev
     }
 
     let metadata
 
     if (populateMetadata === true) {
-      const parsed = JSON.parse(t.metadata)
+      const parsed = JSON.parse(curr.metadata)
       const name = _.get(parsed, 'name') ?? `#${tokenId}`
       const imageUrl = _.get(parsed, 'image')
 
       metadata = {
         name,
-        imageUrl: imageUrl ? normalizeNFTImageUri(imageUrl) : undefined,
+        imageUrl: blockchain.networkId === Blockchain.Ethereum.Network.MAIN ? imageUrl : imageUrl ? normalizeNFTImageUri(imageUrl) : undefined,
       }
     }
 
-    return NFT.factory({
-      id: tokenId,
-      collection: Collection.factory({
-        address: collectionAddress,
-        blockchain,
+    return [
+      ...prev,
+      NFT.factory({
+        id: tokenId,
+        collection: Collection.factory({
+          address: collectionAddress,
+          blockchain,
+        }),
+        ...metadata ?? {},
       }),
-      ...metadata ?? {},
-    })
-  })))
+    ]
+  }, [])
 
   return nfts // .sort((a, b) => a.isSupported ? -1 : 1)
 }
