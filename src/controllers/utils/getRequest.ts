@@ -35,13 +35,13 @@ export default async function getRequest<T = any>(path: string, { controller, ho
     else if (axios.isAxiosError(err)) {
       const error = err.response?.status === undefined ? fault('ERR_SYSTEM_OFFLINE') : new SuperError(err.message, err.response?.status.toString(), undefined, err.response?.data as any)
       logger.error(`Making request to <${host ?? ''}${path}>... ${err.response?.status ?? 'ERR'}`)
-      console.error(error)
+      if (!logger.silent) console.error(error)
       throw error
     }
     else {
       const error = err instanceof TypeError ? err : fault('ERR_UNEXPECTED_PAYLOAD', undefined, err)
       logger.error(`Making request to <${host ?? ''}${path}>... ERR`)
-      console.error(error)
+      if (!logger.silent) console.error(error)
       throw error
     }
   }

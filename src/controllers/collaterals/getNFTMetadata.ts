@@ -39,7 +39,7 @@ export default async function getNFTMetadata({
     }
     catch (err) {
       logger.info(`Fetching metadata for NFT <${nftId}> of collection <${collectionAddress}>... ERR`)
-      console.error(err)
+      if (!logger.silent) console.error(err)
       throw err
     }
   }
@@ -56,7 +56,7 @@ async function getMetadataFromAlchemy({
   const apiUrl = _.get(appConf.alchemyAPIUrl, blockchain.networkId) ?? rethrow(`Missing Alchemy API URL for blockchain ${JSON.stringify(blockchain)}`)
   const res = await getRequest(`${apiUrl}${appConf.alchemyAPIKey}/getNFTMetadata`, {
     params: {
-      contractAddress: `${collectionAddress}1111`,
+      contractAddress: collectionAddress,
       tokenId: nftId,
     },
   })
