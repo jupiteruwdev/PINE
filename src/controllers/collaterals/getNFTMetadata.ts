@@ -3,6 +3,8 @@ import ERC721EnumerableABI from '../../abis/ERC721Enumerable.json'
 import appConf from '../../app.conf'
 import { Blockchain, NFTMetadata } from '../../entities'
 import fault from '../../utils/fault'
+import logger from '../../utils/logger'
+import rethrow from '../../utils/rethrow'
 import getEthWeb3 from '../utils/getEthWeb3'
 import getRequest from '../utils/getRequest'
 import normalizeNFTImageUri from '../utils/normalizeNFTImageUri'
@@ -13,45 +15,92 @@ type Params = {
   nftId: string
 }
 
-export default async function getNFTMetadata({ blockchain, collectionAddress, nftId }: Params): Promise<NFTMetadata> {
+export default async function getNFTMetadata({
+  blockchain,
+  collectionAddress,
+  nftId,
+}: Params): Promise<NFTMetadata> {
   switch (blockchain.network) {
   case 'ethereum': {
-    const alchemyUrl = _.get(appConf.alchemyAPIUrl, blockchain.networkId)
-    const nftRes = await getRequest(`${alchemyUrl}${appConf.alchemyAPIKey}/getNFTMetadata?contractAddress=${collectionAddress}&tokenId=${nftId}`)
-    if (!nftRes.error && nftRes.metadata && nftRes.metadata.name && nftRes.metadata.image_url) {
-      return {
-        imageUrl: _.get(nftRes, 'metadata.image_url'),
-        name: _.get(nftRes, 'metadata.name'),
+    try {
+      logger.info(`Fetching metadata for NFT <${nftId}> of collection <${collectionAddress}>...`)
+
+      try {
+        const metadata = await getMetadataFromAlchemy({ blockchain, collectionAddress, nftId })
+        logger.info(`Fetching metadata for NFT <${nftId}> of collection <${collectionAddress}>... OK`)
+        return metadata
+      }
+      catch (err) {
+        logger.warning(`Fetching metadata for NFT <${nftId}> of collection <${collectionAddress}>... WARN: Failed from Alchemy, retrying with token URI`)
+        const metadata = await getMetadataFromTokenUri({ blockchain, collectionAddress, nftId })
+        logger.info(`Fetching metadata for NFT <${nftId}> of collection <${collectionAddress}>... OK`)
+        return metadata
       }
     }
-    const web3 = getEthWeb3(blockchain.networkId)
-    const contract = new web3.eth.Contract(ERC721EnumerableABI as any, collectionAddress)
-    const uri = await contract.methods.tokenURI(nftId).call()
-    const metadata = await (async () => {
-      if (uri.indexOf('data:application/json;base64') !== -1) {
-        return JSON.parse(atob(uri.split(',')[1]))
-      }
-      else if (uri.indexOf('data:application/json;utf8') !== -1) {
-        const firstComma = uri.indexOf(',')
-        return JSON.parse(uri.slice(firstComma + 1, uri.length))
-      }
-      try {
-        const ret = await getRequest(normalizeNFTImageUri(uri))
-        return ret
-      }
-      catch (e) {
-        return {
-          imageUrl: uri,
-          id: nftId,
-        }
-      }
-    })()
-    return {
-      imageUrl: normalizeNFTImageUri(metadata.image),
-      name: metadata.name ?? `#${metadata.id ?? nftId}`,
+    catch (err) {
+      logger.info(`Fetching metadata for NFT <${nftId}> of collection <${collectionAddress}>... ERR`)
+      console.error(err)
+      throw err
     }
   }
   default:
     throw fault('ERR_UNSUPPORTED_BLOCKCHAIN')
+  }
+}
+
+async function getMetadataFromAlchemy({
+  blockchain,
+  collectionAddress,
+  nftId,
+}: Params): Promise<NFTMetadata> {
+  const apiUrl = _.get(appConf.alchemyAPIUrl, blockchain.networkId) ?? rethrow(`Missing Alchemy API URL for blockchain ${JSON.stringify(blockchain)}`)
+  const res = await getRequest(`${apiUrl}${appConf.alchemyAPIKey}/getNFTMetadata`, {
+    params: {
+      contractAddress: `${collectionAddress}1111`,
+      tokenId: nftId,
+    },
+  })
+
+  const name = _.get(res, 'metadata.name') ?? rethrow(`Unable to determine NFT name`)
+  const imageUrl = _.get(res, 'metadata.image_url') ?? rethrow(`Unable to determine NFT image`)
+
+  return {
+    name,
+    imageUrl: normalizeNFTImageUri(imageUrl),
+  }
+}
+
+async function getMetadataFromTokenUri({
+  blockchain,
+  collectionAddress,
+  nftId,
+}: Params): Promise<NFTMetadata> {
+  const web3 = getEthWeb3(blockchain.networkId)
+  const contract = new web3.eth.Contract(ERC721EnumerableABI as any, collectionAddress)
+  const tokenUri = await contract.methods.tokenURI(nftId).call()
+  const metadata = await (async () => {
+    if (tokenUri.indexOf('data:application/json;base64') !== -1) {
+      return JSON.parse(atob(tokenUri.split(',')[1]))
+    }
+
+    if (tokenUri.indexOf('data:application/json;utf8') !== -1) {
+      const firstComma = tokenUri.indexOf(',')
+      return JSON.parse(tokenUri.slice(firstComma + 1, tokenUri.length))
+    }
+
+    try {
+      const res = await getRequest(normalizeNFTImageUri(tokenUri))
+      return res
+    }
+    catch (err) {
+      return {
+        image: tokenUri,
+      }
+    }
+  })()
+
+  return {
+    imageUrl: normalizeNFTImageUri(metadata.image),
+    name: metadata.name ?? `#${metadata.id ?? nftId}`,
   }
 }
