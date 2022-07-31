@@ -61,8 +61,8 @@ async function getMetadataFromAlchemy({
     },
   })
 
-  const name = _.get(res, 'metadata.name') ?? rethrow(`Unable to determine NFT name`)
-  const imageUrl = _.get(res, 'metadata.image_url') ?? rethrow(`Unable to determine NFT image`)
+  const name = _.get(res, 'metadata.name') ?? rethrow('Unable to determine NFT name')
+  const imageUrl = _.get(res, 'metadata.image_url') ?? rethrow('Unable to determine NFT image')
 
   return {
     name,

@@ -1,4 +1,3 @@
-/* eslint-disable no-console */
 import SuperError from '@andrewscwei/super-error'
 import cors from 'cors'
 import express, { NextFunction, Request, Response } from 'express'
@@ -31,11 +30,10 @@ app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
     logger.warning(`Handling 404 error... SKIP: ${err}`)
   }
   else if (appConf.env === 'production') {
-    logger.error('Handling 500 error... ERR:', err)
+    logger.error('Handling 500 error... ERR', err)
   }
   else {
-    logger.error('Handling 500 error... ERR:')
-    /* eslint-disable-next-line no-console */
+    logger.error('Handling 500 error... ERR')
     console.error(err)
   }
 

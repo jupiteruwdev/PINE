@@ -53,5 +53,10 @@ export default {
   tests: {
     verboseLogging: process.env.TESTS_VERBOSE_LOGGING === 'true' ? true : false,
     walletAddress: process.env.TESTS_WALLET_ADDRESS ?? '',
+    whaleWalletAddresses: [
+      '0x95aff87ef60d5166858df825ead163a6626e03ab',
+      '0x55f25ae016e2cd04ec3191594d43dc5a08102378',
+      '0x0c2c60dc4021f2d7a8dc5ee023ff549de127ee30',
+    ],
   },
 }
