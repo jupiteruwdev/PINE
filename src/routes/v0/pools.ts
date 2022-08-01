@@ -72,10 +72,10 @@ router.post('/:poolAddress', async (req, res, next) => {
   }
 })
 
-router.get('/lender/:lenderAddress', async (req, res, next) => {
+router.get('/lender', async (req, res, next) => {
   try {
     const blockchainFilter = getBlockchainFilter(req.query, true)
-    const lenderAddress = getString(req.params, 'lenderAddress')
+    const lenderAddress = getString(req.query, 'lenderAddress')
     const publishedPools = await searchPools({
       blockchainFilter,
       lenderAddress,
