@@ -4,19 +4,21 @@ on:
     branches: [staging, main]
 env:
   IMAGE_NAME: gcr.io/${{ secrets.GCP_PROJECT }}/core-service
+  ALCHEMY_API_KEY: ${{ secrets.ALCHEMY_API_KEY }}
+  ALCHEMY_API_MAINNET_URL: ${{ secrets.ALCHEMY_API_MAINNET_URL }}
+  ALCHEMY_API_RINKEBY_URL: ${{ secrets.ALCHEMY_API_RINKEBY_URL }}
   ETH_RPC_MAINNET: ${{ secrets.ETH_RPC_MAINNET }}
   ETH_RPC_RINKEBY: ${{ secrets.ETH_RPC_RINKEBY }}
+  GEMXYZ_API_KEY: ${{ secrets.GEMXYZ_API_KEY }}
+  MONGO_URI: ${{ secrets.MONGO_URI }}
   MORALIS_API_KEY: ${{ secrets.MORALIS_API_KEY }}
   NFTBANK_API_KEY: ${{ secrets.NFTBANK_API_KEY }}
   OPENSEA_API_KEY: ${{ secrets.OPENSEA_API_KEY }}
-  ALCHEMY_API_KEY: ${{ secrets.ALCHEMY_API_KEY }}
-  GEMXYZ_API_KEY: ${{ secrets.GEMXYZ_API_KEY }}
-  ALCHEMY_API_MAINNET_URL: ${{ secrets.ALCHEMY_API_MAINNET_URL }}
-  ALCHEMY_API_RINKEBY_URL: ${{ secrets.ALCHEMY_API_RINKEBY_URL }}
   SUBGRAPH_API_MAINNET_URL: ${{ secrets.SUBGRAPH_API_MAINNET_URL }}
   SUBGRAPH_API_RINKEBY_URL: ${{ secrets.SUBGRAPH_API_RINKEBY_URL }}
-  MONGO_URI: ${{ secrets.MONGO_URI }}
+  TESTS_LOG_LEVEL: ${{ secrets.TESTS_LOG_LEVEL }}
   TESTS_WALLET_ADDRESS: ${{ secrets.TESTS_WALLET_ADDRESS }}
+  TESTS_WHALE_WALLET_ADDRESSES: ${{ secrets.TESTS_WHALE_WALLET_ADDRESSES }}
 jobs:
   deploy:
     name: Build/Test/Deploy

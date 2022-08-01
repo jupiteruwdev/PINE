@@ -1,4 +1,5 @@
 import 'dotenv/config'
+import _ from 'lodash'
 import { Blockchain } from './entities'
 
 export default {
@@ -11,6 +12,7 @@ export default {
   moralisAPIKey: process.env.MORALIS_API_KEY,
   nftbankAPIKey: process.env.NFTBANK_API_KEY,
   alchemyAPIKey: process.env.ALCHEMY_API_KEY,
+  logLevel: process.env.LOG_LEVEL ?? (process.env.NODE_ENV === 'development' ? 'silly' : undefined),
   alchemyAPIUrl: {
     [Blockchain.Ethereum.Network.RINKEBY]: process.env.ALCHEMY_API_RINKEBY_URL,
     [Blockchain.Ethereum.Network.MAIN]: process.env.ALCHEMY_API_MAINNET_URL,
@@ -51,12 +53,8 @@ export default {
   },
   mongoUri: process.env.MONGO_URI ?? '',
   tests: {
-    verboseLogging: process.env.TESTS_VERBOSE_LOGGING === 'true' ? true : false,
+    logLevel: process.env.TESTS_LOG_LEVEL,
     walletAddress: process.env.TESTS_WALLET_ADDRESS ?? '',
-    whaleWalletAddresses: [
-      '0x95aff87ef60d5166858df825ead163a6626e03ab',
-      '0x55f25ae016e2cd04ec3191594d43dc5a08102378',
-      '0x0c2c60dc4021f2d7a8dc5ee023ff549de127ee30',
-    ],
+    whaleWalletAddresses: _.compact((process.env.TESTS_WHALE_WALLET_ADDRESSES ?? '').split(',')),
   },
 }

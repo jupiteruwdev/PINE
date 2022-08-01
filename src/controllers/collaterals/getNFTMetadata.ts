@@ -31,7 +31,7 @@ export default async function getNFTMetadata({
         return metadata
       }
       catch (err) {
-        logger.warning(`Fetching metadata for NFT <${nftId}> of collection <${collectionAddress}>... WARN: Failed from Alchemy, retrying with token URI`)
+        logger.warn(`Fetching metadata for NFT <${nftId}> of collection <${collectionAddress}>... WARN: Failed from Alchemy, retrying with token URI`)
         const metadata = await getMetadataFromTokenUri({ blockchain, collectionAddress, nftId })
         logger.info(`Fetching metadata for NFT <${nftId}> of collection <${collectionAddress}>... OK`)
         return metadata

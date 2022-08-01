@@ -3,9 +3,9 @@ import appConf from '../app.conf'
 
 const logger = winston.createLogger({
   exitOnError: false,
-  level: 'debug',
-  levels: winston.config.syslog.levels,
-  silent: appConf.env === 'test' && !appConf.tests.verboseLogging,
+  level: appConf.env === 'test' ? appConf.tests.logLevel : appConf.logLevel,
+  levels: winston.config.npm.levels,
+  silent: appConf.env === 'test' ? appConf.tests.logLevel === undefined : appConf.logLevel === undefined,
 })
 
 if (appConf.env === 'production') {

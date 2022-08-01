@@ -5,7 +5,7 @@ import appConf from '../../src/app.conf'
 
 describe('routes/v0/collaterals', () => {
   describe('GET /collaterals', () => {
-    it('can get all ethereum mainnet collaterals', async () => {
+    it('can get all Ethereum Mainnet collaterals', async () => {
       const { body: res } = await request(app).get('/v0/collaterals')
         .query({
           ethereum: 1,
@@ -14,18 +14,18 @@ describe('routes/v0/collaterals', () => {
         .expect('Content-Type', /json/)
         .expect(200)
 
-      expect(res.length).to.equal(4)
+      expect(res.length).to.be.greaterThanOrEqual(1)
+
       for (const item of res) {
         expect(item).to.have.property('collection')
         expect(item).to.have.property('id')
-        expect(item).to.have.property('isSupported')
         expect(item).to.have.property('ownerAddress')
         expect(item).to.have.property('imageUrl')
         expect(item).to.have.property('name')
       }
     })
 
-    it('can get all ethereum rinkeby collaterals', async () => {
+    it('can get all Ethereum Rinkeby collaterals', async () => {
       const { body: res } = await request(app).get('/v0/collaterals')
         .query({
           ethereum: 4,
@@ -34,11 +34,11 @@ describe('routes/v0/collaterals', () => {
         .expect('Content-Type', /json/)
         .expect(200)
 
-      expect(res.length).to.equal(2)
+      expect(res.length).to.be.greaterThanOrEqual(1)
+
       for (const item of res) {
         expect(item).to.have.property('collection')
         expect(item).to.have.property('id')
-        expect(item).to.have.property('isSupported')
         expect(item).to.have.property('ownerAddress')
         expect(item).to.have.property('imageUrl')
         expect(item).to.have.property('name')

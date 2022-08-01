@@ -8,13 +8,13 @@ import rethrow from '../../../utils/rethrow'
 import getRequest from '../../utils/getRequest'
 import normalizeNFTImageUri from '../../utils/normalizeNFTImageUri'
 
-type Params = {
+type FetchNFTsParams = {
   blockchain: Blockchain
   ownerAddress: string
   populateMetadata: boolean
 }
 
-export const fetchEthNFTsByOwner: DataSource<Params, NFT[]> = async ({ blockchain, ownerAddress, populateMetadata }) => {
+export const fetchEthNFTsByOwner: DataSource<FetchNFTsParams, NFT[]> = async ({ blockchain, ownerAddress, populateMetadata }) => {
   if (blockchain.network !== 'ethereum') throw fault('ERR_UNSUPPORTED_BLOCKCHAIN')
 
   const apiKey = appConf.moralisAPIKey ?? rethrow('Missing Moralis API key')
@@ -36,7 +36,7 @@ export const fetchEthNFTsByOwner: DataSource<Params, NFT[]> = async ({ blockchai
     const collectionAddress = _.get(curr, 'token_address')
 
     if (tokenId === undefined || collectionAddress === undefined) {
-      logger.warning(`Fetching NFTs by owner <${ownerAddress}> using Moralis API... dropping NFT ${JSON.stringify(curr)} due to missing address or token ID`)
+      logger.warn(`Fetching NFTs by owner <${ownerAddress}> using Moralis API... dropping NFT ${JSON.stringify(curr)} due to missing address or token ID`)
       return prev
     }
 
@@ -61,6 +61,7 @@ export const fetchEthNFTsByOwner: DataSource<Params, NFT[]> = async ({ blockchai
           address: collectionAddress,
           blockchain,
         }),
+        ownerAddress,
         ...metadata ?? {},
       }),
     ]

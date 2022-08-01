@@ -17,7 +17,7 @@ export function composeDataSources<P, R>(...dataSources: DataSource<P, R>[]): (p
         return res
       }
       catch (err) {
-        logger.warning('Fetching from data source... WARN')
+        logger.warn('Fetching from data source... WARN')
         if (!logger.silent) console.warn(err)
 
         if (i + 1 < n) logger.info('Falling back to next data source...')
