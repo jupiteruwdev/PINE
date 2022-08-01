@@ -13,6 +13,13 @@ export default async function getOnChainPoolByAddress({ poolAddress }: Params, o
         id
         totalUtilization
         collection
+        supportedCurrency
+        target
+        fundSource
+        duration
+        interestBPS1000000XBlock
+        collateralFactorBPS
+        lenderAddress
       }
     }
   `)
