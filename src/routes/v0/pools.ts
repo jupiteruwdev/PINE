@@ -1,5 +1,5 @@
 import { Router } from 'express'
-import { countPools, getPool, getUnpublishedPoolsByLenderAndAddress, publishPool, searchPoolGroups } from '../../controllers'
+import { countPools, getOnChainPools, getPool, publishPool, searchPoolGroups } from '../../controllers'
 import searchPools, { PoolSortDirection, PoolSortType } from '../../controllers/pools/searchPools'
 import { Pagination, Pool, PoolGroup, serializeEntityArray } from '../../entities'
 import fault from '../../utils/fault'
@@ -49,23 +49,17 @@ router.get('/lender', async (req, res, next) => {
   try {
     const blockchainFilter = getBlockchainFilter(req.query, true)
     const lenderAddress = getString(req.query, 'lenderAddress')
-    const paginateByOffset = getNumber(req.query, 'offset', { optional: true })
-    const paginateByCount = getNumber(req.query, 'count', { optional: true })
-    const paginateBy = paginateByOffset !== undefined && paginateByCount !== undefined ? { count: paginateByCount, offset: paginateByOffset } : undefined
     const publishedPools = await searchPools({
       blockchainFilter,
       lenderAddress,
     })
-    const unpublishedPools = await getUnpublishedPoolsByLenderAndAddress({
-      blockchainFilter, lenderAddress,
+    const publishedPoolAddresses = publishedPools.map(pool => pool.address.toLowerCase())
+    const unpublishedPools = await getOnChainPools({
+      blockchainFilter, lenderAddress, excludeAddresses: publishedPoolAddresses,
     })
-    const totalCount = [...publishedPools, ...unpublishedPools].length
-    const currentPagePools = [...publishedPools, ...unpublishedPools].slice(paginateByOffset, (paginateByOffset ?? 0) + (paginateByCount ?? 0))
-    const payload = serializeEntityArray(currentPagePools, Pool.codingResolver)
-    const nextOffset = (paginateBy?.offset ?? 0) + currentPagePools.length
-    const pagination = Pagination.serialize({ data: payload, totalCount, nextOffset: nextOffset === totalCount - 1 ? undefined : nextOffset })
+    const payload = serializeEntityArray([...publishedPools, ...unpublishedPools], Pool.codingResolver)
 
-    res.status(200).json(pagination)
+    res.status(200).json(payload)
   }
   catch (err) {
     next(fault('ERR_API_FETCH_POOL_BY_LENDER_ADDRESS', undefined, err))

@@ -1,12 +1,12 @@
 import BigNumber from 'bignumber.js'
-import { FilterQuery, PipelineStage } from 'mongoose'
+import { PipelineStage } from 'mongoose'
 import { PoolModel } from '../../db'
 import { mapPool } from '../../db/adapters'
 import { Blockchain, Pool, Value } from '../../entities'
 import fault from '../../utils/fault'
+import { default as getOnChainPools } from './getOnChainPools'
 import getPoolCapacity from './getPoolCapacity'
 import getPoolUtilization from './getPoolUtilization'
-import getUnpublishedPoolsByLenderAndAddress from './getUnpublishedPoolsByLenderAndAddress'
 
 type Params<IncludeStats> = {
   blockchain: Blockchain
@@ -17,47 +17,22 @@ type Params<IncludeStats> = {
   address?: string
 }
 
-async function isPoolExist({
-  address,
-  blockchain,
-  includeRetired = false,
-  lenderAddress,
-}: Params<never>): Promise<boolean> {
-  const filter: FilterQuery<any> = {
-    'networkType': blockchain.network,
-    'networkId': parseInt(blockchain.networkId, 10),
-  }
-  if (address !== undefined) {
-    filter.address = address
-  }
-
-  if (lenderAddress !== undefined) {
-    filter.lenderAddress = lenderAddress
-  }
-
-  if (includeRetired !== undefined) {
-    filter.retired = { $ne: true }
-  }
-
-  const isExist = await PoolModel.exists(filter).exec()
-  return !!isExist
-}
-
 async function getPool<IncludeStats extends boolean = false>(params: Params<IncludeStats>): Promise<IncludeStats extends true ? Required<Pool> : Pool>
 async function getPool<IncludeStats extends boolean = false>({
   blockchain,
   includeStats,
   ...params
 }: Params<IncludeStats>): Promise<Pool> {
-  const isExist = await isPoolExist({ ...params, blockchain })
-  if (isExist) {
-    const res = await PoolModel.aggregate(getPipelineStages({
-      blockchain,
-      ...params,
-    })).exec()
+  const res = await PoolModel.aggregate(getPipelineStages({
+    blockchain,
+    ...params,
+  })).exec()
 
+  if (res.length) {
     const pool = mapPool(res[0])
+    const onChainPool = await getOnChainPools({ blockchainFilter: { ethereum: blockchain.networkId }, address: pool.address })
 
+    if (!onChainPool.length) throw fault('ERR_ZOMBIE_POOL')
     if (includeStats !== true) return pool
 
     const [
@@ -76,22 +51,21 @@ async function getPool<IncludeStats extends boolean = false>({
       valueLocked: Value.$ETH(valueLockedEth),
     }
   }
-  else {
-    const unpublishedPools = await getUnpublishedPoolsByLenderAndAddress({
-      address: params.address,
-      lenderAddress: params.lenderAddress,
-      blockchainFilter: {
-        ethereum: blockchain.networkId,
-      },
-    })
-    const pool = unpublishedPools[0]
 
-    if (pool === undefined) {
-      throw fault('ERR_UNKNOWN_POOL')
-    }
+  const unpublishedPools = await getOnChainPools({
+    address: params.address,
+    lenderAddress: params.lenderAddress,
+    blockchainFilter: {
+      ethereum: blockchain.networkId,
+    },
+  })
+  const pool = unpublishedPools[0]
 
-    return pool
+  if (pool === undefined) {
+    throw fault('ERR_UNKNOWN_POOL')
   }
+
+  return pool
 }
 
 export default getPool

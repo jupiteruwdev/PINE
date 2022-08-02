@@ -205,4 +205,29 @@ describe('routes/v0/pools', () => {
       }
     })
   })
+
+  describe('GET /pools/lender', () => {
+    it('can publish ethereum pool', async () => {
+      const { body: res } = await request(app).get('/v0/pools/lender')
+        .query({
+          lenderAddress: '0xe1ea82ef81a6d7db87a8eb1108dc1754997c5a99',
+          ethereum: 1,
+        })
+        .expect('Content-Type', /json/)
+        .expect(200)
+      if (res.length) {
+        expect(res.length).to.equal(1)
+        expect(res[0]).to.have.property('version')
+        expect(res[0]).to.have.property('address')
+        expect(res[0]).to.have.property('collection')
+        expect(res[0]).to.have.property('loanOptions')
+        expect(res[0]).to.have.property('lenderAddress')
+        expect(res[0]).to.have.property('routerAddress')
+        expect(res[0]).to.have.property('repayRouterAddress')
+        expect(res[0]).to.have.property('rolloverAddress')
+        expect(res[0]).to.have.property('ethLimit')
+        expect(res[0]).to.have.property('published')
+      }
+    })
+  })
 })
