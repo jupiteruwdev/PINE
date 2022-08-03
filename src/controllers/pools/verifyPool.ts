@@ -27,6 +27,7 @@ export default async function verifyPool({ blockchain, address, collectionAddres
       logger.error('Fetching supported collection address from on chain ... ERR:', err)
       throw fault('ERR_VERIFYING_POOL', undefined, err)
     }
+    break
   default:
     throw fault('ERR_UNSUPPORTED_BLOCKCHAIN')
   }
