@@ -1,4 +1,5 @@
 import { Router } from 'express'
+import appConf from '../../app.conf'
 import { countPools, getPool, getUnpublishedPoolsByLender, searchPoolGroups } from '../../controllers'
 import publishPool from '../../controllers/pools/publishPool'
 import searchPools, { PoolSortDirection, PoolSortType } from '../../controllers/pools/searchPools'
@@ -43,6 +44,17 @@ router.get('/groups/search', async (req, res, next) => {
   }
   catch (err) {
     next(fault('ERR_API_SEARCH_POOL_GROUPS', undefined, err))
+  }
+})
+
+router.get('/tenors', async (req, res, next) => {
+  try {
+    const tenors = appConf.tenors
+
+    res.status(200).json({ tenors })
+  }
+  catch (err) {
+    next(fault('ERR_API_GET_TENORS', undefined, err))
   }
 })
 
