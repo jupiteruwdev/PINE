@@ -7,7 +7,7 @@ import fault from '../../utils/fault'
 import getPoolCapacity from './getPoolCapacity'
 import { default as getOnChainPools } from './getPools'
 import getPoolUtilization from './getPoolUtilization'
-import getOnChainPoolExistance from './verifyPool'
+import verifyPool from './verifyPool'
 
 type Params<IncludeStats> = {
   blockchain: Blockchain
@@ -32,7 +32,7 @@ async function getPool<IncludeStats extends boolean = false>({
   if (res.length) {
     const pool = mapPool(res[0])
     try {
-      await getOnChainPoolExistance({ blockchain, address: pool.address, collectionAddress: pool.collection.address.toLowerCase() })
+      await verifyPool({ blockchain, address: pool.address, collectionAddress: pool.collection.address.toLowerCase() })
     }
     catch (err) {
       throw fault('ERR_ZOMBIE_POOL', undefined, err)
