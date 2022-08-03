@@ -4,6 +4,7 @@ import { PoolModel } from '../../db'
 import { mapPool } from '../../db/adapters'
 import { Blockchain, Pool, Value } from '../../entities'
 import fault from '../../utils/fault'
+import getOnChainPoolExistance from './getOnChainPoolExistance'
 import { default as getOnChainPools } from './getOnChainPools'
 import getPoolCapacity from './getPoolCapacity'
 import getPoolUtilization from './getPoolUtilization'
@@ -30,9 +31,10 @@ async function getPool<IncludeStats extends boolean = false>({
 
   if (res.length) {
     const pool = mapPool(res[0])
-    const onChainPool = await getOnChainPools({ blockchainFilter: { ethereum: blockchain.networkId }, address: pool.address })
+    const onChainExist = await getOnChainPoolExistance({ blockchain, address: pool.address, collectionAddress: pool.collection.address.toLowerCase() })
 
-    if (!onChainPool.length) throw fault('ERR_ZOMBIE_POOL')
+    if (!onChainExist) throw fault('ERR_ZOMBIE_POOL')
+
     if (includeStats !== true) return pool
 
     const [

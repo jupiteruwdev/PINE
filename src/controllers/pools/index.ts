@@ -1,4 +1,5 @@
 export { default as countPools } from './countPools'
+export { default as getOnChainPoolExistance } from './getOnChainPoolExistance'
 export { default as getOnChainPools } from './getOnChainPools'
 export { default as getPool } from './getPool'
 export { default as getPoolCapacity } from './getPoolCapacity'

@@ -26,7 +26,7 @@ async function mapPool({ blockchain, pools }: MapPoolParams): Promise<Pool[]> {
       address: pool.id,
       blockchain,
       loanOptions: [],
-      lenderAddress: pool.lenderAddress,
+      lenderAddress: pool.lenderAddress ?? '',
       routerAddress: '',
       repayRouterAddress: '',
       rolloverAddress: '',
