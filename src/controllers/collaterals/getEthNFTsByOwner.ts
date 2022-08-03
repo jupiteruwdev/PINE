@@ -21,7 +21,10 @@ export default async function getEthNFTsByOwner({ blockchain, ownerAddress, popu
 
   if (blockchain.network !== 'ethereum') throw fault('ERR_UNSUPPORTED_BLOCKCHAIN')
 
-  const nfts = await composeDataSources(useAlchemy({ blockchain, ownerAddress, populateMetadata }), useMoralis({ blockchain, ownerAddress, populateMetadata }))
+  const nfts = await composeDataSources(
+    useAlchemy({ blockchain, ownerAddress, populateMetadata }),
+    useMoralis({ blockchain, ownerAddress, populateMetadata }),
+  )
 
   logger.info(`Fetching Ethereum NFTs by owner <${ownerAddress}> on network <${blockchain.networkId}>... OK: ${nfts.length} result(s)`)
 
