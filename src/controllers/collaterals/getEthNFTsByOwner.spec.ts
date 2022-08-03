@@ -1,6 +1,5 @@
 import { expect } from 'chai'
 import _ from 'lodash'
-import { describe, it } from 'mocha'
 import appConf from '../../app.conf'
 import { initDb } from '../../db'
 import { Blockchain, NFT } from '../../entities'
@@ -24,7 +23,7 @@ describe('controllers/collaterals/getEthNFTsByOwner', () => {
 
       expect(nfts).to.have.length.greaterThan(0)
       nfts.every(nft => expect(nft).to.have.all.keys(...ALL_KEYS))
-      nfts.every(nft => REQUIRED_KEYS.every(key => expect(nft).to.have.property(key)))
+      nfts.every(nft => REQUIRED_KEYS.every(key => expect(_.get(nft, key)).to.not.be.undefined))
     })
 
     it(`can get NFTs for test wallet <${TEST_WALLET_ADDRESS}> with metadata`, async () => {
@@ -32,7 +31,7 @@ describe('controllers/collaterals/getEthNFTsByOwner', () => {
 
       expect(nfts).to.have.length.greaterThan(0)
       nfts.every(nft => expect(nft).to.have.all.keys(...ALL_KEYS))
-      nfts.every(nft => REQUIRED_KEYS.every(key => expect(nft).to.have.property(key)))
+      nfts.every(nft => REQUIRED_KEYS.every(key => expect(_.get(nft, key)).to.not.be.undefined))
     })
 
     WHALE_WALLET_ADDRESSES.forEach(address => {
@@ -41,7 +40,7 @@ describe('controllers/collaterals/getEthNFTsByOwner', () => {
 
         expect(nfts).to.have.length.greaterThan(0)
         nfts.every(nft => expect(nft).to.have.all.keys(...ALL_KEYS))
-        nfts.every(nft => REQUIRED_KEYS.every(key => expect(nft).to.have.property(key)))
+        nfts.every(nft => REQUIRED_KEYS.every(key => expect(_.get(nft, key)).to.not.be.undefined))
       })
 
       it(`can get NFTs for whale wallet <${address}> with metadata`, async () => {
@@ -49,7 +48,7 @@ describe('controllers/collaterals/getEthNFTsByOwner', () => {
 
         expect(nfts).to.have.length.greaterThan(0)
         nfts.every(nft => expect(nft).to.have.all.keys(...ALL_KEYS))
-        nfts.every(nft => REQUIRED_KEYS.every(key => expect(nft).to.have.property(key)))
+        nfts.every(nft => REQUIRED_KEYS.every(key => expect(_.get(nft, key)).to.not.be.undefined))
       })
     })
   })
@@ -60,7 +59,7 @@ describe('controllers/collaterals/getEthNFTsByOwner', () => {
 
       expect(nfts).to.have.length.greaterThan(0)
       nfts.every(nft => expect(nft).to.have.all.keys(...ALL_KEYS))
-      nfts.every(nft => REQUIRED_KEYS.every(key => expect(nft).to.have.property(key)))
+      nfts.every(nft => REQUIRED_KEYS.every(key => expect(_.get(nft, key)).to.not.be.undefined))
     })
 
     it(`can get NFTs for test wallet <${TEST_WALLET_ADDRESS}> with metadata`, async () => {
@@ -68,7 +67,7 @@ describe('controllers/collaterals/getEthNFTsByOwner', () => {
 
       expect(nfts).to.have.length.greaterThan(0)
       nfts.every(nft => expect(nft).to.have.all.keys(...ALL_KEYS))
-      nfts.every(nft => REQUIRED_KEYS.every(key => expect(nft).to.have.property(key)))
+      nfts.every(nft => REQUIRED_KEYS.every(key => expect(_.get(nft, key)).to.not.be.undefined))
     })
   })
 })

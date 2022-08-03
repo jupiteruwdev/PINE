@@ -7,7 +7,7 @@ import logger from '../../utils/logger'
 import rethrow from '../../utils/rethrow'
 import getEthWeb3 from '../utils/getEthWeb3'
 import getRequest from '../utils/getRequest'
-import normalizeNFTImageUri from '../utils/normalizeNFTImageUri'
+import normalizeIPFSUri from '../utils/normalizeIPFSUri'
 
 type Params = {
   blockchain: Blockchain
@@ -66,7 +66,7 @@ async function getMetadataFromAlchemy({
 
   return {
     name,
-    imageUrl: normalizeNFTImageUri(imageUrl),
+    imageUrl: normalizeIPFSUri(imageUrl),
   }
 }
 
@@ -89,7 +89,7 @@ async function getMetadataFromTokenUri({
     }
 
     try {
-      const res = await getRequest(normalizeNFTImageUri(tokenUri))
+      const res = await getRequest(normalizeIPFSUri(tokenUri))
       return res
     }
     catch (err) {
@@ -100,7 +100,7 @@ async function getMetadataFromTokenUri({
   })()
 
   return {
-    imageUrl: normalizeNFTImageUri(metadata.image),
+    imageUrl: normalizeIPFSUri(metadata.image),
     name: metadata.name ?? `#${metadata.id ?? nftId}`,
   }
 }
