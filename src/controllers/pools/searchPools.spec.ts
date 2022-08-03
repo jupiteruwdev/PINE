@@ -1,44 +1,44 @@
 /**
- * @todo Test all available params of {@link searchPools}.
+ * @todo Test all available params of {@link searchPublishedPools}.
  */
 
 import { expect } from 'chai'
 import { initDb } from '../../db'
 import { Blockchain, Pool } from '../../entities'
-import searchPools, { PoolSortDirection, PoolSortType } from './searchPools'
+import searchPublishedPools, { PoolSortDirection, PoolSortType } from './searchPublishedPools'
 
-describe('controllers/pools/searchPools', () => {
+describe('controllers/pools/searchPublishedPools', () => {
   before('connect to db', async () => {
     await initDb()
   })
 
   it('can search all pools with default params', async () => {
-    const pools = await searchPools()
+    const pools = await searchPublishedPools()
 
     assertPoolArray(pools)
   })
 
   it('can search all pools on Ethereum Mainnet', async () => {
-    const pools = await searchPools({ blockchainFilter: { ethereum: Blockchain.Ethereum.Network.MAIN } })
+    const pools = await searchPublishedPools({ blockchainFilter: { ethereum: Blockchain.Ethereum.Network.MAIN } })
 
     assertPoolArray(pools)
   })
 
   it('can search all pools on Ethereum Rinkeby', async () => {
-    const pools = await searchPools({ blockchainFilter: { ethereum: Blockchain.Ethereum.Network.RINKEBY } })
+    const pools = await searchPublishedPools({ blockchainFilter: { ethereum: Blockchain.Ethereum.Network.RINKEBY } })
 
     assertPoolArray(pools)
   })
 
   it('can search pools with pagination options', async () => {
-    const pools = await searchPools({ paginateBy: { count: 5, offset: 0 } })
+    const pools = await searchPublishedPools({ paginateBy: { count: 5, offset: 0 } })
 
     expect(pools).to.have.length(5)
     assertPoolArray(pools)
   })
 
   it('can search pools with sort options', async () => {
-    const pools = await searchPools({ sortBy: { type: PoolSortType.NAME, direction: PoolSortDirection.ASC } })
+    const pools = await searchPublishedPools({ sortBy: { type: PoolSortType.NAME, direction: PoolSortDirection.ASC } })
 
     expect(pools).to.have.length.greaterThan(0)
     assertPoolArray(pools)

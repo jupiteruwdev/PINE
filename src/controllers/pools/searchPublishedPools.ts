@@ -34,8 +34,8 @@ type Params<IncludeStats> = {
   }
 }
 
-async function searchPools<IncludeStats extends boolean = false>(params?: Params<IncludeStats>): Promise<IncludeStats extends true ? Required<Pool>[] : Pool[]>
-async function searchPools<IncludeStats extends boolean = false>({
+async function searchPublishedPools<IncludeStats extends boolean = false>(params?: Params<IncludeStats>): Promise<IncludeStats extends true ? Required<Pool>[] : Pool[]>
+async function searchPublishedPools<IncludeStats extends boolean = false>({
   includeStats,
   paginateBy,
   ...params
@@ -76,7 +76,7 @@ async function searchPools<IncludeStats extends boolean = false>({
   return poolsWithStats
 }
 
-export default searchPools
+export default searchPublishedPools
 
 function getPipelineStages({
   blockchainFilter = {
