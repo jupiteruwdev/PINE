@@ -68,13 +68,16 @@ export function useAlchemy({ blockchain, ownerAddress, populateMetadata }: Param
 
       if (populateMetadata === true) {
         const name = _.get(entry, 'metadata.name')
-        const imageUrl = ['media.0.gateway', 'metadata.image', 'metadata.image_url'].reduceRight((prev, curr) => !_.isEmpty(prev) ? prev : _.get(res, curr))
+        const imageUrl = ['media.0.gateway', 'metadata.image', 'metadata.image_url'].reduceRight((prev, curr) => !_.isEmpty(prev) ? prev : _.get(res, curr), '')
 
         if (_.isEmpty(name) || _.isEmpty(imageUrl)) {
           const tokenUri = _.get(res, 'tokenUri.gateway')
 
           try {
-            metadata = await composeDataSources(useTokenUri({ tokenUri }), useContract({ blockchain, collectionAddress, nftId: tokenId.toFixed() }))
+            metadata = await composeDataSources(
+              useTokenUri({ tokenUri }),
+              useContract({ blockchain, collectionAddress, nftId: tokenId.toFixed() }),
+            )
           }
           catch (err) {
             logger.warn(`Fetching NFTs by owner <${ownerAddress}> using Alchemy API... WARN: NFT ${JSON.stringify(entry)} has missing metadata`)

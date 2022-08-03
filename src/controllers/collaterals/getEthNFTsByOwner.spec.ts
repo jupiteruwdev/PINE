@@ -32,7 +32,7 @@ describe('controllers/collaterals/getEthNFTsByOwner', () => {
       expect(nfts).to.have.length.greaterThan(0)
       nfts.every(nft => expect(nft).to.have.all.keys(...ALL_KEYS))
       nfts.every(nft => REQUIRED_KEYS.every(key => expect(_.get(nft, key)).to.not.be.undefined))
-    })
+    }).timeout(0)
 
     WHALE_WALLET_ADDRESSES.forEach(address => {
       it(`can get NFTs for whale wallet <${address}> without metadata`, async () => {
@@ -49,7 +49,7 @@ describe('controllers/collaterals/getEthNFTsByOwner', () => {
         expect(nfts).to.have.length.greaterThan(0)
         nfts.every(nft => expect(nft).to.have.all.keys(...ALL_KEYS))
         nfts.every(nft => REQUIRED_KEYS.every(key => expect(_.get(nft, key)).to.not.be.undefined))
-      })
+      }).timeout(0)
     })
   })
 
@@ -68,6 +68,6 @@ describe('controllers/collaterals/getEthNFTsByOwner', () => {
       expect(nfts).to.have.length.greaterThan(0)
       nfts.every(nft => expect(nft).to.have.all.keys(...ALL_KEYS))
       nfts.every(nft => REQUIRED_KEYS.every(key => expect(_.get(nft, key)).to.not.be.undefined))
-    })
+    }).timeout(0)
   })
 })

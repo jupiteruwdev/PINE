@@ -2,9 +2,9 @@ import _ from 'lodash'
 import { PipelineStage } from 'mongoose'
 import { NFTCollectionModel } from '../../db'
 import { mapCollection } from '../../db/adapters'
-import { Blockchain, Collection, NFT, NFTMetadata } from '../../entities'
+import { Blockchain, Collection, NFT } from '../../entities'
 import fault from '../../utils/fault'
-import { getNFTMetadata } from '../collaterals'
+import { getEthNFTMetadata } from '../collaterals'
 
 type Params = {
   address: string
@@ -29,7 +29,7 @@ export default async function getCollection({
   const filteredCollections = _.compact(await Promise.all(res.map(async doc => {
     if (!doc.matcher) return doc
 
-    const nftMetadata: NFTMetadata = await getNFTMetadata({ blockchain, collectionAddress: address, nftId }).catch(err => { throw Error('NO') })
+    const nftMetadata = await getEthNFTMetadata({ blockchain, collectionAddress: address, nftId }).catch(err => { throw Error('NO') })
     const nft: Partial<NFT> = { id: nftId, ...nftMetadata }
     const regex = new RegExp(String(doc.matcher.regex))
 

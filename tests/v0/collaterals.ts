@@ -2,6 +2,7 @@ import { expect } from 'chai'
 import request from 'supertest'
 import app from '../../src/app'
 import appConf from '../../src/app.conf'
+import { deserializeEntityArray, NFT } from '../../src/entities'
 
 describe('routes/v0/collaterals', () => {
   describe('GET /collaterals', () => {
@@ -14,14 +15,16 @@ describe('routes/v0/collaterals', () => {
         .expect('Content-Type', /json/)
         .expect(200)
 
-      expect(res.length).to.be.greaterThanOrEqual(1)
+      const nfts = deserializeEntityArray(res, NFT.codingResolver)
 
-      for (const item of res) {
-        expect(item).to.have.property('collection')
-        expect(item).to.have.property('id')
-        expect(item).to.have.property('ownerAddress')
-        expect(item).to.have.property('imageUrl')
-        expect(item).to.have.property('name')
+      expect(nfts.length).to.be.greaterThanOrEqual(1)
+
+      for (const nft of nfts) {
+        expect(nft).to.have.property('collection')
+        expect(nft).to.have.property('id')
+        expect(nft).to.have.property('ownerAddress')
+        expect(nft).to.have.property('imageUrl')
+        expect(nft).to.have.property('name')
       }
     })
 
@@ -34,14 +37,16 @@ describe('routes/v0/collaterals', () => {
         .expect('Content-Type', /json/)
         .expect(200)
 
-      expect(res.length).to.be.greaterThanOrEqual(1)
+      const nfts = deserializeEntityArray(res, NFT.codingResolver)
 
-      for (const item of res) {
-        expect(item).to.have.property('collection')
-        expect(item).to.have.property('id')
-        expect(item).to.have.property('ownerAddress')
-        expect(item).to.have.property('imageUrl')
-        expect(item).to.have.property('name')
+      expect(nfts.length).to.be.greaterThanOrEqual(1)
+
+      for (const nft of nfts) {
+        expect(nft).to.have.property('collection')
+        expect(nft).to.have.property('id')
+        expect(nft).to.have.property('ownerAddress')
+        expect(nft).to.have.property('imageUrl')
+        expect(nft).to.have.property('name')
       }
     })
   })
