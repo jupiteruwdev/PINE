@@ -1,7 +1,7 @@
 import { Router } from 'express'
 import appConf from '../../app.conf'
-import { countPools, getOnChainPools, getPool, publishPool, searchPoolGroups } from '../../controllers'
-import searchPools, { PoolSortDirection, PoolSortType } from '../../controllers/pools/searchPools'
+import { countPools, getPool, getPools, publishPool, searchPoolGroups } from '../../controllers'
+import searchPools, { PoolSortDirection, PoolSortType } from '../../controllers/pools/searchPublishedPools'
 import { Pagination, Pool, PoolGroup, serializeEntityArray } from '../../entities'
 import fault from '../../utils/fault'
 import { getBlockchain, getBlockchainFilter, getNumber, getString } from '../utils/query'
@@ -55,7 +55,7 @@ router.get('/lender', async (req, res, next) => {
       lenderAddress,
     })
     const publishedPoolAddresses = publishedPools.map(pool => pool.address.toLowerCase())
-    const unpublishedPools = await getOnChainPools({
+    const unpublishedPools = await getPools({
       blockchainFilter, lenderAddress, excludeAddresses: publishedPoolAddresses,
     })
     const payload = serializeEntityArray([...publishedPools, ...unpublishedPools], Pool.codingResolver)

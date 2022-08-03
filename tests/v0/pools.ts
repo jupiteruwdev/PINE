@@ -3,14 +3,14 @@ import _ from 'lodash'
 import { describe, it } from 'mocha'
 import request from 'supertest'
 import app from '../../src/app'
-import { searchPools } from '../../src/controllers'
+import { searchPublishedPools } from '../../src/controllers'
 import { getCollections } from '../../src/controllers/collections'
 import { Blockchain } from '../../src/entities'
 
 describe('routes/v0/pools', () => {
   describe('GET /pools/:poolAddress', () => {
     it('can get all ethereum loan pools on mainnet', async () => {
-      const pools = await searchPools({ blockchainFilter: { ethereum: Blockchain.Ethereum.Network.MAIN } })
+      const pools = await searchPublishedPools({ blockchainFilter: { ethereum: Blockchain.Ethereum.Network.MAIN } })
 
       await Promise.all(pools.map(async pool => {
         const { body: res } = await request(app).get(`/v0/pools/${pool.address}`)
@@ -134,7 +134,7 @@ describe('routes/v0/pools', () => {
     })
 
     it('can get all ethereum mainnet pools with pagination', async () => {
-      const pools = await searchPools()
+      const pools = await searchPublishedPools()
       const totalCount = pools.filter(pool => pool.collection.blockchain.network === 'ethereum' && parseInt(pool.collection.blockchain.networkId, 10) === 1).length
       const { body: res } = await request(app).get('/v0/pools/groups/search')
         .query({
@@ -181,7 +181,7 @@ describe('routes/v0/pools', () => {
     })
 
     it('can get all ethereum mainnet pools with sorting & pagination', async () => {
-      const pools = await searchPools()
+      const pools = await searchPublishedPools()
       const totalCount = pools.filter(pool => pool.collection.blockchain.network === 'ethereum' && parseInt(pool.collection.blockchain.networkId, 10) === 1).length
       const { body: res } = await request(app).get('/v0/pools/groups/search')
         .query({
@@ -202,31 +202,6 @@ describe('routes/v0/pools', () => {
         expect(res.data[0]).to.have.property('pools')
         expect(res.data[0]).to.have.property('floorPrice')
         expect(res.data[0]).to.have.property('totalValueLocked')
-      }
-    })
-  })
-
-  describe('GET /pools/lender', () => {
-    it('can publish ethereum pool', async () => {
-      const { body: res } = await request(app).get('/v0/pools/lender')
-        .query({
-          lenderAddress: '0xe1ea82ef81a6d7db87a8eb1108dc1754997c5a99',
-          ethereum: 1,
-        })
-        .expect('Content-Type', /json/)
-        .expect(200)
-      if (res.length) {
-        expect(res.length).to.equal(1)
-        expect(res[0]).to.have.property('version')
-        expect(res[0]).to.have.property('address')
-        expect(res[0]).to.have.property('collection')
-        expect(res[0]).to.have.property('loanOptions')
-        expect(res[0]).to.have.property('lenderAddress')
-        expect(res[0]).to.have.property('routerAddress')
-        expect(res[0]).to.have.property('repayRouterAddress')
-        expect(res[0]).to.have.property('rolloverAddress')
-        expect(res[0]).to.have.property('ethLimit')
-        expect(res[0]).to.have.property('published')
       }
     })
   })

@@ -8,7 +8,7 @@ type Params = {
   excludeAddresses?: string[]
 }
 
-export default async function getOnChainPoolsFromGraph({ lenderAddress, address, excludeAddresses }: Params, options: Options) {
+export default async function getOnChainPools({ lenderAddress, address, excludeAddresses }: Params, options: Options) {
   const request = getRequest(gql`
     query pools(${lenderAddress !== undefined ? '$lenderAddress: String' : ''}${address !== undefined ? ', $address: String' : ''}${excludeAddresses?.length ? ', $excludeAddresses: [String]' : ''}) {
       pools(where: {${lenderAddress !== undefined ? 'lenderAddress: $lenderAddress' : ''}${address !== undefined ? ', id: $address' : ''}${excludeAddresses?.length ? ', id_not_in: $excludeAddresses' : ''}}) {

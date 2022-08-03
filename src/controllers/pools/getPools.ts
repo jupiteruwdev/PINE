@@ -1,6 +1,6 @@
 import _ from 'lodash'
 import { Blockchain, Pool } from '../../entities'
-import { getOnChainPoolsFromGraph } from '../../subgraph'
+import { getOnChainPools } from '../../subgraph'
 import fault from '../../utils/fault'
 import logger from '../../utils/logger'
 import { getCollection } from '../collections'
@@ -38,7 +38,7 @@ async function mapPool({ blockchain, pools }: MapPoolParams): Promise<Pool[]> {
   return poolsData
 }
 
-export default async function getOnChainPools({
+export default async function getPools({
   blockchainFilter = {
     ethereum: Blockchain.Ethereum.Network.MAIN,
     solana: Blockchain.Solana.Network.MAINNET,
@@ -55,11 +55,11 @@ export default async function getOnChainPools({
 
     switch (blockchain.networkId) {
     case Blockchain.Ethereum.Network.MAIN:
-      const { pools: poolMainnet } = await getOnChainPoolsFromGraph({ lenderAddress, address, excludeAddresses }, { networkId: blockchain.networkId })
+      const { pools: poolMainnet } = await getOnChainPools({ lenderAddress, address, excludeAddresses }, { networkId: blockchain.networkId })
       poolsData = await mapPool({ blockchain, pools: poolMainnet })
       break
     case Blockchain.Ethereum.Network.RINKEBY:
-      const { pools: poolsRinkeby } = await getOnChainPoolsFromGraph({ lenderAddress, address, excludeAddresses }, { networkId: blockchain.networkId })
+      const { pools: poolsRinkeby } = await getOnChainPools({ lenderAddress, address, excludeAddresses }, { networkId: blockchain.networkId })
       poolsData = await mapPool({ blockchain, pools: poolsRinkeby })
     }
   }
