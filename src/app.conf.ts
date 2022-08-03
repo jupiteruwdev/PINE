@@ -50,6 +50,7 @@ export default {
     [Blockchain.Ethereum.Network.MAIN]: '0x90dFb72736481BBacc7938d2D3673590B92647AE',
   },
   mongoUri: process.env.MONGO_URI ?? '',
+  tenors: [1, 3, 7, 14, 30],
   tests: {
     verboseLogging: process.env.TESTS_VERBOSE_LOGGING === 'true' ? true : false,
     walletAddress: process.env.TESTS_WALLET_ADDRESS ?? '',
