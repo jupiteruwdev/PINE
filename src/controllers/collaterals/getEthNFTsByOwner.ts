@@ -84,10 +84,12 @@ export function useAlchemy({ blockchain, ownerAddress, populateMetadata }: Param
           const tokenUri = _.get(entry, 'tokenUri.gateway')
 
           try {
-            metadata = await composeDataSources(
+            const dataSource = composeDataSources(
               useTokenUri({ tokenUri }),
               useContract({ blockchain, collectionAddress, nftId: tokenId }),
             )
+
+            metadata = await dataSource.apply(undefined)
 
             logger.info(`Fetching metadata for NFT <${collectionAddress}/${tokenId}>... OK:`, metadata)
           }
@@ -164,10 +166,12 @@ export function useMoralis({ blockchain, ownerAddress, populateMetadata }: Param
           const tokenUri = _.get(entry, 'token_uri')
 
           try {
-            metadata = await composeDataSources(
+            const dataSource = composeDataSources(
               useTokenUri({ tokenUri }),
               useContract({ blockchain, collectionAddress, nftId: tokenId }),
             )
+
+            metadata = await dataSource.apply(undefined)
 
             logger.info(`Fetching metadata for NFT <${collectionAddress}/${tokenId}>... OK:`, metadata)
           }
