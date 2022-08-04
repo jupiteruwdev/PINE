@@ -6,6 +6,10 @@ import { Blockchain, NFT } from '../../entities'
 import getEthNFTsByOwner from './getEthNFTsByOwner'
 
 describe('controllers/collaterals/getEthNFTsByOwner', () => {
+  before('connect to db', async () => {
+    await initDb()
+  })
+
   const MAINNET = Blockchain.Ethereum(Blockchain.Ethereum.Network.MAIN)
   const RINKEBY = Blockchain.Ethereum(Blockchain.Ethereum.Network.RINKEBY)
   const TEST_WALLET_ADDRESS = appConf.tests.walletAddress

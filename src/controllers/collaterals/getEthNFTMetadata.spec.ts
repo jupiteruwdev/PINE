@@ -1,10 +1,15 @@
 import { expect } from 'chai'
 import { getEthNFTsByOwner } from '.'
 import appConf from '../../app.conf'
+import { initDb } from '../../db'
 import { Blockchain, NFT } from '../../entities'
 import getEthNFTMetadata from './getEthNFTMetadata'
 
 describe('controllers/collaterals/getEthNFTMetadata', () => {
+  before('connect to db', async () => {
+    await initDb()
+  })
+
   const MAINNET = Blockchain.Ethereum(Blockchain.Ethereum.Network.MAIN)
   const RINKEBY = Blockchain.Ethereum(Blockchain.Ethereum.Network.RINKEBY)
   const TEST_WALLET_ADDRESS = appConf.tests.walletAddress
