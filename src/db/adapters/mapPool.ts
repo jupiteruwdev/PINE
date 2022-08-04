@@ -54,9 +54,9 @@ export default function mapPool(data: Record<string, any>): Pool {
   if (!networkId) throw TypeError('Failed to map key "networkId"')
   if (!collection) throw TypeError('Failed to map key "collection"')
   if (!loanOptions) throw TypeError('Failed to map key "loanOptions"')
-  if (!routerAddress) throw TypeError('Failed to map key "routerAddress"')
-  if (!repayRouterAddress) throw TypeError('Failed to map key "repayRouterAddress"')
-  if (!rolloverAddress) throw TypeError('Failed to map key "rolloverAddress"')
+  if (!_.isString(routerAddress)) throw TypeError('Failed to map key "routerAddress"')
+  if (!_.isString(repayRouterAddress)) throw TypeError('Failed to map key "repayRouterAddress"')
+  if (!_.isString(rolloverAddress)) throw TypeError('Failed to map key "rolloverAddress"')
   if (!defaultFees) throw TypeError('Failed to map key "defaultFees"')
 
   return {
