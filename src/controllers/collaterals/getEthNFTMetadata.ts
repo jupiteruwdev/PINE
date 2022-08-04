@@ -2,7 +2,7 @@ import _ from 'lodash'
 import ERC721EnumerableABI from '../../abis/ERC721Enumerable.json'
 import appConf from '../../app.conf'
 import { Blockchain, NFTMetadata } from '../../entities'
-import { composeDataSources, DataSource } from '../../utils/dataSources'
+import composeDataSources, { DataSource } from '../../utils/composeDataSources'
 import logger from '../../utils/logger'
 import rethrow from '../../utils/rethrow'
 import getEthWeb3 from '../utils/getEthWeb3'
@@ -36,11 +36,13 @@ export default async function getEthNFTMetadata({
   tokenUri,
 }: Params): Promise<Partial<NFTMetadata>> {
   try {
-    const metadata = await composeDataSources(
+    const dataSource = composeDataSources(
       useTokenUri({ tokenUri }),
       useAlchemy({ blockchain, collectionAddress, nftId }),
       useContract({ blockchain, collectionAddress, nftId }),
     )
+
+    const metadata = await dataSource.apply(undefined)
 
     return metadata
   }

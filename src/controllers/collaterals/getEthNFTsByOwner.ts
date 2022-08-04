@@ -2,7 +2,7 @@ import BigNumber from 'bignumber.js'
 import _ from 'lodash'
 import appConf from '../../app.conf'
 import { Blockchain, Collection, NFT } from '../../entities'
-import { composeDataSources, DataSource } from '../../utils/dataSources'
+import composeDataSources, { DataSource } from '../../utils/composeDataSources'
 import fault from '../../utils/fault'
 import logger from '../../utils/logger'
 import rethrow from '../../utils/rethrow'
@@ -22,10 +22,12 @@ export default async function getEthNFTsByOwner({ blockchain, ownerAddress, popu
 
   logger.info(`Fetching Ethereum NFTs by owner <${ownerAddress}> on network <${blockchain.networkId}>...`)
 
-  const nfts = await composeDataSources(
+  const dataSource = composeDataSources(
     useAlchemy({ blockchain, ownerAddress, populateMetadata }),
     useMoralis({ blockchain, ownerAddress, populateMetadata }),
   )
+
+  const nfts = await dataSource.apply(undefined)
 
   logger.info(`Fetching Ethereum NFTs by owner <${ownerAddress}> on network <${blockchain.networkId}>... OK: ${nfts.length} result(s)`)
 

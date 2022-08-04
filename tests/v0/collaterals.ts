@@ -3,14 +3,14 @@ import _ from 'lodash'
 import request from 'supertest'
 import app from '../../src/app'
 import appConf from '../../src/app.conf'
-import { deserializeEntityArray, NFT } from '../../src/entities'
+import { Blockchain, deserializeEntityArray, NFT } from '../../src/entities'
 
 describe('routes/v0/collaterals', () => {
   describe('GET /collaterals', () => {
     it('can get all Ethereum Mainnet collaterals', async () => {
       const { body: res } = await request(app).get('/v0/collaterals')
         .query({
-          ethereum: 1,
+          ethereum: Blockchain.Ethereum.Network.MAIN,
           owner: appConf.tests.walletAddress,
         })
         .expect('Content-Type', /json/)
@@ -26,7 +26,7 @@ describe('routes/v0/collaterals', () => {
     it('can get all Ethereum Rinkeby collaterals', async () => {
       const { body: res } = await request(app).get('/v0/collaterals')
         .query({
-          ethereum: 4,
+          ethereum: Blockchain.Ethereum.Network.RINKEBY,
           owner: appConf.tests.walletAddress,
         })
         .expect('Content-Type', /json/)
