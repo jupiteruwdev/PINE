@@ -27,6 +27,6 @@ export default function composeDataSources<R>(...dataSources: DataSource<R>[]): 
       catch (err) {}
     }
 
-    rethrow('Exhausted all data sources')
+    rethrow('Exhausted all data sources yielding no non-empty result')
   }
 }
