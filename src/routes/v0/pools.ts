@@ -96,7 +96,9 @@ router.post('/:poolAddress', async (req, res, next) => {
   try {
     const blockchain = getBlockchain(req.query)
     const poolAddress = getString(req.params, 'poolAddress')
-    const pool = await publishPool({ blockchain, poolAddress })
+    const payload = getString(req.params, 'payload')
+    const signature = getString(req.params, 'signature')
+    const pool = await publishPool({ blockchain, poolAddress, payload, signature })
 
     res.status(200).json(pool)
   }

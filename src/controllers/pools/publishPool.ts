@@ -5,10 +5,13 @@ import { getOnChainPoolByAddress } from '../../subgraph'
 import fault from '../../utils/fault'
 import logger from '../../utils/logger'
 import saveCollection from '../collections/saveCollection'
+import authenticatePoolPublisher from './authenticatePoolPublisher'
 
 type Params = {
   blockchain: Blockchain
   poolAddress: string
+  payload: string
+  signature: string
 }
 
 type SavePoolParams = {
@@ -46,6 +49,8 @@ async function savePool({ poolData, blockchain }: SavePoolParams) {
 export default async function publishPool({
   blockchain,
   poolAddress,
+  payload,
+  signature,
 }: Params): Promise<Pool> {
   logger.info(`Publishing pools for address <${poolAddress}>`)
   let pool: Pool
@@ -54,6 +59,7 @@ export default async function publishPool({
     case 'ethereum':
       switch (blockchain.networkId) {
       case Blockchain.Ethereum.Network.MAIN:
+        authenticatePoolPublisher({ poolAddress, payload, signature, networkId: blockchain.networkId })
         const { pool: poolMainnet } = await getOnChainPoolByAddress({ poolAddress }, { networkId: blockchain.networkId })
         pool = await savePool({
           poolData: poolMainnet,
@@ -61,6 +67,7 @@ export default async function publishPool({
         })
         break
       case Blockchain.Ethereum.Network.RINKEBY:
+        authenticatePoolPublisher({ poolAddress, payload, signature, networkId: blockchain.networkId })
         const { pool: poolRinkeby } = await getOnChainPoolByAddress({ poolAddress }, { networkId: blockchain.networkId })
         pool = await savePool({
           poolData: poolRinkeby,
