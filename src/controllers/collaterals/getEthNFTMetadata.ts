@@ -3,6 +3,7 @@ import ERC721EnumerableABI from '../../abis/ERC721Enumerable.json'
 import appConf from '../../app.conf'
 import { Blockchain, NFTMetadata } from '../../entities'
 import { composeDataSources, DataSource } from '../../utils/dataSources'
+import logger from '../../utils/logger'
 import rethrow from '../../utils/rethrow'
 import getEthWeb3 from '../utils/getEthWeb3'
 import getRequest from '../utils/getRequest'
@@ -50,6 +51,8 @@ export default async function getEthNFTMetadata({
 
 export function useAlchemy({ blockchain, collectionAddress, nftId }: Omit<Params, 'tokenUri'>): DataSource<Partial<NFTMetadata>> {
   return async () => {
+    logger.info(`Using Alchemy to look up metadata for NFT <${collectionAddress}/${nftId}}>...`)
+
     if (blockchain?.network !== 'ethereum') rethrow(`Unsupported blockchain <${JSON.stringify(blockchain)}>`)
 
     const apiHost = _.get(appConf.alchemyAPIUrl, blockchain.networkId) ?? rethrow(`Missing Alchemy API URL for blockchain <${JSON.stringify(blockchain)}>`)
@@ -65,10 +68,12 @@ export function useAlchemy({ blockchain, collectionAddress, nftId }: Omit<Params
     const name = _.get(res, 'metadata.name')
     const imageUrl = ['media.0.gateway', 'metadata.image', 'metadata.image_url'].reduceRight((prev, curr) => !_.isEmpty(prev) ? prev : _.get(res, curr), '')
 
-    if (_.isEmpty(name) || _.isEmpty(imageUrl)) {
+    if (_.isEmpty(name) && _.isEmpty(imageUrl)) {
       const tokenUri = _.get(res, 'tokenUri.gateway')
       const dataSource = useTokenUri({ tokenUri })
-      return dataSource.apply(undefined)
+      const metadata = await dataSource.apply(undefined)
+
+      return metadata
     }
     else {
       return {
@@ -81,6 +86,8 @@ export function useAlchemy({ blockchain, collectionAddress, nftId }: Omit<Params
 
 export function useContract({ blockchain, collectionAddress, nftId }: Omit<Params, 'tokenUri'>): DataSource<Partial<NFTMetadata>> {
   return async () => {
+    logger.info(`Using contract to look up metadata for NFT <${collectionAddress}/${nftId}}>...`)
+
     if (blockchain?.network !== 'ethereum') rethrow(`Unsupported blockchain <${JSON.stringify(blockchain)}>`)
 
     const web3 = getEthWeb3(blockchain.networkId)
@@ -88,12 +95,14 @@ export function useContract({ blockchain, collectionAddress, nftId }: Omit<Param
     const tokenUri = await contract.methods.tokenURI(nftId).call()
     const dataSource = useTokenUri({ tokenUri })
 
-    return dataSource.apply(undefined)
+    return dataSource.apply(undefined).catch(err => rethrow(`No name and image URL found in metadata for contract <${collectionAddress}/${nftId}}>`))
   }
 }
 
 export function useTokenUri({ tokenUri }: Pick<Params, 'tokenUri'>): DataSource<Partial<NFTMetadata>> {
   return async () => {
+    logger.info(`Using token URI <${tokenUri}> to look up metadata for NFT...`)
+
     if (tokenUri === undefined) rethrow(`Failed to fetch NFT metadata from token URI <${tokenUri}>`)
 
     let res: any
@@ -112,12 +121,13 @@ export function useTokenUri({ tokenUri }: Pick<Params, 'tokenUri'>): DataSource<
     const name = _.get(res, 'name')
     const imageUrl = ['image', 'image_url'].reduceRight((prev, curr) => !_.isEmpty(prev) ? prev : _.get(res, curr), '')
 
-    if (_.isEmpty(name)) rethrow(`No name found in metadata for token URI <${tokenUri}>`)
-    if (_.isEmpty(imageUrl)) rethrow(`No image URL found in metadata for token URI <${tokenUri}>`)
+    if (_.isEmpty(name) && _.isEmpty(imageUrl)) rethrow(`No name and image URL found in metadata for token URI <${tokenUri}>`)
 
-    return {
-      imageUrl: normalizeIPFSUri(imageUrl),
+    const metadata = {
+      imageUrl: !_.isNil(imageUrl) ? normalizeIPFSUri(imageUrl) : undefined,
       name,
     }
+
+    return metadata
   }
 }

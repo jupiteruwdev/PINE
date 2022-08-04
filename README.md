@@ -63,24 +63,22 @@ $ docker-compose -f docker-compose.yml up
 
 ## Logging
 
-Logs are powered by [winston](https://github.com/winstonjs/winston) and have the following levels configured, ordered by priority (we are using the `npm` logging levels, see https://github.com/winstonjs/winston#logging-levels):
+Logs are powered by [winston](https://github.com/winstonjs/winston) and have the following levels configured, ordered by priority (we are using a set of downsized `npm` logging levels, see https://github.com/winstonjs/winston#logging-levels):
 
 1. `error`
 2. `warn`
 3. `info`
-4. `http`
 5. `verbose`
 6. `debug`
-7. `silly`
 
 To enable logging, simply set the following environment variables to the appropriate level listed above. Note that all log levels above the set level are also visible, but not vice-versa (i.e. if log level is set to `info`, `warn` and `error` level logs will also be visible, but not `http`, `verbose`, `debug` and `silly`):
 
 ```sh
 # Set log level for the app (excludes unit/integration tests)
-LOG_LEVEL=<error|warn|info|http|verbose|debug|silly>
+LOG_LEVEL=<error|warn|info|verbose|debug>
 
 # Set log level for unit/integration tests
-TESTS_LOG_LEVEL=<error|warn|info|http|verbose|debug|silly>
+TESTS_LOG_LEVEL=<error|warn|info|verbose|debug>
 ```
 
 To disable logging for the target environment, simply unset the environment variable.

@@ -1,10 +1,11 @@
+import _ from 'lodash'
 import winston from 'winston'
 import appConf from '../app.conf'
 
 const logger = winston.createLogger({
   exitOnError: false,
   level: appConf.env === 'test' ? appConf.tests.logLevel : appConf.logLevel,
-  levels: winston.config.npm.levels,
+  levels: _.pick(winston.config.npm.levels, 'error', 'warn', 'info', 'debug', 'verbose'),
   silent: appConf.env === 'test' ? appConf.tests.logLevel === undefined : appConf.logLevel === undefined,
 })
 

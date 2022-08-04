@@ -31,7 +31,7 @@ describe('controllers/collaterals/getEthNFTMetadata', () => {
       it(`can get metadata for NFTs in whale wallet <${address}>`, async () => {
         const metadata = await Promise.all(whaleNFTs[i].map(nft => getEthNFTMetadata({ blockchain: MAINNET, collectionAddress: nft.collection.address, nftId: nft.id })))
         expect(metadata).to.have.lengthOf(whaleNFTs[i].length)
-      }).timeout(0)
+      })
     })
   })
 
