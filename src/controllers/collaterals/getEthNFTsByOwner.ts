@@ -6,6 +6,7 @@ import { composeDataSources, DataSource } from '../../utils/dataSources'
 import fault from '../../utils/fault'
 import logger from '../../utils/logger'
 import rethrow from '../../utils/rethrow'
+import { getCollection } from '../collections'
 import getRequest from '../utils/getRequest'
 import normalizeIPFSUri from '../utils/normalizeIPFSUri'
 import { useContract, useTokenUri } from './getEthNFTMetadata'
@@ -28,12 +29,19 @@ export default async function getEthNFTsByOwner({ blockchain, ownerAddress, popu
 
   logger.info(`Fetching Ethereum NFTs by owner <${ownerAddress}> on network <${blockchain.networkId}>... OK: ${nfts.length} result(s)`)
 
-  // const hasPools = await Promise.all(nfts.map(async nft => {
-  //   const collection = await getCollection({ address: nft.collection.address, blockchain, nftId: nft.id })
-  //   return collection !== undefined
-  // }))
 
-  return nfts
+  const collections = await Promise.all(nfts.map(async nft => getCollection({ address: nft.collection.address, blockchain, nftId: nft.id })))
+
+  // TODO: This is bad
+  return nfts.map((nft, idx) => ({
+    ...nft,
+    collection: {
+      ...nft.collection,
+      imageUrl: collections[idx]?.imageUrl,
+      name: collections[idx]?.name,
+    },
+    isSupported: !!collections[idx],
+  }))
 }
 
 export function useAlchemy({ blockchain, ownerAddress, populateMetadata }: Params): DataSource<NFT[]> {
