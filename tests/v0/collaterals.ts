@@ -1,4 +1,5 @@
 import { expect } from 'chai'
+import _ from 'lodash'
 import request from 'supertest'
 import app from '../../src/app'
 import appConf from '../../src/app.conf'
@@ -18,14 +19,8 @@ describe('routes/v0/collaterals', () => {
       const nfts = deserializeEntityArray(res, NFT.codingResolver)
 
       expect(nfts.length).to.be.greaterThanOrEqual(1)
-
-      for (const nft of nfts) {
-        expect(nft).to.have.property('collection')
-        expect(nft).to.have.property('id')
-        expect(nft).to.have.property('ownerAddress')
-        expect(nft).to.have.property('imageUrl')
-        expect(nft).to.have.property('name')
-      }
+      nfts.every(nft => expect(nft).to.have.all.keys(...Object.keys(NFT.codingResolver)))
+      nfts.every(nft => [...Object.keys(_.omitBy(NFT.codingResolver, coder => coder.options.optional === true)), 'ownerAddress'].every(key => expect(_.get(nft, key)).to.not.be.undefined))
     })
 
     it('can get all Ethereum Rinkeby collaterals', async () => {
@@ -40,14 +35,8 @@ describe('routes/v0/collaterals', () => {
       const nfts = deserializeEntityArray(res, NFT.codingResolver)
 
       expect(nfts.length).to.be.greaterThanOrEqual(1)
-
-      for (const nft of nfts) {
-        expect(nft).to.have.property('collection')
-        expect(nft).to.have.property('id')
-        expect(nft).to.have.property('ownerAddress')
-        expect(nft).to.have.property('imageUrl')
-        expect(nft).to.have.property('name')
-      }
+      nfts.every(nft => expect(nft).to.have.all.keys(...Object.keys(NFT.codingResolver)))
+      nfts.every(nft => [...Object.keys(_.omitBy(NFT.codingResolver, coder => coder.options.optional === true)), 'ownerAddress'].every(key => expect(_.get(nft, key)).to.not.be.undefined))
     })
   })
 })
