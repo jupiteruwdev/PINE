@@ -6,8 +6,6 @@ import { Blockchain, NFT } from '../../entities'
 import getEthNFTsByOwner from './getEthNFTsByOwner'
 
 describe('controllers/collaterals/getEthNFTsByOwner', () => {
-  const MAINNET = Blockchain.Ethereum(Blockchain.Ethereum.Network.MAIN)
-  const RINKEBY = Blockchain.Ethereum(Blockchain.Ethereum.Network.RINKEBY)
   const TEST_WALLET_ADDRESS = appConf.tests.walletAddress
   const WHALE_WALLET_ADDRESSES = appConf.tests.whaleWalletAddresses
   const REQUIRED_NFT_KEYS = Object.keys(_.omitBy(NFT.codingResolver, coder => coder.options.optional === true))
@@ -18,8 +16,10 @@ describe('controllers/collaterals/getEthNFTsByOwner', () => {
   })
 
   describe('Mainnet', () => {
+    const blockchain = Blockchain.Ethereum(Blockchain.Ethereum.Network.MAIN)
+
     it(`can get NFTs for test wallet <${TEST_WALLET_ADDRESS}> without metadata`, async () => {
-      const nfts = await getEthNFTsByOwner({ blockchain: MAINNET, ownerAddress: TEST_WALLET_ADDRESS, populateMetadata: false })
+      const nfts = await getEthNFTsByOwner({ blockchain, ownerAddress: TEST_WALLET_ADDRESS, populateMetadata: false })
 
       expect(nfts).to.have.length.greaterThan(0)
       nfts.every(nft => expect(nft).to.have.all.keys(...ALL_NFT_KEYS))
@@ -27,7 +27,7 @@ describe('controllers/collaterals/getEthNFTsByOwner', () => {
     })
 
     it(`can get NFTs for test wallet <${TEST_WALLET_ADDRESS}> with metadata`, async () => {
-      const nfts = await getEthNFTsByOwner({ blockchain: MAINNET, ownerAddress: TEST_WALLET_ADDRESS, populateMetadata: true })
+      const nfts = await getEthNFTsByOwner({ blockchain, ownerAddress: TEST_WALLET_ADDRESS, populateMetadata: true })
 
       expect(nfts).to.have.length.greaterThan(0)
       nfts.every(nft => expect(nft).to.have.all.keys(...ALL_NFT_KEYS))
@@ -36,7 +36,7 @@ describe('controllers/collaterals/getEthNFTsByOwner', () => {
 
     WHALE_WALLET_ADDRESSES.forEach(address => {
       it(`can get NFTs for whale wallet <${address}> without metadata`, async () => {
-        const nfts = await getEthNFTsByOwner({ blockchain: MAINNET, ownerAddress: address, populateMetadata: false })
+        const nfts = await getEthNFTsByOwner({ blockchain, ownerAddress: address, populateMetadata: false })
 
         expect(nfts).to.have.length.greaterThan(0)
         nfts.every(nft => expect(nft).to.have.all.keys(...ALL_NFT_KEYS))
@@ -44,7 +44,7 @@ describe('controllers/collaterals/getEthNFTsByOwner', () => {
       })
 
       it(`can get NFTs for whale wallet <${address}> with metadata`, async () => {
-        const nfts = await getEthNFTsByOwner({ blockchain: MAINNET, ownerAddress: address, populateMetadata: true })
+        const nfts = await getEthNFTsByOwner({ blockchain, ownerAddress: address, populateMetadata: true })
 
         expect(nfts).to.have.length.greaterThan(0)
         nfts.every(nft => expect(nft).to.have.all.keys(...ALL_NFT_KEYS))
@@ -54,8 +54,10 @@ describe('controllers/collaterals/getEthNFTsByOwner', () => {
   })
 
   describe('Rinkeby', () => {
+    const blockchain = Blockchain.Ethereum(Blockchain.Ethereum.Network.RINKEBY)
+
     it(`can get NFTs for test wallet <${TEST_WALLET_ADDRESS}> without metadata`, async () => {
-      const nfts = await getEthNFTsByOwner({ blockchain: RINKEBY, ownerAddress: TEST_WALLET_ADDRESS, populateMetadata: false })
+      const nfts = await getEthNFTsByOwner({ blockchain, ownerAddress: TEST_WALLET_ADDRESS, populateMetadata: false })
 
       expect(nfts).to.have.length.greaterThan(0)
       nfts.every(nft => expect(nft).to.have.all.keys(...ALL_NFT_KEYS))
@@ -63,7 +65,7 @@ describe('controllers/collaterals/getEthNFTsByOwner', () => {
     })
 
     it(`can get NFTs for test wallet <${TEST_WALLET_ADDRESS}> with metadata`, async () => {
-      const nfts = await getEthNFTsByOwner({ blockchain: RINKEBY, ownerAddress: TEST_WALLET_ADDRESS, populateMetadata: true })
+      const nfts = await getEthNFTsByOwner({ blockchain, ownerAddress: TEST_WALLET_ADDRESS, populateMetadata: true })
 
       expect(nfts).to.have.length.greaterThan(0)
       nfts.every(nft => expect(nft).to.have.all.keys(...ALL_NFT_KEYS))

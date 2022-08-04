@@ -47,12 +47,12 @@ export default async function getEthNFTsByOwner({ blockchain, ownerAddress, popu
 
 export function useAlchemy({ blockchain, ownerAddress, populateMetadata }: Params): DataSource<NFT[]> {
   return async () => {
+    logger.info(`Using Alchemy to look up NFTs for owner <${ownerAddress}>...`)
+
     if (blockchain.network !== 'ethereum') rethrow(`Unsupported blockchain <${JSON.stringify(blockchain)}>`)
 
     const apiHost = _.get(appConf.alchemyAPIUrl, blockchain.networkId) ?? rethrow(`Missing Alchemy API URL for blockchain ${JSON.stringify(blockchain)}`)
     const apiKey = appConf.alchemyAPIKey ?? rethrow('Missing Alchemy API key')
-
-    logger.info(`Fetching NFTs by owner <${ownerAddress}> using Alchemy API...`)
 
     const { ownedNfts: res } = await getRequest(`${apiHost}${apiKey}/getNFTs`, {
       params: {
@@ -68,7 +68,7 @@ export function useAlchemy({ blockchain, ownerAddress, populateMetadata }: Param
       const collectionAddress = _.get(entry, 'contract.address')
 
       if (tokenId === 'NaN' || collectionAddress === undefined) {
-        logger.warn(`Fetching NFTs by owner <${ownerAddress}> using Alchemy API... WARN: Dropping NFT ${JSON.stringify(entry)} due to missing address or token ID`)
+        logger.warn(`Using Alchemy to look up NFTs for owner <${ownerAddress}>... WARN: Dropping NFT ${JSON.stringify(entry)} due to missing address or token ID`)
         return undefined
       }
 
@@ -124,6 +124,8 @@ export function useAlchemy({ blockchain, ownerAddress, populateMetadata }: Param
 
 export function useMoralis({ blockchain, ownerAddress, populateMetadata }: Params): DataSource<NFT[]> {
   return async () => {
+    logger.info(`Using Moralis to look up NFTs for owner <${ownerAddress}>...`)
+
     if (blockchain.network !== 'ethereum') throw fault('ERR_UNSUPPORTED_BLOCKCHAIN')
 
     const apiKey = appConf.moralisAPIKey ?? rethrow('Missing Moralis API key')
@@ -145,7 +147,7 @@ export function useMoralis({ blockchain, ownerAddress, populateMetadata }: Param
       const collectionAddress = _.get(entry, 'token_address')
 
       if (tokenId === undefined || collectionAddress === undefined) {
-        logger.warn(`Fetching NFTs by owner <${ownerAddress}> using Moralis API... WARN: dropping NFT ${JSON.stringify(entry)} due to missing address or token ID`)
+        logger.warn(`Using Moralis to look up NFTs for owner <${ownerAddress}>... WARN: dropping NFT ${JSON.stringify(entry)} due to missing address or token ID`)
         return undefined
       }
 
