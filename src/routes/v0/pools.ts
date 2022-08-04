@@ -1,7 +1,7 @@
 import { Router } from 'express'
-import { countPools, getPool, getUnpublishedPoolsByLender, searchPoolGroups } from '../../controllers'
-import publishPool from '../../controllers/pools/publishPool'
-import searchPools, { PoolSortDirection, PoolSortType } from '../../controllers/pools/searchPools'
+import appConf from '../../app.conf'
+import { countPools, getPool, getPools, publishPool, searchPoolGroups } from '../../controllers'
+import searchPools, { PoolSortDirection, PoolSortType } from '../../controllers/pools/searchPublishedPools'
 import { Pagination, Pool, PoolGroup, serializeEntityArray } from '../../entities'
 import fault from '../../utils/fault'
 import { getBlockchain, getBlockchainFilter, getNumber, getString } from '../utils/query'
@@ -46,6 +46,38 @@ router.get('/groups/search', async (req, res, next) => {
   }
 })
 
+router.get('/lender', async (req, res, next) => {
+  try {
+    const blockchainFilter = getBlockchainFilter(req.query, true)
+    const lenderAddress = getString(req.query, 'lenderAddress')
+    const publishedPools = await searchPools({
+      blockchainFilter,
+      lenderAddress,
+    })
+    const publishedPoolAddresses = publishedPools.map(pool => pool.address.toLowerCase())
+    const unpublishedPools = await getPools({
+      blockchainFilter, lenderAddress, excludeAddresses: publishedPoolAddresses,
+    })
+    const payload = serializeEntityArray([...publishedPools, ...unpublishedPools], Pool.codingResolver)
+
+    res.status(200).json(payload)
+  }
+  catch (err) {
+    next(fault('ERR_API_FETCH_POOL_BY_LENDER_ADDRESS', undefined, err))
+  }
+})
+
+router.get('/tenors', async (req, res, next) => {
+  try {
+    const tenors = appConf.tenors
+
+    res.status(200).json({ tenors })
+  }
+  catch (err) {
+    next(fault('ERR_API_GET_TENORS', undefined, err))
+  }
+})
+
 router.get('/:poolAddress', async (req, res, next) => {
   try {
     const blockchain = getBlockchain(req.query)
@@ -70,26 +102,6 @@ router.post('/:poolAddress', async (req, res, next) => {
   }
   catch (err) {
     next(fault('ERR_API_PUBLISH_POOL', undefined, err))
-  }
-})
-
-router.get('/lender/:lenderAddress', async (req, res, next) => {
-  try {
-    const blockchainFilter = getBlockchainFilter(req.query, true)
-    const lenderAddress = getString(req.params, 'lenderAddress')
-    const publishedPools = await searchPools({
-      blockchainFilter,
-      lenderAddress,
-    })
-    const unpublishedPools = await getUnpublishedPoolsByLender({
-      blockchainFilter, lenderAddress,
-    })
-    const payload = serializeEntityArray([...publishedPools, ...unpublishedPools], Pool.codingResolver)
-
-    res.status(200).json(payload)
-  }
-  catch (err) {
-    next(fault('ERR_API_FETCH_POOL_BY_LENDER_ADDRESS', undefined, err))
   }
 })
 

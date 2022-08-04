@@ -9,7 +9,7 @@ import logger from '../../utils/logger'
 import { getEthNFTMetadata } from '../collaterals'
 import { getCollection } from '../collections'
 import { getControlPlaneContract, getPoolContract } from '../contracts'
-import { searchPools } from '../pools'
+import { searchPublishedPools } from '../pools'
 import getEthWeb3 from '../utils/getEthWeb3'
 import { getEthCollectionValuation } from '../valuations'
 
@@ -41,7 +41,7 @@ export default async function getLoan({
 
       const [blockNumber, pools, valuation] = await Promise.all([
         web3.eth.getBlockNumber(),
-        searchPools({ collectionAddress, blockchainFilter: { ethereum: blockchain.networkId }, includeRetired: true }),
+        searchPublishedPools({ collectionAddress, blockchainFilter: { ethereum: blockchain.networkId }, includeRetired: true }),
         getEthCollectionValuation({ blockchain: blockchain as Blockchain<'ethereum'>, collectionAddress: collection.address, tokenId: nftId }),
       ])
 

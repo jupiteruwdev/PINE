@@ -3,8 +3,11 @@ import { PipelineStage } from 'mongoose'
 import { PoolModel } from '../../db'
 import { mapPool } from '../../db/adapters'
 import { Blockchain, Pool, Value } from '../../entities'
+import fault from '../../utils/fault'
 import getPoolCapacity from './getPoolCapacity'
+import { default as getOnChainPools } from './getPools'
 import getPoolUtilization from './getPoolUtilization'
+import verifyPool from './verifyPool'
 
 type Params<IncludeStats> = {
   blockchain: Blockchain
@@ -26,25 +29,48 @@ async function getPool<IncludeStats extends boolean = false>({
     ...params,
   })).exec()
 
-  const pool = mapPool(res[0])
+  if (res.length) {
+    const pool = mapPool(res[0])
+    try {
+      await verifyPool({ blockchain, address: pool.address, collectionAddress: pool.collection.address.toLowerCase() })
+    }
+    catch (err) {
+      throw fault('ERR_ZOMBIE_POOL', undefined, err)
+    }
 
-  if (includeStats !== true) return pool
+    if (includeStats !== true) return pool
 
-  const [
-    { amount: utilizationEth },
-    { amount: capacityEth },
-  ] = await Promise.all([
-    getPoolUtilization({ blockchain, poolAddress: pool.address }),
-    getPoolCapacity({ blockchain, poolAddress: pool.address }),
-  ])
+    const [
+      { amount: utilizationEth },
+      { amount: capacityEth },
+    ] = await Promise.all([
+      getPoolUtilization({ blockchain, poolAddress: pool.address }),
+      getPoolCapacity({ blockchain, poolAddress: pool.address }),
+    ])
 
-  const valueLockedEth = capacityEth.plus(utilizationEth).gt(new BigNumber(pool.ethLimit || Number.POSITIVE_INFINITY)) ? new BigNumber(pool.ethLimit ?? 0) : capacityEth.plus(utilizationEth)
+    const valueLockedEth = capacityEth.plus(utilizationEth).gt(new BigNumber(pool.ethLimit || Number.POSITIVE_INFINITY)) ? new BigNumber(pool.ethLimit ?? 0) : capacityEth.plus(utilizationEth)
 
-  return {
-    ...pool,
-    utilization: Value.$ETH(utilizationEth),
-    valueLocked: Value.$ETH(valueLockedEth),
+    return {
+      ...pool,
+      utilization: Value.$ETH(utilizationEth),
+      valueLocked: Value.$ETH(valueLockedEth),
+    }
   }
+
+  const unpublishedPools = await getOnChainPools({
+    address: params.address,
+    lenderAddress: params.lenderAddress,
+    blockchainFilter: {
+      ethereum: blockchain.networkId,
+    },
+  })
+  const pool = unpublishedPools[0]
+
+  if (pool === undefined) {
+    throw fault('ERR_UNKNOWN_POOL')
+  }
+
+  return pool
 }
 
 export default getPool

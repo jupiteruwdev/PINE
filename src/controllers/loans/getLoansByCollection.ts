@@ -4,7 +4,7 @@ import { Blockchain, Collection, Loan, NFT, Value } from '../../entities'
 import { getOnChainLoansByPools } from '../../subgraph'
 import fault from '../../utils/fault'
 import { getEthNFTMetadata } from '../collaterals'
-import { searchPools } from '../pools'
+import { searchPublishedPools } from '../pools'
 
 type Params = {
   blockchain: Blockchain
@@ -16,7 +16,7 @@ export default async function getLoansByCollection({
   collectionAddress,
 }: Params): Promise<Loan[]> {
   try {
-    const pools = await searchPools({ collectionAddress, blockchainFilter: { [blockchain.network]: blockchain.networkId } })
+    const pools = await searchPublishedPools({ collectionAddress, blockchainFilter: { [blockchain.network]: blockchain.networkId } })
     const poolAddresses = pools.map(t => t.address)
     const onChainLoans = await getOnChainLoansByPools({ poolAddresses }, { networkId: blockchain.networkId })
 
