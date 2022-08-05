@@ -19,6 +19,7 @@ env:
   TESTS_LOG_LEVEL: ${{ secrets.TESTS_LOG_LEVEL }}
   TESTS_WALLET_ADDRESS: ${{ secrets.TESTS_WALLET_ADDRESS }}
   TESTS_WHALE_WALLET_ADDRESSES: ${{ secrets.TESTS_WHALE_WALLET_ADDRESSES }}
+  TESTS_WALLET_PRIVATE_KEY: ${{ secrets.TESTS_WALLET_PRIVATE_KEY }}
 jobs:
   deploy:
     name: Build/Test/Deploy
