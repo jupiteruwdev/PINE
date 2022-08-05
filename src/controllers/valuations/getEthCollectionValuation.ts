@@ -4,10 +4,9 @@ import appConf from '../../app.conf'
 import { Blockchain, Valuation, Value } from '../../entities'
 import fault from '../../utils/fault'
 import logger from '../../utils/logger'
-import { getCollection } from '../collections'
+import { getCollection, getEthCollectionFloorPrice } from '../collections'
 import getRequest from '../utils/getRequest'
 import postRequest from '../utils/postRequest'
-import getEthCollectionFloorPrice from './getEthCollectionFloorPrice'
 
 type Params = {
   blockchain: Blockchain<'ethereum'>

@@ -31,17 +31,17 @@ export default async function getEthNFTsByOwner({ blockchain, ownerAddress, popu
 
   logger.info(`Fetching Ethereum NFTs by owner <${ownerAddress}> on network <${blockchain.networkId}>... OK: ${nfts.length} result(s)`)
 
-  // const collections = await Promise.all(nfts.map(async nft => getCollection({ address: nft.collection.address, blockchain, nftId: nft.id })))
+  const collections = await Promise.all(nfts.map(async nft => getCollection({ address: nft.collection.address, blockchain, nftId: nft.id })))
 
   // TODO: This is bad
   return nfts.map((nft, idx) => ({
     ...nft,
     collection: {
       ...nft.collection,
-      // imageUrl: collections[idx]?.imageUrl,
-      // name: collections[idx]?.name,
+      imageUrl: collections[idx]?.imageUrl,
+      name: collections[idx]?.name,
     },
-    // isSupported: !!collections[idx],
+    isSupported: !!collections[idx],
   }))
 }
 

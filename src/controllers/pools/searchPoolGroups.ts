@@ -1,8 +1,8 @@
 import _ from 'lodash'
 import { Blockchain, PoolGroup, Value } from '../../entities'
 import logger from '../../utils/logger'
+import { getEthCollectionFloorPrices } from '../collections'
 import getEthValueUSD from '../utils/getEthValueUSD'
-import { getEthCollectionFloorPrices } from '../valuations'
 import searchPublishedPools, { PoolSortDirection, PoolSortType } from './searchPublishedPools'
 
 type Params = {

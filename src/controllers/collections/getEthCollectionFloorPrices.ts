@@ -58,24 +58,13 @@ export function useNFTBank({ blockchain, collectionAddresses }: Params): DataSou
       if (!_.isArray(res)) rethrow('Unexpected payload while looking up floor prices from NFTBank')
 
       // NFTBank result order is not guaranteed, TODO: better sorting algo?
-      const floorPrices: Value<'ETH'>[] = collectionAddresses.map(() => Value.$ETH(NaN))
-      const normalizedAddresses = collectionAddresses.map(address => address.toLowerCase())
-      const numRes = res.length
-
-      for (let i = 0; i < numRes; i++) {
-        const entry = res[i]
-
-        const collectionAddress = _.get(entry, 'asset_contract')
-        if (!_.isString(collectionAddress)) continue
-
+      const floorPrices = collectionAddresses.map(address => {
+        const entry = _.find(res, t => _.get(t, 'asset_contract')?.toLowerCase() === address.toLocaleLowerCase())
         const prices = _.get(entry, 'floor_price')
         const price = _.get(_.find(prices, { 'currency_symbol': 'ETH' }), 'floor_price')
 
-        if (price === undefined) continue
-
-        const collectionIdx = normalizedAddresses.indexOf(collectionAddress.toLowerCase())
-        floorPrices[collectionIdx] = Value.$ETH(price)
-      }
+        return price === undefined ? Value.$ETH(NaN) : Value.$ETH(price)
+      })
 
       return floorPrices
     case Blockchain.Ethereum.Network.RINKEBY:
