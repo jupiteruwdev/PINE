@@ -100,4 +100,5 @@ jobs:
           target: release
       - name: Test
         run: |
-          echo "${{ steps.docker-build.outputs }}"
+          echo "${{ steps.docker-build.imageid }}"
+          echo "${{ steps.docker-build.digest }}"
