@@ -2,73 +2,14 @@ name: CI
 on:
   push:
     branches-ignore: [development, staging, main]
-env:
-  IMAGE_NAME: gcr.io/${{ secrets.GCP_PROJECT }}/core-service
-  ALCHEMY_API_KEY: ${{ secrets.ALCHEMY_API_KEY }}
-  ALCHEMY_API_MAINNET_URL: ${{ secrets.ALCHEMY_API_MAINNET_URL }}
-  ALCHEMY_API_RINKEBY_URL: ${{ secrets.ALCHEMY_API_RINKEBY_URL }}
-  ETH_RPC_MAINNET: ${{ secrets.ETH_RPC_MAINNET }}
-  ETH_RPC_RINKEBY: ${{ secrets.ETH_RPC_RINKEBY }}
-  GEMXYZ_API_KEY: ${{ secrets.GEMXYZ_API_KEY }}
-  MONGO_URI: ${{ secrets.MONGO_URI }}
-  MORALIS_API_KEY: ${{ secrets.MORALIS_API_KEY }}
-  NFTBANK_API_KEY: ${{ secrets.NFTBANK_API_KEY }}
-  OPENSEA_API_KEY: ${{ secrets.OPENSEA_API_KEY }}
-  SUBGRAPH_API_MAINNET_URL: ${{ secrets.SUBGRAPH_API_MAINNET_URL_STAGING }}
-  SUBGRAPH_API_RINKEBY_URL: ${{ secrets.SUBGRAPH_API_RINKEBY_URL_STAGING }}
-  TESTS_LOG_LEVEL: ${{ secrets.TESTS_LOG_LEVEL }}
-  TESTS_WALLET_ADDRESS: ${{ secrets.TESTS_WALLET_ADDRESS }}
-  TESTS_WHALE_WALLET_ADDRESSES: ${{ secrets.TESTS_WHALE_WALLET_ADDRESSES }}
-  TESTS_WALLET_PRIVATE_KEY: ${{ secrets.TESTS_WALLET_PRIVATE_KEY }}
 jobs:
   build:
-    name: Build/Test
-    runs-on: ubuntu-latest
-    permissions:
-      id-token: write
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v2
-        with:
-          submodules: recursive
-          token: ${{ secrets.GH_ACCESS_TOKEN }}
-      - name: Authenticate Google Cloud
-        id: gcloud
-        uses: google-github-actions/auth@v0
-        with:
-          token_format: access_token
-          workload_identity_provider: ${{ secrets.GCP_WORKLOAD_IDENTITY_PROVIDER }}
-          service_account: ${{ secrets.GCP_SERVICE_ACC }}
-      - name: Set up Cloud SDK
-        uses: google-github-actions/setup-gcloud@v0
-      - name: Login to GCR
-        uses: docker/login-action@v1
-        with:
-          registry: gcr.io
-          username: oauth2accesstoken
-          password: ${{ steps.gcloud.outputs.access_token }}
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v1
-      - name: Build test target
-        uses: docker/build-push-action@v2
-        with:
-          cache-from: type=gha,scope=${{ github.workflow }}
-          cache-to: type=gha,scope=${{ github.workflow }},mode=max
-          context: .
-          load: true
-          push: false
-          tags: image:test-${{ github.sha }}
-          target: test
-      - name: Run tests
-        run: IMAGE_NAME=image IMAGE_TAG=test-${{ github.sha }} docker-compose -f docker-compose.test.yml up --exit-code-from app
-      - name: Build release target
-        uses: docker/build-push-action@v2
-        with:
-          cache-from: type=gha,scope=${{ github.workflow }}
-          cache-to: type=gha,scope=${{ github.workflow }},mode=max
-          context: .
-          push: false
-          target: release
+    name: Build
+    uses: ./.github/workflows/build.yml
+    with:
+      push: false
+      environment: staging
+    secrets: inherit
   notify:
     name: Notify
     needs: [build]

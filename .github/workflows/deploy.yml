@@ -1,0 +1,36 @@
+on:
+  workflow_call:
+    inputs:
+      image:
+        description: The Docker image to deploy
+        required: true
+        type: string
+jobs:
+  default:
+    name: Cloud Run
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+        with:
+          submodules: recursive
+          token: ${{ secrets.GH_ACCESS_TOKEN }}
+      - name: Authenticate Google Cloud
+        uses: google-github-actions/auth@v0
+        with:
+          token_format: access_token
+          workload_identity_provider: ${{ secrets.GCP_WORKLOAD_IDENTITY_PROVIDER }}
+          service_account: ${{ secrets.GCP_SERVICE_ACC }}
+      - name: Set up Cloud SDK
+        uses: google-github-actions/setup-gcloud@v0
+      - name: Deploy
+        run: |
+          gcloud config set project ${{ secrets.GCP_PROJECT }}
+          services=$(gcloud run services list --platform managed --filter="metadata.labels.ref=${{ github.ref_name }}" | awk 'NR >= 2 {print $2}' | sed -n -e 'H;${x;s/\n/,/g;s/^,//;p;}')
+          for service in $(echo $services | sed "s/,/ /g")
+          do
+            region=$(gcloud run services list --platform managed --filter=metadata.name=$service | awk 'NR == 2 {print $3}')
+            gcloud run deploy $service --image ${{ fromJSON(steps.meta.outputs.json).tags[0] }} --platform managed --region $region
+          done
