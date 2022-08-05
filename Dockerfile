@@ -22,8 +22,6 @@ RUN npm run build
 # Rebuilds the app with unit tests included.
 FROM dev AS test
 
-ENV NODE_ENV=test
-
 RUN npm run build:test
 
 

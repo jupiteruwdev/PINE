@@ -16,7 +16,7 @@
     "test:unit:ts": "cross-env NODE_ENV=test mocha -r ts-node/register -b -c --diff --timeout 100000 --extension spec.ts --recursive --exit --ignore \"src/entities/**/*\" \"src/$npm_config_files\"",
     "test:int:ts": "cross-env NODE_ENV=test mocha -r ts-node/register -b -c --diff --timeout 100000 --extension ts --recursive --exit \"tests/$npm_config_files\"",
     "ship:start": "docker-compose -f docker-compose.yml up --build",
-    "ship:test": "docker-compose -f docker-compose.yml up --build --abort-on-container-exit",
+    "ship:test": "docker-compose -f docker-compose.test.yml up --build --exit-code-from app",
     "lint": "eslint --ext .ts --ignore-pattern entities src",
     "lint:fix": "npm run lint -- --fix"
   },

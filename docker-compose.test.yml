@@ -10,6 +10,7 @@ services:
     ports:
       - 8080:8080
     environment:
+      NODE_ENV: test
       ALCHEMY_API_KEY: ${ALCHEMY_API_KEY}
       ALCHEMY_API_MAINNET_URL: ${ALCHEMY_API_MAINNET_URL}
       ALCHEMY_API_RINKEBY_URL: ${ALCHEMY_API_RINKEBY_URL}
