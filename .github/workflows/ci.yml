@@ -8,6 +8,7 @@ jobs:
     uses: ./.github/workflows/build.yml
     with:
       push: false
+      environment: staging
     secrets: inherit
   notify:
     name: Notify
