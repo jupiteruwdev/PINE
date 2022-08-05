@@ -8,6 +8,11 @@ describe('controllers/stats/getGlobalStats', () => {
     await initDb()
   })
 
+  afterEach(function() {
+    if (this.currentTest?.state !== 'failed') return
+    console.error(this.currentTest?.err)
+  })
+
   it('can fetch global stats', async () => {
     const stats = await getGlobalStats()
     const codingResolver = GlobalStats.codingResolver
