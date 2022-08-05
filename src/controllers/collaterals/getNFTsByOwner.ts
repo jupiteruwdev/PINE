@@ -1,7 +1,6 @@
-import { Blockchain, Collection, NFT } from '../../entities'
+import { Blockchain, NFT } from '../../entities'
 import fault from '../../utils/fault'
-import getEthMainnetNFTsByOwner from './getEthMainnetNFTsByOwner'
-import getEthTestnetNFTsByOwner from './getEthTestnetNFTsByOwner'
+import getEthNFTsByOwner from './getEthNFTsByOwner'
 import getSolNFTsByOwner from './getSolNFTsByOwner'
 
 type Params = {
@@ -9,11 +8,6 @@ type Params = {
    * The blockchain of which the NFTs and the owner reside.
    */
   blockchain: Blockchain
-
-  /**
-   * If provided, the returned NFTs will only include those belonging to this collection.
-   */
-  collectionOrCollectionAddress?: Collection | string
 
   /**
    * The address of the owner of the NFTs to look up.
@@ -24,20 +18,7 @@ type Params = {
    * Specifies if NFT metadata should be included, defaults to false. The operation is faster if
    * metadata is not fetched.
    */
-  populateMetadata: boolean
-
-  /**
-   * @todo Remove this hack.
-   */
-  index?: number
-}
-
-function delay(t: number, val?: any) {
-  return new Promise(function(resolve) {
-    setTimeout(function() {
-      resolve(val)
-    }, t)
-  })
+  populateMetadata?: boolean
 }
 
 /**
@@ -47,25 +28,12 @@ function delay(t: number, val?: any) {
  *
  * @returns An array of {@link NFT}.
  */
-export default async function getNFTsByOwner({
-  blockchain,
-  collectionOrCollectionAddress,
-  ownerAddress,
-  populateMetadata,
-  index = 0,
-}: Params): Promise<NFT[]> {
+export default async function getNFTsByOwner({ blockchain, ownerAddress, populateMetadata = false }: Params): Promise<NFT[]> {
   switch (blockchain.network) {
   case 'ethereum':
-    if (blockchain.networkId === Blockchain.Ethereum.Network.MAIN) {
-      // TODO: This is bad
-      await delay(100 * index)
-      return getEthMainnetNFTsByOwner({ collectionOrCollectionAddress, ownerAddress, populateMetadata })
-    }
-    else {
-      return getEthTestnetNFTsByOwner({ blockchain, collectionOrCollectionAddress, ownerAddress, populateMetadata })
-    }
+    return getEthNFTsByOwner({ blockchain, ownerAddress, populateMetadata })
   case 'solana':
-    return getSolNFTsByOwner({ blockchain, collectionOrCollectionAddress, ownerAddress, populateMetadata })
+    return getSolNFTsByOwner({ blockchain, ownerAddress, populateMetadata })
   default:
     throw fault('ERR_UNSUPPORTED_BLOCKCHAIN')
   }

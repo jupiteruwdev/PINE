@@ -4,86 +4,84 @@ import app from '../../src/app'
 import appConf from '../../src/app.conf'
 import { Loan } from '../../src/entities'
 
-describe('routes/v0/loans', () => {
-  describe('GET /loans/nft', () => {
-    it('can get loan by collection address and nft id for ethereum mainnet', async () => {
-      const { body: res } = await request(app).get('/v0/loans/nft')
-        .query({
-          collectionAddress: '0x3acce66cd37518a6d77d9ea3039e00b3a2955460',
-          nftId: 6739,
-          ethereum: 1,
-        })
-        .expect('Content-Type', /json/)
-        .expect(200)
+describe('GET /v0/loans/nft', () => {
+  it('can get loan by collection address and nft id for ethereum mainnet', async () => {
+    const { body: res } = await request(app).get('/v0/loans/nft')
+      .query({
+        collectionAddress: '0x3acce66cd37518a6d77d9ea3039e00b3a2955460',
+        nftId: 6739,
+        ethereum: 1,
+      })
+      .expect('Content-Type', /json/)
+      .expect(200)
 
-      expect(res).to.have.property('routerAddress')
-      expect(res).to.have.property('accuredInterest')
-      expect(res).to.have.property('borrowed')
-      expect(res).to.have.property('borrowerAddress')
-      expect(res).to.have.property('expiresAt')
-      expect(res).to.have.property('interestBPSPerBlock')
-      expect(res).to.have.property('loanStartBlock')
-      expect(res).to.have.property('maxLTVBPS')
-      expect(res).to.have.property('nft')
-      expect(res).to.have.property('outstanding')
-      expect(res).to.have.property('poolAddress')
-      expect(res).to.have.property('returned')
-      expect(res).to.have.property('repaidInterest')
-      expect(res).to.have.property('valuation')
-      expect(res).to.have.property('updatedAtBlock')
-    })
+    expect(res).to.have.property('routerAddress')
+    expect(res).to.have.property('accuredInterest')
+    expect(res).to.have.property('borrowed')
+    expect(res).to.have.property('borrowerAddress')
+    expect(res).to.have.property('expiresAt')
+    expect(res).to.have.property('interestBPSPerBlock')
+    expect(res).to.have.property('loanStartBlock')
+    expect(res).to.have.property('maxLTVBPS')
+    expect(res).to.have.property('nft')
+    expect(res).to.have.property('outstanding')
+    expect(res).to.have.property('poolAddress')
+    expect(res).to.have.property('returned')
+    expect(res).to.have.property('repaidInterest')
+    expect(res).to.have.property('valuation')
+    expect(res).to.have.property('updatedAtBlock')
   })
+})
 
-  describe('GET /loans/borrower', () => {
-    it('can get nft loan with borrower for ethereum mainnet', async () => {
-      const { body: res } = await request(app).get('/v0/loans/borrower')
-        .query({
-          borrowerAddress: appConf.tests.walletAddress,
-          ethereum: 1,
-        })
-        .expect('Content-Type', /json/)
-        .expect(200)
+describe('GET /v0/loans/borrower', () => {
+  it('can get nft loan with borrower for ethereum mainnet', async () => {
+    const { body: res } = await request(app).get('/v0/loans/borrower')
+      .query({
+        borrowerAddress: appConf.tests.walletAddress,
+        ethereum: 1,
+      })
+      .expect('Content-Type', /json/)
+      .expect(200)
 
-      expect(res.length).to.equal(2)
+    expect(res.length).to.equal(2)
 
-      const codingResolver = Loan.codingResolver
+    const codingResolver = Loan.codingResolver
 
+    for (const item of res) {
+      for (const k of Object.keys(codingResolver)) {
+        if (codingResolver[k as keyof typeof codingResolver].options.optional === true) continue
+        expect(item).to.have.property(k)
+      }
+    }
+  })
+})
+
+describe('GET /v0/loans/collection', () => {
+  it('can get nft loan with collection for ethereum mainnet', async () => {
+    const { body: res } = await request(app).get('/v0/loans/collection')
+      .query({
+        collectionAddress: '0x3acce66cd37518a6d77d9ea3039e00b3a2955460',
+        ethereum: 1,
+      })
+      .expect('Content-Type', /json/)
+      .expect(200)
+
+    expect(res.length >= 0)
+
+    if (res.length > 0) {
       for (const item of res) {
-        for (const k of Object.keys(codingResolver)) {
-          if (codingResolver[k as keyof typeof codingResolver].options.optional === true) continue
-          expect(item).to.have.property(k)
-        }
+        expect(item).to.have.property('borrowed')
+        expect(item).to.have.property('expiresAt')
+        expect(item).to.have.property('nft')
+        expect(item).to.have.property('accuredInterest')
+        expect(item).to.have.property('borrowerAddress')
+        expect(item).to.have.property('returned')
+        expect(item).to.have.property('repaidInterest')
+        expect(item).to.have.property('maxLTVBPS')
+        expect(item).to.have.property('poolAddress')
+        expect(item).to.have.property('loanStartBlock')
+        expect(item).to.have.property('interestBPSPerBlock')
       }
-    })
-  })
-
-  describe('GET /loans/collection', () => {
-    it('can get nft loan with collection for ethereum mainnet', async () => {
-      const { body: res } = await request(app).get('/v0/loans/collection')
-        .query({
-          collectionAddress: '0x3acce66cd37518a6d77d9ea3039e00b3a2955460',
-          ethereum: 1,
-        })
-        .expect('Content-Type', /json/)
-        .expect(200)
-
-      expect(res.length >= 0)
-
-      if (res.length > 0) {
-        for (const item of res) {
-          expect(item).to.have.property('borrowed')
-          expect(item).to.have.property('expiresAt')
-          expect(item).to.have.property('nft')
-          expect(item).to.have.property('accuredInterest')
-          expect(item).to.have.property('borrowerAddress')
-          expect(item).to.have.property('returned')
-          expect(item).to.have.property('repaidInterest')
-          expect(item).to.have.property('maxLTVBPS')
-          expect(item).to.have.property('poolAddress')
-          expect(item).to.have.property('loanStartBlock')
-          expect(item).to.have.property('interestBPSPerBlock')
-        }
-      }
-    })
+    }
   })
 })

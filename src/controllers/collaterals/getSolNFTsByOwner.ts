@@ -2,21 +2,16 @@ import { Metadata, PROGRAM_ID } from '@metaplex-foundation/mpl-token-metadata'
 import { Connection, PublicKey } from '@solana/web3.js'
 import _ from 'lodash'
 import appConf from '../../app.conf'
-import { Blockchain, Collection, NFT, NFTMetadata } from '../../entities'
+import { Blockchain, NFT, NFTMetadata } from '../../entities'
 import fault from '../../utils/fault'
 import getRequest from '../utils/getRequest'
-import normalizeNFTImageUri from '../utils/normalizeNFTImageUri'
+import normalizeIPFSUri from '../utils/normalizeIPFSUri'
 
 type Params = {
   /**
    * The blockchain of which the NFTs and the owner reside.
    */
   blockchain: Blockchain
-
-  /**
-   * If provided, the returned NFTs will only include those belonging to this collection.
-   */
-  collectionOrCollectionAddress?: Collection | string
 
   /**
    * The address of the owner of the NFTs to look up.
@@ -78,13 +73,10 @@ async function getNFTDataFromBlockchain(id: string, mintAddress: string, network
  */
 export default async function getSolNFTsByOwner({
   blockchain,
-  collectionOrCollectionAddress,
   ownerAddress,
   populateMetadata = false,
 }: Params): Promise<NFT[]> {
   if (blockchain.network !== 'solana') throw fault('ERR_UNSUPPORTED_BLOCKCHAIN')
-
-  const collectionAddressFilter = _.isString(collectionOrCollectionAddress) ? collectionOrCollectionAddress : collectionOrCollectionAddress?.address
 
   const apiKey = appConf.moralisAPIKey
   if (!apiKey) throw fault('ERR_MISSING_API_KEY', 'Missing Moralis API key')
@@ -121,8 +113,6 @@ export default async function getSolNFTsByOwner({
 
     if (!nft) return undefined
 
-    if (collectionAddressFilter && collectionAddressFilter.toLowerCase() !== nft.collection.address.toLowerCase()) return undefined
-
     let metadata: NFTMetadata | undefined
     let collectionName: string | undefined
 
@@ -140,7 +130,7 @@ export default async function getSolNFTsByOwner({
 
         metadata = {
           name,
-          imageUrl: normalizeNFTImageUri(image),
+          imageUrl: normalizeIPFSUri(image),
         }
       }
       catch {

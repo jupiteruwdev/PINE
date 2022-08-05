@@ -6,7 +6,7 @@ import Loan from '../../entities/lib/Loan'
 import { getOnChainLoanById } from '../../subgraph'
 import fault from '../../utils/fault'
 import logger from '../../utils/logger'
-import { getNFTMetadata } from '../collaterals'
+import { getEthNFTMetadata } from '../collaterals'
 import { getCollection } from '../collections'
 import { getControlPlaneContract, getPoolContract } from '../contracts'
 import { searchPublishedPools } from '../pools'
@@ -62,7 +62,7 @@ export default async function getLoan({
           collection,
           id: nftId,
           ownerAddress: pool.address,
-          ...await getNFTMetadata({ blockchain, collectionAddress: collection.address, nftId }),
+          ...await getEthNFTMetadata({ blockchain, collectionAddress: collection.address, nftId }),
           isSupported: true,
         }
 

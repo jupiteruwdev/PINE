@@ -1,7 +1,7 @@
 import { Blockchain, NFT, RolloverTerms, Value } from '../../entities'
 import fault from '../../utils/fault'
 import logger from '../../utils/logger'
-import { getNFTMetadata } from '../collaterals'
+import { getEthNFTMetadata } from '../collaterals'
 import { getCollection } from '../collections'
 import { getLoan } from '../loans'
 import { getPool } from '../pools'
@@ -38,7 +38,7 @@ export default async function getRolloverTerms({
         collection,
         id: nftId,
         isSupported: true,
-        ...await getNFTMetadata({ blockchain, collectionAddress: collection.address, nftId }),
+        ...await getEthNFTMetadata({ blockchain, collectionAddress: collection.address, nftId }),
       }
 
       const valuation = await getEthCollectionValuation({ blockchain: blockchain as Blockchain<'ethereum'>, collectionAddress: collection.address, tokenId: nftId })

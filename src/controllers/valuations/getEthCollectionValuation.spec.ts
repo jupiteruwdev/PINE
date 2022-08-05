@@ -33,7 +33,6 @@ describe('controllers/valuations/getEthCollectionValuation', () => {
   //   for (let i = 0, n = collections.length; i < n; i++) {
   //     await delayToAvoidOpenSea429(1000)
   //     const collection = collections[i]
-  //     console.log(collection)
   //     const valuation = await getEthCollectionValuation({ blockchain, collectionAddress: collection.address, tokenId })
   //     valuations.push(valuation)
   //   }

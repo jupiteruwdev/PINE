@@ -2,7 +2,7 @@ import BigNumber from 'bignumber.js'
 import { Blockchain, LoanTerms, NFT, Value } from '../../entities'
 import fault from '../../utils/fault'
 import logger from '../../utils/logger'
-import { getNFTMetadata } from '../collaterals'
+import { getEthNFTMetadata } from '../collaterals'
 import { getCollection } from '../collections'
 import { getPool } from '../pools'
 import { getEthCollectionValuation, signValuation } from '../valuations'
@@ -29,7 +29,7 @@ export default async function getLoanTerms({ blockchain, collectionAddress, nftI
         collection,
         id: nftId,
         isSupported: true,
-        ...await getNFTMetadata({ blockchain, collectionAddress: collection.address, nftId }),
+        ...await getEthNFTMetadata({ blockchain, collectionAddress: collection.address, nftId }),
       }
 
       const valuation = await getEthCollectionValuation({ blockchain: blockchain as Blockchain<'ethereum'>, collectionAddress: collection.address, tokenId: nftId })

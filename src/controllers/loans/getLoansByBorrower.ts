@@ -3,7 +3,7 @@ import _ from 'lodash'
 import { Blockchain, Collection, Loan, NFT, Value } from '../../entities'
 import { getOnChainLoansByBorrower } from '../../subgraph'
 import fault from '../../utils/fault'
-import { getNFTMetadata } from '../collaterals'
+import { getEthNFTMetadata } from '../collaterals'
 
 type Params = {
   blockchain: Blockchain
@@ -43,7 +43,7 @@ export default async function getLoansByBorrower({
       })
     })
 
-    const getMetadataRequests = loans.map(t => getNFTMetadata({
+    const getMetadataRequests = loans.map(t => getEthNFTMetadata({
       blockchain,
       collectionAddress: t.nft.collection.address,
       nftId: t.nft.id,
