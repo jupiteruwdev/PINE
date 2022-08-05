@@ -1,208 +1,176 @@
 import { expect } from 'chai'
-import _ from 'lodash'
 import { describe, it } from 'mocha'
 import request from 'supertest'
 import app from '../../src/app'
 import { searchPublishedPools } from '../../src/controllers'
 import { getCollections } from '../../src/controllers/collections'
-import { Blockchain } from '../../src/entities'
+import { Blockchain, Collection, deserializeEntity, Pool, PoolGroup } from '../../src/entities'
 
 describe('routes/v0/pools', () => {
-  describe('GET /pools/:poolAddress', () => {
-    it('can get all ethereum loan pools on mainnet', async () => {
-      const pools = await searchPublishedPools({ blockchainFilter: { ethereum: Blockchain.Ethereum.Network.MAIN } })
-
-      await Promise.all(pools.map(async pool => {
-        const { body: res } = await request(app).get(`/v0/pools/${pool.address}`)
-          .query({
-            ethereum: 1,
-          })
-          .expect('Content-Type', /json/)
-          .expect(200)
-
-        expect(res).to.have.property('address')
-        expect(res).to.have.property('utilization')
-        expect(res).to.have.property('valueLocked')
-      }))
-    })
+  afterEach(function() {
+    if (this.currentTest?.state !== 'failed') return
+    console.error(this.currentTest?.err)
   })
 
-  describe('GET /pools/groups/collection', () => {
-    it('can get all ethereum mainnet pools with collection address', async () => {
-      const collections = await getCollections()
-      const collectionAddresses = _.compact(_.flatMap(collections, data => data.blockchain.network === 'ethereum' && parseInt(data.blockchain.networkId, 10) === 1 ? data.address : undefined))
+  describe('Ethereum Mainnet', () => {
+    let pools: Pool[] = []
+    let collections: Collection[] = []
 
-      await Promise.all(collectionAddresses.map(async collectionAddress => {
-        const { body: res } = await request(app).get('/v0/pools/groups/collection')
-          .query({
-            ethereum: 1,
-            collectionAddress,
-          })
-          .expect('Content-Type', /json/)
-          .expect(200)
-
-        if (res.length) {
-          expect(res.length).to.equal(1)
-          expect(res[0]).to.have.property('collection')
-          expect(res[0]).to.have.property('floorPrice')
-          expect(res[0]).to.have.property('pools')
-          expect(res[0]).to.have.property('totalValueLent')
-          expect(res[0]).to.have.property('totalValueLocked')
-        }
-      }))
+    before(async () => {
+      pools = await searchPublishedPools({ blockchainFilter: { ethereum: Blockchain.Ethereum.Network.MAIN } })
+      collections = await getCollections({ blockchainFilter: { ethereum: Blockchain.Ethereum.Network.MAIN} })
     })
 
-    it('can get all ethereum rinkeby pools with collection address', async () => {
-      const collections = await getCollections({
-        blockchainFilter: {
-          'ethereum': '0x4',
-        },
+    describe('GET /pools/:poolAddress', () => {
+      it('can get each published pool', async () => {
+        await Promise.all(pools.map(async pool => {
+          const { body: res } = await request(app).get(`/v0/pools/${pool.address}`)
+            .query({
+              ethereum: Blockchain.Ethereum.Network.MAIN,
+            })
+            .expect('Content-Type', /json/)
+            .expect(200)
+
+          const poolGroups = deserializeEntity(res, Pool.codingResolver)
+
+          expect(poolGroups).to.have.all.keys(...Object.keys(Pool.codingResolver))
+        }))
       })
-      const collectionAddresses = _.compact(_.flatMap(collections, data => data.blockchain.network === 'ethereum' && parseInt(data.blockchain.networkId, 10) === 4 ? data.address : undefined))
-
-      await Promise.all(collectionAddresses.map(async collectionAddress => {
-        const { body: res } = await request(app).get('/v0/pools/groups/collection')
-          .query({
-            ethereum: 4,
-            collectionAddress,
-          })
-          .expect('Content-Type', /json/)
-          .expect(200)
-        if (res.length) {
-          expect(res.length).to.equal(1)
-          expect(res[0]).to.have.property('collection')
-          expect(res[0]).to.have.property('floorPrice')
-          expect(res[0]).to.have.property('pools')
-          expect(res[0]).to.have.property('totalValueLent')
-          expect(res[0]).to.have.property('totalValueLocked')
-        }
-      }))
     })
 
-    it('can get all solana mainnet pools with collection address', async () => {
-      const collections = await getCollections()
-      const collectionAddresses = _.compact(_.flatMap(collections, data => data.blockchain.network === 'solana' && data.blockchain.networkId === 'mainnet' ? data.address : undefined))
-
-      await Promise.all(collectionAddresses.map(async collectionAddress => {
-        const { body: res } = await request(app).get('/v0/pools/groups/collection')
-          .query({
-            ethereum: 1,
-            collectionAddress,
-          })
-          .expect('Content-Type', /json/)
-          .expect(200)
-
-        if (res.length) {
-          expect(res.length).to.equal(1)
-          expect(res[0]).to.have.property('collection')
-          expect(res[0]).to.have.property('floorPrice')
-          expect(res[0]).to.have.property('pools')
-          expect(res[0]).to.have.property('totalValueLent')
-          expect(res[0]).to.have.property('totalValueLocked')
-        }
-      }))
-    })
-  })
-
-  describe('GET /pools/groups/search', () => {
-    it('can get all ethereum mainnet pools with collection address & pagination', async () => {
-      const collections = await getCollections()
-      const collectionAddresses = _.compact(_.flatMap(collections, data => data.blockchain.network === 'ethereum' && parseInt(data.blockchain.networkId, 10) === 1 ? data.address : undefined))
-
-      await Promise.all(collectionAddresses.map(async collectionAddress => {
+    describe('GET /pools/groups/search', () => {
+      it('can search pool groups with pagination', async () => {
         const { body: res } = await request(app).get('/v0/pools/groups/search')
           .query({
-            ethereum: 1,
-            collectionAddress,
+            ethereum: Blockchain.Ethereum.Network.MAIN,
             offset: 0,
             count: 10,
           })
           .expect('Content-Type', /json/)
           .expect(200)
 
-        if (res.data.length) {
-          expect(res.data.length).to.equal(1)
+        expect(res.data).be.an('array')
+        expect(res.data).to.have.length(10)
+        expect(res.totalCount).to.equal(pools.length)
+        expect(res.nextOffset).to.equal(10)
+        res.data.every((poolGroup: any) => expect(poolGroup).to.have.keys(...Object.keys(PoolGroup.codingResolver)))
+      })
+
+      it('can search each pool group by collection address with pagination', async () => {
+        await Promise.all(collections.map(async collection => {
+          const { body: res } = await request(app).get('/v0/pools/groups/search')
+            .query({
+              ethereum: Blockchain.Ethereum.Network.MAIN,
+              collectionAddress: collection.address,
+              offset: 0,
+              count: 10,
+            })
+            .expect('Content-Type', /json/)
+            .expect(200)
+
+          expect(res.data).be.an('array')
+          expect(res.data.length).to.be.oneOf([0, 1])
+
+          if (res.data.length === 1) {
+            expect(res.totalCount).to.equal(1)
+            expect(res.nextOffset).to.equal(1)
+            res.data.every((poolGroup: any) => expect(poolGroup).to.have.keys(...Object.keys(PoolGroup.codingResolver)))
+          }
+        }))
+      })
+
+      it('can search a pool group by colleciton name with pagination', async () => {
+        const { body: res } = await request(app).get('/v0/pools/groups/search')
+          .query({
+            ethereum: Blockchain.Ethereum.Network.MAIN,
+            query: 'Meebits',
+            offset: 0,
+            count: 10,
+          })
+          .expect('Content-Type', /json/)
+          .expect(200)
+
+        expect(res.data).be.an('array')
+        expect(res.data.length).to.be.oneOf([0, 1])
+
+        if (res.data.length === 1) {
           expect(res.totalCount).to.equal(1)
           expect(res.nextOffset).to.equal(1)
-          expect(res.data[0]).to.have.property('collection')
-          expect(res.data[0]).to.have.property('totalValueLent')
-          expect(res.data[0]).to.have.property('pools')
-          expect(res.data[0]).to.have.property('floorPrice')
-          expect(res.data[0]).to.have.property('totalValueLocked')
+          res.data.every((poolGroup: any) => expect(poolGroup).to.have.keys(...Object.keys(PoolGroup.codingResolver)))
         }
-      }))
+      })
+
+      it('can search pool groups with sorting and pagination', async () => {
+        const { body: res } = await request(app).get('/v0/pools/groups/search')
+          .query({
+            ethereum: Blockchain.Ethereum.Network.MAIN,
+            sort: 'name',
+            direction: 'desc',
+            offset: 0,
+            count: 10,
+          })
+          .expect('Content-Type', /json/)
+          .expect(200)
+
+        expect(res.data).be.an('array')
+        expect(res.data).to.have.length(10)
+
+        if (res.data.length === 1) {
+          expect(res.totalCount).to.equal(pools.length)
+          expect(res.nextOffset).to.equal(10)
+          res.data.every((poolGroup: any) => expect(poolGroup).to.have.keys(...Object.keys(PoolGroup.codingResolver)))
+        }
+      })
     })
 
-    it('can get all ethereum mainnet pools with pagination', async () => {
-      const pools = await searchPublishedPools()
-      const totalCount = pools.filter(pool => pool.collection.blockchain.network === 'ethereum' && parseInt(pool.collection.blockchain.networkId, 10) === 1).length
-      const { body: res } = await request(app).get('/v0/pools/groups/search')
-        .query({
-          ethereum: 1,
-          offset: 0,
-          count: 10,
-        })
-        .expect('Content-Type', /json/)
-        .expect(200)
+    describe('GET /pools/groups/collection', () => {
+      it('can get each pool group by collection address', async () => {
+        await Promise.all(collections.map(async collection => {
+          const { body: res } = await request(app).get('/v0/pools/groups/collection')
+            .query({
+              ethereum: Blockchain.Ethereum.Network.MAIN,
+              collectionAddress: collection.address,
+            })
+            .expect('Content-Type', /json/)
+            .expect(200)
 
-      if (res.data.length) {
-        expect(res.data.length).to.equal(10)
-        expect(res.totalCount).to.equal(totalCount)
-        expect(res.nextOffset).to.equal(10)
-        expect(res.data[0]).to.have.property('collection')
-        expect(res.data[0]).to.have.property('totalValueLent')
-        expect(res.data[0]).to.have.property('pools')
-        expect(res.data[0]).to.have.property('floorPrice')
-        expect(res.data[0]).to.have.property('totalValueLocked')
-      }
+          expect(res).be.an('array')
+          expect(res.length).to.be.oneOf([0, 1])
+
+          if (res.length === 1) {
+            res.every((poolGroup: any) => expect(poolGroup).to.have.keys(...Object.keys(PoolGroup.codingResolver)))
+          }
+        }))
+      })
+    })
+  })
+
+  describe('Ethereum Rinkeby', () => {
+    let collections: Collection[] = []
+
+    before(async () => {
+      collections = await getCollections({ blockchainFilter: { ethereum: Blockchain.Ethereum.Network.MAIN} })
     })
 
-    it('can get all ethereum mainnet pools with collection name & pagination', async () => {
-      const { body: res } = await request(app).get('/v0/pools/groups/search')
-        .query({
-          ethereum: 1,
-          query: 'Meebits',
-          offset: 0,
-          count: 10,
-        })
-        .expect('Content-Type', /json/)
-        .expect(200)
+    describe('GET /pools/groups/collection', () => {
+      it('can get each pool group by collection address', async () => {
+        await Promise.all(collections.map(async collection => {
+          const { body: res } = await request(app).get('/v0/pools/groups/collection')
+            .query({
+              ethereum: Blockchain.Ethereum.Network.RINKEBY,
+              collectionAddress: collection.address,
+            })
+            .expect('Content-Type', /json/)
+            .expect(200)
 
-      if (res.data.length) {
-        expect(res.data.length).to.equal(1)
-        expect(res.totalCount).to.equal(1)
-        expect(res.nextOffset).to.equal(1)
-        expect(res.data[0]).to.have.property('collection')
-        expect(res.data[0]).to.have.property('totalValueLent')
-        expect(res.data[0]).to.have.property('pools')
-        expect(res.data[0]).to.have.property('floorPrice')
-        expect(res.data[0]).to.have.property('totalValueLocked')
-      }
-    })
+          expect(res).be.an('array')
+          expect(res.length).to.be.oneOf([0, 1])
 
-    it('can get all ethereum mainnet pools with sorting & pagination', async () => {
-      const pools = await searchPublishedPools()
-      const totalCount = pools.filter(pool => pool.collection.blockchain.network === 'ethereum' && parseInt(pool.collection.blockchain.networkId, 10) === 1).length
-      const { body: res } = await request(app).get('/v0/pools/groups/search')
-        .query({
-          ethereum: 1,
-          sort: 'name',
-          direction: 'desc',
-          offset: 0,
-          count: 10,
-        })
-        .expect('Content-Type', /json/)
-        .expect(200)
-      if (res.data.length) {
-        expect(res.data.length).to.equal(10)
-        expect(res.totalCount).to.equal(totalCount)
-        expect(res.nextOffset).to.equal(10)
-        expect(res.data[0]).to.have.property('collection')
-        expect(res.data[0]).to.have.property('totalValueLent')
-        expect(res.data[0]).to.have.property('pools')
-        expect(res.data[0]).to.have.property('floorPrice')
-        expect(res.data[0]).to.have.property('totalValueLocked')
-      }
+          if (res.length === 1) {
+            res.every((poolGroup: any) => expect(poolGroup).to.have.keys(...Object.keys(PoolGroup.codingResolver)))
+          }
+        }))
+      })
     })
   })
 })

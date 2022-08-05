@@ -28,7 +28,7 @@ export default async function getEthCollectionFloorPrice({
   }
   catch (err) {
     logger.warn(`Fetching floor price for collection <${collectionAddress}> on network <${blockchain.networkId}>... WARN`)
-    if (logger.isWarnEnabled()) console.warn(err)
+    if (logger.isWarnEnabled() && !logger.silent) console.warn(err)
     return Value.$ETH(NaN)
   }
 }
@@ -52,10 +52,10 @@ export function useNFTBank({ blockchain, collectionAddress }: Params): DataSourc
         },
       })
 
-      const floorPrices = _.get(res, 'data.0.floor_price') ?? rethrow('Unable to infer floor price')
-      const floorPrice = _.get(_.find(floorPrices, { 'currency_symbol': 'ETH' }), 'floor_price') ?? rethrow('Unable to infer floor price')
+      const prices = _.get(res, 'data.0.floor_price') ?? rethrow('Unable to infer floor price')
+      const price = _.get(_.find(prices, { 'currency_symbol': 'ETH' }), 'floor_price') ?? rethrow('Unable to infer floor price')
 
-      return Value.$ETH(floorPrice)
+      return Value.$ETH(price)
     case Blockchain.Ethereum.Network.RINKEBY:
       return Value.$ETH(1)
     default:

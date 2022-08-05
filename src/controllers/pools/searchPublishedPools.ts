@@ -65,11 +65,11 @@ async function searchPublishedPools<IncludeStats extends boolean = false>({
 
       const valueLockedEth = capacityEth.plus(utilizationEth).gt(new BigNumber(pool.ethLimit || Number.POSITIVE_INFINITY)) ? new BigNumber(pool.ethLimit ?? 0) : capacityEth.plus(utilizationEth)
 
-      return {
+      return Pool.factory({
         ...pool,
         utilization: Value.$ETH(utilizationEth),
         valueLocked: Value.$ETH(valueLockedEth),
-      }
+      })
     })
   )
 
@@ -93,12 +93,14 @@ function getPipelineStages({
 
   const collectionFilter = [
     ...collectionAddress === undefined ? [] : [{
-      'collection.address': collectionAddress,
+      'collection._address': collectionAddress.toLowerCase(),
     }],
-    ...collectionName === undefined ? [] : [{ 'collection.displayName': {
-      $regex: `.*${collectionName}.*`,
-      $options: 'i',
-    } }],
+    ...collectionName === undefined ? [] : [{
+      'collection.displayName': {
+        $regex: `.*${collectionName}.*`,
+        $options: 'i',
+      },
+    }],
   ]
 
   const stages: PipelineStage[] = [{
@@ -119,6 +121,12 @@ function getPipelineStages({
     $unwind: '$collection',
   },
   ...collectionFilter.length === 0 ? [] : [{
+    $addFields: {
+      'collection._address': {
+        $toLower: '$collection.address',
+      },
+    },
+  }, {
     $match: {
       $and: collectionFilter,
     },

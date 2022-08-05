@@ -35,13 +35,13 @@ export default async function getRequest<T = any>(path: string, { controller, ho
     else if (axios.isAxiosError(err)) {
       const error = new SuperError(err.message, err.response?.status.toString(), undefined, err.response?.data as any)
       logger.debug(`Making request to <${host ?? ''}${path}>... ${err.response?.status ?? 'ERR'}`)
-      if (logger.isDebugEnabled()) console.error(error)
+      if (logger.isDebugEnabled() && !logger.silent) console.error(error)
       throw error
     }
     else {
       const error = err instanceof TypeError ? err : fault('ERR_UNEXPECTED_PAYLOAD', undefined, err)
       logger.debug(`Making request to <${host ?? ''}${path}>... ERR`)
-      if (logger.isDebugEnabled()) console.error(error)
+      if (logger.isDebugEnabled() && !logger.silent) console.error(error)
       throw error
     }
   }

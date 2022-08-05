@@ -34,7 +34,7 @@ app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
   }
   else {
     logger.error('Handling 500 error... ERR')
-    console.error(err)
+    if (logger.isErrorEnabled() && !logger.silent) console.error(err)
   }
 
   res.status(status).json({
