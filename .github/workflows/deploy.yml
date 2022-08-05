@@ -6,7 +6,7 @@ on:
         required: true
         type: string
 jobs:
-  cloud-run:
+  default:
     name: Cloud Run
     runs-on: ubuntu-latest
     permissions:
