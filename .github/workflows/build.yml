@@ -96,8 +96,8 @@ jobs:
           context: .
           labels: steps.docker-meta.outputs.labels
           push: ${{ inputs.push }}
-          tags: steps.docker-meta.outputs.tags
+          tags: ${{ inputs.push && steps.docker-meta.outputs.tags || format('{0}:{1}', env.IMAGE_NAME, github.sha) }}
           target: release
       - name: Test
         run: |
-          echo "${{ steps.docker-build.outputs.imageid }}"
+          echo "${{ steps.docker-build.outputs.metadata }}"
