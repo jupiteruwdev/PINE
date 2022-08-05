@@ -59,7 +59,7 @@ export default async function publishPool({
     case 'ethereum':
       switch (blockchain.networkId) {
       case Blockchain.Ethereum.Network.MAIN:
-        authenticatePoolPublisher({ poolAddress, payload, signature, networkId: blockchain.networkId })
+        await authenticatePoolPublisher({ poolAddress, payload, signature, networkId: blockchain.networkId })
         const { pool: poolMainnet } = await getOnChainPoolByAddress({ poolAddress }, { networkId: blockchain.networkId })
         pool = await savePool({
           poolData: poolMainnet,
@@ -67,7 +67,7 @@ export default async function publishPool({
         })
         break
       case Blockchain.Ethereum.Network.RINKEBY:
-        authenticatePoolPublisher({ poolAddress, payload, signature, networkId: blockchain.networkId })
+        await authenticatePoolPublisher({ poolAddress, payload, signature, networkId: blockchain.networkId })
         const { pool: poolRinkeby } = await getOnChainPoolByAddress({ poolAddress }, { networkId: blockchain.networkId })
         pool = await savePool({
           poolData: poolRinkeby,

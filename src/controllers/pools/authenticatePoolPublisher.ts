@@ -16,5 +16,5 @@ export default async function authenticatePoolPublisher({ poolAddress, payload, 
   const payloadObj = JSON.parse(payload)
   const poolContract = new web3.eth.Contract(ERC721LendingV2 as any, _.get(payloadObj, 'poolAddress'))
   const poolOwner = await poolContract.methods.owner().call()
-  if (poolOwner !== signer || poolAddress !== _.get(payloadObj, 'poolAddress')) throw fault('ERR_AUTH_FAILED')
+  if (poolOwner.toLowerCase() !== signer.toLowerCase() || poolAddress.toLowerCase() !== _.get(payloadObj, 'poolAddress').toLowerCase()) throw fault('ERR_AUTH_FAILED')
 }
