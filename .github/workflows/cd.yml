@@ -1,7 +1,7 @@
 name: CD
 on:
   push:
-    branches: [staging, main]
+    branches: [development, staging, main]
 env:
   IMAGE_NAME: gcr.io/${{ secrets.GCP_PROJECT }}/core-service
   ALCHEMY_API_KEY: ${{ secrets.ALCHEMY_API_KEY }}
