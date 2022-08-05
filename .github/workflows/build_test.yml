@@ -11,7 +11,6 @@ on:
       image:
         description: The full name:tag of the built Docker image
         value: ${{ jobs.default.outputs.image }}
-    secrets: inherit
 env:
   IMAGE_NAME: gcr.io/${{ secrets.GCP_PROJECT }}/core-service
   ALCHEMY_API_KEY: ${{ secrets.ALCHEMY_API_KEY }}
@@ -31,6 +30,7 @@ env:
   TESTS_WHALE_WALLET_ADDRESSES: ${{ secrets.TESTS_WHALE_WALLET_ADDRESSES }}
 jobs:
   default:
+    name: Build/Test
     runs-on: ubuntu-latest
     outputs:
       image: ${{ fromJSON(steps.meta.outputs.json).tags[0] }}
