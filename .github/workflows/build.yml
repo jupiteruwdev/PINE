@@ -6,6 +6,11 @@ on:
         description: Specifies if the built Docker image should be pushed to remote registry
         required: false
         type: boolean
+      environment:
+        default: production
+        description: Specifies the environment of the built image (affects external APIs used)
+        required: false
+        type: string
     outputs:
       image:
         description: The full name:tag of the built Docker image
@@ -22,13 +27,14 @@ env:
   MORALIS_API_KEY: ${{ secrets.MORALIS_API_KEY }}
   NFTBANK_API_KEY: ${{ secrets.NFTBANK_API_KEY }}
   OPENSEA_API_KEY: ${{ secrets.OPENSEA_API_KEY }}
-  SUBGRAPH_API_MAINNET_URL: ${{ github.ref == 'refs/heads/main' && secrets.SUBGRAPH_API_MAINNET_URL || secrets.SUBGRAPH_API_MAINNET_URL_STAGING }}
-  SUBGRAPH_API_RINKEBY_URL: ${{ github.ref == 'refs/heads/main' && secrets.SUBGRAPH_API_RINKEBY_URL || secrets.SUBGRAPH_API_RINKEBY_URL_STAGING }}
+  SUBGRAPH_API_MAINNET_URL: ${{ inputs.environment == 'production' && secrets.SUBGRAPH_API_MAINNET_URL || secrets.SUBGRAPH_API_MAINNET_URL_STAGING }}
+  SUBGRAPH_API_RINKEBY_URL: ${{ inputs.environment == 'production' && secrets.SUBGRAPH_API_RINKEBY_URL || secrets.SUBGRAPH_API_RINKEBY_URL_STAGING }}
   TESTS_LOG_LEVEL: ${{ secrets.TESTS_LOG_LEVEL }}
   TESTS_WALLET_ADDRESS: ${{ secrets.TESTS_WALLET_ADDRESS }}
   TESTS_WHALE_WALLET_ADDRESSES: ${{ secrets.TESTS_WHALE_WALLET_ADDRESSES }}
 jobs:
-  default:
+  docker:
+    name: Docker
     runs-on: ubuntu-latest
     outputs:
       image: ${{ fromJSON(steps.meta.outputs.json).tags[0] }}

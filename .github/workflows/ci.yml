@@ -3,20 +3,20 @@ on:
   push:
     branches-ignore: [development, staging, main]
 jobs:
-  build-test:
-    name: Build/Test
-    uses: ./.github/workflows/build_test.yml
+  build:
+    name: Build
+    uses: ./.github/workflows/build.yml
     with:
       push: false
     secrets: inherit
   notify:
     name: Notify
-    needs: [build-test]
+    needs: [build]
     if: ${{ always() }}
     runs-on: ubuntu-latest
     steps:
       - uses: andrewscwei/slack-action@v1.0.0
         with:
           success-prefix: 🌲
-          success: ${{ needs.build-test.result == 'success' }}
+          success: ${{ needs.build.result == 'success' }}
           webhook-url: ${{ secrets.SLACK_DEVOPS_WEBHOOK_URL }}
