@@ -100,4 +100,4 @@ jobs:
           target: release
       - name: Test
         run: |
-          echo "${{ steps.docker-build.outputs.metadata }}"
+          echo "${{ steps.docker-build.outputs }}"
