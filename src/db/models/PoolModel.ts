@@ -1,7 +1,6 @@
 import mongoose, { Schema } from 'mongoose'
 
 const schema = new Schema({
-  _id: Schema.Types.ObjectId,
   retired: Schema.Types.Boolean,
   address: {
     type: Schema.Types.String,

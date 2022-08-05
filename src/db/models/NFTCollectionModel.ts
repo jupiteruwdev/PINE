@@ -1,7 +1,6 @@
 import mongoose, { Schema } from 'mongoose'
 
 const schema = new Schema({
-  _id: Schema.Types.ObjectId,
   vendorIds: {
     opensea: Schema.Types.String,
     gemxyz: Schema.Types.String,

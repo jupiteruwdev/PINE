@@ -4,7 +4,12 @@ import request from 'supertest'
 import app from '../../src/app'
 import { searchPublishedPools } from '../../src/controllers'
 import { getCollections } from '../../src/controllers/collections'
+<<<<<<< HEAD
 import { Blockchain, Collection, deserializeEntity, Pool, PoolGroup } from '../../src/entities'
+=======
+import { PoolModel } from '../../src/db'
+import { Blockchain, Pool } from '../../src/entities'
+>>>>>>> staging
 
 describe('routes/v0/pools', () => {
   afterEach(function() {
@@ -171,6 +176,50 @@ describe('routes/v0/pools', () => {
           }
         }))
       })
+    })
+  })
+
+  describe('GET /pools/lender', () => {
+    it('can get ethereum published & unpublished pools by lender', async () => {
+      const { body: res } = await request(app).get('/v0/pools/lender')
+        .query({
+          ethereum: 1,
+          lenderAddress: '0xfb9684ec1026513241f777485911043dc2aa9a4f',
+        })
+        .expect('Content-Type', /json/)
+        .expect(200)
+
+      expect(res.length).to.gte(0)
+      for (const item of res) {
+        const pool = Pool.factory(item)
+        for (const key in pool) {
+          if (Object.prototype.hasOwnProperty.call(pool, key)) {
+            expect(item).to.have.property(key)
+          }
+        }
+      }
+    })
+  })
+
+  describe('POST /pools/:poolAddress', () => {
+    it('can publish ethereum pool', async () => {
+      const { body: res } = await request(app).post('/v0/pools/0xc59d88285ab60abbf44ed551d554e86d4ab34442')
+        .query({
+          ethereum: 1,
+        })
+        .expect('Content-Type', /json/)
+        .expect(200)
+
+      const pool = Pool.factory(res)
+      for (const key in pool) {
+        if (Object.prototype.hasOwnProperty.call(pool, key)) {
+          expect(res).to.have.property(key)
+        }
+      }
+
+      await PoolModel.deleteOne({
+        address: '0xc59d88285ab60abbf44ed551d554e86d4ab34442',
+      }).exec()
     })
   })
 })

@@ -40,7 +40,10 @@ async function savePool({ poolData, blockchain }: SavePoolParams) {
     nftCollection: collection?._id,
   })
 
-  return mapPool(res)
+  return mapPool({
+    ...res.toObject(),
+    collection,
+  })
 }
 
 export default async function publishPool({
