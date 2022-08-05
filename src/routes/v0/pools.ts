@@ -1,4 +1,5 @@
 import { Router } from 'express'
+import _ from 'lodash'
 import appConf from '../../app.conf'
 import { countPools, getPool, getPools, publishPool, searchPoolGroups } from '../../controllers'
 import searchPools, { PoolSortDirection, PoolSortType } from '../../controllers/pools/searchPublishedPools'
@@ -92,12 +93,13 @@ router.get('/:poolAddress', async (req, res, next) => {
   }
 })
 
-router.post('/:poolAddress', async (req, res, next) => {
+router.post('/', async (req, res, next) => {
   try {
     const blockchain = getBlockchain(req.query)
-    const poolAddress = getString(req.params, 'poolAddress')
-    const payload = getString(req.params, 'payload')
-    const signature = getString(req.params, 'signature')
+    const body = JSON.parse(req.body)
+    const poolAddress = _.get(body, 'poolAddress')
+    const payload = _.get(body, 'payload')
+    const signature = _.get(body, 'signature')
     const pool = await publishPool({ blockchain, poolAddress, payload, signature })
 
     res.status(200).json(pool)
