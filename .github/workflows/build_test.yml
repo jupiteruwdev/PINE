@@ -1,4 +1,3 @@
-name: Build/Test
 on:
   workflow_call:
     inputs:
@@ -30,7 +29,6 @@ env:
   TESTS_WHALE_WALLET_ADDRESSES: ${{ secrets.TESTS_WHALE_WALLET_ADDRESSES }}
 jobs:
   default:
-    name: Build/Test
     runs-on: ubuntu-latest
     outputs:
       image: ${{ fromJSON(steps.meta.outputs.json).tags[0] }}

@@ -4,9 +4,11 @@ on:
     branches-ignore: [development, staging, main]
 jobs:
   build-test:
+    name: Build/Test
     uses: ./.github/workflows/build_test.yml
     with:
       push: false
+    secrets: inherit
   notify:
     name: Notify
     needs: [build-test]
