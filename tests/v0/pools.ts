@@ -4,12 +4,8 @@ import request from 'supertest'
 import app from '../../src/app'
 import { searchPublishedPools } from '../../src/controllers'
 import { getCollections } from '../../src/controllers/collections'
-<<<<<<< HEAD
-import { Blockchain, Collection, deserializeEntity, Pool, PoolGroup } from '../../src/entities'
-=======
 import { PoolModel } from '../../src/db'
-import { Blockchain, Pool } from '../../src/entities'
->>>>>>> staging
+import { Blockchain, Collection, deserializeEntity, Pool, PoolGroup } from '../../src/entities'
 
 describe('routes/v0/pools', () => {
   afterEach(function() {
