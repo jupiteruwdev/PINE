@@ -95,11 +95,10 @@ router.get('/:poolAddress', async (req, res, next) => {
 
 router.post('/', async (req, res, next) => {
   try {
-    const body = JSON.parse(req.body)
-    const blockchain = getBlockchain(body)
-    const poolAddress = _.get(body, 'poolAddress')
-    const payload = _.get(body, 'payload')
-    const signature = _.get(body, 'signature')
+    const blockchain = getBlockchain(req.body)
+    const poolAddress = _.get(req.body, 'poolAddress')
+    const payload = _.get(req.body, 'payload')
+    const signature = _.get(req.body, 'signature')
     const pool = await publishPool({ blockchain, poolAddress, payload, signature })
 
     res.status(200).json(pool)
