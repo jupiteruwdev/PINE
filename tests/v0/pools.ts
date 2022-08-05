@@ -1,8 +1,11 @@
 import { expect } from 'chai'
+import _ from 'lodash'
 import { describe, it } from 'mocha'
 import request from 'supertest'
 import app from '../../src/app'
+import appConf from '../../src/app.conf'
 import { getCollections, searchPublishedPools } from '../../src/controllers'
+import getEthWeb3 from '../../src/controllers/utils/getEthWeb3'
 import { PoolModel } from '../../src/db'
 import { Blockchain, Collection, deserializeEntity, Pool, PoolGroup } from '../../src/entities'
 
@@ -12,7 +15,7 @@ describe('Ethereum Mainnet', () => {
 
   before(async () => {
     pools = await searchPublishedPools({ blockchainFilter: { ethereum: Blockchain.Ethereum.Network.MAIN } })
-    collections = await getCollections({ blockchainFilter: { ethereum: Blockchain.Ethereum.Network.MAIN} })
+    collections = await getCollections({ blockchainFilter: { ethereum: Blockchain.Ethereum.Network.MAIN } })
   })
 
   describe('GET /v0/pools/:poolAddress', () => {
@@ -32,7 +35,7 @@ describe('Ethereum Mainnet', () => {
     })
   })
 
-  describe.skip('GET /v0/pools/lender', () => {
+  describe('GET /v0/pools/lender', () => {
     it('can get published and unpublished pools by lender', async () => {
       const { body: res } = await request(app).get('/v0/pools/lender')
         .query({
@@ -46,7 +49,7 @@ describe('Ethereum Mainnet', () => {
       for (const item of res) {
         const pool = Pool.factory(item)
         for (const key in pool) {
-          if (Object.prototype.hasOwnProperty.call(pool, key)) {
+          if (Object.prototype.hasOwnProperty.call(pool, key) && _.get(pool, key)) {
             expect(item).to.have.property(key)
           }
         }
@@ -54,18 +57,27 @@ describe('Ethereum Mainnet', () => {
     })
   })
 
-  describe.skip('POST /v0/pools/:poolAddress', () => {
+  describe('POST /v0/pools', () => {
     it('can publish pool', async () => {
-      const { body: res } = await request(app).post('/v0/pools/0xc59d88285ab60abbf44ed551d554e86d4ab34442')
-        .query({
+      const payload = JSON.stringify({
+        poolAddress: '0xc59d88285ab60abbf44ed551d554e86d4ab34442',
+      })
+      const web3 = getEthWeb3(Blockchain.Ethereum.Network.MAIN)
+      const wallet = web3.eth.accounts.privateKeyToAccount(appConf.tests.privateKey)
+      const tx = wallet.sign(payload)
+      const { body: res } = await request(app).post('/v0/pools')
+        .send({
           ethereum: 1,
+          poolAddress: '0xc59d88285ab60abbf44ed551d554e86d4ab34442',
+          payload,
+          signature: tx.signature,
         })
         .expect('Content-Type', /json/)
         .expect(200)
 
       const pool = Pool.factory(res)
       for (const key in pool) {
-        if (Object.prototype.hasOwnProperty.call(pool, key)) {
+        if (Object.prototype.hasOwnProperty.call(pool, key) && _.get(pool, key)) {
           expect(res).to.have.property(key)
         }
       }
@@ -181,7 +193,7 @@ describe('Ethereum Rinkeby', () => {
   let collections: Collection[] = []
 
   before(async () => {
-    collections = await getCollections({ blockchainFilter: { ethereum: Blockchain.Ethereum.Network.MAIN} })
+    collections = await getCollections({ blockchainFilter: { ethereum: Blockchain.Ethereum.Network.MAIN } })
   })
 
   describe('GET /v0/pools/groups/collection', () => {
