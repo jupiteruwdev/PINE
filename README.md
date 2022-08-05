@@ -71,7 +71,7 @@ Logs are powered by [winston](https://github.com/winstonjs/winston) and have the
 5. `verbose`
 6. `debug`
 
-To enable logging, simply set the following environment variables to the appropriate level listed above. Note that all log levels above the set level are also visible, but not vice-versa (i.e. if log level is set to `info`, `warn` and `error` level logs will also be visible, but not `http`, `verbose`, `debug` and `silly`):
+To enable logging, simply set the following environment variables to the appropriate level listed above. Note that all log levels above the set level are also visible, but not vice-versa (i.e. if log level is set to `info`, `warn` and `error` level logs will also be visible, but not `verbose` and `debug`):
 
 ```sh
 # Set log level for the app (excludes unit/integration tests)
