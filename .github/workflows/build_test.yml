@@ -1,7 +1,17 @@
-name: CD
+name: Build/Test
 on:
-  push:
-    branches: [main]
+  workflow_call:
+    inputs:
+      push:
+        default: false
+        description: Specifies if the built Docker image should be pushed to remote registry
+        required: false
+        type: boolean
+    outputs:
+      image:
+        description: The full name:tag of the built Docker image
+        value: ${{ jobs.default.outputs.image }}
+    secrets: inherit
 env:
   IMAGE_NAME: gcr.io/${{ secrets.GCP_PROJECT }}/core-service
   ALCHEMY_API_KEY: ${{ secrets.ALCHEMY_API_KEY }}
@@ -14,15 +24,16 @@ env:
   MORALIS_API_KEY: ${{ secrets.MORALIS_API_KEY }}
   NFTBANK_API_KEY: ${{ secrets.NFTBANK_API_KEY }}
   OPENSEA_API_KEY: ${{ secrets.OPENSEA_API_KEY }}
-  SUBGRAPH_API_MAINNET_URL: ${{ secrets.SUBGRAPH_API_MAINNET_URL }}
-  SUBGRAPH_API_RINKEBY_URL: ${{ secrets.SUBGRAPH_API_RINKEBY_URL }}
+  SUBGRAPH_API_MAINNET_URL: ${{ github.ref == 'refs/heads/main' && secrets.SUBGRAPH_API_MAINNET_URL || secrets.SUBGRAPH_API_MAINNET_URL_STAGING }}
+  SUBGRAPH_API_RINKEBY_URL: ${{ github.ref == 'refs/heads/main' && secrets.SUBGRAPH_API_RINKEBY_URL || secrets.SUBGRAPH_API_RINKEBY_URL_STAGING }}
   TESTS_LOG_LEVEL: ${{ secrets.TESTS_LOG_LEVEL }}
   TESTS_WALLET_ADDRESS: ${{ secrets.TESTS_WALLET_ADDRESS }}
   TESTS_WHALE_WALLET_ADDRESSES: ${{ secrets.TESTS_WHALE_WALLET_ADDRESSES }}
 jobs:
-  deploy:
-    name: Build/Test/Deploy
+  default:
     runs-on: ubuntu-latest
+    outputs:
+      image: ${{ fromJSON(steps.meta.outputs.json).tags[0] }}
     permissions:
       id-token: write
     steps:
@@ -77,26 +88,6 @@ jobs:
           cache-to: type=gha,scope=${{ github.workflow }},mode=max
           context: .
           labels: ${{ steps.meta.outputs.labels }}
-          push: true
+          push: ${{ inputs.push }}
           tags: ${{ steps.meta.outputs.tags }}
           target: release
-      - name: Deploy
-        run: |
-          gcloud config set project ${{ secrets.GCP_PROJECT }}
-          services=$(gcloud run services list --platform managed --filter="metadata.labels.ref=${{ github.ref_name }}" | awk 'NR >= 2 {print $2}' | sed -n -e 'H;${x;s/\n/,/g;s/^,//;p;}')
-          for service in $(echo $services | sed "s/,/ /g")
-          do
-            region=$(gcloud run services list --platform managed --filter=metadata.name=$service | awk 'NR == 2 {print $3}')
-            gcloud run deploy $service --image ${{ fromJSON(steps.meta.outputs.json).tags[0] }} --platform managed --region $region
-          done
-  notify:
-    name: Notify
-    needs: [deploy]
-    if: ${{ always() }}
-    runs-on: ubuntu-latest
-    steps:
-      - uses: andrewscwei/slack-action@v1.0.0
-        with:
-          success-prefix: 🌲
-          success: ${{ needs.deploy.result == 'success' }}
-          webhook-url: ${{ secrets.SLACK_DEVOPS_WEBHOOK_URL }}
