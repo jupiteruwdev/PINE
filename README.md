@@ -14,6 +14,7 @@ ALCHEMY_API_MAINNET_URL=
 ALCHEMY_API_RINKEBY_URL=
 ETH_RPC_MAINNET=
 ETH_RPC_RINKEBY=
+LOG_LEVEL=
 MORALIS_API_KEY=
 NFTBANK_API_KEY=
 OPENSEA_API_KEY=
@@ -29,6 +30,7 @@ The following are environment variables used by unit and integration tests:
 ```sh
 # .env
 
+TESTS_LOG_LEVEL=<log_level>
 TESTS_WALLET_ADDRESS=<address>
 TESTS_WHALE_WALLET_ADDRESSES=<address_1>,<address_2>,<address_3>
 ```
