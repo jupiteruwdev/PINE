@@ -56,6 +56,7 @@ export default {
   tests: {
     logLevel: process.env.TESTS_LOG_LEVEL,
     walletAddress: process.env.TESTS_WALLET_ADDRESS ?? '',
+    privateKey: process.env.TESTS_WALLET_PRIVATE_KEY ?? '',
     whaleWalletAddresses: _.compact((process.env.TESTS_WHALE_WALLET_ADDRESSES ?? '').split(',')),
   },
 }
