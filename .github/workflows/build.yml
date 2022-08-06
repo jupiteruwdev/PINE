@@ -13,7 +13,7 @@ on:
         type: string
     outputs:
       image:
-        description: The full name:tag of the built Docker image
+        description: The built Docker image
         value: ${{ jobs.default.outputs.image }}
 env:
   IMAGE_NAME: gcr.io/${{ secrets.GCP_PROJECT }}/core-service
