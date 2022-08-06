@@ -12,11 +12,6 @@ jobs:
     permissions:
       id-token: write
     steps:
-      - name: Checkout
-        uses: actions/checkout@v2
-        with:
-          submodules: recursive
-          token: ${{ secrets.GH_ACCESS_TOKEN }}
       - name: Authenticate Google Cloud
         uses: google-github-actions/auth@v0
         with:
@@ -32,5 +27,5 @@ jobs:
           for service in $(echo $services | sed "s/,/ /g")
           do
             region=$(gcloud run services list --platform managed --filter=metadata.name=$service | awk 'NR == 2 {print $3}')
-            gcloud run deploy $service --image ${{ fromJSON(steps.meta.outputs.json).tags[0] }} --platform managed --region $region
+            gcloud run deploy $service --image ${{ inputs.image }} --platform managed --region $region
           done
