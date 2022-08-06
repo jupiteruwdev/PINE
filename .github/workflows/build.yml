@@ -38,7 +38,7 @@ jobs:
     name: Docker
     runs-on: ubuntu-latest
     outputs:
-      image: ${{ inputs.push && fromJSON(steps.docker-build.outputs.metadata).tags[0] || '' }}
+      image: ${{ inputs.push && fromJSON(steps.meta.outputs.json).tags[0] || '' }}
     permissions:
       id-token: write
     steps:
