@@ -5,14 +5,14 @@ on:
 jobs:
   build:
     name: Build
-    uses: ./.github/workflows/build.yml
+    uses: ./.github/workflows/jobs/build.yml
     with:
       push: true
       environment: ${{ github.ref_name == 'main' && 'production' || 'staging' }}
     secrets: inherit
   deploy:
     name: Deploy
-    uses: ./.github/workflows/deploy.yml
+    uses: ./.github/workflows/jobs/deploy.yml
     needs: [build]
     with:
       image: ${{ needs.build.outputs.image }}
