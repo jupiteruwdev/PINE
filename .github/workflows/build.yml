@@ -16,7 +16,7 @@ on:
         description: The built Docker image
         value: ${{ jobs.default.outputs.image }}
 env:
-  IMAGE_NAME: gcr.io/${{ secrets.GCP_PROJECT }}/core-service
+  IMAGE_NAME: gcr.io/pinedefi/core-service
   ALCHEMY_API_KEY: ${{ secrets.ALCHEMY_API_KEY }}
   ALCHEMY_API_MAINNET_URL: ${{ secrets.ALCHEMY_API_MAINNET_URL }}
   ALCHEMY_API_RINKEBY_URL: ${{ secrets.ALCHEMY_API_RINKEBY_URL }}
