@@ -3,6 +3,6 @@
   "files.insertFinalNewline": true,
   "files.trimFinalNewlines": true,
   "yaml.schemas": {
-    "https://json.schemastore.org/github-workflow.json": "file:///Users/mu/Developer/pine/core-service/.github/workflows/jobs/deploy.yml"
+    "https://json.schemastore.org/github-workflow.json": "file:///Users/mu/Developer/pine/core-service/.github/workflows/deploy.yml"
   }
 }
