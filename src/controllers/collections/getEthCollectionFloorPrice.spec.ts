@@ -51,7 +51,7 @@ describe('controllers/collections/getEthCollectionFloorPrice', () => {
       collectionsInTestWallet = _.uniqBy(nfts.map(nft => nft.collection), collection => collection.address.toLowerCase())
     })
 
-    it('can get floor price of all supported Ethereum collections on Rinkeby', async () => {
+    it('can get floor price of all collections in test wallet', async () => {
       for (const collection of collectionsInTestWallet) {
         await getEthCollectionFloorPrice({ blockchain, collectionAddress: collection.address })
       }

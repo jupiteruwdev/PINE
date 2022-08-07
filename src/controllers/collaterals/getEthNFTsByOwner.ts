@@ -47,7 +47,7 @@ export default async function getEthNFTsByOwner({ blockchain, ownerAddress, popu
 
 export function useAlchemy({ blockchain, ownerAddress, populateMetadata }: Params): DataSource<NFT[]> {
   return async () => {
-    logger.info(`Using Alchemy to look up NFTs for owner <${ownerAddress}>...`)
+    logger.info(`...using Alchemy to look up NFTs for owner <${ownerAddress}>`)
 
     if (blockchain.network !== 'ethereum') rethrow(`Unsupported blockchain <${JSON.stringify(blockchain)}>`)
 
@@ -126,7 +126,7 @@ export function useAlchemy({ blockchain, ownerAddress, populateMetadata }: Param
 
 export function useMoralis({ blockchain, ownerAddress, populateMetadata }: Params): DataSource<NFT[]> {
   return async () => {
-    logger.info(`Using Moralis to look up NFTs for owner <${ownerAddress}>...`)
+    logger.info(`...using Moralis to look up NFTs for owner <${ownerAddress}>`)
 
     if (blockchain.network !== 'ethereum') throw fault('ERR_UNSUPPORTED_BLOCKCHAIN')
 

@@ -35,7 +35,7 @@ export default async function getEthCollectionFloorPrice({
 
 export function useNFTBank({ blockchain, collectionAddress }: Params): DataSource<Value<'ETH'>> {
   return async () => {
-    logger.info(`Using NFTBank to look up floor price for collection <${collectionAddress}>...`)
+    logger.info(`...using NFTBank to look up floor price for collection <${collectionAddress}>`)
 
     if (blockchain.network !== 'ethereum') rethrow(`Unsupported blockchain <${JSON.stringify(blockchain)}>`)
 

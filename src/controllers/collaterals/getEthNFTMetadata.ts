@@ -53,7 +53,7 @@ export default async function getEthNFTMetadata({
 
 export function useAlchemy({ blockchain, collectionAddress, nftId }: Omit<Params, 'tokenUri'>): DataSource<Partial<NFTMetadata>> {
   return async () => {
-    logger.info(`Using Alchemy to look up metadata for NFT <${collectionAddress}/${nftId}}>...`)
+    logger.info(`...using Alchemy to look up metadata for NFT <${collectionAddress}/${nftId}}>`)
 
     if (blockchain?.network !== 'ethereum') rethrow(`Unsupported blockchain <${JSON.stringify(blockchain)}>`)
 
@@ -88,7 +88,7 @@ export function useAlchemy({ blockchain, collectionAddress, nftId }: Omit<Params
 
 export function useContract({ blockchain, collectionAddress, nftId }: Omit<Params, 'tokenUri'>): DataSource<Partial<NFTMetadata>> {
   return async () => {
-    logger.info(`Using contract to look up metadata for NFT <${collectionAddress}/${nftId}}>...`)
+    logger.info(`...using contract to look up metadata for NFT <${collectionAddress}/${nftId}}>`)
 
     if (blockchain?.network !== 'ethereum') rethrow(`Unsupported blockchain <${JSON.stringify(blockchain)}>`)
 
@@ -103,7 +103,7 @@ export function useContract({ blockchain, collectionAddress, nftId }: Omit<Param
 
 export function useTokenUri({ tokenUri }: Pick<Params, 'tokenUri'>): DataSource<Partial<NFTMetadata>> {
   return async () => {
-    logger.info(`Using token URI <${tokenUri}> to look up metadata for NFT...`)
+    logger.info(`...using token URI <${tokenUri}> to look up metadata for NFT`)
 
     if (tokenUri === undefined) rethrow(`Failed to fetch NFT metadata from token URI <${tokenUri}>`)
 
