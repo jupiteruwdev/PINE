@@ -1,12 +1,13 @@
+import { expect } from 'chai'
 import _ from 'lodash'
 import { describe, it } from 'mocha'
 import appConf from '../../app.conf'
 import { initDb } from '../../db'
 import { Blockchain, Collection } from '../../entities'
 import { getEthNFTsByOwner } from '../collaterals'
-import getEthCollectionFloorPrice from './getEthCollectionFloorPrice'
+import getEthCollectionMetadata from './getEthCollectionMetadata'
 
-describe('controllers/collections/getEthCollectionFloorPrice', () => {
+describe('controllers/collections/getEthCollectionMetadata', () => {
   const TEST_WALLET_ADDRESS = appConf.tests.walletAddress
   const WHALE_WALLET_ADDRESSES = appConf.tests.whaleWalletAddresses
 
@@ -27,16 +28,18 @@ describe('controllers/collections/getEthCollectionFloorPrice', () => {
       collectionsInWhaleWallets = whaleNFTs.map(nfts => _.uniqBy(nfts.map(nft => nft.collection), collection => collection.address.toLowerCase()))
     })
 
-    it('can get floor price of all collections in test wallet', async () => {
+    it('can get metadata of all collections in test wallet', async () => {
       for (const collection of collectionsInTestWallet) {
-        await getEthCollectionFloorPrice({ blockchain, collectionAddress: collection.address })
+        const metadata = await getEthCollectionMetadata({ blockchain, collectionAddress: collection.address })
+        expect(metadata).to.have.all.keys('name', 'imageUrl', 'vendorIds')
       }
     })
 
     WHALE_WALLET_ADDRESSES.forEach((address, i) => {
-      it(`can get floor price of all collections in whale wallet <${address}>`, async () => {
+      it(`can get metadata of all collections in whale wallet <${address}>`, async () => {
         for (const collection of collectionsInWhaleWallets[i]) {
-          await getEthCollectionFloorPrice({ blockchain, collectionAddress: collection.address })
+          const metadata = await getEthCollectionMetadata({ blockchain, collectionAddress: collection.address })
+          expect(metadata).to.have.all.keys('name', 'imageUrl', 'vendorIds')
         }
       })
     })
@@ -51,9 +54,9 @@ describe('controllers/collections/getEthCollectionFloorPrice', () => {
       collectionsInTestWallet = _.uniqBy(nfts.map(nft => nft.collection), collection => collection.address.toLowerCase())
     })
 
-    it('can get floor price of all supported Ethereum collections on Rinkeby', async () => {
+    it('can get metadata of all collections in test wallet (can be empty)', async () => {
       for (const collection of collectionsInTestWallet) {
-        await getEthCollectionFloorPrice({ blockchain, collectionAddress: collection.address })
+        await getEthCollectionMetadata({ blockchain, collectionAddress: collection.address })
       }
     })
   })

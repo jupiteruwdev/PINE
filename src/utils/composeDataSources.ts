@@ -3,6 +3,32 @@ import rethrow from './rethrow'
 
 export type DataSource<R> = () => Promise<R>
 
+function isEmptyDeep(value: any): boolean {
+  if (_.isEmpty(value)) return true
+
+  if (_.isPlainObject(value)) {
+    let hasValue = false
+
+    for (const key in value) {
+      hasValue = hasValue || !isEmptyDeep(value[key])
+    }
+
+    return !hasValue
+  }
+  else if (_.isArray(value)) {
+    const l = value.length
+    let hasValue = false
+
+    for (let i = 0; i < l; i++) {
+      hasValue = hasValue || !isEmptyDeep(value[i])
+    }
+
+    return !hasValue
+  }
+
+  return false
+}
+
 /**
  * Composes multiple {@link DataSource} requests into one, where the first non-empty data fetched
  * from a data source will be returned. The data sources are requested in series.
@@ -22,7 +48,7 @@ export default function composeDataSources<R>(...dataSources: DataSource<R>[]): 
 
       try {
         const res = await dataSource.apply(undefined)
-        if (!_.isEmpty(res)) return res
+        if (!isEmptyDeep(res)) return res
       }
       catch (err) {}
     }
