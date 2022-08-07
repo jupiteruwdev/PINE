@@ -6,7 +6,7 @@ import { Blockchain, Collection } from '../../entities'
 import { getEthNFTsByOwner } from '../collaterals'
 import getEthCollectionFloorPrice from './getEthCollectionFloorPrice'
 
-describe('controllers/valuations/getEthCollectionFloorPrice', () => {
+describe('controllers/collections/getEthCollectionFloorPrice', () => {
   const TEST_WALLET_ADDRESS = appConf.tests.walletAddress
   const WHALE_WALLET_ADDRESSES = appConf.tests.whaleWalletAddresses
 
