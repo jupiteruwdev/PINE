@@ -41,7 +41,7 @@ export default async function getEthNFTsByOwner({ blockchain, ownerAddress, popu
   const metadataArray = await Promise.all(uniqCollectionAddresses.map(async address => ({ [address]: await getEthCollectionMetadata({ blockchain, collectionAddress: address }) })))
   const collectionMetadataDict = metadataArray.reduce((prev, curr) => ({ ...prev, ...curr }), {})
 
-  nfts = nfts.map((nft) => {
+  nfts = nfts.map(nft => {
     const collectionMetadata = collectionMetadataDict[nft.collection.address.toLowerCase()]
 
     return {
