@@ -1,13 +1,12 @@
 import BigNumber from 'bignumber.js'
 import _ from 'lodash'
 import appConf from '../../app.conf'
-import { Blockchain, Value } from '../../entities'
+import { Blockchain, Collection, Value } from '../../entities'
 import Loan from '../../entities/lib/Loan'
 import { getOnChainLoanById } from '../../subgraph'
 import fault from '../../utils/fault'
 import logger from '../../utils/logger'
 import { getEthNFTMetadata } from '../collaterals'
-import { getCollection } from '../collections'
 import { getControlPlaneContract, getPoolContract } from '../contracts'
 import { searchPublishedPools } from '../pools'
 import getEthWeb3 from '../utils/getEthWeb3'
@@ -34,15 +33,12 @@ export default async function getLoan({
       const loanId = `${collectionAddress.toLowerCase()}/${nftId}`
       const onChainLoan = await getOnChainLoanById({ loanId }, { networkId: blockchain.networkId })
 
-      const collection = await getCollection({ address: collectionAddress, blockchain, nftId })
-      if (!collection) throw fault('ERR_UNSUPPORTED_COLLECTION')
-
       const web3 = getEthWeb3(blockchain.networkId)
 
       const [blockNumber, pools, valuation] = await Promise.all([
         web3.eth.getBlockNumber(),
         searchPublishedPools({ collectionAddress, blockchainFilter: { ethereum: blockchain.networkId }, includeRetired: true }),
-        getEthCollectionValuation({ blockchain: blockchain as Blockchain<'ethereum'>, collectionAddress: collection.address, tokenId: nftId }),
+        getEthCollectionValuation({ blockchain: blockchain as Blockchain<'ethereum'>, collectionAddress, tokenId: nftId }),
       ])
 
       if (pools.length === 0) throw fault('ERR_UNSUPPORTED_COLLECTION')
@@ -59,10 +55,10 @@ export default async function getLoan({
         if (outstandingWithInterestWei.lte(new BigNumber(0))) return undefined
 
         const nft = {
-          collection,
+          collection: Collection.factory({ address: collectionAddress, blockchain }),
           id: nftId,
           ownerAddress: pool.address,
-          ...await getEthNFTMetadata({ blockchain, collectionAddress: collection.address, nftId }),
+          ...await getEthNFTMetadata({ blockchain, collectionAddress, nftId }),
           isSupported: true,
         }
 
