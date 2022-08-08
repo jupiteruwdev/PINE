@@ -17,24 +17,22 @@ type MapPoolParams = {
 }
 
 async function mapPool({ blockchain, pools }: MapPoolParams): Promise<Pool[]> {
-  const poolsData = await Promise.all(_.map(pools, (async pool => {
-    return Pool.factory({
-      version: 2,
-      collection: Collection.factory({
-        address: pool.collection,
-        blockchain,
-      }),
-      address: pool.id,
+  const poolsData = await Promise.all(_.map(pools, (async pool => Pool.factory({
+    version: 2,
+    collection: Collection.factory({
+      address: pool.collection,
       blockchain,
-      loanOptions: [],
-      lenderAddress: pool.lenderAddress ?? '',
-      routerAddress: '',
-      repayRouterAddress: '',
-      rolloverAddress: '',
-      ethLimit: 0,
-      published: false,
-    })
-  })))
+    }),
+    address: pool.id,
+    blockchain,
+    loanOptions: [],
+    lenderAddress: pool.lenderAddress ?? '',
+    routerAddress: '',
+    repayRouterAddress: '',
+    rolloverAddress: '',
+    ethLimit: 0,
+    published: false,
+  }))))
 
   return poolsData
 }

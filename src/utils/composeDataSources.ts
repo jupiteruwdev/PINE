@@ -10,6 +10,7 @@ function isEmptyDeep(value: any): boolean {
     let hasValue = false
 
     for (const key in value) {
+      if (!value.hasOwnProperty(key)) continue
       hasValue = hasValue || !isEmptyDeep(value[key])
     }
 

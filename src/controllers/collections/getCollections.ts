@@ -36,7 +36,7 @@ export default async function getCollections({
 export function useDb({ blockchainFilter }: Required<Params>): DataSource<Collection[]> {
   return async () => {
     const networkTypes = Object.keys(blockchainFilter) as (keyof Blockchain.Filter)[]
-    const blockchains = networkTypes.map(networkType => Blockchain.factory({ network: networkType, networkId: blockchainFilter[networkType] }) )
+    const blockchains = networkTypes.map(networkType => Blockchain.factory({ network: networkType, networkId: blockchainFilter[networkType] }))
 
     const res = await Promise.all(blockchains.map(async blockchain => {
       const docs = await NFTCollectionModel.find({

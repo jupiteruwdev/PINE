@@ -80,7 +80,7 @@ export function useOpenSea({ blockchain, collectionAddress }: Params): DataSourc
       break
     }
 
-    if (res === undefined) rethrow(`Unexpected payload when looking up colleciton metadata from OpenSea`)
+    if (res === undefined) rethrow('Unexpected payload when looking up colleciton metadata from OpenSea')
 
     const name = _.get(res, 'collection.name')
     const imageUrl = _.get(res, 'collection.image_url')

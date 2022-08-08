@@ -18,14 +18,14 @@ export default async function getLoanTerms({ blockchain, collectionAddress, nftI
   try {
     switch (blockchain.network) {
     case 'ethereum': {
-      const pool = await getPool({ collectionAddress: collectionAddress, blockchain, includeStats: true })
+      const pool = await getPool({ collectionAddress, blockchain, includeStats: true })
       if (!pool) throw fault('ERR_NO_POOLS_AVAILABLE')
 
       const nft: NFT = {
         collection: Collection.factory({ address: collectionAddress, blockchain }),
         id: nftId,
         isSupported: true,
-        ...await getEthNFTMetadata({ blockchain, collectionAddress: collectionAddress, nftId }),
+        ...await getEthNFTMetadata({ blockchain, collectionAddress, nftId }),
       }
 
       const valuation = await getEthCollectionValuation({ blockchain: blockchain as Blockchain<'ethereum'>, collectionAddress, tokenId: nftId })
