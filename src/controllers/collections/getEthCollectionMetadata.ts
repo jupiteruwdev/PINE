@@ -22,6 +22,7 @@ export default async function getEthCollectionMetadata({
     const dataSource = composeDataSources(
       useDb({ blockchain, collectionAddress }),
       useOpenSea({ blockchain, collectionAddress }),
+      useAlchemy({ blockchain, collectionAddress }),
     )
 
     const metadata = await dataSource.apply(undefined)
@@ -94,5 +95,30 @@ export function useOpenSea({ blockchain, collectionAddress }: Params): DataSourc
     }
 
     return metadata
+  }
+}
+
+export function useAlchemy({ blockchain, collectionAddress }: Params): DataSource<CollectionMetadata> {
+  return async () => {
+    logger.info(`...using Alchemy to look up metadata for collection <${collectionAddress}>`)
+
+    if (blockchain?.network !== 'ethereum') rethrow(`Unsupported blockchain <${JSON.stringify(blockchain)}>`)
+
+    const apiHost = _.get(appConf.alchemyAPIUrl, blockchain.networkId) ?? rethrow(`Missing Alchemy API URL for blockchain <${JSON.stringify(blockchain)}>`)
+    const apiKey = appConf.alchemyAPIKey ?? rethrow('Missing Alchemy API key')
+
+    const res = await getRequest(`${apiHost}${apiKey}/getContractMetadata`, {
+      params: {
+        contractAddress: collectionAddress,
+      },
+    })
+
+    const name = _.get(res, 'contractMetadata.name')
+    const imageUrl = undefined // Alchemy API does not provide collection image
+
+    return {
+      name,
+      imageUrl,
+    }
   }
 }
