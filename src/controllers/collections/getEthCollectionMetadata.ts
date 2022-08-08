@@ -65,9 +65,9 @@ export function useDb({ blockchain, collectionAddress }: Params): DataSource<Col
     const collection = collections[0]
 
     const metadata = {
-      name: collection?.displayName,
-      imageUrl: collection?.imageUrl,
-      vendorIds: collection?.vendorIds,
+      name: collection?.displayName ?? undefined,
+      imageUrl: collection?.imageUrl ?? undefined,
+      vendorIds: collection?.vendorIds ?? undefined,
       // TODO: Using this to indicate if the collection is supported, kinda hacky, remove when possible
       ...!collection ? {} : { isSupported: true },
     }
@@ -96,9 +96,9 @@ export function useOpenSea({ blockchain, collectionAddress }: Params): DataSourc
 
     if (res === undefined) rethrow('Unexpected payload when looking up colleciton metadata from OpenSea')
 
-    const name = _.get(res, 'collection.name')
-    const imageUrl = _.get(res, 'collection.image_url')
-    const vendorId = _.get(res, 'collection.slug')
+    const name = _.get(res, 'collection.name') ?? undefined
+    const imageUrl = _.get(res, 'collection.image_url') ?? undefined
+    const vendorId = _.get(res, 'collection.slug') ?? undefined
 
     const metadata = {
       name,
@@ -127,7 +127,7 @@ export function useAlchemy({ blockchain, collectionAddress }: Params): DataSourc
       },
     })
 
-    const name = _.get(res, 'contractMetadata.name')
+    const name = _.get(res, 'contractMetadata.name') ?? undefined
     const imageUrl = undefined // Alchemy API does not provide collection image
 
     return {
