@@ -21,8 +21,8 @@ export default async function getEthCollectionMetadata({
 
     const dataSource = composeDataSources(
       useDb({ blockchain, collectionAddress }),
-      useOpenSea({ blockchain, collectionAddress }),
       useAlchemy({ blockchain, collectionAddress }),
+      useOpenSea({ blockchain, collectionAddress }),
     )
 
     const metadata = await dataSource.apply(undefined)
@@ -46,16 +46,30 @@ export function useDb({ blockchain, collectionAddress }: Params): DataSource<Col
 
     if (blockchain?.network !== 'ethereum') rethrow(`Unsupported blockchain <${JSON.stringify(blockchain)}>`)
 
-    const collection = await NFTCollectionModel.findOne({
-      networkType: blockchain.network,
-      networkId: blockchain.networkId,
-      address: collectionAddress,
-    }).lean()
+    const pipeline = [{
+      $addFields: {
+        '_address': {
+          $toLower: '$address',
+        },
+      },
+    }, {
+      $match: {
+        'networkType': blockchain.network,
+        'networkId': parseInt(blockchain.networkId, 10),
+        ...collectionAddress === undefined ? {} : { _address: collectionAddress.toLowerCase() },
+      },
+    }]
+
+    // TODO: Support nftId
+    const collections = await NFTCollectionModel.aggregate(pipeline).exec()
+    const collection = collections[0]
 
     const metadata = {
       name: collection?.displayName,
       imageUrl: collection?.imageUrl,
       vendorIds: collection?.vendorIds,
+      // TODO: Using this to indicate if the collection is supported, kinda hacky, remove when possible
+      ...!collection ? {} : { isSupported: true },
     }
 
     return metadata

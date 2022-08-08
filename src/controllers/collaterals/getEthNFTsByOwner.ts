@@ -6,7 +6,7 @@ import composeDataSources, { DataSource } from '../../utils/composeDataSources'
 import fault from '../../utils/fault'
 import logger from '../../utils/logger'
 import rethrow from '../../utils/rethrow'
-import { getCollection } from '../collections'
+import { getEthCollectionMetadata } from '../collections'
 import getRequest from '../utils/getRequest'
 import normalizeIPFSUri from '../utils/normalizeIPFSUri'
 import { useContract, useTokenUri } from './getEthNFTMetadata'
@@ -27,22 +27,37 @@ export default async function getEthNFTsByOwner({ blockchain, ownerAddress, popu
     useMoralis({ blockchain, ownerAddress, populateMetadata }),
   )
 
-  const nfts = await dataSource.apply(undefined)
+  let nfts = await dataSource.apply(undefined)
 
   logger.info(`Fetching Ethereum NFTs by owner <${ownerAddress}> on network <${blockchain.networkId}>... OK: ${nfts.length} result(s)`)
 
-  const collections = await Promise.all(nfts.map(async nft => getCollection({ address: nft.collection.address, blockchain, nftId: nft.id })))
+  if (populateMetadata !== true) {
+    return _.sortBy(nfts, [
+      nft => nft.collection.address.toLowerCase(),
+    ])
+  }
 
-  // TODO: This is bad
-  return nfts.map((nft, idx) => ({
-    ...nft,
-    collection: {
-      ...nft.collection,
-      imageUrl: collections[idx]?.imageUrl,
-      name: collections[idx]?.name,
-    },
-    isSupported: !!collections[idx],
-  }))
+  const uniqCollectionAddresses = _.uniq(nfts.map(nft => nft.collection.address.toLowerCase()))
+  const metadataArray = await Promise.all(uniqCollectionAddresses.map(async address => ({ [address]: await getEthCollectionMetadata({ blockchain, collectionAddress: address }) })))
+  const collectionMetadataDict = metadataArray.reduce((prev, curr) => ({ ...prev, ...curr }), {})
+
+  nfts = nfts.map((nft) => {
+    const collectionMetadata = collectionMetadataDict[nft.collection.address.toLowerCase()]
+
+    return {
+      ...nft,
+      collection: {
+        ...nft.collection,
+        ...collectionMetadata ?? {},
+      },
+      isSupported: collectionMetadata === undefined ? undefined : _.get(collectionMetadata, 'isSupported', false),
+    }
+  })
+
+  return _.sortBy(nfts, [
+    nft => nft.isSupported !== true,
+    nft => nft.collection.name?.toLowerCase(),
+  ])
 }
 
 export function useAlchemy({ blockchain, ownerAddress, populateMetadata }: Params): DataSource<NFT[]> {
@@ -202,6 +217,6 @@ export function useMoralis({ blockchain, ownerAddress, populateMetadata }: Param
 
     const nfts = _.compact(unsanitizedNFTs)
 
-    return nfts // .sort((a, b) => a.isSupported ? -1 : 1)
+    return nfts
   }
 }
