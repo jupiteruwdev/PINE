@@ -1,9 +1,8 @@
 import _ from 'lodash'
-import { Blockchain, Pool } from '../../entities'
+import { Blockchain, Collection, Pool } from '../../entities'
 import { getOnChainPools } from '../../subgraph'
 import fault from '../../utils/fault'
 import logger from '../../utils/logger'
-import { getCollection } from '../collections'
 
 type Params = {
   blockchainFilter?: Blockchain.Filter
@@ -19,10 +18,12 @@ type MapPoolParams = {
 
 async function mapPool({ blockchain, pools }: MapPoolParams): Promise<Pool[]> {
   const poolsData = await Promise.all(_.map(pools, (async pool => {
-    const collection = await getCollection({ address: pool.collection, blockchain })
     return Pool.factory({
       version: 2,
-      collection,
+      collection: Collection.factory({
+        address: pool.collection,
+        blockchain,
+      }),
       address: pool.id,
       blockchain,
       loanOptions: [],
