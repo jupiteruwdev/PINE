@@ -2,9 +2,9 @@ import _ from 'lodash'
 import appConf from '../../app.conf'
 import { NFTCollectionModel } from '../../db'
 import { Blockchain, CollectionMetadata } from '../../entities'
-import composeDataSources, { DataSource } from '../../utils/composeDataSources'
 import logger from '../../utils/logger'
 import rethrow from '../../utils/rethrow'
+import DataSource from '../utils/DataSource'
 import getRequest from '../utils/getRequest'
 
 type Params = {
@@ -19,7 +19,7 @@ export default async function getEthCollectionMetadata({
   try {
     logger.info(`Fetching metadata for collection <${collectionAddress}> on blockchain <${JSON.stringify(blockchain)}>...`)
 
-    const dataSource = composeDataSources(
+    const dataSource = DataSource.compose(
       useDb({ blockchain, collectionAddress }),
       useAlchemy({ blockchain, collectionAddress }),
       useOpenSea({ blockchain, collectionAddress }),

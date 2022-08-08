@@ -2,9 +2,9 @@ import _ from 'lodash'
 import ERC721EnumerableABI from '../../abis/ERC721Enumerable.json'
 import appConf from '../../app.conf'
 import { Blockchain, NFTMetadata } from '../../entities'
-import composeDataSources, { DataSource } from '../../utils/composeDataSources'
 import logger from '../../utils/logger'
 import rethrow from '../../utils/rethrow'
+import DataSource from '../utils/DataSource'
 import getEthWeb3 from '../utils/getEthWeb3'
 import getRequest from '../utils/getRequest'
 import normalizeIPFSUri from '../utils/normalizeIPFSUri'
@@ -36,7 +36,7 @@ export default async function getEthNFTMetadata({
   tokenUri,
 }: Params): Promise<NFTMetadata> {
   try {
-    const dataSource = composeDataSources(
+    const dataSource = DataSource.compose(
       useTokenUri({ tokenUri }),
       useAlchemy({ blockchain, collectionAddress, nftId }),
       useContract({ blockchain, collectionAddress, nftId }),

@@ -2,11 +2,11 @@ import BigNumber from 'bignumber.js'
 import _ from 'lodash'
 import appConf from '../../app.conf'
 import { Blockchain, Collection, NFT } from '../../entities'
-import composeDataSources, { DataSource } from '../../utils/composeDataSources'
 import fault from '../../utils/fault'
 import logger from '../../utils/logger'
 import rethrow from '../../utils/rethrow'
 import { getEthCollectionMetadata } from '../collections'
+import DataSource from '../utils/DataSource'
 import getRequest from '../utils/getRequest'
 import normalizeIPFSUri from '../utils/normalizeIPFSUri'
 import { useContract, useTokenUri } from './getEthNFTMetadata'
@@ -22,7 +22,7 @@ export default async function getEthNFTsByOwner({ blockchain, ownerAddress, popu
 
   logger.info(`Fetching Ethereum NFTs by owner <${ownerAddress}> on network <${blockchain.networkId}>...`)
 
-  const dataSource = composeDataSources(
+  const dataSource = DataSource.compose(
     useAlchemy({ blockchain, ownerAddress, populateMetadata }),
     useMoralis({ blockchain, ownerAddress, populateMetadata }),
   )
@@ -99,7 +99,7 @@ export function useAlchemy({ blockchain, ownerAddress, populateMetadata }: Param
           const tokenUri = _.get(entry, 'tokenUri.gateway')
 
           try {
-            const dataSource = composeDataSources(
+            const dataSource = DataSource.compose(
               useTokenUri({ tokenUri }),
               useContract({ blockchain, collectionAddress, nftId: tokenId }),
             )
@@ -181,7 +181,7 @@ export function useMoralis({ blockchain, ownerAddress, populateMetadata }: Param
           const tokenUri = _.get(entry, 'token_uri')
 
           try {
-            const dataSource = composeDataSources(
+            const dataSource = DataSource.compose(
               useTokenUri({ tokenUri }),
               useContract({ blockchain, collectionAddress, nftId: tokenId }),
             )

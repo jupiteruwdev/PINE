@@ -2,11 +2,11 @@ import _ from 'lodash'
 import { NFTCollectionModel } from '../../db'
 import { mapCollection } from '../../db/adapters'
 import { Blockchain, Collection, NFT } from '../../entities'
-import composeDataSources, { DataSource } from '../../utils/composeDataSources'
 import fault from '../../utils/fault'
 import logger from '../../utils/logger'
 import rethrow from '../../utils/rethrow'
 import { getEthNFTMetadata } from '../collaterals'
+import DataSource from '../utils/DataSource'
 
 type Params = {
   address: string
@@ -22,7 +22,7 @@ export default async function getCollection({
   logger.info(`Fetching collection for address <${address}> on blockchain <${JSON.stringify(blockchain)}>...`)
 
   try {
-    const dataSource = composeDataSources(
+    const dataSource = DataSource.compose(
       useDb({ address, blockchain, nftId }),
     )
 

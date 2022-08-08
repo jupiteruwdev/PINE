@@ -1,8 +1,8 @@
 import { NFTCollectionModel } from '../../db'
 import { mapCollection } from '../../db/adapters'
 import { Blockchain, Collection } from '../../entities'
-import composeDataSources, { DataSource } from '../../utils/composeDataSources'
 import logger from '../../utils/logger'
+import DataSource from '../utils/DataSource'
 
 type Params = {
   blockchainFilter?: Blockchain.Filter
@@ -17,7 +17,7 @@ export default async function getCollections({
   logger.info(`Fetching collections with blockchain filter <${JSON.stringify(blockchainFilter)}>...`)
 
   try {
-    const dataSource = composeDataSources(useDb({ blockchainFilter }))
+    const dataSource = DataSource.compose(useDb({ blockchainFilter }))
     const collections = await dataSource.apply(undefined)
 
     logger.info(`Fetching collections with blockchain filter <${JSON.stringify(blockchainFilter)}>... OK: Found ${collections.length} result(s)`)

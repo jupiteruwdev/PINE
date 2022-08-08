@@ -1,10 +1,10 @@
 import _ from 'lodash'
 import appConf from '../../app.conf'
 import { Blockchain, Value } from '../../entities'
-import composeDataSources, { DataSource } from '../../utils/composeDataSources'
 import fault from '../../utils/fault'
 import logger from '../../utils/logger'
 import rethrow from '../../utils/rethrow'
+import DataSource from '../utils/DataSource'
 import postRequest from '../utils/postRequest'
 
 type Params = {
@@ -20,7 +20,7 @@ export default async function getEthCollectionFloorPrices({
 
   logger.info(`Fetching floor prices for collections <${collectionAddresses}> on network <${blockchain.networkId}>...`)
 
-  const dataSource = composeDataSources(
+  const dataSource = DataSource.compose(
     useNFTBank({ blockchain, collectionAddresses }),
   )
 
