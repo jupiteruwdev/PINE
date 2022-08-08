@@ -15,7 +15,7 @@ type Params = {
 export default async function getEthCollectionMetadata({
   blockchain,
   collectionAddress,
-}: Params): Promise<Partial<CollectionMetadata>> {
+}: Params): Promise<CollectionMetadata> {
   try {
     logger.info(`Fetching metadata for collection <${collectionAddress}> on blockchain <${JSON.stringify(blockchain)}>...`)
 
@@ -39,7 +39,7 @@ export default async function getEthCollectionMetadata({
   }
 }
 
-export function useDb({ blockchain, collectionAddress }: Params): DataSource<Partial<CollectionMetadata>> {
+export function useDb({ blockchain, collectionAddress }: Params): DataSource<CollectionMetadata> {
   return async () => {
     logger.info(`...using db to look up metadata for collection <${collectionAddress}>`)
 
@@ -61,7 +61,7 @@ export function useDb({ blockchain, collectionAddress }: Params): DataSource<Par
   }
 }
 
-export function useOpenSea({ blockchain, collectionAddress }: Params): DataSource<Partial<CollectionMetadata>> {
+export function useOpenSea({ blockchain, collectionAddress }: Params): DataSource<CollectionMetadata> {
   return async () => {
     logger.info(`...using OpenSea to look up metadata for collection <${collectionAddress}>`)
 

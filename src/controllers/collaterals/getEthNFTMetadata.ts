@@ -34,7 +34,7 @@ export default async function getEthNFTMetadata({
   collectionAddress,
   nftId,
   tokenUri,
-}: Params): Promise<Partial<NFTMetadata>> {
+}: Params): Promise<NFTMetadata> {
   try {
     const dataSource = composeDataSources(
       useTokenUri({ tokenUri }),
@@ -51,7 +51,7 @@ export default async function getEthNFTMetadata({
   }
 }
 
-export function useAlchemy({ blockchain, collectionAddress, nftId }: Omit<Params, 'tokenUri'>): DataSource<Partial<NFTMetadata>> {
+export function useAlchemy({ blockchain, collectionAddress, nftId }: Omit<Params, 'tokenUri'>): DataSource<NFTMetadata> {
   return async () => {
     logger.info(`...using Alchemy to look up metadata for NFT <${collectionAddress}/${nftId}}>`)
 
@@ -86,7 +86,7 @@ export function useAlchemy({ blockchain, collectionAddress, nftId }: Omit<Params
   }
 }
 
-export function useContract({ blockchain, collectionAddress, nftId }: Omit<Params, 'tokenUri'>): DataSource<Partial<NFTMetadata>> {
+export function useContract({ blockchain, collectionAddress, nftId }: Omit<Params, 'tokenUri'>): DataSource<NFTMetadata> {
   return async () => {
     logger.info(`...using contract to look up metadata for NFT <${collectionAddress}/${nftId}}>`)
 
@@ -101,7 +101,7 @@ export function useContract({ blockchain, collectionAddress, nftId }: Omit<Param
   }
 }
 
-export function useTokenUri({ tokenUri }: Pick<Params, 'tokenUri'>): DataSource<Partial<NFTMetadata>> {
+export function useTokenUri({ tokenUri }: Pick<Params, 'tokenUri'>): DataSource<NFTMetadata> {
   return async () => {
     logger.info(`...using token URI <${tokenUri}> to look up metadata for NFT`)
 
