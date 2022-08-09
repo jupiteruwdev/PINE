@@ -1,75 +1,163 @@
 import _ from 'lodash'
+import { PipelineStage } from 'mongoose'
 import appConf from '../../app.conf'
-import { NFTCollectionModel } from '../../db'
+import { NFTCollectionModel, PoolModel } from '../../db'
 import { Blockchain, CollectionMetadata } from '../../entities'
 import logger from '../../utils/logger'
 import rethrow from '../../utils/rethrow'
+import { getEthNFTMetadata } from '../collaterals'
 import DataSource from '../utils/DataSource'
 import getRequest from '../utils/getRequest'
 
 type Params = {
-  collectionAddress: string
   blockchain: Blockchain
+  collectionAddress?: string
+  poolAddress?: string
+  nftId?: string
 }
 
 export default async function getEthCollectionMetadata({
   blockchain,
-  collectionAddress,
+  ...params
 }: Params): Promise<CollectionMetadata> {
   try {
-    logger.info(`Fetching metadata for collection <${collectionAddress}> on blockchain <${JSON.stringify(blockchain)}>...`)
+    logger.info(`Fetching metadata for colleciton using params <${JSON.stringify(params)}> on blockchain <${JSON.stringify(blockchain)}>...`)
 
     const dataSource = DataSource.compose(
-      useDb({ blockchain, collectionAddress }),
-      useAlchemy({ blockchain, collectionAddress }),
-      useOpenSea({ blockchain, collectionAddress }),
+      useDb({ blockchain, ...params }),
+      useAlchemy({ blockchain, ...params }),
+      useOpenSea({ blockchain, ...params }),
     )
 
     const metadata = await dataSource.apply(undefined)
 
-    logger.info(`Fetching metadata for collection <${collectionAddress}> on blockchain <${JSON.stringify(blockchain)}>... OK`)
+    logger.info(`Fetching metadata for collection using params <${JSON.stringify(params)}> on blockchain <${JSON.stringify(blockchain)}>... OK`)
     logger.debug(JSON.stringify(metadata, undefined, 2))
 
     return metadata
   }
   catch (err) {
-    logger.warn(`Fetching metadata for collection <${collectionAddress}> on blockchain <${JSON.stringify(blockchain)}>... WARN`)
+    logger.warn(`Fetching metadata for collection using params <${JSON.stringify(params)}> on blockchain <${JSON.stringify(blockchain)}>... WARN`)
     if (logger.isWarnEnabled() && !logger.silent) console.warn(err)
 
     return {}
   }
 }
 
-export function useDb({ blockchain, collectionAddress }: Params): DataSource<CollectionMetadata> {
+export function useDb({ blockchain, collectionAddress, poolAddress, nftId }: Params): DataSource<CollectionMetadata> {
   return async () => {
-    logger.info(`...using db to look up metadata for collection <${collectionAddress}>`)
+    logger.info('...using db to look up metadata for collection')
 
     if (blockchain?.network !== 'ethereum') rethrow(`Unsupported blockchain <${JSON.stringify(blockchain)}>`)
 
-    const pipeline = [{
-      $addFields: {
-        '_address': {
-          $toLower: '$address',
+    let docs
+
+    if (poolAddress !== undefined) {
+      const stages: PipelineStage[] = [{
+        $addFields: {
+          '_address': { $toLower: '$address' },
         },
+      }, {
+        $match: {
+          'networkType': blockchain.network,
+          'networkId': parseInt(blockchain.networkId, 10),
+          '_address': poolAddress.toLowerCase()
+        },
+      }, {
+        $lookup: {
+          from: 'nftCollections',
+          localField: 'nftCollection',
+          foreignField: '_id',
+          as: 'collection',
+        },
+      }, {
+        $unwind: '$collection',
       },
-    }, {
-      $match: {
-        'networkType': blockchain.network,
-        'networkId': parseInt(blockchain.networkId, 10),
-        ...collectionAddress === undefined ? {} : { _address: collectionAddress.toLowerCase() },
-      },
-    }]
+      ...collectionAddress === undefined ? [] : [{
+        $addFields: {
+          'collection._address': { $toLower: '$collection.address' },
+        },
+      }, {
+        $match: {
+          'collection._address': collectionAddress.toLowerCase(),
+        },
+      }], {
+        $replaceRoot: {
+          newRoot: '$collection',
+        },
+      }]
 
-    // TODO: Support nftId
-    const collections = await NFTCollectionModel.aggregate(pipeline).exec()
-    const collection = collections[0]
+      docs = await PoolModel.aggregate(stages).exec()
+    }
+    else {
+      if (collectionAddress === undefined) rethrow('Parameter `collectionAddress` is required when `poolAddress` is not provided')
 
-    const metadata = {
-      name: collection?.displayName ?? undefined,
-      imageUrl: collection?.imageUrl ?? undefined,
-      vendorIds: collection?.vendorIds ?? undefined,
-      // TODO: Using this to indicate if the collection is supported, kinda hacky, remove when possible
-      ...!collection ? {} : { isSupported: true },
+      const stages: PipelineStage[] = [{
+        $addFields: {
+          '_address': { $toLower: '$address' },
+        },
+      }, {
+        $match: {
+          'networkType': blockchain.network,
+          'networkId': parseInt(blockchain.networkId, 10),
+          '_address': collectionAddress.toLowerCase(),
+        },
+      }]
+
+      docs = await NFTCollectionModel.aggregate(stages).exec()
+    }
+
+    if (docs.length === 0) rethrow('No matching collection found in db')
+
+    let metadata
+
+    if (nftId !== undefined) {
+      if (docs.length === 1 && docs[0].matcher === undefined) {
+        metadata = {
+          name: _.get(docs[0], 'displayName'),
+          imageUrl: _.get(docs[0], 'imageUrl'),
+          vendorIds: _.get(docs[0], 'vendorIds'),
+          // TODO: Using this to indicate if the collection is supported, kinda hacky, remove when possible
+          isSupported: true,
+        }
+      }
+      else {
+        const nftMetadata = await getEthNFTMetadata({ blockchain, collectionAddress: docs[0].address, nftId })
+        console.log(docs[0].address)
+        const nft = { id: nftId, ...nftMetadata }
+
+        const doc = _.find(docs, t => {
+          if (!_.isString(t.matcher.regex) || !_.isString(t.matcher.fieldPath)) return false
+
+          const regex = new RegExp(t.matcher.regex)
+          console.log(t.matcher.fieldPath, nft)
+          if (regex.test(_.get(nft, t.matcher.fieldPath))) return true
+
+          return false
+        })
+
+        metadata = {
+          name: _.get(doc, 'displayName'),
+          imageUrl: _.get(doc, 'imageUrl'),
+          vendorIds: _.get(doc, 'vendorIds'),
+          // TODO: Using this to indicate if the collection is supported, kinda hacky, remove when possible
+          isSupported: true,
+        }
+      }
+    }
+    else if (docs.length === 1) {
+      const doc = docs[0]
+
+      metadata = {
+        name: _.get(doc, 'displayName'),
+        imageUrl: _.get(doc, 'imageUrl'),
+        vendorIds: _.get(doc, 'vendorIds'),
+        // TODO: Using this to indicate if the collection is supported, kinda hacky, remove when possible
+        isSupported: true,
+      }
+    }
+    else {
+      rethrow('Unable to determine collection metadata due to more than 1 collection found')
     }
 
     return metadata
@@ -78,8 +166,9 @@ export function useDb({ blockchain, collectionAddress }: Params): DataSource<Col
 
 export function useOpenSea({ blockchain, collectionAddress }: Params): DataSource<CollectionMetadata> {
   return async () => {
-    logger.info(`...using OpenSea to look up metadata for collection <${collectionAddress}>`)
+    logger.info('...using OpenSea to look up metadata')
 
+    if (collectionAddress === undefined) rethrow(`Collection address must be provided`)
     if (blockchain?.network !== 'ethereum') rethrow(`Unsupported blockchain <${JSON.stringify(blockchain)}>`)
 
     const apiKey = appConf.openseaAPIKey ?? rethrow('Missing OpenSea API key')
@@ -114,8 +203,9 @@ export function useOpenSea({ blockchain, collectionAddress }: Params): DataSourc
 
 export function useAlchemy({ blockchain, collectionAddress }: Params): DataSource<CollectionMetadata> {
   return async () => {
-    logger.info(`...using Alchemy to look up metadata for collection <${collectionAddress}>`)
+    logger.info('...using Alchemy to look up metadata')
 
+    if (collectionAddress === undefined) rethrow(`Collection address must be provided`)
     if (blockchain?.network !== 'ethereum') rethrow(`Unsupported blockchain <${JSON.stringify(blockchain)}>`)
 
     const apiHost = _.get(appConf.alchemyAPIUrl, blockchain.networkId) ?? rethrow(`Missing Alchemy API URL for blockchain <${JSON.stringify(blockchain)}>`)
