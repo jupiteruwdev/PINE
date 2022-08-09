@@ -3,6 +3,7 @@ import { Blockchain, Collection, Pool } from '../../entities'
 import { getOnChainPools } from '../../subgraph'
 import fault from '../../utils/fault'
 import logger from '../../utils/logger'
+import { getEthCollectionMetadata } from '../collections'
 
 type Params = {
   blockchainFilter?: Blockchain.Filter
@@ -22,6 +23,7 @@ async function mapPool({ blockchain, pools }: MapPoolParams): Promise<Pool[]> {
     collection: Collection.factory({
       address: pool.collection,
       blockchain,
+      ...getEthCollectionMetadata({ blockchain, poolAddress: pool.id, collectionAddress: pool.collection }),
     }),
     address: pool.id,
     blockchain,
