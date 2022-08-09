@@ -31,33 +31,33 @@ export default async function getEthNFTsByOwner({ blockchain, ownerAddress, popu
 
   logger.info(`Fetching Ethereum NFTs by owner <${ownerAddress}> on network <${blockchain.networkId}>... OK: ${nfts.length} result(s)`)
 
-  if (populateMetadata !== true) {
+  if (populateMetadata === true) {
+    const uniqCollectionAddresses = _.uniq(nfts.map(nft => nft.collection.address.toLowerCase()))
+    const metadataArray = await Promise.all(uniqCollectionAddresses.map(async address => ({ [address]: await getEthCollectionMetadata({ blockchain, collectionAddress: address }) })))
+    const collectionMetadataDict = metadataArray.reduce((prev, curr) => ({ ...prev, ...curr }), {})
+
+    nfts = nfts.map(nft => {
+      const collectionMetadata = collectionMetadataDict[nft.collection.address.toLowerCase()]
+
+      return {
+        ...nft,
+        collection: {
+          ...nft.collection,
+          ...collectionMetadata ?? {},
+        },
+      }
+    })
+
+    return _.sortBy(nfts, [
+      nft => nft.collection.isSupported !== true,
+      nft => nft.collection.name?.toLowerCase(),
+    ])
+  }
+  else {
     return _.sortBy(nfts, [
       nft => nft.collection.address.toLowerCase(),
     ])
   }
-
-  const uniqCollectionAddresses = _.uniq(nfts.map(nft => nft.collection.address.toLowerCase()))
-  const metadataArray = await Promise.all(uniqCollectionAddresses.map(async address => ({ [address]: await getEthCollectionMetadata({ blockchain, collectionAddress: address }) })))
-  const collectionMetadataDict = metadataArray.reduce((prev, curr) => ({ ...prev, ...curr }), {})
-
-  nfts = nfts.map(nft => {
-    const collectionMetadata = collectionMetadataDict[nft.collection.address.toLowerCase()]
-
-    return {
-      ...nft,
-      collection: {
-        ...nft.collection,
-        ...collectionMetadata ?? {},
-      },
-      isSupported: collectionMetadata === undefined ? undefined : _.get(collectionMetadata, 'isSupported', false),
-    }
-  })
-
-  return _.sortBy(nfts, [
-    nft => nft.isSupported !== true,
-    nft => nft.collection.name?.toLowerCase(),
-  ])
 }
 
 export function useAlchemy({ blockchain, ownerAddress, populateMetadata }: Params): DataSource<NFT[]> {

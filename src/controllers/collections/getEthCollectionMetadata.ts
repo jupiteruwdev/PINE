@@ -117,7 +117,6 @@ export function useDb({ blockchain, collectionAddress, poolAddress, nftId }: Par
           name: _.get(docs[0], 'displayName'),
           imageUrl: _.get(docs[0], 'imageUrl'),
           vendorIds: _.get(docs[0], 'vendorIds'),
-          // TODO: Using this to indicate if the collection is supported, kinda hacky, remove when possible
           isSupported: true,
         }
       }
@@ -140,7 +139,6 @@ export function useDb({ blockchain, collectionAddress, poolAddress, nftId }: Par
           name: _.get(doc, 'displayName'),
           imageUrl: _.get(doc, 'imageUrl'),
           vendorIds: _.get(doc, 'vendorIds'),
-          // TODO: Using this to indicate if the collection is supported, kinda hacky, remove when possible
           isSupported: true,
         }
       }
@@ -152,7 +150,6 @@ export function useDb({ blockchain, collectionAddress, poolAddress, nftId }: Par
         name: _.get(doc, 'displayName'),
         imageUrl: _.get(doc, 'imageUrl'),
         vendorIds: _.get(doc, 'vendorIds'),
-        // TODO: Using this to indicate if the collection is supported, kinda hacky, remove when possible
         isSupported: true,
       }
     }

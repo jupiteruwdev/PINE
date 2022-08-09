@@ -1,7 +1,7 @@
 import BigNumber from 'bignumber.js'
 import _ from 'lodash'
 import appConf from '../../app.conf'
-import { Blockchain, Collection, Valuation, Value } from '../../entities'
+import { Blockchain, Valuation, Value } from '../../entities'
 import fault from '../../utils/fault'
 import logger from '../../utils/logger'
 import rethrow from '../../utils/rethrow'
@@ -38,13 +38,8 @@ export default async function getEthNFTValuation({
       return valuation
     case Blockchain.Ethereum.Network.RINKEBY:
       return Valuation.factory({
-        collection: Collection.factory({
-          address: collectionAddress,
-          blockchain,
-        }),
         value: Value.$ETH(0.1),
         value24Hr: Value.$ETH(0.1),
-        value1DReference: Value.$ETH(0.1),
       })
     default:
       throw fault('ERR_UNSUPPORTED_BLOCKCHAIN')
@@ -79,13 +74,8 @@ export function useOpenSea({ blockchain, collectionAddress, nftId }: Params): Da
     const value = floorPrice.gt(value24Hr) ? value24Hr : floorPrice
 
     const valuation = Valuation.factory({
-      collection: Collection.factory({
-        address: collectionAddress,
-        blockchain,
-      }),
       value: Value.$ETH(value),
       value24Hr: Value.$ETH(value24Hr),
-      value1DReference: Value.$ETH(0), // TODO: Remove this
     })
 
     return valuation
@@ -156,13 +146,8 @@ export function useGemXYZ({ blockchain, collectionAddress, nftId }: Params): Dat
     const floorPrice = new BigNumber(_.get(res, 'data.0.currentBasePrice')).div(new BigNumber(10).pow(new BigNumber(18)))
 
     const valuation = Valuation.factory({
-      collection: Collection.factory({
-        address: collectionAddress,
-        blockchain,
-      }),
       value: Value.$ETH(floorPrice),
       value24Hr: Value.$ETH(floorPrice),
-      value1DReference: Value.$ETH(0), // TODO: Remove this
     })
 
     return valuation
