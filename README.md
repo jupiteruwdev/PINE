@@ -32,6 +32,7 @@ The following are environment variables used by unit and integration tests:
 
 TESTS_LOG_LEVEL=<log_level>
 TESTS_WALLET_ADDRESS=<address>
+TESTS_WALLET_PRIVATE_KEY=<key>
 TESTS_WHALE_WALLET_ADDRESSES=<address_1>,<address_2>,<address_3>
 ```
 
