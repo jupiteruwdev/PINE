@@ -1,5 +1,8 @@
 {
   "typescript.format.semicolons": "remove",
   "files.insertFinalNewline": true,
-  "files.trimFinalNewlines": true
+  "files.trimFinalNewlines": true,
+  "yaml.schemas": {
+    "https://json.schemastore.org/github-workflow.json": "file:///Users/mu/Developer/pine/core-service/.github/workflows/deploy.yml"
+  }
 }

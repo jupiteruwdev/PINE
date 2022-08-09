@@ -1,11 +1,10 @@
-import { Blockchain, NFT, RolloverTerms, Value } from '../../entities'
+import { Blockchain, Collection, NFT, RolloverTerms, Value } from '../../entities'
 import fault from '../../utils/fault'
 import logger from '../../utils/logger'
-import { getNFTMetadata } from '../collaterals'
-import { getCollection } from '../collections'
+import { getEthNFTMetadata } from '../collaterals'
 import { getLoan } from '../loans'
 import { getPool } from '../pools'
-import { getEthCollectionValuation, signValuation } from '../valuations'
+import { getEthNFTValuation, signValuation } from '../valuations'
 import getFlashLoanSource from './getFlashLoanSource'
 
 type Params = {
@@ -24,9 +23,6 @@ export default async function getRolloverTerms({
   try {
     switch (blockchain.network) {
     case 'ethereum': {
-      const collection = await getCollection({ address: collectionAddress, blockchain, nftId })
-      if (!collection) throw fault('ERR_UNSUPPORTED_COLLECTION')
-
       const existingLoan = await getLoan({ blockchain, nftId, collectionAddress })
       if (!existingLoan || existingLoan.borrowed.amount.lte(existingLoan.returned.amount)) throw fault('ERR_INVALID_ROLLOVER')
 
@@ -35,14 +31,13 @@ export default async function getRolloverTerms({
       if (!pool) throw fault('ERR_NO_POOLS_AVAILABLE')
 
       const nft: NFT = {
-        collection,
+        collection: Collection.factory({ address: collectionAddress, blockchain }),
         id: nftId,
-        isSupported: true,
-        ...await getNFTMetadata({ blockchain, collectionAddress: collection.address, nftId }),
+        ...await getEthNFTMetadata({ blockchain, collectionAddress, nftId }),
       }
 
-      const valuation = await getEthCollectionValuation({ blockchain: blockchain as Blockchain<'ethereum'>, collectionAddress: collection.address, tokenId: nftId })
-      const { signature, issuedAtBlock, expiresAtBlock } = await signValuation({ blockchain, nftId, collectionAddress: collection.address, poolAddress: pool.address, valuation })
+      const valuation = await getEthNFTValuation({ blockchain: blockchain as Blockchain<'ethereum'>, collectionAddress, nftId })
+      const { signature, issuedAtBlock, expiresAtBlock } = await signValuation({ blockchain, nftId, collectionAddress, poolAddress: pool.address, valuation })
 
       const loanTerms: RolloverTerms = {
         routerAddress: pool.rolloverAddress,
@@ -55,7 +50,7 @@ export default async function getRolloverTerms({
         issuedAtBlock,
         expiresAtBlock,
         poolAddress: pool.address,
-        collection,
+        collection: nft.collection,
       }
 
       loanTerms.options.map(option => {
