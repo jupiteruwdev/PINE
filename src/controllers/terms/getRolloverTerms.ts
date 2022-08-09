@@ -4,7 +4,7 @@ import logger from '../../utils/logger'
 import { getEthNFTMetadata } from '../collaterals'
 import { getLoan } from '../loans'
 import { getPool } from '../pools'
-import { getEthCollectionValuation, signValuation } from '../valuations'
+import { getEthNFTValuation, signValuation } from '../valuations'
 import getFlashLoanSource from './getFlashLoanSource'
 
 type Params = {
@@ -37,7 +37,7 @@ export default async function getRolloverTerms({
         ...await getEthNFTMetadata({ blockchain, collectionAddress, nftId }),
       }
 
-      const valuation = await getEthCollectionValuation({ blockchain: blockchain as Blockchain<'ethereum'>, collectionAddress, tokenId: nftId })
+      const valuation = await getEthNFTValuation({ blockchain: blockchain as Blockchain<'ethereum'>, collectionAddress, nftId })
       const { signature, issuedAtBlock, expiresAtBlock } = await signValuation({ blockchain, nftId, collectionAddress, poolAddress: pool.address, valuation })
 
       const loanTerms: RolloverTerms = {

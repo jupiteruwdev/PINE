@@ -4,7 +4,7 @@ import fault from '../../utils/fault'
 import logger from '../../utils/logger'
 import { getEthNFTMetadata } from '../collaterals'
 import { getPool } from '../pools'
-import { getEthCollectionValuation, signValuation } from '../valuations'
+import { getEthNFTValuation, signValuation } from '../valuations'
 
 type Params = {
   blockchain: Blockchain
@@ -28,7 +28,7 @@ export default async function getLoanTerms({ blockchain, collectionAddress, nftI
         ...await getEthNFTMetadata({ blockchain, collectionAddress, nftId }),
       }
 
-      const valuation = await getEthCollectionValuation({ blockchain: blockchain as Blockchain<'ethereum'>, collectionAddress, tokenId: nftId })
+      const valuation = await getEthNFTValuation({ blockchain: blockchain as Blockchain<'ethereum'>, collectionAddress, nftId })
       const { signature, issuedAtBlock, expiresAtBlock } = await signValuation({ blockchain, nftId, collectionAddress, poolAddress: pool.address, valuation })
 
       const loanTerms: LoanTerms = {
