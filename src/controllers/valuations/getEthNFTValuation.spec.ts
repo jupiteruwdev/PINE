@@ -1,10 +1,9 @@
-import { assert } from 'chai'
-import _ from 'lodash'
+import { expect } from 'chai'
 import { describe, it } from 'mocha'
 import appConf from '../../app.conf'
 import { initDb } from '../../db'
-import { Blockchain, Valuation } from '../../entities'
-import { getCollections } from '../collections'
+import { Blockchain, NFT, Valuation } from '../../entities'
+import { getEthNFTsByOwner } from '../collaterals'
 import getEthNFTValuation from './getEthNFTValuation'
 
 describe('controllers/valuations/getEthNFTValuation', () => {
@@ -16,55 +15,64 @@ describe('controllers/valuations/getEthNFTValuation', () => {
   })
 
   describe('Mainnet', () => {
-    it('can get the valuation of a random supported Ethereum collection on Mainnet', async () => {
-      const blockchain = Blockchain.Ethereum(Blockchain.Ethereum.Network.MAIN)
-      const collections = await getCollections({ blockchainFilter: { [blockchain.network]: blockchain.networkId } })
-      const collection = _.sample(collections)
-      const tokenId = '1000'
+    const blockchain = Blockchain.Ethereum(Blockchain.Ethereum.Network.MAIN)
+    let supportedTestNFTs: NFT[]
+    let supportedWhaleNFTs: NFT[][]
 
-      if (!collection) throw 0
+    before(async () => {
+      const testNFTs = await getEthNFTsByOwner({ blockchain, ownerAddress: TEST_WALLET_ADDRESS, populateMetadata: true })
+      supportedTestNFTs = testNFTs.filter(nft => nft.collection.isSupported === true)
 
-      await getEthNFTValuation({ blockchain, collectionAddress: collection.address, tokenId })
+      const whaleNFTs = await Promise.all(WHALE_WALLET_ADDRESSES.map(address => getEthNFTsByOwner({ blockchain, ownerAddress: address, populateMetadata: true })))
+      supportedWhaleNFTs = whaleNFTs.map(nfts => nfts.filter(nft => nft.collection.isSupported === true))
+    })
+
+    it('can get valuation of each supported NFT in test wallet', async () => {
+      for (const nft of supportedTestNFTs) {
+        const valuation = await getEthNFTValuation({ blockchain, collectionAddress: nft.collection.address, nftId: nft.id })
+          .catch(err => {
+            console.error(`Failed to get valuation for NFT ${JSON.stringify(nft)}:`, err)
+            throw err
+          })
+
+        expect(valuation).to.have.all.keys(...Object.keys(Valuation.codingResolver))
+      }
+    })
+
+    WHALE_WALLET_ADDRESSES.forEach((address, i) => {
+      it(`can get valuation of each supported NFT in whale wallet <${address}>`, async () => {
+        for (const nft of supportedWhaleNFTs[i]) {
+          const valuation = await getEthNFTValuation({ blockchain, collectionAddress: nft.collection.address, nftId: nft.id })
+            .catch(err => {
+              console.error(`Failed to get valuation for NFT ${JSON.stringify(nft)}:`, err)
+              throw err
+            })
+
+          expect(valuation).to.have.all.keys(...Object.keys(Valuation.codingResolver))
+        }
+      })
     })
   })
 
-  // it('can get the valuation of all supported Ethereum collections on Mainnet', async () => {
-  //   const delayToAvoidOpenSea429 = (ms: number) => new Promise(resolve => setTimeout(resolve, ms))
+  describe('Rinkeby', () => {
+    const blockchain = Blockchain.Ethereum(Blockchain.Ethereum.Network.MAIN)
+    let supportedTestNFTs: NFT[]
 
-  //   const blockchain = Blockchain.Ethereum(Blockchain.Ethereum.Network.MAIN)
-  //   const collections = await findAllCollections({ blockchainFilter: { [blockchain.network]: blockchain.networkId } })
-  //   const valuations: Valuation[] = []
-  //   const tokenId = '3999'
+    before(async () => {
+      const testNFTs = await getEthNFTsByOwner({ blockchain, ownerAddress: TEST_WALLET_ADDRESS, populateMetadata: true })
+      supportedTestNFTs = testNFTs.filter(nft => nft.collection.isSupported === true)
+    })
 
-  //   for (let i = 0, n = collections.length; i < n; i++) {
-  //     await delayToAvoidOpenSea429(1000)
-  //     const collection = collections[i]
-  //     const valuation = await getEthNFTValuation({ blockchain, collectionAddress: collection.address, tokenId })
-  //     valuations.push(valuation)
-  //   }
+    it('can get valuation of each supported NFT in test wallet', async () => {
+      for (const nft of supportedTestNFTs) {
+        const valuation = await getEthNFTValuation({ blockchain, collectionAddress: nft.collection.address, nftId: nft.id })
+          .catch(err => {
+            console.error(`Failed to get valuation for NFT ${JSON.stringify(nft)}:`, err)
+            throw err
+          })
 
-  //   assert.isArray(valuations)
-  //   assert.isNotEmpty(valuations)
-  // })
-
-  it('can get the valuation of a random supported Ethereum collection on Rinkeby', async () => {
-    const blockchain = Blockchain.Ethereum(Blockchain.Ethereum.Network.RINKEBY)
-    const collections = await getCollections({ blockchainFilter: { [blockchain.network]: blockchain.networkId } })
-    const collection = _.sample(collections)
-    const tokenId = '1000'
-
-    if (!collection) throw 0
-
-    await getEthNFTValuation({ blockchain, collectionAddress: collection.address, tokenId })
-  })
-
-  it('can get the valuation of all supported Ethereum collections on Rinkeby', async () => {
-    const blockchain = Blockchain.Ethereum(Blockchain.Ethereum.Network.RINKEBY)
-    const collections = await getCollections({ blockchainFilter: { [blockchain.network]: blockchain.networkId } })
-    const tokenId = '1000'
-    const valuations: Valuation[] = await Promise.all(collections.map(collection => getEthNFTValuation({ blockchain, collectionAddress: collection.address, tokenId })))
-
-    assert.isArray(valuations)
-    assert.isNotEmpty(valuations)
+        expect(valuation).to.have.all.keys(...Object.keys(Valuation.codingResolver))
+      }
+    })
   })
 })

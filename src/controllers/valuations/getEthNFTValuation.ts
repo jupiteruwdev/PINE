@@ -24,7 +24,7 @@ export default async function getEthNFTValuation({
   try {
     logger.info(`Fetching valuation for Ethereum NFT <${collectionAddress}/${nftId}>...`)
 
-    if (blockchain.network !== 'ethereum') rethrow (`Unsupported blockchain <${JSON.stringify(blockchain)}>`)
+    if (blockchain.network !== 'ethereum') rethrow(`Unsupported blockchain <${JSON.stringify(blockchain)}>`)
 
     switch (blockchain.networkId) {
     case Blockchain.Ethereum.Network.MAIN:
@@ -57,7 +57,7 @@ export function useOpenSea({ blockchain, collectionAddress, nftId }: Params): Da
   return async () => {
     logger.info(`...using OpenSea to determine valuation for Ethereum NFT <${collectionAddress}/${nftId}>`)
 
-    if (blockchain.networkId !== Blockchain.Ethereum.Network.MAIN) rethrow (`Unsupported Ethereum network <${blockchain.networkId}>`)
+    if (blockchain.networkId !== Blockchain.Ethereum.Network.MAIN) rethrow(`Unsupported Ethereum network <${blockchain.networkId}>`)
 
     const apiKey = appConf.openseaAPIKey ?? rethrow('Missing OpenSea API key')
     const collectionMetadata = await getEthCollectionMetadata({ blockchain, collectionAddress, nftId })
@@ -86,7 +86,7 @@ export function useGemXYZ({ blockchain, collectionAddress, nftId }: Params): Dat
   return async () => {
     logger.info(`...using GemXYZ to determine valuation for Ethereum NFT <${collectionAddress}/${nftId}>`)
 
-    if (blockchain.networkId !== Blockchain.Ethereum.Network.MAIN) rethrow (`Unsupported Ethereum network <${blockchain.networkId}>`)
+    if (blockchain.networkId !== Blockchain.Ethereum.Network.MAIN) rethrow(`Unsupported Ethereum network <${blockchain.networkId}>`)
 
     const apiKey = appConf.gemxyzAPIKey ?? rethrow('Missing GemXYZ API key')
     const collectionMetadata = await getEthCollectionMetadata({ blockchain, collectionAddress, nftId })

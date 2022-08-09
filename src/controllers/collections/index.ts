@@ -1,4 +1,3 @@
-export { default as getCollection } from './getCollection'
 export { default as getCollections } from './getCollections'
 export { default as getEthCollectionFloorPrice } from './getEthCollectionFloorPrice'
 export { default as getEthCollectionFloorPrices } from './getEthCollectionFloorPrices'

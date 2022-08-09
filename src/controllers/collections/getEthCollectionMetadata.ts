@@ -61,7 +61,7 @@ export function useDb({ blockchain, collectionAddress, poolAddress, nftId }: Par
         $match: {
           'networkType': blockchain.network,
           'networkId': parseInt(blockchain.networkId, 10),
-          '_address': poolAddress.toLowerCase()
+          '_address': poolAddress.toLowerCase(),
         },
       }, {
         $lookup: {
@@ -122,14 +122,12 @@ export function useDb({ blockchain, collectionAddress, poolAddress, nftId }: Par
       }
       else {
         const nftMetadata = await getEthNFTMetadata({ blockchain, collectionAddress: docs[0].address, nftId })
-        console.log(docs[0].address)
         const nft = { id: nftId, ...nftMetadata }
 
         const doc = _.find(docs, t => {
           if (!_.isString(t.matcher.regex) || !_.isString(t.matcher.fieldPath)) return false
 
           const regex = new RegExp(t.matcher.regex)
-          console.log(t.matcher.fieldPath, nft)
           if (regex.test(_.get(nft, t.matcher.fieldPath))) return true
 
           return false
@@ -165,7 +163,7 @@ export function useOpenSea({ blockchain, collectionAddress }: Params): DataSourc
   return async () => {
     logger.info('...using OpenSea to look up metadata')
 
-    if (collectionAddress === undefined) rethrow(`Collection address must be provided`)
+    if (collectionAddress === undefined) rethrow('Collection address must be provided')
     if (blockchain?.network !== 'ethereum') rethrow(`Unsupported blockchain <${JSON.stringify(blockchain)}>`)
 
     const apiKey = appConf.openseaAPIKey ?? rethrow('Missing OpenSea API key')
@@ -202,7 +200,7 @@ export function useAlchemy({ blockchain, collectionAddress }: Params): DataSourc
   return async () => {
     logger.info('...using Alchemy to look up metadata')
 
-    if (collectionAddress === undefined) rethrow(`Collection address must be provided`)
+    if (collectionAddress === undefined) rethrow('Collection address must be provided')
     if (blockchain?.network !== 'ethereum') rethrow(`Unsupported blockchain <${JSON.stringify(blockchain)}>`)
 
     const apiHost = _.get(appConf.alchemyAPIUrl, blockchain.networkId) ?? rethrow(`Missing Alchemy API URL for blockchain <${JSON.stringify(blockchain)}>`)
