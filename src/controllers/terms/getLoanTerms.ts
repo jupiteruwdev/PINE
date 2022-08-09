@@ -3,6 +3,7 @@ import { Blockchain, Collection, LoanTerms, NFT, Value } from '../../entities'
 import fault from '../../utils/fault'
 import logger from '../../utils/logger'
 import { getEthNFTMetadata } from '../collaterals'
+import { getEthCollectionMetadata } from '../collections'
 import { getPool } from '../pools'
 import { getEthNFTValuation, signValuation } from '../valuations'
 
@@ -22,7 +23,11 @@ export default async function getLoanTerms({ blockchain, collectionAddress, nftI
       if (!pool) throw fault('ERR_NO_POOLS_AVAILABLE')
 
       const nft: NFT = {
-        collection: Collection.factory({ address: collectionAddress, blockchain }),
+        collection: Collection.factory({
+          address: collectionAddress,
+          blockchain,
+          ...await getEthCollectionMetadata({ blockchain, collectionAddress, poolAddress: pool.address, nftId }),
+        }),
         id: nftId,
         ...await getEthNFTMetadata({ blockchain, collectionAddress, nftId }),
       }

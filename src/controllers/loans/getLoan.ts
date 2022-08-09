@@ -7,6 +7,7 @@ import { getOnChainLoanById } from '../../subgraph'
 import fault from '../../utils/fault'
 import logger from '../../utils/logger'
 import { getEthNFTMetadata } from '../collaterals'
+import { getEthCollectionMetadata } from '../collections'
 import { getControlPlaneContract, getPoolContract } from '../contracts'
 import { searchPublishedPools } from '../pools'
 import getEthWeb3 from '../utils/getEthWeb3'
@@ -55,7 +56,11 @@ export default async function getLoan({
         if (outstandingWithInterestWei.lte(new BigNumber(0))) return undefined
 
         const nft = {
-          collection: Collection.factory({ address: collectionAddress, blockchain }),
+          collection: Collection.factory({
+            address: collectionAddress,
+            blockchain,
+            ...await getEthCollectionMetadata({ blockchain, collectionAddress, poolAddress: pool.address, nftId }),
+          }),
           id: nftId,
           ownerAddress: pool.address,
           ...await getEthNFTMetadata({ blockchain, collectionAddress, nftId }),
