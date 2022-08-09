@@ -33,7 +33,6 @@ export default async function getRolloverTerms({
       const nft: NFT = {
         collection: Collection.factory({ address: collectionAddress, blockchain }),
         id: nftId,
-        isSupported: true,
         ...await getEthNFTMetadata({ blockchain, collectionAddress, nftId }),
       }
 
