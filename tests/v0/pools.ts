@@ -58,6 +58,12 @@ describe('Ethereum Mainnet', () => {
   })
 
   describe('POST /v0/pools', () => {
+    afterEach('remove test pool', async () => {
+      await PoolModel.deleteOne({
+        address: '0xc59d88285ab60abbf44ed551d554e86d4ab34442',
+      }).exec()
+    })
+
     it('can publish pool', async () => {
       const payload = JSON.stringify({
         poolAddress: '0xc59d88285ab60abbf44ed551d554e86d4ab34442',
@@ -81,10 +87,6 @@ describe('Ethereum Mainnet', () => {
           expect(res).to.have.property(key)
         }
       }
-
-      await PoolModel.deleteOne({
-        address: '0xc59d88285ab60abbf44ed551d554e86d4ab34442',
-      }).exec()
     })
   })
 
