@@ -2,11 +2,11 @@ import BigNumber from 'bignumber.js'
 import _ from 'lodash'
 import appConf from '../../app.conf'
 import { Blockchain, Collection, NFT } from '../../entities'
-import composeDataSources, { DataSource } from '../../utils/composeDataSources'
 import fault from '../../utils/fault'
 import logger from '../../utils/logger'
 import rethrow from '../../utils/rethrow'
-import { getCollection } from '../collections'
+import { getEthCollectionMetadata } from '../collections'
+import DataSource from '../utils/DataSource'
 import getRequest from '../utils/getRequest'
 import normalizeIPFSUri from '../utils/normalizeIPFSUri'
 import { useContract, useTokenUri } from './getEthNFTMetadata'
@@ -22,32 +22,47 @@ export default async function getEthNFTsByOwner({ blockchain, ownerAddress, popu
 
   logger.info(`Fetching Ethereum NFTs by owner <${ownerAddress}> on network <${blockchain.networkId}>...`)
 
-  const dataSource = composeDataSources(
+  const dataSource = DataSource.compose(
     useAlchemy({ blockchain, ownerAddress, populateMetadata }),
     useMoralis({ blockchain, ownerAddress, populateMetadata }),
   )
 
-  const nfts = await dataSource.apply(undefined)
+  let nfts = await dataSource.apply(undefined)
 
   logger.info(`Fetching Ethereum NFTs by owner <${ownerAddress}> on network <${blockchain.networkId}>... OK: ${nfts.length} result(s)`)
 
-  const collections = await Promise.all(nfts.map(async nft => getCollection({ address: nft.collection.address, blockchain, nftId: nft.id })))
+  if (populateMetadata === true) {
+    const uniqCollectionAddresses = _.uniq(nfts.map(nft => nft.collection.address.toLowerCase()))
+    const metadataArray = await Promise.all(uniqCollectionAddresses.map(async address => ({ [address]: await getEthCollectionMetadata({ blockchain, collectionAddress: address }) })))
+    const collectionMetadataDict = metadataArray.reduce((prev, curr) => ({ ...prev, ...curr }), {})
 
-  // TODO: This is bad
-  return nfts.map((nft, idx) => ({
-    ...nft,
-    collection: {
-      ...nft.collection,
-      imageUrl: collections[idx]?.imageUrl,
-      name: collections[idx]?.name,
-    },
-    isSupported: !!collections[idx],
-  }))
+    nfts = nfts.map(nft => {
+      const collectionMetadata = collectionMetadataDict[nft.collection.address.toLowerCase()]
+
+      return {
+        ...nft,
+        collection: {
+          ...nft.collection,
+          ...collectionMetadata ?? {},
+        },
+      }
+    })
+
+    return _.sortBy(nfts, [
+      nft => nft.collection.isSupported !== true,
+      nft => nft.collection.name?.toLowerCase(),
+    ])
+  }
+  else {
+    return _.sortBy(nfts, [
+      nft => nft.collection.address.toLowerCase(),
+    ])
+  }
 }
 
 export function useAlchemy({ blockchain, ownerAddress, populateMetadata }: Params): DataSource<NFT[]> {
   return async () => {
-    logger.info(`Using Alchemy to look up NFTs for owner <${ownerAddress}>...`)
+    logger.info(`...using Alchemy to look up NFTs for owner <${ownerAddress}>`)
 
     if (blockchain.network !== 'ethereum') rethrow(`Unsupported blockchain <${JSON.stringify(blockchain)}>`)
 
@@ -84,7 +99,7 @@ export function useAlchemy({ blockchain, ownerAddress, populateMetadata }: Param
           const tokenUri = _.get(entry, 'tokenUri.gateway')
 
           try {
-            const dataSource = composeDataSources(
+            const dataSource = DataSource.compose(
               useTokenUri({ tokenUri }),
               useContract({ blockchain, collectionAddress, nftId: tokenId }),
             )
@@ -126,7 +141,7 @@ export function useAlchemy({ blockchain, ownerAddress, populateMetadata }: Param
 
 export function useMoralis({ blockchain, ownerAddress, populateMetadata }: Params): DataSource<NFT[]> {
   return async () => {
-    logger.info(`Using Moralis to look up NFTs for owner <${ownerAddress}>...`)
+    logger.info(`...using Moralis to look up NFTs for owner <${ownerAddress}>`)
 
     if (blockchain.network !== 'ethereum') throw fault('ERR_UNSUPPORTED_BLOCKCHAIN')
 
@@ -166,7 +181,7 @@ export function useMoralis({ blockchain, ownerAddress, populateMetadata }: Param
           const tokenUri = _.get(entry, 'token_uri')
 
           try {
-            const dataSource = composeDataSources(
+            const dataSource = DataSource.compose(
               useTokenUri({ tokenUri }),
               useContract({ blockchain, collectionAddress, nftId: tokenId }),
             )
@@ -202,6 +217,6 @@ export function useMoralis({ blockchain, ownerAddress, populateMetadata }: Param
 
     const nfts = _.compact(unsanitizedNFTs)
 
-    return nfts // .sort((a, b) => a.isSupported ? -1 : 1)
+    return nfts
   }
 }
