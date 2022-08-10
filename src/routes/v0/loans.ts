@@ -1,6 +1,6 @@
 import { Router } from 'express'
 import _ from 'lodash'
-import { getLoan, getLoansByBorrower, getLoansByCollection } from '../../controllers'
+import { getLoan, getLoansByBorrower, getLoansByCollection, serachLoans } from '../../controllers'
 import { Blockchain, Loan, serializeEntityArray } from '../../entities'
 import fault from '../../utils/fault'
 import { getBlockchain, getString } from '../utils/query'
@@ -52,6 +52,28 @@ router.get('/collection', async (req, res, next) => {
   }
   catch (err) {
     next(fault('ERR_API_FETCH_LOANS_BY_COLLECTION', undefined, err))
+  }
+})
+
+router.get('/search', async (req, res, next) => {
+  try {
+    const blockchain = getBlockchain(req.query)
+    const collectionAddresses = getString(req.query, 'collectionAddresses', { optional: true })
+    const lenderAddresses = getString(req.query, 'lenderAddresses', { optional: true })
+    const collectionNames = getString(req.query, 'collectionNames', { optional: true })
+    // const paginateByOffset = getNumber(req.query, 'offset', { optional: true })
+    // const paginateByCount = getNumber(req.query, 'count', { optional: true })
+
+    const loans = await serachLoans({
+      blockchain,
+      collectionAddresses: collectionAddresses?.split(','),
+      collectionNames: collectionNames?.split(','),
+      lenderAddresses: lenderAddresses?.split(','),
+    })
+    res.status(200).json(loans)
+  }
+  catch (err) {
+    next(fault('ERR_API_SEARCH_LOANS', undefined, err))
   }
 })
 
