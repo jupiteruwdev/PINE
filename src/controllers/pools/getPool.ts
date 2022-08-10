@@ -31,6 +31,7 @@ async function getPool<IncludeStats extends boolean = false>({
 
   if (res.length) {
     const pool = mapPool(res[0])
+
     try {
       await verifyPool({ blockchain, address: pool.address, collectionAddress: pool.collection.address.toLowerCase() })
     }
@@ -60,6 +61,7 @@ async function getPool<IncludeStats extends boolean = false>({
   const unpublishedPools = await getOnChainPools({
     address: params.address,
     lenderAddress: params.lenderAddress,
+    collectionAddress: params.collectionAddress,
     blockchainFilter: {
       ethereum: blockchain.networkId,
     },
@@ -84,7 +86,7 @@ function getPipelineStages({
 }: Params<never>): PipelineStage[] {
   const collectionFilter = [
     ...collectionAddress === undefined ? [] : [{
-      'collection.address': collectionAddress,
+      'collection._address': collectionAddress,
     }],
   ]
 
@@ -113,6 +115,10 @@ function getPipelineStages({
     $unwind: '$collection',
   },
   ...collectionFilter.length === 0 ? [] : [{
+    $addFields: {
+      'collection._address': { $toLower: '$collection.address' },
+    },
+  }, {
     $match: {
       $and: collectionFilter,
     },
