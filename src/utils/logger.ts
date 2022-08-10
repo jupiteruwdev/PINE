@@ -4,6 +4,9 @@ import appConf from '../app.conf'
 
 const allLogLevels = ['error', 'warn', 'info', 'debug', 'verbose']
 
+/**
+ * Singleton application-wide logger.
+ */
 const logger = winston.createLogger({
   exitOnError: false,
   level: appConf.env === 'test' ? appConf.tests.logLevel : appConf.logLevel,

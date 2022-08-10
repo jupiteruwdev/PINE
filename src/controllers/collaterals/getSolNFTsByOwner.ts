@@ -40,10 +40,10 @@ async function getNFTDataFromMoralis(id: string, mintAddress: string, networkId:
     collection: {
       address: data.metaplex.updateAuthority,
       blockchain: Blockchain.Solana(networkId),
+      isSupported: false,
     },
     id,
     mintAddress,
-    isSupported: false,
   }, data.metaplex.metadataUri]
 }
 
@@ -57,10 +57,10 @@ async function getNFTDataFromBlockchain(id: string, mintAddress: string, network
     collection: {
       address: metadata.updateAuthority.toString(),
       blockchain: Blockchain.Solana(networkId),
+      isSupported: false,
     },
     id,
     mintAddress,
-    isSupported: false,
   }, metadata.data.uri]
 }
 

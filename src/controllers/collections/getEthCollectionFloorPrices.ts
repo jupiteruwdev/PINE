@@ -1,10 +1,10 @@
 import _ from 'lodash'
 import appConf from '../../app.conf'
 import { Blockchain, Value } from '../../entities'
-import composeDataSources, { DataSource } from '../../utils/composeDataSources'
 import fault from '../../utils/fault'
 import logger from '../../utils/logger'
 import rethrow from '../../utils/rethrow'
+import DataSource from '../utils/DataSource'
 import postRequest from '../utils/postRequest'
 
 type Params = {
@@ -20,7 +20,7 @@ export default async function getEthCollectionFloorPrices({
 
   logger.info(`Fetching floor prices for collections <${collectionAddresses}> on network <${blockchain.networkId}>...`)
 
-  const dataSource = composeDataSources(
+  const dataSource = DataSource.compose(
     useNFTBank({ blockchain, collectionAddresses }),
   )
 
@@ -38,7 +38,7 @@ export default async function getEthCollectionFloorPrices({
 
 export function useNFTBank({ blockchain, collectionAddresses }: Params): DataSource<Value<'ETH'>[]> {
   return async () => {
-    logger.info(`Using NFTBank to look up floor prices for collections <${collectionAddresses}>...`)
+    logger.info(`...using NFTBank to look up floor prices for collections <${collectionAddresses}>`)
 
     if (blockchain.network !== 'ethereum') rethrow(`Unsupported blockchain <${JSON.stringify(blockchain)}>`)
 
@@ -57,7 +57,7 @@ export function useNFTBank({ blockchain, collectionAddresses }: Params): DataSou
 
       if (!_.isArray(res)) rethrow('Unexpected payload while looking up floor prices from NFTBank')
 
-      // NFTBank result order is not guaranteed, TODO: better sorting algo?
+      // NFTBank result order is not guaranteed
       const floorPrices = collectionAddresses.map(address => {
         const entry = _.find(res, t => _.get(t, 'asset_contract')?.toLowerCase() === address.toLocaleLowerCase())
         const prices = _.get(entry, 'floor_price')

@@ -32,7 +32,7 @@ router.get('/borrower', async (req, res, next) => {
   try {
     const borrowerAddress = getString(req.query, 'borrowerAddress')
     const blockchain = getBlockchain(req.query)
-    const loans = await getLoansByBorrower({ blockchain, borrowerAddress })
+    const loans = await getLoansByBorrower({ blockchain, borrowerAddress, populateMetadata: true })
     const payload = serializeEntityArray(loans, Loan.codingResolver)
 
     res.status(200).json(payload)

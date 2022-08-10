@@ -1,2 +1,2 @@
-export { default as getEthCollectionValuation } from './getEthCollectionValuation'
+export { default as getEthNFTValuation } from './getEthNFTValuation'
 export { default as signValuation } from './signValuation'
