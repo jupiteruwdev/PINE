@@ -24,7 +24,7 @@ export default async function getLoansByBorrower({
     logger.info(`Fetching loans by borrower <${borrowerAddress}> on blockchain <${JSON.stringify(blockchain)}>...`)
 
     const dataSource = DataSource.compose(useGraph({ blockchain, borrowerAddress }))
-    let loans = await dataSource.apply(undefined)
+    let loans = await dataSource.apply(undefined).catch(err => [])
     let sortedLoans: Loan[] = []
 
     if (populateMetadata === true) {
