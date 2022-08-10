@@ -46,7 +46,7 @@ router.get('/collection', async (req, res, next) => {
   try {
     const collectionAddress = getString(req.query, 'collectionAddress')
     const blockchain = getBlockchain(req.query, { optional: true }) ?? Blockchain.Ethereum()
-    const loans = await getLoansByCollection({ collectionAddress, blockchain })
+    const loans = await getLoansByCollection({ collectionAddress, blockchain, populateMetadata: true })
     const payload = serializeEntityArray(loans, Loan.codingResolver)
     res.status(200).json(payload)
   }
