@@ -10,6 +10,7 @@ type Params = {
   lenderAddress?: string
   address?: string
   excludeAddresses?: string[]
+  collectionAddress?: string
 }
 
 type MapPoolParams = {
@@ -46,8 +47,9 @@ export default async function getPools({
   lenderAddress,
   address,
   excludeAddresses,
+  collectionAddress,
 }: Params): Promise<Pool[]> {
-  logger.info(`Fetching unpublished pools by lender address <${lenderAddress}> and address <${address}> on blockchain ${JSON.stringify(blockchainFilter)}`)
+  logger.info(`Fetching unpublished pools by lender address <${lenderAddress}>, exclude addresses <${excludeAddresses}>, collection address <${collectionAddress}> and address <${address}> on blockchain ${JSON.stringify(blockchainFilter)}`)
   let poolsData: Pool[] = []
 
   if (blockchainFilter.ethereum !== undefined) {
@@ -55,11 +57,11 @@ export default async function getPools({
 
     switch (blockchain.networkId) {
     case Blockchain.Ethereum.Network.MAIN:
-      const { pools: poolMainnet } = await getOnChainPools({ lenderAddress, address, excludeAddresses }, { networkId: blockchain.networkId })
+      const { pools: poolMainnet } = await getOnChainPools({ lenderAddress, address, excludeAddresses, collectionAddress }, { networkId: blockchain.networkId })
       poolsData = await mapPool({ blockchain, pools: poolMainnet })
       break
     case Blockchain.Ethereum.Network.RINKEBY:
-      const { pools: poolsRinkeby } = await getOnChainPools({ lenderAddress, address, excludeAddresses }, { networkId: blockchain.networkId })
+      const { pools: poolsRinkeby } = await getOnChainPools({ lenderAddress, address, excludeAddresses, collectionAddress }, { networkId: blockchain.networkId })
       poolsData = await mapPool({ blockchain, pools: poolsRinkeby })
     }
   }

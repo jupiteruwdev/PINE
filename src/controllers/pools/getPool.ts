@@ -60,6 +60,7 @@ async function getPool<IncludeStats extends boolean = false>({
   const unpublishedPools = await getOnChainPools({
     address: params.address,
     lenderAddress: params.lenderAddress,
+    collectionAddress: params.collectionAddress,
     blockchainFilter: {
       ethereum: blockchain.networkId,
     },
