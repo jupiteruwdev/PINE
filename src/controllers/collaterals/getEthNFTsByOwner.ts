@@ -23,7 +23,7 @@ export default async function getEthNFTsByOwner({ blockchain, ownerAddress, popu
   logger.info(`Fetching Ethereum NFTs by owner <${ownerAddress}> on network <${blockchain.networkId}>...`)
 
   const dataSource = DataSource.compose(
-    useAlchemy({ blockchain, ownerAddress, populateMetadata }),
+    // useAlchemy({ blockchain, ownerAddress, populateMetadata }),
     useMoralis({ blockchain, ownerAddress, populateMetadata }),
   )
 
@@ -147,15 +147,24 @@ export function useMoralis({ blockchain, ownerAddress, populateMetadata }: Param
 
     const apiKey = appConf.moralisAPIKey ?? rethrow('Missing Moralis API key')
 
-    const { result: res } = await getRequest(`https://deep-index.moralis.io/api/v2/${ownerAddress}/nft`, {
-      headers: {
-        'X-API-Key': apiKey,
-      },
-      params: {
-        chain: 'eth',
-        format: 'decimal',
-      },
-    })
+    const res = []
+    let cursor
+    while (true) {
+      const data: any = await getRequest(`https://deep-index.moralis.io/api/v2/${ownerAddress}/nft`, {
+        headers: {
+          'X-API-Key': apiKey,
+        },
+        params: {
+          chain: 'eth',
+          format: 'decimal',
+          cursor,
+        },
+      })
+
+      res.push(...data.result)
+      if (!_.get(data, 'cursor')) break
+      cursor = _.get(data, 'cursor')
+    }
 
     if (!_.isArray(res)) rethrow('Bad request or unrecognized payload when fetching NFTs from Moralis API')
 
