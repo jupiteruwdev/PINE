@@ -1,10 +1,17 @@
 import 'dotenv/config'
+import fs from 'fs'
 import _ from 'lodash'
+import path from 'path'
+import { fileURLToPath } from 'url'
 import { Blockchain } from './entities'
+
+const __filename = fileURLToPath(import.meta.url)
+const __dirname = path.dirname(__filename)
+const packageConf = JSON.parse(fs.readFileSync(path.join(__dirname, '../package.json'), { encoding: 'utf8' }))
 
 export default {
   env: process.env.NODE_ENV ?? 'development',
-  version: `v${require('../package.json').version}${process.env.NODE_ENV === 'production' ? '' : `-${(process.env.NODE_ENV || 'development').substring(0, 3)}`}`,
+  version: `v${_.get(packageConf, 'version', '0')}${process.env.NODE_ENV === 'production' ? '' : `-${(process.env.NODE_ENV || 'development').substring(0, 3)}`}`,
   build: process.env.BUILD_NUMBER ?? '0',
   port: process.env.PORT ?? 8080,
   openseaAPIKey: process.env.OPENSEA_API_KEY,
@@ -12,7 +19,7 @@ export default {
   moralisAPIKey: process.env.MORALIS_API_KEY,
   nftbankAPIKey: process.env.NFTBANK_API_KEY,
   alchemyAPIKey: process.env.ALCHEMY_API_KEY,
-  logLevel: process.env.LOG_LEVEL ?? (process.env.NODE_ENV === 'development' ? 'silly' : undefined),
+  logLevel: process.env.LOG_LEVEL ?? (process.env.NODE_ENV === 'development' ? 'debug' : undefined),
   alchemyAPIUrl: {
     [Blockchain.Ethereum.Network.RINKEBY]: process.env.ALCHEMY_API_RINKEBY_URL,
     [Blockchain.Ethereum.Network.MAIN]: process.env.ALCHEMY_API_MAINNET_URL,

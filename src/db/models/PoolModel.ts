@@ -1,4 +1,6 @@
-import mongoose, { Schema } from 'mongoose'
+import mongoose from 'mongoose'
+
+const { Schema } = mongoose
 
 const schema = new Schema({
   retired: Schema.Types.Boolean,
