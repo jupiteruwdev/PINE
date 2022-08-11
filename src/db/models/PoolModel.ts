@@ -7,7 +7,7 @@ const schema = new Schema({
     unique: true,
   },
   networkType: Schema.Types.String,
-  networkId: Schema.Types.Number,
+  networkId: Schema.Types.String,
   loanOptions: [
     {
       loanDurationBlock: Schema.Types.Number,

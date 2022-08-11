@@ -99,7 +99,7 @@ function getPipelineStages({
   }, {
     $match: {
       'networkType': blockchain.network,
-      'networkId': parseInt(blockchain.networkId, 10),
+      'networkId': blockchain.networkId,
       ...address === undefined ? {} : { _address: address.toLowerCase() },
       ...lenderAddress === undefined ? {} : { lenderAddress },
       ...includeRetired === true ? {} : { retired: { $ne: true } },
