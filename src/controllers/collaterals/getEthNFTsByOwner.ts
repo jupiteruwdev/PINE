@@ -181,8 +181,8 @@ export function useMoralis({ blockchain, ownerAddress, populateMetadata }: Param
 
       if (populateMetadata === true) {
         const parsed = JSON.parse(_.get(entry, 'metadata'))
-        const name = _.get(parsed, 'name')
-        const imageUrl = _.get(parsed, 'image')
+        const name = _.get(parsed, 'name') ?? undefined
+        const imageUrl = _.get(parsed, 'image') ?? undefined
 
         if (_.isEmpty(name) && _.isEmpty(imageUrl)) {
           logger.warn(`Fetching metadata for NFT <${collectionAddress}/${tokenId}>... WARN: Unable to infer metadata from Moralis, trying alternate data sources`)
