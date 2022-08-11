@@ -23,7 +23,7 @@ export default async function getEthNFTsByOwner({ blockchain, ownerAddress, popu
   logger.info(`Fetching Ethereum NFTs by owner <${ownerAddress}> on network <${blockchain.networkId}>...`)
 
   const dataSource = DataSource.compose(
-    // useAlchemy({ blockchain, ownerAddress, populateMetadata }),
+    useAlchemy({ blockchain, ownerAddress, populateMetadata }),
     useMoralis({ blockchain, ownerAddress, populateMetadata }),
   )
 
@@ -69,12 +69,21 @@ export function useAlchemy({ blockchain, ownerAddress, populateMetadata }: Param
     const apiHost = _.get(appConf.alchemyAPIUrl, blockchain.networkId) ?? rethrow(`Missing Alchemy API URL for blockchain ${JSON.stringify(blockchain)}`)
     const apiKey = appConf.alchemyAPIKey ?? rethrow('Missing Alchemy API key')
 
-    const { ownedNfts: res } = await getRequest(`${apiHost}${apiKey}/getNFTs`, {
-      params: {
-        owner: ownerAddress,
-        withMetadata: populateMetadata,
-      },
-    })
+    const res = []
+    let pageKey
+    while (true) {
+      const data: any = await getRequest(`${apiHost}${apiKey}/getNFTs`, {
+        params: {
+          owner: ownerAddress,
+          withMetadata: populateMetadata,
+          pageKey,
+        },
+      })
+
+      res.push(...data.ownedNfts)
+      if (!_.get(data, 'pageKey')) break
+      pageKey = _.get(data, 'pageKey')
+    }
 
     if (!_.isArray(res)) rethrow('Bad request or unrecognized payload when fetching NFTs from Alchemy API')
 
@@ -142,7 +151,6 @@ export function useAlchemy({ blockchain, ownerAddress, populateMetadata }: Param
 export function useMoralis({ blockchain, ownerAddress, populateMetadata }: Params): DataSource<NFT[]> {
   return async () => {
     logger.info(`...using Moralis to look up NFTs for owner <${ownerAddress}>`)
-
     if (blockchain.network !== 'ethereum') throw fault('ERR_UNSUPPORTED_BLOCKCHAIN')
 
     const apiKey = appConf.moralisAPIKey ?? rethrow('Missing Moralis API key')

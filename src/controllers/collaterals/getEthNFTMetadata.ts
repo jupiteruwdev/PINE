@@ -117,7 +117,7 @@ export function useTokenUri({ tokenUri }: Pick<Params, 'tokenUri'>): DataSource<
       res = JSON.parse(tokenUri.slice(firstComma + 1, tokenUri.length))
     }
     else {
-      res = await getRequest(normalizeIPFSUri(tokenUri))
+      res = await getRequest(normalizeIPFSUri(tokenUri), { timeout: 3000 })
     }
 
     const name = _.get(res, 'name')

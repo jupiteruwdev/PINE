@@ -8,16 +8,18 @@ type Options<T> = {
   host?: string
   headers?: Record<string, any>
   params?: Record<string, any>
+  timeout?: number
   transformPayload?: (data: any) => T
 }
 
-export default async function getRequest<T = any>(path: string, { controller, host, headers, params, transformPayload }: Options<T> = {}): Promise<T> {
+export default async function getRequest<T = any>(path: string, { controller, host, headers, params, timeout, transformPayload }: Options<T> = {}): Promise<T> {
   try {
     const res = await axios.get(path, {
       baseURL: host,
       headers,
       params,
       signal: controller?.signal,
+      timeout,
     })
 
     const payload = transformPayload ? transformPayload(res.data) : res.data
