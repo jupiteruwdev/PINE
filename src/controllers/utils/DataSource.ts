@@ -1,4 +1,6 @@
+import SuperError from '@andrewscwei/super-error'
 import _ from 'lodash'
+import fault from '../../utils/fault'
 import rethrow from '../../utils/rethrow'
 
 type DataSource<R> = () => Promise<R>
@@ -19,6 +21,8 @@ namespace DataSource {
 
       if (n === 0) rethrow('Minimum of 1 data source required for composition')
 
+      let errorStack: SuperError | undefined
+
       for (let i = 0; i < n; i++) {
         const dataSource = dataSources[i]
 
@@ -26,10 +30,13 @@ namespace DataSource {
           const res = await dataSource.apply(undefined)
           if (!isEmptyDeep(res)) return res
         }
-        catch (err) {}
+        catch (err) {
+          const tmp = SuperError.deserialize(err)
+          errorStack = new SuperError(tmp.message, tmp.code, tmp.info, errorStack)
+        }
       }
 
-      rethrow('Exhausted all data sources yielding no non-empty result')
+      rethrow(fault('ERR_OUT_OF_DATA_SOURCES', 'Exhausted all data sources yielding no non-empty result', errorStack))
     }
   }
 
