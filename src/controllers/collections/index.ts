@@ -1,3 +1,4 @@
+export { default as getCollectionAddressesByNames } from './getCollectionAddressesByNames'
 export { default as getCollections } from './getCollections'
 export { default as getEthCollectionFloorPrice } from './getEthCollectionFloorPrice'
 export { default as getEthCollectionFloorPrices } from './getEthCollectionFloorPrices'
