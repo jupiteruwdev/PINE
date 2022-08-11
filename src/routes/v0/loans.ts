@@ -1,7 +1,7 @@
 import { Router } from 'express'
 import _ from 'lodash'
-import { getLoan, getLoansByBorrower, getLoansByCollection, serachLoans } from '../../controllers'
-import { countLoans, LoanSortDirection, LoanSortType } from '../../controllers/loans/searchLoans'
+import { countLoans, getLoan, getLoansByBorrower, getLoansByCollection, searchLoans } from '../../controllers'
+import { LoanSortDirection, LoanSortType } from '../../controllers/loans/searchLoans'
 import { Blockchain, Loan, Pagination, serializeEntityArray } from '../../entities'
 import fault from '../../utils/fault'
 import { getBlockchain, getNumber, getString } from '../utils/query'
@@ -68,16 +68,17 @@ router.get('/search', async (req, res, next) => {
     const paginateByOffset = getNumber(req.query, 'offset', { optional: true })
     const paginateByCount = getNumber(req.query, 'count', { optional: true })
     const paginateBy = paginateByOffset !== undefined && paginateByCount !== undefined ? { count: paginateByCount, offset: paginateByOffset } : undefined
-    const totalCount = await countLoans({ blockchain, collectionAddresses, collectionNames, sortBy, lenderAddresses })
-    const loans = await serachLoans({
-      blockchain,
-      collectionAddresses,
-      collectionNames,
-      lenderAddresses,
-      sortBy,
-      paginateBy,
-    })
-
+    const [totalCount, loans] = await Promise.all([
+      countLoans({ blockchain, collectionAddresses, collectionNames, lenderAddresses }),
+      searchLoans({
+        blockchain,
+        collectionAddresses,
+        collectionNames,
+        lenderAddresses,
+        sortBy,
+        paginateBy,
+      }),
+    ])
     const nextOffset = (paginateBy?.offset ?? 0) + loans.length
 
     const pagination = Pagination.serialize({

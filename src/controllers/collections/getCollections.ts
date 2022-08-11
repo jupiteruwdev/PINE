@@ -6,6 +6,7 @@ import DataSource from '../utils/DataSource'
 
 type Params = {
   blockchainFilter?: Blockchain.Filter
+  collectionNames?: string[]
 }
 
 export default async function getCollections({
@@ -13,11 +14,12 @@ export default async function getCollections({
     ethereum: Blockchain.Ethereum.Network.MAIN,
     solana: Blockchain.Solana.Network.MAINNET,
   },
+  collectionNames,
 }: Params = {}): Promise<Collection[]> {
   logger.info(`Fetching collections with blockchain filter <${JSON.stringify(blockchainFilter)}>...`)
 
   try {
-    const dataSource = DataSource.compose(useDb({ blockchainFilter }))
+    const dataSource = DataSource.compose(useDb({ blockchainFilter, collectionNames }))
     const collections = await dataSource.apply(undefined)
 
     logger.info(`Fetching collections with blockchain filter <${JSON.stringify(blockchainFilter)}>... OK: Found ${collections.length} result(s)`)
@@ -33,16 +35,33 @@ export default async function getCollections({
   }
 }
 
-export function useDb({ blockchainFilter }: Required<Params>): DataSource<Collection[]> {
+export function useDb({
+  blockchainFilter = {
+    ethereum: Blockchain.Ethereum.Network.MAIN,
+    solana: Blockchain.Solana.Network.MAINNET,
+  },
+  collectionNames,
+}: Params): DataSource<Collection[]> {
   return async () => {
     const networkTypes = Object.keys(blockchainFilter) as (keyof Blockchain.Filter)[]
     const blockchains = networkTypes.map(networkType => Blockchain.factory({ network: networkType, networkId: blockchainFilter[networkType] }))
 
     const res = await Promise.all(blockchains.map(async blockchain => {
-      const docs = await NFTCollectionModel.find({
+      let filter
+      filter = {
         networkType: blockchain.network,
         networkId: blockchain.networkId,
-      }).lean().exec()
+      }
+      if (collectionNames !== undefined) {
+        filter = {
+          ...filter,
+          displayName: {
+            '$regex': collectionNames.join('|'),
+            '$options': 'i',
+          },
+        }
+      }
+      const docs = await NFTCollectionModel.find(filter).lean().exec()
 
       return docs.map(mapCollection)
     }))

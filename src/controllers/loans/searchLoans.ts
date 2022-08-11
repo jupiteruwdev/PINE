@@ -5,7 +5,7 @@ import { getOnChainLoans } from '../../subgraph'
 import fault from '../../utils/fault'
 import logger from '../../utils/logger'
 import { getEthNFTMetadata } from '../collaterals'
-import { getCollectionAddressesByNames, getEthCollectionMetadata } from '../collections'
+import { getCollections, getEthCollectionMetadata } from '../collections'
 import DataSource from '../utils/DataSource'
 
 export enum LoanSortType {
@@ -37,7 +37,7 @@ type Params = {
 function useGraph({ blockchain, lenderAddresses, collectionAddresses, sortBy, paginateBy }: Params): DataSource<Loan[]> {
   return async () => {
     const onChainLoans = await getOnChainLoans({
-      lenderAddresses: lenderAddresses?.map(address => address.toLowerCase()),
+      lenderAddresses,
       collectionAddresses,
       sortBy,
       paginateBy,
@@ -73,45 +73,7 @@ function useGraph({ blockchain, lenderAddresses, collectionAddresses, sortBy, pa
   }
 }
 
-export async function countLoans({
-  blockchain,
-  lenderAddresses,
-  collectionAddresses,
-  collectionNames,
-  sortBy,
-}: Params): Promise<number> {
-  logger.info(`Counting loans for collection addresses <${collectionAddresses?.join(',')}>, lender addresses<${lenderAddresses?.join(',')}>, collection names <${collectionNames?.join(',')} and blockchain <${JSON.stringify(blockchain)}>...`)
-
-  try {
-    switch (blockchain.network) {
-    case 'ethereum':
-      let allCollectionAddresses: string[] = []
-      if (collectionNames !== undefined) {
-        allCollectionAddresses = await getCollectionAddressesByNames({ blockchain, collectionNames })
-      }
-      if (collectionAddresses !== undefined) {
-        allCollectionAddresses = [
-          ...allCollectionAddresses,
-          ...collectionAddresses.map(address => address.toLowerCase()),
-        ]
-      }
-      const dataSource = DataSource.compose(useGraph({ blockchain, collectionAddresses: allCollectionAddresses, lenderAddresses, sortBy }))
-      const loans = await dataSource.apply(undefined)
-
-      logger.info(`Counting loans for collection addresses <${collectionAddresses?.join(',')}>, lender addresses<${lenderAddresses?.join(',')}>, collection names <${collectionNames?.join(',')} and blockchain <${JSON.stringify(blockchain)}>... OK`)
-
-      return loans.length
-    default:
-      throw fault('ERR_UNSUPPORTED_BLOCKCHAIN')
-    }
-  }
-  catch (err) {
-    logger.error(`Counting loans for collection addresses <${collectionAddresses?.join(',')}>, lender addresses<${lenderAddresses?.join(',')}>, collection names <${collectionNames?.join(',')} and blockchain <${JSON.stringify(blockchain)}>... ERR:`, err)
-    throw err
-  }
-}
-
-export default async function serachLoans({
+export default async function searchLoans({
   blockchain,
   lenderAddresses,
   collectionAddresses,
@@ -126,7 +88,10 @@ export default async function serachLoans({
     case 'ethereum':
       let allCollectionAddresses: string[] = []
       if (collectionNames !== undefined) {
-        allCollectionAddresses = await getCollectionAddressesByNames({ blockchain, collectionNames })
+        const collectionsByNames = await getCollections({ blockchainFilter: {
+          ethereum: blockchain.networkId,
+        }, collectionNames })
+        allCollectionAddresses = collectionsByNames.map(collection => collection.address.toLowerCase())
       }
       if (collectionAddresses !== undefined) {
         allCollectionAddresses = [
