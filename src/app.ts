@@ -50,7 +50,7 @@ http
     logger.error('Handling Node exception... ERR:', error)
   })
   .on('listening', () => {
-    logger.info(`⚡ Starting service on ${ip.address()}:${appConf.port}... OK`)
+    logger.info(`⚡ Starting service ${appConf.version}:${appConf.build} on ${ip.address()}:${appConf.port}... OK`)
   })
 
 export default app

@@ -11,7 +11,7 @@
     "forceConsistentCasingInFileNames": true,
     "inlineSources": true,
     "lib": ["es6"],
-    "module": "commonjs",
+    "module": "esnext",
     "moduleResolution": "node",
     "noImplicitAny": true,
     "outDir": "./build",
@@ -27,7 +27,7 @@
   },
   "include": [
     "src/**/*.ts"
-, "tests/v0/valuations.spec.ts", "tests/v0/terms.spec.ts", "tests/v0/stats.spec.ts", "tests/v0/pools.spec.ts", "tests/v0/loans.spec.ts", "tests/v0/collaterals.spec.ts"  ],
+  ],
   "exclude": [
     "**/*.spec.ts",
     "node_modules",

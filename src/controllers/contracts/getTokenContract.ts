@@ -1,4 +1,4 @@
-import ERC20 from '../../abis/ERC20.json'
+import ERC20 from '../../abis/ERC20.json' assert { type: 'json' }
 import { Blockchain } from '../../entities'
 import fault from '../../utils/fault'
 import getEthWeb3 from '../utils/getEthWeb3'
