@@ -43,6 +43,9 @@ lib/
 .tmp/
 .tmp.*/
 .publish/
+.tmp/
+.test/
+.tests/
 
 # Packages
 *.7z

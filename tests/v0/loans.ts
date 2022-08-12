@@ -4,9 +4,9 @@ import app from '../../src/app'
 import appConf from '../../src/app.conf'
 import { Loan } from '../../src/entities'
 
-describe('routes/v0/loans', () => {
-  describe('GET /loans/nft', () => {
-    it('can get loan by collection address and nft id for ethereum mainnet', async () => {
+describe('GET /v0/loans', () => {
+  describe('Ethereum Mainnet', () => {
+    it('GET /v0/loans/nft?collectionAddress=*&nftId=*', async () => {
       const { body: res } = await request(app).get('/v0/loans/nft')
         .query({
           collectionAddress: '0x3acce66cd37518a6d77d9ea3039e00b3a2955460',
@@ -32,10 +32,8 @@ describe('routes/v0/loans', () => {
       expect(res).to.have.property('valuation')
       expect(res).to.have.property('updatedAtBlock')
     })
-  })
 
-  describe('GET /loans/borrower', () => {
-    it('can get nft loan with borrower for ethereum mainnet', async () => {
+    it('GET /v0/loans/borrower', async () => {
       const { body: res } = await request(app).get('/v0/loans/borrower')
         .query({
           borrowerAddress: appConf.tests.walletAddress,
@@ -55,10 +53,8 @@ describe('routes/v0/loans', () => {
         }
       }
     })
-  })
 
-  describe('GET /loans/collection', () => {
-    it('can get nft loan with collection for ethereum mainnet', async () => {
+    it('GET /v0/loans/collection?collectionAddress=*', async () => {
       const { body: res } = await request(app).get('/v0/loans/collection')
         .query({
           collectionAddress: '0x3acce66cd37518a6d77d9ea3039e00b3a2955460',

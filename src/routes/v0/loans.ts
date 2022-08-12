@@ -1,9 +1,10 @@
 import { Router } from 'express'
 import _ from 'lodash'
-import { getLoan, getLoansByBorrower, getLoansByCollection } from '../../controllers'
-import { Blockchain, Loan, serializeEntityArray } from '../../entities'
+import { countLoans, getLoan, getLoansByBorrower, getLoansByCollection, searchLoans } from '../../controllers'
+import { LoanSortDirection, LoanSortType } from '../../controllers/loans/searchLoans'
+import { Blockchain, Loan, Pagination, serializeEntityArray } from '../../entities'
 import fault from '../../utils/fault'
-import { getBlockchain, getString } from '../utils/query'
+import { getBlockchain, getBlockchainFilter, getNumber, getString } from '../utils/query'
 
 const router = Router()
 
@@ -32,7 +33,7 @@ router.get('/borrower', async (req, res, next) => {
   try {
     const borrowerAddress = getString(req.query, 'borrowerAddress')
     const blockchain = getBlockchain(req.query)
-    const loans = await getLoansByBorrower({ blockchain, borrowerAddress })
+    const loans = await getLoansByBorrower({ blockchain, borrowerAddress, populateMetadata: true })
     const payload = serializeEntityArray(loans, Loan.codingResolver)
 
     res.status(200).json(payload)
@@ -46,12 +47,49 @@ router.get('/collection', async (req, res, next) => {
   try {
     const collectionAddress = getString(req.query, 'collectionAddress')
     const blockchain = getBlockchain(req.query, { optional: true }) ?? Blockchain.Ethereum()
-    const loans = await getLoansByCollection({ collectionAddress, blockchain })
+    const loans = await getLoansByCollection({ collectionAddress, blockchain, populateMetadata: true })
     const payload = serializeEntityArray(loans, Loan.codingResolver)
     res.status(200).json(payload)
   }
   catch (err) {
     next(fault('ERR_API_FETCH_LOANS_BY_COLLECTION', undefined, err))
+  }
+})
+
+router.get('/search', async (req, res, next) => {
+  try {
+    const blockchainFilter = getBlockchainFilter(req.query, true)
+    const collectionAddresses = getString(req.query, 'collectionAddresses', { optional: true })?.split(',')
+    const lenderAddresses = getString(req.query, 'lenderAddresses', { optional: true })?.split(',')
+    const collectionNames = getString(req.query, 'collectionNames', { optional: true })?.split(',')
+    const sortByType = getString(req.query, 'sort', { optional: true }) as LoanSortType
+    const sortByDirection = getString(req.query, 'direction', { optional: true }) as LoanSortDirection
+    const sortBy = sortByType !== undefined ? { type: sortByType, direction: sortByDirection ?? LoanSortDirection.ASC } : undefined
+    const paginateByOffset = getNumber(req.query, 'offset', { optional: true })
+    const paginateByCount = getNumber(req.query, 'count', { optional: true })
+    const paginateBy = paginateByOffset !== undefined && paginateByCount !== undefined ? { count: paginateByCount, offset: paginateByOffset } : undefined
+    const [totalCount, loans] = await Promise.all([
+      countLoans({ blockchainFilter, collectionAddresses, collectionNames, lenderAddresses }),
+      searchLoans({
+        blockchainFilter,
+        collectionAddresses,
+        collectionNames,
+        lenderAddresses,
+        sortBy,
+        paginateBy,
+      }),
+    ])
+    const nextOffset = (paginateBy?.offset ?? 0) + loans.length
+
+    const pagination = Pagination.serialize({
+      data: loans,
+      totalCount,
+      nextOffset: nextOffset === totalCount ? undefined : nextOffset,
+    })
+    res.status(200).json(pagination)
+  }
+  catch (err) {
+    next(fault('ERR_API_SEARCH_LOANS', undefined, err))
   }
 })
 

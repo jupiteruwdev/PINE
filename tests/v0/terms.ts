@@ -2,9 +2,9 @@ import { expect } from 'chai'
 import request from 'supertest'
 import app from '../../src/app'
 
-describe('routes/v0/terms', () => {
-  describe('GET /terms/borrow', () => {
-    it('can get borrow term with collection address and nft id for ethereum mainnet', async () => {
+describe('/v0/terms', () => {
+  describe('Ethereum Mainnet', () => {
+    it('GET /v0/terms/borrow?collectionAddress=*nftId=*', async () => {
       const { body: res } = await request(app).get('/v0/terms/borrow')
         .query({
           collectionAddress: '0x3acce66cd37518a6d77d9ea3039e00b3a2955460',
@@ -24,10 +24,8 @@ describe('routes/v0/terms', () => {
       expect(res).to.have.property('signature')
       expect(res).to.have.property('valuation')
     })
-  })
 
-  describe('GET /terms/rollover', () => {
-    it('can get rollover term with collection address and nft id for ethereum mainnet', async () => {
+    it('GET /v0/terms/rollover?collectionAddress=*nftId=*', async () => {
       const { body: res } = await request(app).get('/v0/terms/rollover')
         .query({
           collectionAddress: '0x3acce66cd37518a6d77d9ea3039e00b3a2955460',

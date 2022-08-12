@@ -1,29 +1,71 @@
 import { NFTCollectionModel } from '../../db'
 import { mapCollection } from '../../db/adapters'
 import { Blockchain, Collection } from '../../entities'
+import logger from '../../utils/logger'
+import DataSource from '../utils/DataSource'
 
 type Params = {
   blockchainFilter?: Blockchain.Filter
+  collectionNames?: string[]
 }
 
 export default async function getCollections({
-  blockchainFilter = { ethereum: Blockchain.Ethereum.Network.MAIN, solana: Blockchain.Solana.Network.MAINNET },
+  blockchainFilter = {
+    ethereum: Blockchain.Ethereum.Network.MAIN,
+    solana: Blockchain.Solana.Network.MAINNET,
+  },
+  collectionNames,
 }: Params = {}): Promise<Collection[]> {
-  let collections: Collection[] = []
+  logger.info(`Fetching collections with blockchain filter <${JSON.stringify(blockchainFilter)}>...`)
 
-  if (blockchainFilter.ethereum !== undefined) {
-    const blockchain = Blockchain.Ethereum(blockchainFilter.ethereum)
+  try {
+    const dataSource = DataSource.compose(useDb({ blockchainFilter, collectionNames }))
+    const collections = await dataSource.apply(undefined)
 
-    const docs = await NFTCollectionModel.find({
-      networkType: blockchain.network,
-      networkId: blockchain.networkId,
-    }).lean().exec()
+    logger.info(`Fetching collections with blockchain filter <${JSON.stringify(blockchainFilter)}>... OK: Found ${collections.length} result(s)`)
+    logger.debug(JSON.stringify(collections, undefined, 2))
 
-    collections = [
-      ...collections,
-      ...docs.map(mapCollection),
-    ]
+    return collections
   }
+  catch (err) {
+    logger.error(`Fetching collections with blockchain filter <${JSON.stringify(blockchainFilter)}>... ERR`)
+    if (logger.isErrorEnabled() && !logger.silent) console.error(err)
 
-  return collections
+    throw err
+  }
+}
+
+export function useDb({
+  blockchainFilter = {
+    ethereum: Blockchain.Ethereum.Network.MAIN,
+    solana: Blockchain.Solana.Network.MAINNET,
+  },
+  collectionNames,
+}: Params): DataSource<Collection[]> {
+  return async () => {
+    const networkTypes = Object.keys(blockchainFilter) as (keyof Blockchain.Filter)[]
+    const blockchains = networkTypes.map(networkType => Blockchain.factory({ network: networkType, networkId: blockchainFilter[networkType] }))
+
+    const res = await Promise.all(blockchains.map(async blockchain => {
+      let filter
+      filter = {
+        networkType: blockchain.network,
+        networkId: blockchain.networkId,
+      }
+      if (collectionNames !== undefined) {
+        filter = {
+          ...filter,
+          displayName: {
+            '$regex': collectionNames.join('|'),
+            '$options': 'i',
+          },
+        }
+      }
+      const docs = await NFTCollectionModel.find(filter).lean().exec()
+
+      return docs.map(mapCollection)
+    }))
+
+    return res.reduce<Collection[]>((prev, curr) => [...prev, ...curr], [])
+  }
 }

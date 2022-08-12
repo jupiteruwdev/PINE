@@ -14,6 +14,7 @@ ALCHEMY_API_MAINNET_URL=
 ALCHEMY_API_RINKEBY_URL=
 ETH_RPC_MAINNET=
 ETH_RPC_RINKEBY=
+LOG_LEVEL=
 MORALIS_API_KEY=
 NFTBANK_API_KEY=
 OPENSEA_API_KEY=
@@ -22,6 +23,7 @@ SUBGRAPH_API_RINKEBY_URL=
 MONGO_URI=
 VALUATION_SIGNER=
 GEMXYZ_API_KEY=
+REQUEST_TIMEOUT_MS=
 ```
 
 The following are environment variables used by unit and integration tests:
@@ -29,7 +31,9 @@ The following are environment variables used by unit and integration tests:
 ```sh
 # .env
 
-TESTS_WALLET_ADDRESS=
+TESTS_WALLET_ADDRESS=<address>
+TESTS_WALLET_PRIVATE_KEY=<key>
+TESTS_WHALE_WALLET_ADDRESSES=<address_1>,<address_2>,<address_3>
 ```
 
 ## Usage
@@ -59,3 +63,21 @@ $ docker build -t ${IMAGE_NAME:-core-service}:${IMAGE_TAG:-latest} .
 # Run the image in production
 $ docker-compose -f docker-compose.yml up
 ```
+
+## Logging
+
+Logs are powered by [winston](https://github.com/winstonjs/winston) and have the following levels configured, ordered by priority (we are using a set of downsized `npm` logging levels, see https://github.com/winstonjs/winston#logging-levels):
+
+1. `error`
+2. `warn`
+3. `info`
+4. `debug`
+
+To enable logging, simply set the following environment variables to the appropriate level listed above. Note that all log levels above the set level are also visible, but not vice-versa (i.e. if log level is set to `info`, `warn` and `error` level logs will also be visible, but not `debug`):
+
+```sh
+# Set log level for the app
+LOG_LEVEL=<error|warn|info|debug>
+```
+
+To disable logging for the target environment, simply unset the environment variable.

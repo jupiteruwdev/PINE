@@ -1,7 +1,7 @@
-import getEthWeb3 from '../utils/getEthWeb3'
-import ERC721LendingV2 from '../../abis/ERC721LendingV2.json'
 import _ from 'lodash'
+import ERC721LendingV2 from '../../abis/ERC721LendingV2.json' assert { type: 'json' }
 import fault from '../../utils/fault'
+import getEthWeb3 from '../utils/getEthWeb3'
 
 type Params = {
   poolAddress: string

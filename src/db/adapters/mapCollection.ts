@@ -14,11 +14,11 @@ export default function mapCollection(data: Record<string, any>): Collection {
   if (!networkType) throw TypeError('Failed to map key "blockchain"')
   if (!networkId) throw TypeError('Failed to map key "blockchain"')
 
-  return {
+  return Collection.factory({
     address,
     blockchain: { network: networkType, networkId },
     vendorIds,
     imageUrl,
     name,
-  }
+  })
 }

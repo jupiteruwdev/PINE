@@ -1,4 +1,4 @@
-import request from 'graphql-request'
+import { request } from 'graphql-request'
 import _ from 'lodash'
 import appConf from '../../app.conf'
 import { Blockchain } from '../../entities'

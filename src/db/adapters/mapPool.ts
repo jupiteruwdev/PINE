@@ -18,14 +18,14 @@ function mapLoanOption(
     const loanDurationSeconds = _.toNumber(_.get(data, 'loanDurationSecond'))
     const maxLTVBPS = new BigNumber(_.get(data, 'maxLtvBps'))
 
-    return {
+    return LoanOption.factory({
       interestBPSPerBlockOverride,
       interestBPSPerBlock,
       loanDurationBlocks,
       loanDurationSeconds,
       maxLTVBPS,
       fees: defaultFees,
-    }
+    })
   }
   catch (err) {
     throw fault('ERR_PARSE_LOAN_OPTION_FAILURE', undefined, err)
@@ -59,7 +59,7 @@ export default function mapPool(data: Record<string, any>): Pool {
   if (!_.isString(rolloverAddress)) throw TypeError('Failed to map key "rolloverAddress"')
   if (!defaultFees) throw TypeError('Failed to map key "defaultFees"')
 
-  return {
+  return Pool.factory({
     version,
     address,
     blockchain: { network: networkType, networkId },
@@ -71,5 +71,5 @@ export default function mapPool(data: Record<string, any>): Pool {
     rolloverAddress,
     ethLimit,
     published,
-  }
+  })
 }

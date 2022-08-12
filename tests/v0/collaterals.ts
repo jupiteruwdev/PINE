@@ -1,48 +1,44 @@
 import { expect } from 'chai'
+import _ from 'lodash'
 import request from 'supertest'
 import app from '../../src/app'
 import appConf from '../../src/app.conf'
+import { Blockchain, deserializeEntityArray, NFT } from '../../src/entities'
 
-describe('routes/v0/collaterals', () => {
-  describe('GET /collaterals', () => {
-    it('can get all ethereum mainnet collaterals', async () => {
+describe('/v0/collaterals', () => {
+  describe('Ethereum Mainnet', () => {
+    it('GET /v0/collaterals?owner=*', async () => {
       const { body: res } = await request(app).get('/v0/collaterals')
         .query({
-          ethereum: 1,
+          ethereum: Blockchain.Ethereum.Network.MAIN,
           owner: appConf.tests.walletAddress,
         })
         .expect('Content-Type', /json/)
         .expect(200)
 
-      expect(res.length).to.equal(4)
-      for (const item of res) {
-        expect(item).to.have.property('collection')
-        expect(item).to.have.property('id')
-        expect(item).to.have.property('isSupported')
-        expect(item).to.have.property('ownerAddress')
-        expect(item).to.have.property('imageUrl')
-        expect(item).to.have.property('name')
-      }
+      const nfts = deserializeEntityArray(res, NFT.codingResolver)
+
+      expect(nfts.length).to.be.greaterThanOrEqual(1)
+      nfts.every(nft => expect(nft).to.have.all.keys(...Object.keys(NFT.codingResolver)))
+      nfts.every(nft => [...Object.keys(_.omitBy(NFT.codingResolver, coder => coder.options.optional === true)), 'ownerAddress'].every(key => expect(_.get(nft, key)).to.not.be.undefined))
     })
+  })
 
-    it('can get all ethereum rinkeby collaterals', async () => {
+  describe('Ethereum Rinkeby', () => {
+    it('GET /v0/collaterals?owner=*', async () => {
       const { body: res } = await request(app).get('/v0/collaterals')
         .query({
-          ethereum: 4,
+          ethereum: Blockchain.Ethereum.Network.RINKEBY,
           owner: appConf.tests.walletAddress,
         })
         .expect('Content-Type', /json/)
         .expect(200)
 
-      expect(res.length).to.equal(2)
-      for (const item of res) {
-        expect(item).to.have.property('collection')
-        expect(item).to.have.property('id')
-        expect(item).to.have.property('isSupported')
-        expect(item).to.have.property('ownerAddress')
-        expect(item).to.have.property('imageUrl')
-        expect(item).to.have.property('name')
-      }
+      const nfts = deserializeEntityArray(res, NFT.codingResolver)
+
+      expect(nfts.length).to.be.greaterThanOrEqual(1)
+      nfts.every(nft => expect(nft).to.have.all.keys(...Object.keys(NFT.codingResolver)))
+      nfts.every(nft => [...Object.keys(_.omitBy(NFT.codingResolver, coder => coder.options.optional === true)), 'ownerAddress'].every(key => expect(_.get(nft, key)).to.not.be.undefined))
     })
   })
 })
