@@ -14,7 +14,7 @@
     "test:unit": "cross-env NODE_ENV=test MOCHAWESOME_REPORTFILENAME=unit mocha --config .mocharc --extension spec.js \"build/$npm_config_files\"",
     "test:int": "npm run test:int:ts",
     "test:ts": "npm run test:unit:ts && npm run test:int:ts",
-    "test:unit:ts": "cross-env NODE_ENV=test mocha --config .mocharc -r ts-node/register -n loader=ts-node/esm --extension spec.ts \"src/$npm_config_files\"",
+    "test:unit:ts": "cross-env NODE_ENV=test MOCHAWESOME_REPORTFILENAME=unit mocha --config .mocharc -r ts-node/register -n loader=ts-node/esm --extension spec.ts \"src/$npm_config_files\"",
     "test:int:ts": "cross-env NODE_ENV=test MOCHAWESOME_REPORTFILENAME=integration mocha --config .mocharc -r ts-node/register -n loader=ts-node/esm --extension ts \"tests/$npm_config_files\"",
     "ship:start": "docker-compose -f docker-compose.yml up --build",
     "ship:test": "docker-compose -f docker-compose.test.yml up --build --exit-code-from app",
