@@ -1,4 +1,4 @@
-import ERC721LendingAPI from '../../abis/ERC721Lending.json'
+import ERC721LendingAPI from '../../abis/ERC721Lending.json' assert { type: 'json' }
 import { Blockchain } from '../../entities'
 import fault from '../../utils/fault'
 import logger from '../../utils/logger'

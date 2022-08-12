@@ -1,7 +1,7 @@
 import BigNumber from 'bignumber.js'
 import _ from 'lodash'
 import { Blockchain, Collection, Loan, NFT, Value } from '../../entities'
-import { getOnChainLoansByBorrower } from '../../subgraph'
+import { getOnChainLoans } from '../../subgraph'
 import fault from '../../utils/fault'
 import logger from '../../utils/logger'
 import rethrow from '../../utils/rethrow'
@@ -24,7 +24,7 @@ export default async function getLoansByBorrower({
     logger.info(`Fetching loans by borrower <${borrowerAddress}> on blockchain <${JSON.stringify(blockchain)}>...`)
 
     const dataSource = DataSource.compose(useGraph({ blockchain, borrowerAddress }))
-    let loans = await dataSource.apply(undefined).catch(err => [])
+    let loans = await dataSource.apply(undefined)
     let sortedLoans: Loan[] = []
 
     if (populateMetadata === true) {
@@ -89,7 +89,7 @@ export function useGraph({ blockchain, borrowerAddress }: Params): DataSource<Lo
 
     if (blockchain.network !== 'ethereum') rethrow(`Unsupported blockchain <${JSON.stringify(blockchain)}>`)
 
-    const onChainLoans = await getOnChainLoansByBorrower({ borrowerAddress }, { networkId: blockchain.networkId })
+    const onChainLoans = await getOnChainLoans({ borrowerAddress }, { networkId: blockchain.networkId })
 
     const loans = onChainLoans.map(loan => {
       const collectionAddress = loan.id.split('/')[0] ?? ''

@@ -41,7 +41,7 @@ function getPipelineStages({
   return [{
     $match: {
       'networkType': blockchain.network,
-      'networkId': parseInt(blockchain.networkId, 10),
+      'networkId': blockchain.networkId,
       ...includeRetired === true ? {} : { retired: { $ne: true } },
     },
   }, {

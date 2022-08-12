@@ -1,5 +1,5 @@
 import _ from 'lodash'
-import ERC721EnumerableABI from '../../abis/ERC721Enumerable.json'
+import ERC721EnumerableABI from '../../abis/ERC721Enumerable.json' assert { type: 'json' }
 import appConf from '../../app.conf'
 import { Blockchain, NFTMetadata } from '../../entities'
 import logger from '../../utils/logger'

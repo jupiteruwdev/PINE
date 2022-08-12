@@ -28,7 +28,7 @@ namespace DataSource {
 
         try {
           const res = await dataSource.apply(undefined)
-          if (!isEmptyDeep(res)) return res
+          if (!isResultValid(res)) return res
         }
         catch (err) {
           const tmp = SuperError.deserialize(err)
@@ -66,25 +66,25 @@ namespace DataSource {
 
 export default DataSource
 
-function isEmptyDeep(value: any): boolean {
-  if (_.isEmpty(value)) return true
+function isResultValid(result: any): boolean {
+  if (_.isEmpty(result)) return !_.isArray(result)
 
-  if (_.isPlainObject(value)) {
+  if (_.isPlainObject(result)) {
     let hasValue = false
 
-    for (const key in value) {
-      if (!value.hasOwnProperty(key)) continue
-      hasValue = hasValue || !isEmptyDeep(value[key])
+    for (const key in result) {
+      if (!result.hasOwnProperty(key)) continue
+      hasValue = hasValue || !isResultValid(result[key])
     }
 
     return !hasValue
   }
-  else if (_.isArray(value)) {
-    const l = value.length
+  else if (_.isArray(result)) {
+    const l = result.length
     let hasValue = false
 
     for (let i = 0; i < l; i++) {
-      hasValue = hasValue || !isEmptyDeep(value[i])
+      hasValue = hasValue || !isResultValid(result[i])
     }
 
     return !hasValue
