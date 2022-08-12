@@ -7,6 +7,8 @@ services:
     build:
       context: .
       target: test
+    volumes:
+      - .tests:/var/app/.tests
     ports:
       - 8080:8080
     environment:

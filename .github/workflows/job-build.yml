@@ -77,15 +77,10 @@ jobs:
           target: test
       - name: Run tests
         run: IMAGE_TAG=test-${{ github.sha }} docker-compose -f docker-compose.test.yml up --exit-code-from app
-      - name: Copy test reports to local filesystem
-        run: |
-          docker run -td --rm --name tmp ${{ env.IMAGE_NAME }}:test-${{ github.sha }}
-          docker cp tmp:/var/app/.tests/ ${PWD}/.tests
-          docker stop tmp
       - name: Persist test reports
         uses: actions/upload-artifact@v3
         with:
-          name: test-report
+          name: test-reports
           path: .tests/
       - name: Set metadata
         id: meta
