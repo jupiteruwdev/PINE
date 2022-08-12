@@ -1,5 +1,5 @@
-import ERC721LendingAPI from '../../abis/ERC721Lending.json'
-import { Blockchain } from '../../entities'
+import ERC721LendingAPI from '../../abis/ERC721Lending.json' assert { type: 'json' }
+import { Blockchain } from '../../entities' assert { type: 'json' }
 import fault from '../../utils/fault'
 import logger from '../../utils/logger'
 import getEthWeb3 from '../utils/getEthWeb3'
