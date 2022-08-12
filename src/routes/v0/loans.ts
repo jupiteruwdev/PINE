@@ -4,7 +4,7 @@ import { countLoans, getLoan, getLoansByBorrower, getLoansByCollection, searchLo
 import { LoanSortDirection, LoanSortType } from '../../controllers/loans/searchLoans'
 import { Blockchain, Loan, Pagination, serializeEntityArray } from '../../entities'
 import fault from '../../utils/fault'
-import { getBlockchain, getNumber, getString } from '../utils/query'
+import { getBlockchain, getBlockchainFilter, getNumber, getString } from '../utils/query'
 
 const router = Router()
 
@@ -58,7 +58,7 @@ router.get('/collection', async (req, res, next) => {
 
 router.get('/search', async (req, res, next) => {
   try {
-    const blockchain = getBlockchain(req.query)
+    const blockchainFilter = getBlockchainFilter(req.query, true)
     const collectionAddresses = getString(req.query, 'collectionAddresses', { optional: true })?.split(',')
     const lenderAddresses = getString(req.query, 'lenderAddresses', { optional: true })?.split(',')
     const collectionNames = getString(req.query, 'collectionNames', { optional: true })?.split(',')
@@ -69,9 +69,9 @@ router.get('/search', async (req, res, next) => {
     const paginateByCount = getNumber(req.query, 'count', { optional: true })
     const paginateBy = paginateByOffset !== undefined && paginateByCount !== undefined ? { count: paginateByCount, offset: paginateByOffset } : undefined
     const [totalCount, loans] = await Promise.all([
-      countLoans({ blockchain, collectionAddresses, collectionNames, lenderAddresses }),
+      countLoans({ blockchainFilter, collectionAddresses, collectionNames, lenderAddresses }),
       searchLoans({
-        blockchain,
+        blockchainFilter,
         collectionAddresses,
         collectionNames,
         lenderAddresses,

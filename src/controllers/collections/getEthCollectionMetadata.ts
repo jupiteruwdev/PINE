@@ -60,7 +60,7 @@ export function useDb({ blockchain, collectionAddress, poolAddress, nftId }: Par
       }, {
         $match: {
           'networkType': blockchain.network,
-          'networkId': parseInt(blockchain.networkId, 10),
+          'networkId': blockchain.networkId,
           '_address': poolAddress.toLowerCase(),
         },
       }, {
@@ -99,7 +99,7 @@ export function useDb({ blockchain, collectionAddress, poolAddress, nftId }: Par
       }, {
         $match: {
           'networkType': blockchain.network,
-          'networkId': parseInt(blockchain.networkId, 10),
+          'networkId': blockchain.networkId,
           '_address': collectionAddress.toLowerCase(),
         },
       }]

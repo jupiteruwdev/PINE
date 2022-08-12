@@ -106,7 +106,7 @@ function getPipelineStages({
   const stages: PipelineStage[] = [{
     $match: {
       'networkType': blockchain.network,
-      'networkId': parseInt(blockchain.networkId, 10),
+      'networkId': blockchain.networkId,
       ...lenderAddress === undefined ? {} : { lenderAddress },
       ...includeRetired === true ? {} : { retired: { $ne: true } },
     },
