@@ -23,8 +23,8 @@ export default async function getEthNFTsByOwner({ blockchain, ownerAddress, popu
   logger.info(`Fetching Ethereum NFTs by owner <${ownerAddress}> on network <${blockchain.networkId}>...`)
 
   const dataSource = DataSource.compose(
-    useAlchemy({ blockchain, ownerAddress, populateMetadata }),
     useMoralis({ blockchain, ownerAddress, populateMetadata }),
+    useAlchemy({ blockchain, ownerAddress, populateMetadata }),
   )
 
   let nfts = await dataSource.apply(undefined)
@@ -68,24 +68,27 @@ export function useAlchemy({ blockchain, ownerAddress, populateMetadata }: Param
 
     const apiHost = _.get(appConf.alchemyAPIUrl, blockchain.networkId) ?? rethrow(`Missing Alchemy API URL for blockchain ${JSON.stringify(blockchain)}`)
     const apiKey = appConf.alchemyAPIKey ?? rethrow('Missing Alchemy API key')
-
     const res = []
-    let pageKey
+
+    let currPageKey
+
     while (true) {
-      const data: any = await getRequest(`${apiHost}${apiKey}/getNFTs`, {
+      const { ownedNfts: partialRes, pageKey }: any = await getRequest(`${apiHost}${apiKey}/getNFTs`, {
         params: {
           owner: ownerAddress,
           withMetadata: populateMetadata,
-          pageKey,
+          pageKey: currPageKey,
         },
       })
 
-      res.push(...data.ownedNfts)
-      if (!_.get(data, 'pageKey')) break
-      pageKey = _.get(data, 'pageKey')
-    }
+      if (!_.isArray(partialRes)) rethrow('Bad request or unrecognized payload when fetching NFTs from Alchemy API')
 
-    if (!_.isArray(res)) rethrow('Bad request or unrecognized payload when fetching NFTs from Alchemy API')
+      res.push(...partialRes)
+
+      if (_.isNil(pageKey)) break
+
+      currPageKey = pageKey
+    }
 
     const unsanitizedNFTs = await Promise.all(res.map(async entry => {
       const tokenId = new BigNumber(_.get(entry, 'id.tokenId')).toFixed() // IDs from Alchemy are hex strings, convert to integer
@@ -154,27 +157,29 @@ export function useMoralis({ blockchain, ownerAddress, populateMetadata }: Param
     if (blockchain.network !== 'ethereum') throw fault('ERR_UNSUPPORTED_BLOCKCHAIN')
 
     const apiKey = appConf.moralisAPIKey ?? rethrow('Missing Moralis API key')
-
     const res = []
-    let cursor
+
+    let currCursor
+
     while (true) {
-      const data: any = await getRequest(`https://deep-index.moralis.io/api/v2/${ownerAddress}/nft`, {
+      const { result: partialRes, cursor }: any = await getRequest(`https://deep-index.moralis.io/api/v2/${ownerAddress}/nft`, {
         headers: {
           'X-API-Key': apiKey,
         },
         params: {
           chain: 'eth',
           format: 'decimal',
-          cursor,
+          cursor: currCursor,
         },
       })
 
-      res.push(...data.result)
-      if (!_.get(data, 'cursor')) break
-      cursor = _.get(data, 'cursor')
-    }
+      res.push(...partialRes)
 
-    if (!_.isArray(res)) rethrow('Bad request or unrecognized payload when fetching NFTs from Moralis API')
+      if (_.isNil(cursor)) break
+      if (!_.isArray(res)) rethrow('Bad request or unrecognized payload when fetching NFTs from Moralis API')
+
+      currCursor = cursor
+    }
 
     const unsanitizedNFTs = await Promise.all(res.map(async entry => {
       const tokenId = _.get(entry, 'token_id')
