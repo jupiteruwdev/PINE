@@ -180,9 +180,9 @@ export function useOpenSea({ blockchain, collectionAddress }: Params): DataSourc
 
     if (res === undefined) rethrow('Unexpected payload when looking up colleciton metadata from OpenSea')
 
-    const name = _.get(res, 'collection.name') ?? undefined
-    const imageUrl = _.get(res, 'collection.image_url') ?? undefined
-    const vendorId = _.get(res, 'collection.slug') ?? undefined
+    const name = _.get(res, 'collection.name')
+    const imageUrl = _.get(res, 'collection.image_url')
+    const vendorId = _.get(res, 'collection.slug')
 
     const metadata = {
       name,
@@ -212,7 +212,7 @@ export function useAlchemy({ blockchain, collectionAddress }: Params): DataSourc
       },
     })
 
-    const name = _.get(res, 'contractMetadata.name') ?? undefined
+    const name = _.get(res, 'contractMetadata.name')
     const imageUrl = undefined // Alchemy API does not provide collection image
 
     return {
