@@ -4,7 +4,7 @@
   "description": " Core web service and API gateway",
   "type": "module",
   "scripts": {
-    "start": "node build/app",
+    "start": "node --experimental-specifier-resolution node build/app",
     "clean": "rimraf build",
     "prebuild": "npm run lint",
     "dev": "nodemon --exec \"node --experimental-specifier-resolution node --loader ts-node/esm -r dotenv/config\" --verbose --watch src --ext ts,json src/app",
