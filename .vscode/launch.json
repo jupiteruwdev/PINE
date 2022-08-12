@@ -2,24 +2,23 @@
   "version": "0.2.0",
   "configurations": [
     {
-      "type": "node",
+      "name": "Debug",
       "request": "launch",
-      "name": "Run",
-      "env": {
-        "NODE_ENV": "development"
-      },
-      "sourceMaps": true,
-      "restart": true,
+      "type": "node",
       "console": "integratedTerminal",
+      "env": { "NODE_ENV": "development" },
       "internalConsoleOptions": "neverOpen",
+      "restart": true,
       "runtimeExecutable": "${env:NVM_DIR}/nvm-exec",
+      "skipFiles": ["<node_internals>/**"],
+      "sourceMaps": true,
       "runtimeArgs": [
         "node"
       ],
       "program": "${workspaceRoot}/node_modules/.bin/nodemon",
       "args": [
         "--exec",
-        "ts-node --logError -r dotenv/config --inspect-brk=5858",
+        "node --experimental-specifier-resolution node --loader ts-node/esm -r dotenv/config",
         "--verbose",
         "--watch",
         "src",
@@ -27,33 +26,6 @@
         "ts,json",
         "${workspaceRoot}/src/app.ts"
       ]
-    },
-    {
-      "type": "node",
-      "request": "launch",
-      "name": "Run unit tests",
-      "env": {
-        "NODE_ENV": "test"
-      },
-      "sourceMaps": true,
-      "internalConsoleOptions": "neverOpen",
-      "console": "integratedTerminal",
-      "program": "${workspaceRoot}/node_modules/mocha/bin/_mocha",
-      "args": [
-        "-r",
-        "ts-node/register",
-        "-b",
-        "-c",
-        "--diff",
-        "--timeout",
-        "0",
-        "--recursive",
-        "--exit",
-        "--ignore",
-        "\"src/entities/**/*\"",
-        // "${workspaceRoot}/src/**/*.spec.ts"
-        "${workspaceRoot}/src/controllers/collaterals/getEthMainnetNFTsByOwner.spec.ts"
-      ],
     }
   ]
 }
