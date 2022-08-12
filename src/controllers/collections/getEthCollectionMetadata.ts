@@ -21,7 +21,7 @@ export default async function getEthCollectionMetadata({
   ...params
 }: Params): Promise<CollectionMetadata> {
   try {
-    logger.info(`Fetching metadata for colleciton using params <${JSON.stringify(params)}> on blockchain <${JSON.stringify(blockchain)}>...`)
+    logger.info(`Fetching metadata for collection using params <${JSON.stringify(params)}> on blockchain <${JSON.stringify(blockchain)}>...`)
 
     const dataSource = DataSource.compose(
       useDb({ blockchain, ...params }),
@@ -161,7 +161,7 @@ export function useDb({ blockchain, collectionAddress, poolAddress, nftId }: Par
 
 export function useOpenSea({ blockchain, collectionAddress }: Params): DataSource<CollectionMetadata> {
   return async () => {
-    logger.info('...using OpenSea to look up metadata')
+    logger.info(`...using OpenSea to look up metadata for collection ${collectionAddress}`)
 
     if (collectionAddress === undefined) rethrow('Collection address must be provided')
     if (blockchain?.network !== 'ethereum') rethrow(`Unsupported blockchain <${JSON.stringify(blockchain)}>`)
@@ -178,7 +178,7 @@ export function useOpenSea({ blockchain, collectionAddress }: Params): DataSourc
       break
     }
 
-    if (res === undefined) rethrow('Unexpected payload when looking up colleciton metadata from OpenSea')
+    if (res === undefined) rethrow('Unexpected payload when looking up collection metadata from OpenSea')
 
     const name = _.get(res, 'collection.name')
     const imageUrl = _.get(res, 'collection.image_url')
@@ -198,7 +198,7 @@ export function useOpenSea({ blockchain, collectionAddress }: Params): DataSourc
 
 export function useAlchemy({ blockchain, collectionAddress }: Params): DataSource<CollectionMetadata> {
   return async () => {
-    logger.info('...using Alchemy to look up metadata')
+    logger.info(`...using Alchemy to look up metadata for collection <${collectionAddress}>`)
 
     if (collectionAddress === undefined) rethrow('Collection address must be provided')
     if (blockchain?.network !== 'ethereum') rethrow(`Unsupported blockchain <${JSON.stringify(blockchain)}>`)

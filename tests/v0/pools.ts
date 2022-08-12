@@ -130,7 +130,7 @@ describe('Ethereum Mainnet', () => {
       }))
     })
 
-    it('can search a pool group by colleciton name with pagination', async () => {
+    it('can search a pool group by collection name with pagination', async () => {
       const { body: res } = await request(app).get('/v0/pools/groups/search')
         .query({
           ethereum: Blockchain.Ethereum.Network.MAIN,
