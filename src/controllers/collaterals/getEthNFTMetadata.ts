@@ -127,7 +127,7 @@ export function useTokenUri({ tokenUri }: Pick<Params, 'tokenUri'>): DataSource<
 
     const metadata = {
       imageUrl: !_.isNil(imageUrl) ? normalizeIPFSUri(imageUrl) : undefined,
-      name: name ?? undefined,
+      name,
     }
 
     return metadata
