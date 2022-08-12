@@ -9,17 +9,23 @@ import getEthWeb3 from '../../src/controllers/utils/getEthWeb3'
 import { PoolModel } from '../../src/db'
 import { Blockchain, Collection, deserializeEntity, Pool, PoolGroup } from '../../src/entities'
 
-describe('Ethereum Mainnet', () => {
-  let pools: Pool[] = []
-  let collections: Collection[] = []
+describe('/v0/pools', () => {
+  describe('Ethereum Mainnet', () => {
+    let pools: Pool[] = []
+    let collections: Collection[] = []
 
-  before(async () => {
-    pools = await searchPublishedPools({ blockchainFilter: { ethereum: Blockchain.Ethereum.Network.MAIN } })
-    collections = await getCollections({ blockchainFilter: { ethereum: Blockchain.Ethereum.Network.MAIN } })
-  })
+    before(async () => {
+      pools = await searchPublishedPools({ blockchainFilter: { ethereum: Blockchain.Ethereum.Network.MAIN } })
+      collections = await getCollections({ blockchainFilter: { ethereum: Blockchain.Ethereum.Network.MAIN } })
+    })
 
-  describe('GET /v0/pools/:poolAddress', () => {
-    it('can get each published pool', async () => {
+    after('delete published test pool', async () => {
+      await PoolModel.deleteOne({
+        address: '0xc59d88285ab60abbf44ed551d554e86d4ab34442',
+      }).exec()
+    })
+
+    it('GET /v0/pools/:poolAddress', async () => {
       await Promise.all(pools.map(async pool => {
         const { body: res } = await request(app).get(`/v0/pools/${pool.address}`)
           .query({
@@ -33,10 +39,8 @@ describe('Ethereum Mainnet', () => {
         expect(poolGroups).to.have.all.keys(...Object.keys(Pool.codingResolver))
       }))
     })
-  })
 
-  describe('GET /v0/pools/lender', () => {
-    it('can get published and unpublished pools by lender', async () => {
+    it('GET /v0/pools/lender?lenderAddress=*', async () => {
       const { body: res } = await request(app).get('/v0/pools/lender')
         .query({
           ethereum: 1,
@@ -55,43 +59,8 @@ describe('Ethereum Mainnet', () => {
         }
       }
     })
-  })
 
-  describe('POST /v0/pools', () => {
-    afterEach('remove test pool', async () => {
-      await PoolModel.deleteOne({
-        address: '0xc59d88285ab60abbf44ed551d554e86d4ab34442',
-      }).exec()
-    })
-
-    it('can publish pool', async () => {
-      const payload = JSON.stringify({
-        poolAddress: '0xc59d88285ab60abbf44ed551d554e86d4ab34442',
-      })
-      const web3 = getEthWeb3(Blockchain.Ethereum.Network.MAIN)
-      const wallet = web3.eth.accounts.privateKeyToAccount(appConf.tests.privateKey)
-      const tx = wallet.sign(payload)
-      const { body: res } = await request(app).post('/v0/pools')
-        .send({
-          ethereum: 1,
-          poolAddress: '0xc59d88285ab60abbf44ed551d554e86d4ab34442',
-          payload,
-          signature: tx.signature,
-        })
-        .expect('Content-Type', /json/)
-        .expect(200)
-
-      const pool = Pool.factory(res)
-      for (const key in pool) {
-        if (Object.prototype.hasOwnProperty.call(pool, key) && _.get(pool, key)) {
-          expect(res).to.have.property(key)
-        }
-      }
-    })
-  })
-
-  describe('GET /v0/pools/groups/search', () => {
-    it('can search pool groups with pagination', async () => {
+    it('GET /v0/pools/groups/search?offset=*&count=*', async () => {
       const { body: res } = await request(app).get('/v0/pools/groups/search')
         .query({
           ethereum: Blockchain.Ethereum.Network.MAIN,
@@ -108,7 +77,7 @@ describe('Ethereum Mainnet', () => {
       res.data.every((poolGroup: any) => expect(poolGroup).to.have.keys(...Object.keys(PoolGroup.codingResolver)))
     })
 
-    it('can search each pool group by collection address with pagination', async () => {
+    it('GET /v0/pools/groups/search?collectionAddress=*&offset=*&count=*', async () => {
       await Promise.all(collections.map(async collection => {
         const { body: res } = await request(app).get('/v0/pools/groups/search')
           .query({
@@ -130,7 +99,7 @@ describe('Ethereum Mainnet', () => {
       }))
     })
 
-    it('can search a pool group by collection name with pagination', async () => {
+    it('GET /v0/pools/groups/search?query=*&offset=*&count=*', async () => {
       const { body: res } = await request(app).get('/v0/pools/groups/search')
         .query({
           ethereum: Blockchain.Ethereum.Network.MAIN,
@@ -150,7 +119,7 @@ describe('Ethereum Mainnet', () => {
       }
     })
 
-    it('can search pool groups with sorting and pagination', async () => {
+    it('GET /v0/pools/groups/search?sort=*&direction=*&offset=*&count=*', async () => {
       const { body: res } = await request(app).get('/v0/pools/groups/search')
         .query({
           ethereum: Blockchain.Ethereum.Network.MAIN,
@@ -171,10 +140,8 @@ describe('Ethereum Mainnet', () => {
         res.data.every((poolGroup: any) => expect(poolGroup).to.have.keys(...Object.keys(PoolGroup.codingResolver)))
       }
     })
-  })
 
-  describe('GET /v0/pools/groups/collection', () => {
-    it('can get each pool group by collection address', async () => {
+    it('GET /v0/pools/groups/collection?collectionAddress=*', async () => {
       await Promise.all(collections.map(async collection => {
         const { body: res } = await request(app).get('/v0/pools/groups/collection')
           .query({
@@ -188,18 +155,42 @@ describe('Ethereum Mainnet', () => {
         res.every((poolGroup: any) => expect(poolGroup).to.have.keys(...Object.keys(PoolGroup.codingResolver)))
       }))
     })
+
+    it('POST /v0/pools', async () => {
+      const payload = JSON.stringify({
+        poolAddress: '0xc59d88285ab60abbf44ed551d554e86d4ab34442',
+      })
+      const web3 = getEthWeb3(Blockchain.Ethereum.Network.MAIN)
+      const wallet = web3.eth.accounts.privateKeyToAccount(appConf.tests.privateKey)
+      const tx = wallet.sign(payload)
+      const { body: res } = await request(app).post('/v0/pools')
+        .send({
+          ethereum: 1,
+          poolAddress: '0xc59d88285ab60abbf44ed551d554e86d4ab34442',
+          payload,
+          signature: tx.signature,
+        })
+        .expect('Content-Type', /json/)
+        .expect(200)
+
+      const pool = Pool.factory(res)
+
+      for (const key in pool) {
+        if (Object.prototype.hasOwnProperty.call(pool, key) && _.get(pool, key)) {
+          expect(res).to.have.property(key)
+        }
+      }
+    })
   })
-})
 
-describe('Ethereum Rinkeby', () => {
-  let collections: Collection[] = []
+  describe('Ethereum Rinkeby', () => {
+    let collections: Collection[] = []
 
-  before(async () => {
-    collections = await getCollections({ blockchainFilter: { ethereum: Blockchain.Ethereum.Network.MAIN } })
-  })
+    before(async () => {
+      collections = await getCollections({ blockchainFilter: { ethereum: Blockchain.Ethereum.Network.MAIN } })
+    })
 
-  describe('GET /v0/pools/groups/collection', () => {
-    it('can get each pool group by collection address', async () => {
+    it('GET /v0/pools/groups/collection?collectionAddress=*', async () => {
       await Promise.all(collections.map(async collection => {
         const { body: res } = await request(app).get('/v0/pools/groups/collection')
           .query({

@@ -7,6 +7,8 @@ services:
     build:
       context: .
       target: test
+    volumes:
+      - .tests:/var/app/.tests
     ports:
       - 8080:8080
     environment:
@@ -24,7 +26,6 @@ services:
       OPENSEA_API_KEY: ${OPENSEA_API_KEY}
       SUBGRAPH_API_MAINNET_URL: ${SUBGRAPH_API_MAINNET_URL}
       SUBGRAPH_API_RINKEBY_URL: ${SUBGRAPH_API_RINKEBY_URL}
-      TESTS_LOG_LEVEL: ${TESTS_LOG_LEVEL}
       TESTS_WALLET_ADDRESS: ${TESTS_WALLET_ADDRESS}
       TESTS_WHALE_WALLET_ADDRESSES: ${TESTS_WHALE_WALLET_ADDRESSES}
       TESTS_WALLET_PRIVATE_KEY: ${TESTS_WALLET_PRIVATE_KEY}
