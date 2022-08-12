@@ -23,8 +23,8 @@ export default async function getEthNFTsByOwner({ blockchain, ownerAddress, popu
   logger.info(`Fetching Ethereum NFTs by owner <${ownerAddress}> on network <${blockchain.networkId}>...`)
 
   const dataSource = DataSource.compose(
-    useAlchemy({ blockchain, ownerAddress, populateMetadata }),
     useMoralis({ blockchain, ownerAddress, populateMetadata }),
+    useAlchemy({ blockchain, ownerAddress, populateMetadata }),
   )
 
   let nfts = await dataSource.apply(undefined)
@@ -68,34 +68,44 @@ export function useAlchemy({ blockchain, ownerAddress, populateMetadata }: Param
 
     const apiHost = _.get(appConf.alchemyAPIUrl, blockchain.networkId) ?? rethrow(`Missing Alchemy API URL for blockchain ${JSON.stringify(blockchain)}`)
     const apiKey = appConf.alchemyAPIKey ?? rethrow('Missing Alchemy API key')
+    const res = []
 
-    const { ownedNfts: res } = await getRequest(`${apiHost}${apiKey}/getNFTs`, {
-      params: {
-        owner: ownerAddress,
-        withMetadata: populateMetadata,
-      },
-    })
+    let currPageKey
 
-    if (!_.isArray(res)) rethrow('Bad request or unrecognized payload when fetching NFTs from Alchemy API')
+    while (true) {
+      const { ownedNfts: partialRes, pageKey }: any = await getRequest(`${apiHost}${apiKey}/getNFTs`, {
+        params: {
+          owner: ownerAddress,
+          withMetadata: populateMetadata,
+          pageKey: currPageKey,
+        },
+      })
+
+      if (!_.isArray(partialRes)) rethrow('Bad request or unrecognized payload when fetching NFTs from Alchemy API')
+      res.push(...partialRes)
+
+      if (_.isNil(pageKey)) break
+      currPageKey = pageKey
+    }
 
     const unsanitizedNFTs = await Promise.all(res.map(async entry => {
       const tokenId = new BigNumber(_.get(entry, 'id.tokenId')).toFixed() // IDs from Alchemy are hex strings, convert to integer
       const collectionAddress = _.get(entry, 'contract.address')
 
       if (tokenId === 'NaN' || collectionAddress === undefined) {
-        logger.warn(`Using Alchemy to look up NFTs for owner <${ownerAddress}>... WARN: Dropping NFT ${JSON.stringify(entry)} due to missing address or token ID`)
+        logger.warn(`...using Alchemy to look up NFTs for owner <${ownerAddress}>... WARN: Dropping NFT ${JSON.stringify(entry)} due to missing address or token ID`)
         return undefined
       }
 
       let metadata = {}
 
       if (populateMetadata === true) {
+        logger.warn(`...inferring metadata for NFT <${collectionAddress}/${tokenId}>`)
+
         const name = _.get(entry, 'metadata.name')
         const imageUrl = ['media.0.gateway', 'metadata.image', 'metadata.image_url'].reduceRight((prev, curr) => !_.isEmpty(prev) ? prev : _.get(entry, curr), '')
 
         if (_.isEmpty(name) && _.isEmpty(imageUrl)) {
-          logger.warn(`Fetching metadata for NFT <${collectionAddress}/${tokenId}>... WARN: Unable to infer metadata from Alchemy, trying alternate data sources`)
-
           const tokenUri = _.get(entry, 'tokenUri.gateway')
 
           try {
@@ -106,10 +116,12 @@ export function useAlchemy({ blockchain, ownerAddress, populateMetadata }: Param
 
             metadata = await dataSource.apply(undefined)
 
-            logger.info(`Fetching metadata for NFT <${collectionAddress}/${tokenId}>... OK:`, metadata)
+            logger.info(`...fetching metadata for NFT <${collectionAddress}/${tokenId}>... OK`)
+            logger.debug(metadata)
           }
           catch (err) {
-            logger.warn(`Fetching metadata for NFT <${collectionAddress}/${tokenId}>... WARN: Failed after exhausting all data sources`)
+            logger.warn(`...fetching metadata for NFT <${collectionAddress}/${tokenId}>... WARN`)
+            if (logger.isWarnEnabled() && !logger.silent) console.warn(err)
           }
         }
         else {
@@ -118,7 +130,8 @@ export function useAlchemy({ blockchain, ownerAddress, populateMetadata }: Param
             imageUrl: !_.isNil(imageUrl) ? normalizeIPFSUri(imageUrl) : undefined,
           }
 
-          logger.info(`Fetching metadata for NFT <${collectionAddress}/${tokenId}>... OK:`, metadata)
+          logger.info(`...fetching metadata for NFT <${collectionAddress}/${tokenId}>... OK`)
+          logger.debug(metadata)
         }
       }
 
@@ -142,41 +155,51 @@ export function useAlchemy({ blockchain, ownerAddress, populateMetadata }: Param
 export function useMoralis({ blockchain, ownerAddress, populateMetadata }: Params): DataSource<NFT[]> {
   return async () => {
     logger.info(`...using Moralis to look up NFTs for owner <${ownerAddress}>`)
-
     if (blockchain.network !== 'ethereum') throw fault('ERR_UNSUPPORTED_BLOCKCHAIN')
 
     const apiKey = appConf.moralisAPIKey ?? rethrow('Missing Moralis API key')
+    const res = []
 
-    const { result: res } = await getRequest(`https://deep-index.moralis.io/api/v2/${ownerAddress}/nft`, {
-      headers: {
-        'X-API-Key': apiKey,
-      },
-      params: {
-        chain: 'eth',
-        format: 'decimal',
-      },
-    })
+    let currCursor
 
-    if (!_.isArray(res)) rethrow('Bad request or unrecognized payload when fetching NFTs from Moralis API')
+    while (true) {
+      const { result: partialRes, cursor }: any = await getRequest(`https://deep-index.moralis.io/api/v2/${ownerAddress}/nft`, {
+        headers: {
+          'X-API-Key': apiKey,
+        },
+        params: {
+          chain: 'eth',
+          format: 'decimal',
+          cursor: currCursor,
+        },
+      })
+
+      if (!_.isArray(partialRes)) rethrow('Bad request or unrecognized payload when fetching NFTs from Moralis API')
+      res.push(...partialRes)
+
+      if (_.isNil(cursor)) break
+      currCursor = cursor
+    }
 
     const unsanitizedNFTs = await Promise.all(res.map(async entry => {
       const tokenId = _.get(entry, 'token_id')
       const collectionAddress = _.get(entry, 'token_address')
 
       if (tokenId === undefined || collectionAddress === undefined) {
-        logger.warn(`Using Moralis to look up NFTs for owner <${ownerAddress}>... WARN: dropping NFT ${JSON.stringify(entry)} due to missing address or token ID`)
+        logger.warn(`...using Moralis to look up NFTs for owner <${ownerAddress}>... WARN: dropping NFT ${JSON.stringify(entry)} due to missing address or token ID`)
         return undefined
       }
 
       let metadata = {}
 
       if (populateMetadata === true) {
+        logger.warn(`...inferring metadata for NFT <${collectionAddress}/${tokenId}>`)
+
         const parsed = JSON.parse(_.get(entry, 'metadata'))
-        const name = _.get(parsed, 'name')
-        const imageUrl = _.get(parsed, 'image')
+        const name = _.get(parsed, 'name') ?? undefined
+        const imageUrl = _.get(parsed, 'image') ?? undefined
 
         if (_.isEmpty(name) && _.isEmpty(imageUrl)) {
-          logger.warn(`Fetching metadata for NFT <${collectionAddress}/${tokenId}>... WARN: Unable to infer metadata from Moralis, trying alternate data sources`)
 
           const tokenUri = _.get(entry, 'token_uri')
 
@@ -188,10 +211,12 @@ export function useMoralis({ blockchain, ownerAddress, populateMetadata }: Param
 
             metadata = await dataSource.apply(undefined)
 
-            logger.info(`Fetching metadata for NFT <${collectionAddress}/${tokenId}>... OK:`, metadata)
+            logger.info(`...fetching metadata for NFT <${collectionAddress}/${tokenId}>... OK`)
+            logger.debug(metadata)
           }
           catch (err) {
-            logger.warn(`Fetching metadata for NFT <${collectionAddress}/${tokenId}>... WARN: Failed after exhausting all data sources`)
+            logger.warn(`...fetching metadata for NFT <${collectionAddress}/${tokenId}>... WARN`)
+            if (logger.isWarnEnabled() && !logger.silent) console.warn(err)
           }
         }
         else {
@@ -200,7 +225,8 @@ export function useMoralis({ blockchain, ownerAddress, populateMetadata }: Param
             imageUrl: !_.isNil(imageUrl) ? normalizeIPFSUri(imageUrl) : undefined,
           }
 
-          logger.info(`Fetching metadata for NFT <${collectionAddress}/${tokenId}>... OK:`, metadata)
+          logger.info(`...fetching metadata for NFT <${collectionAddress}/${tokenId}>... OK`)
+          logger.debug(metadata)
         }
       }
 

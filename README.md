@@ -23,6 +23,7 @@ SUBGRAPH_API_RINKEBY_URL=
 MONGO_URI=
 VALUATION_SIGNER=
 GEMXYZ_API_KEY=
+REQUEST_TIMEOUT_MS=
 ```
 
 The following are environment variables used by unit and integration tests:

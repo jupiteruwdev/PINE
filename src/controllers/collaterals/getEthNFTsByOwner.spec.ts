@@ -15,6 +15,11 @@ describe('controllers/collaterals/getEthNFTsByOwner', () => {
     await initDb()
   })
 
+  afterEach(function() {
+    if (this.currentTest?.state !== 'failed') return
+    console.error(this.currentTest?.err)
+  })
+
   describe('Mainnet', () => {
     const blockchain = Blockchain.Ethereum(Blockchain.Ethereum.Network.MAIN)
 
