@@ -20,6 +20,7 @@ export enum PoolSortDirection {
 type Params<IncludeStats> = {
   blockchainFilter?: Blockchain.Filter
   collectionAddress?: string
+  address?: string
   collectionName?: string
   includeRetired?: boolean
   includeStats?: IncludeStats
