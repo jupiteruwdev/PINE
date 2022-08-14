@@ -43,6 +43,13 @@ describe('controllers/pools/searchPublishedPools', () => {
     expect(pools).to.have.length.greaterThan(0)
     assertPoolArray(pools)
   })
+
+  it('can search pools with pool address', async () => {
+    const pools = await searchPublishedPools({ address: '0x609fee5870739611fea720ad5d86be458b47596a' })
+
+    expect(pools).to.have.length(1)
+    assertPoolArray(pools)
+  })
 })
 
 function assertPoolArray(pools: any[]) {
