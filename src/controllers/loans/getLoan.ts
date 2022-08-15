@@ -38,7 +38,7 @@ export default async function getLoan({
 
       const [blockNumber, pools, valuation] = await Promise.all([
         web3.eth.getBlockNumber(),
-        searchPublishedPools({ collectionAddress, blockchainFilter: { ethereum: blockchain.networkId }, includeRetired: true }),
+        searchPublishedPools({ address: onChainLoan.pool, blockchainFilter: { ethereum: blockchain.networkId }, includeRetired: true }),
         getEthNFTValuation({ blockchain: blockchain as Blockchain<'ethereum'>, collectionAddress, nftId }),
       ])
 

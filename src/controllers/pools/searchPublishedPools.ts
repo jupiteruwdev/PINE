@@ -20,6 +20,7 @@ export enum PoolSortDirection {
 type Params<IncludeStats> = {
   blockchainFilter?: Blockchain.Filter
   collectionAddress?: string
+  address?: string
   collectionName?: string
   includeRetired?: boolean
   includeStats?: IncludeStats
@@ -88,6 +89,7 @@ function getPipelineStages({
   includeRetired = false,
   lenderAddress,
   sortBy,
+  address,
 }: Params<never> = {}): PipelineStage[] {
   const blockchain = Blockchain.Ethereum(blockchainFilter.ethereum)
 
@@ -100,6 +102,11 @@ function getPipelineStages({
         $regex: `.*${collectionName}.*`,
         $options: 'i',
       },
+    }],
+  ]
+  const poolFilter = [
+    ...address === undefined ? [] : [{
+      'address': address.toLowerCase(),
     }],
   ]
 
@@ -129,6 +136,17 @@ function getPipelineStages({
   }, {
     $match: {
       $and: collectionFilter,
+    },
+  }],
+  ...poolFilter.length === 0 ? [] : [{
+    $addFields: {
+      'address': {
+        $toLower: '$address',
+      },
+    },
+  }, {
+    $match: {
+      $and: poolFilter,
     },
   }], {
     $addFields: {
