@@ -58,6 +58,29 @@ export default {
     [Blockchain.Ethereum.Network.RINKEBY]: '0x150A1a9015Bfaf54e7199eBb6ae35EBDE755D51D',
     [Blockchain.Ethereum.Network.MAIN]: '0x90dFb72736481BBacc7938d2D3673590B92647AE',
   },
+  routerAddress: {
+    [Blockchain.Ethereum.Network.MAIN]: '0x774badBc759234Bff52B0Be11bF61Bb68c9E9A24',
+    [Blockchain.Ethereum.Network.RINKEBY]: '0xFC6c6e4727DA5E1bF79aC9C96155B4cD2faC54E6',
+  },
+  repayRouterAddress: {
+    [Blockchain.Ethereum.Network.MAIN]: '0x1C120cE3853542C0Fe3B75AF8F4c7F223f957d51',
+    [Blockchain.Ethereum.Network.RINKEBY]: '0xFC6c6e4727DA5E1bF79aC9C96155B4cD2faC54E6',
+  },
+  rolloverAddress: {
+    [Blockchain.Ethereum.Network.MAIN]: '0x239f1818f21ebac47306ffa690016aa6a8882a59',
+    [Blockchain.Ethereum.Network.RINKEBY]: '0xC796d62fB1927a13D7E41eBd0c8eA80fdA5Ef80a',
+  },
+  defaultFees: [
+    {
+      type: 'fixed',
+      value: { 'amount': '0.01', 'currency': 'ETH' },
+    },
+    {
+      type: 'percentage',
+      value: 0.0035,
+    },
+  ],
+  blocksPerSecond: 14,
   mongoUri: process.env.MONGO_URI ?? '',
   tenors: [1, 3, 7, 14, 30],
   tests: {
