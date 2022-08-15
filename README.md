@@ -23,6 +23,7 @@ SUBGRAPH_API_RINKEBY_URL=
 MONGO_URI=
 VALUATION_SIGNER=
 GEMXYZ_API_KEY=
+REQUEST_TIMEOUT_MS=
 ```
 
 The following are environment variables used by unit and integration tests:
@@ -30,7 +31,6 @@ The following are environment variables used by unit and integration tests:
 ```sh
 # .env
 
-TESTS_LOG_LEVEL=<log_level>
 TESTS_WALLET_ADDRESS=<address>
 TESTS_WALLET_PRIVATE_KEY=<key>
 TESTS_WHALE_WALLET_ADDRESSES=<address_1>,<address_2>,<address_3>
@@ -71,17 +71,13 @@ Logs are powered by [winston](https://github.com/winstonjs/winston) and have the
 1. `error`
 2. `warn`
 3. `info`
-5. `verbose`
-6. `debug`
+4. `debug`
 
-To enable logging, simply set the following environment variables to the appropriate level listed above. Note that all log levels above the set level are also visible, but not vice-versa (i.e. if log level is set to `info`, `warn` and `error` level logs will also be visible, but not `verbose` and `debug`):
+To enable logging, simply set the following environment variables to the appropriate level listed above. Note that all log levels above the set level are also visible, but not vice-versa (i.e. if log level is set to `info`, `warn` and `error` level logs will also be visible, but not `debug`):
 
 ```sh
-# Set log level for the app (excludes unit/integration tests)
-LOG_LEVEL=<error|warn|info|verbose|debug>
-
-# Set log level for unit/integration tests
-TESTS_LOG_LEVEL=<error|warn|info|verbose|debug>
+# Set log level for the app
+LOG_LEVEL=<error|warn|info|debug>
 ```
 
 To disable logging for the target environment, simply unset the environment variable.

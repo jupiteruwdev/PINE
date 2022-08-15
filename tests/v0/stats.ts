@@ -3,8 +3,8 @@ import { describe, it } from 'mocha'
 import request from 'supertest'
 import app from '../../src/app'
 
-describe('GET /v0/stats/global', () => {
-  it('can get global stats', async () => {
+describe('/v0/stats', () => {
+  it('GET /v0/stats/global', async () => {
     const { body: res } = await request(app).get('/v0/stats/global')
       .expect('Content-Type', /json/)
       .expect(200)

@@ -1,23 +1,36 @@
 import SuperError from '@andrewscwei/super-error'
 import axios from 'axios'
+import appConf from '../../app.conf'
 import fault from '../../utils/fault'
 import logger from '../../utils/logger'
 
 type Options<T> = {
   controller?: AbortController
-  host?: string
   headers?: Record<string, any>
+  host?: string
   params?: Record<string, any>
+  timeout?: number
   transformPayload?: (data: any) => T
 }
 
-export default async function getRequest<T = any>(path: string, { controller, host, headers, params, transformPayload }: Options<T> = {}): Promise<T> {
+export default async function getRequest<T = any>(
+  path: string,
+  {
+    controller,
+    host,
+    headers,
+    params,
+    timeout = appConf.requestTimeoutMs,
+    transformPayload,
+  }: Options<T> = {},
+): Promise<T> {
   try {
     const res = await axios.get(path, {
       baseURL: host,
       headers,
       params,
       signal: controller?.signal,
+      timeout,
     })
 
     const payload = transformPayload ? transformPayload(res.data) : res.data

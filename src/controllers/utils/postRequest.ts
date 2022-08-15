@@ -1,23 +1,37 @@
 import SuperError from '@andrewscwei/super-error'
 import axios from 'axios'
+import appConf from '../../app.conf'
 import fault from '../../utils/fault'
 import logger from '../../utils/logger'
 
 type Options<T> = {
   controller?: AbortController
-  host?: string
   headers?: Record<string, any>
+  host?: string
   params?: Record<string, any>
+  timeout?: number
   transformPayload?: (data: any) => T
 }
 
-export default async function postRequest<T = any>(path: string, data: Record<string, any>, { controller, host, headers, params, transformPayload }: Options<T> = {}): Promise<T> {
+export default async function postRequest<T = any>(
+  path: string,
+  data: Record<string, any>,
+  {
+    controller,
+    host,
+    headers,
+    params,
+    transformPayload,
+    timeout = appConf.requestTimeoutMs,
+  }: Options<T> = {},
+): Promise<T> {
   try {
     const res = await axios.post(path, data, {
       baseURL: host,
       headers,
       params,
       signal: controller?.signal,
+      timeout,
     })
 
     const payload = transformPayload ? transformPayload(res.data) : res.data

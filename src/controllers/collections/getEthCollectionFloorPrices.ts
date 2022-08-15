@@ -53,6 +53,7 @@ export function useNFTBank({ blockchain, collectionAddresses }: Params): DataSou
         headers: {
           'X-API-Key': apiKey,
         },
+        timeout: 10000, // TODO: Why so slow
       })
 
       if (!_.isArray(res)) rethrow('Unexpected payload while looking up floor prices from NFTBank')
