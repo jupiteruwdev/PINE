@@ -13,15 +13,15 @@ export default async function getGlobalStats({ blockchainFilter = { ethereum: Bl
     logger.info(`Fetching global stats for blockchain filter <${JSON.stringify(blockchainFilter)}>...`)
 
     const [
-      // ethValueUSD,
+      ethValueUSD,
       pools,
     ] = await Promise.all([
-      // getEthValueUSD(),
+      getEthValueUSD(),
       getPools({ blockchainFilter }),
     ])
 
-    const totalUtilizationUSD = pools.reduce((p, c) => p.plus(c.utilization.amount), new BigNumber(0))
-    const totalValueLockedUSD = pools.reduce((p, c) => p.plus(c.valueLocked.amount), new BigNumber(0))
+    const totalUtilizationUSD = pools.reduce((p, c) => p.plus(c.utilization.amount), new BigNumber(0)).times(ethValueUSD.amount)
+    const totalValueLockedUSD = pools.reduce((p, c) => p.plus(c.valueLocked.amount), new BigNumber(0)).times(ethValueUSD.amount)
     const totalCapacityUSD = totalValueLockedUSD.minus(totalUtilizationUSD)
 
     const lentEthPerPool = await Promise.all(pools.map(pool => getPoolHistoricalLent({ blockchain: Blockchain.Ethereum(blockchainFilter), poolAddress: pool.address })))

@@ -22,10 +22,10 @@ describe('controllers/utils/ethereum', () => {
     assert(_.isNumber(await getEthBlockNumber(Blockchain.Ethereum.Network.RINKEBY)))
   })
 
-  // it('can get current ETH price', async () => {
-  //   const valueUSD = await getEthValueUSD()
-  //   expect(valueUSD).to.be.an('object')
-  //   assert.isTrue(BigNumber.isBigNumber(valueUSD.amount))
-  //   assert.isFalse(valueUSD.amount.isNaN())
-  // })
+  it('can get current ETH price', async () => {
+    const valueUSD = await getEthValueUSD()
+    expect(valueUSD).to.be.an('object')
+    assert.isTrue(BigNumber.isBigNumber(valueUSD.amount))
+    assert.isFalse(valueUSD.amount.isNaN())
+  })
 })
