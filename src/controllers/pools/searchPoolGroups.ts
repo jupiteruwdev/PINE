@@ -31,8 +31,8 @@ export default async function searchPoolGroups({
   logger.info('Fetching pool groups...')
 
   try {
-    const [ethValueUSD, pools] = await Promise.all([
-      getEthValueUSD(),
+    const [pools] = await Promise.all([
+      // getEthValueUSD(),
       getPools({
         blockchainFilter,
         collectionAddress,
@@ -51,9 +51,9 @@ export default async function searchPoolGroups({
         return {
           collection: pool.collection,
           pools: [pool],
-          totalValueLent: Value.$USD(pool.utilization.amount.times(ethValueUSD.amount)),
-          totalValueLocked: Value.$USD(
-            pool.valueLocked.amount.times(ethValueUSD.amount)
+          totalValueLent: Value.$ETH(pool.utilization.amount),
+          totalValueLocked: Value.$ETH(
+            pool.valueLocked.amount
           ),
         }
       })
