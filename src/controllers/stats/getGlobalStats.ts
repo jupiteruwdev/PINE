@@ -28,10 +28,10 @@ export default async function getGlobalStats({ blockchainFilter = { ethereum: Bl
     const totalLentETH = lentEthPerPool.reduce((p, c) => p.plus(c.amount), new BigNumber(0))
 
     const globalStats: GlobalStats = {
-      capacity: Value.$USD(totalCapacityUSD),
+      capacity: Value.$ETH(totalCapacityUSD),
       totalValueLentHistorical: Value.$ETH(totalLentETH),
-      totalValueLocked: Value.$USD(totalValueLockedUSD),
-      utilization: Value.$USD(totalUtilizationUSD),
+      totalValueLocked: Value.$ETH(totalValueLockedUSD),
+      utilization: Value.$ETH(totalUtilizationUSD),
       utilizationRatio: totalUtilizationUSD.div(totalValueLockedUSD),
     }
 
