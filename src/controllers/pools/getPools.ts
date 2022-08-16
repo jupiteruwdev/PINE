@@ -34,10 +34,10 @@ async function mapPool({ blockchain, pools }: MapPoolParams): Promise<Pool[]> {
       blockchain,
       loanOptions: [
         LoanOption.factory({
-          interestBpsPerBlock: pool.interestBPS1000000XBlock,
-          loanDurationBlock: pool.duration / appConf.blocksPerSecond,
-          loanDurationSecond: pool.duration,
-          maxLtvBps: pool.collateralFactorBPS,
+          interestBPSPerBlock: pool.interestBPS1000000XBlock,
+          loanDurationBlocks: pool.duration / appConf.blocksPerSecond,
+          loanDurationSeconds: pool.duration,
+          maxLTVBPS: pool.collateralFactorBPS,
           fees: appConf.defaultFees.map(fee => Fee.factory(fee)),
         }),
       ],

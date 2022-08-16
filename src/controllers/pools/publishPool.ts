@@ -2,7 +2,7 @@ import _ from 'lodash'
 import appConf from '../../app.conf'
 import { NFTCollectionModel, PoolModel } from '../../db'
 import { mapPool } from '../../db/adapters'
-import { Blockchain, Fee, LoanOption, Pool } from '../../entities'
+import { Blockchain, Fee, Pool } from '../../entities'
 import { getOnChainPoolByAddress } from '../../subgraph'
 import fault from '../../utils/fault'
 import logger from '../../utils/logger'
@@ -31,13 +31,12 @@ async function savePool({ poolData, blockchain }: SavePoolParams) {
   }
 
   const loanOptions = [
-    LoanOption.factory({
-      interestBpsPerBlock: poolData.interestBPS1000000XBlock,
+    {
       loanDurationBlock: poolData.duration / appConf.blocksPerSecond,
       loanDurationSecond: poolData.duration,
+      interestBpsBlock: poolData.interestBPS1000000XBlock,
       maxLtvBps: poolData.collateralFactorBPS,
-      fees: appConf.defaultFees.map(fee => Fee.factory(fee)),
-    }),
+    },
   ]
 
   const res = await PoolModel.create({

@@ -9,21 +9,21 @@ function mapLoanOption(
   defaultFees: Fee[]
 ): LoanOption {
   try {
-    const interestBpsPerBlock = new BigNumber(_.get(data, 'interestBpsBlock'))
-    const interestBpsBlockOverride =
+    const interestBPSPerBlock = new BigNumber(_.get(data, 'interestBpsBlock'))
+    const interestBPSPerBlockOverride =
       _.get(data, 'interestBpsBlockOverride') === undefined
         ? undefined
         : new BigNumber(_.get(data, 'interestBpsBlockOverride'))
-    const loanDurationBlock = _.toNumber(_.get(data, 'loanDurationBlock'))
-    const loanDurationSecond = _.toNumber(_.get(data, 'loanDurationSecond'))
-    const maxLtvBps = new BigNumber(_.get(data, 'maxLtvBps'))
+    const loanDurationBlocks = _.toNumber(_.get(data, 'loanDurationBlock'))
+    const loanDurationSeconds = _.toNumber(_.get(data, 'loanDurationSecond'))
+    const maxLTVBPS = new BigNumber(_.get(data, 'maxLtvBps'))
 
     return LoanOption.factory({
-      interestBpsBlockOverride,
-      interestBpsPerBlock,
-      loanDurationBlock,
-      loanDurationSecond,
-      maxLtvBps,
+      interestBPSPerBlockOverride,
+      interestBPSPerBlock,
+      loanDurationBlocks,
+      loanDurationSeconds,
+      maxLTVBPS,
       fees: defaultFees,
     })
   }
