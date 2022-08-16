@@ -22,47 +22,45 @@ type SavePoolParams = {
 }
 
 async function savePool({ poolData, blockchain }: SavePoolParams) {
-  try {
-    let collection = await NFTCollectionModel.findOne({
-      address: poolData.collection.toLowerCase(),
-    }).lean()
+  let collection = await NFTCollectionModel.findOne({
+    address: poolData.collection.toLowerCase(),
+  }).lean()
 
-    if (collection === undefined) {
-      collection = await saveCollection({ collectionAddress: poolData, blockchain })
-    }
-
-    const res = await PoolModel.create({
-      retired: false,
-      address: poolData.id,
-      networkType: blockchain.network,
-      networkId: blockchain.networkId,
-      loanOptions: [
-        LoanOption.factory({
-          interestBPSPerBlock: poolData.interestBPS1000000XBlock,
-          loanDurationBlocks: poolData.duration / appConf.blocksPerSecond,
-          loanDurationSeconds: poolData.duration,
-          maxLTVBPS: poolData.collateralFactorBPS,
-          fees: appConf.defaultFees.map(fee => Fee.factory(fee)),
-        }),
-      ],
-      poolVersion: 2,
-      lenderAddress: poolData.lenderAddress,
-      routerAddress: _.get(appConf.routerAddress, blockchain.networkId),
-      repayRouterAddress: _.get(appConf.repayRouterAddress, blockchain.networkId),
-      rolloverAddress: _.get(appConf.rolloverAddress, blockchain.networkId),
-      ethLimit: 0,
-      nftCollection: collection?._id,
-    })
-
-    return mapPool({
-      ...res.toObject(),
-      collection,
-    })
+  if (collection === undefined) {
+    collection = await saveCollection({ collectionAddress: poolData, blockchain })
   }
-  catch (err) {
-    console.log(err)
-    return {} as Pool
-  }
+
+  const loanOptions = [
+    LoanOption.factory({
+      interestBpsPerBlock: poolData.interestBPS1000000XBlock,
+      loanDurationBlock: poolData.duration / appConf.blocksPerSecond,
+      loanDurationSecond: poolData.duration,
+      maxLtvBps: poolData.collateralFactorBPS,
+      fees: appConf.defaultFees.map(fee => Fee.factory(fee)),
+    }),
+  ]
+
+  const res = await PoolModel.create({
+    retired: false,
+    address: poolData.id,
+    networkType: blockchain.network,
+    networkId: blockchain.networkId,
+    loanOptions,
+    poolVersion: 2,
+    lenderAddress: poolData.lenderAddress,
+    routerAddress: _.get(appConf.routerAddress, blockchain.networkId),
+    repayRouterAddress: _.get(appConf.repayRouterAddress, blockchain.networkId),
+    rolloverAddress: _.get(appConf.rolloverAddress, blockchain.networkId),
+    ethLimit: 0,
+    nftCollection: collection?._id,
+    defaultFees: appConf.defaultFees.map(fee => Fee.factory(fee)),
+  })
+
+  return mapPool({
+    ...res.toObject(),
+    loanOptions,
+    collection,
+  })
 }
 
 export default async function publishPool({
