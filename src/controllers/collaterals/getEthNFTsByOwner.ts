@@ -32,12 +32,12 @@ export default async function getEthNFTsByOwner({ blockchain, ownerAddress, popu
   logger.info(`Fetching Ethereum NFTs by owner <${ownerAddress}> on network <${blockchain.networkId}>... OK: ${nfts.length} result(s)`)
 
   if (populateMetadata === true) {
-    const uniqCollectionAddresses = _.uniq(nfts.map(nft => nft.collection.address.toLowerCase()))
+    const uniqCollectionAddresses = _.uniq(nfts.map(nft => nft.collection.address))
     const metadataArray = await Promise.all(uniqCollectionAddresses.map(async address => ({ [address]: await getEthCollectionMetadata({ blockchain, collectionAddress: address }) })))
     const collectionMetadataDict = metadataArray.reduce((prev, curr) => ({ ...prev, ...curr }), {})
 
     nfts = nfts.map(nft => {
-      const collectionMetadata = collectionMetadataDict[nft.collection.address.toLowerCase()]
+      const collectionMetadata = collectionMetadataDict[nft.collection.address]
 
       return {
         ...nft,

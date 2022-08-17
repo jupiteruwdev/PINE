@@ -99,11 +99,11 @@ export default async function searchLoans({
       const dataSource = DataSource.compose(useGraph({ blockchainFilter, collectionAddresses: allCollectionAddresses, lenderAddresses, sortBy, paginateBy }))
       let loans = await dataSource.apply(undefined)
 
-      const uniqCollectionAddresses = _.uniq(loans.map(loan => loan.nft.collection.address.toLowerCase()))
+      const uniqCollectionAddresses = _.uniq(loans.map(loan => loan.nft.collection.address))
 
       const [allCollectionMetadata, allNFTMetadata] = await Promise.all([
         Promise.all(uniqCollectionAddresses.map(async address => ({
-          [address]: await getEthCollectionMetadata({ blockchain: Blockchain.Ethereum(blockchainFilter), collectionAddress: address.toLowerCase() }),
+          [address]: await getEthCollectionMetadata({ blockchain: Blockchain.Ethereum(blockchainFilter), collectionAddress: address }),
         }))),
         Promise.all(loans.map(loan => getEthNFTMetadata({
           blockchain: Blockchain.Ethereum(blockchainFilter),
@@ -115,7 +115,7 @@ export default async function searchLoans({
       const collectionMetadataDict = allCollectionMetadata.reduce((prev, curr) => ({ ...prev, ...curr }), {})
 
       loans = loans.map((loan, idx) => {
-        const collectionMetadata = collectionMetadataDict[loan.nft.collection.address.toLowerCase()]
+        const collectionMetadata = collectionMetadataDict[loan.nft.collection.address]
         const nftMetadata = allNFTMetadata[idx]
 
         return {

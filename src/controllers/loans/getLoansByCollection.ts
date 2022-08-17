@@ -28,7 +28,7 @@ export default async function getLoansByCollection({
     let sortedLoans: Loan[] = []
 
     if (populateMetadata === true) {
-      const uniqCollectionAddresses = _.uniq(loans.map(loan => loan.nft.collection.address.toLowerCase()))
+      const uniqCollectionAddresses = _.uniq(loans.map(loan => loan.nft.collection.address))
       const [allCollectionMetadata, allNFTMetadata] = await Promise.all([
         Promise.all(uniqCollectionAddresses.map(async address => ({
           [address]: await getEthCollectionMetadata({ blockchain, collectionAddress: address }),
@@ -43,7 +43,7 @@ export default async function getLoansByCollection({
       const collectionMetadataDict = allCollectionMetadata.reduce((prev, curr) => ({ ...prev, ...curr }), {})
 
       loans = loans.map((loan, idx) => {
-        const collectionMetadata = collectionMetadataDict[loan.nft.collection.address.toLowerCase()]
+        const collectionMetadata = collectionMetadataDict[loan.nft.collection.address]
         const nftMetadata = allNFTMetadata[idx]
 
         return {

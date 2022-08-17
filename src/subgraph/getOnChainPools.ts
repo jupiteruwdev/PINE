@@ -27,7 +27,12 @@ export default async function getOnChainPools({ lenderAddress, address, excludeA
     }
   `)
 
-  return request({ lenderAddress: lenderAddress?.toLowerCase(), address: address?.toLowerCase(), excludeAddresses, collectionAddress: collectionAddress?.toLowerCase() }, options)
+  return request({
+    lenderAddress: lenderAddress?.toLowerCase(),
+    address: address?.toLowerCase(),
+    excludeAddresses: excludeAddresses?.map(address => address.toLowerCase()),
+    collectionAddress: collectionAddress?.toLowerCase(),
+  }, options)
     .catch(err => {
       throw fault('ERR_GQL_BAD_REQUEST', undefined, err)
     })

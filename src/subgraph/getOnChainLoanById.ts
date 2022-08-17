@@ -27,7 +27,7 @@ export default async function getOnChainLoanById({ loanId }: Params, options: Op
     }
   `)
 
-  return request({ id: loanId }, options)
+  return request({ id: loanId.toLowerCase() }, options)
     .then(res => res.loan)
     .catch(err => {
       throw fault('ERR_GQL_BAD_REQUEST', undefined, err)

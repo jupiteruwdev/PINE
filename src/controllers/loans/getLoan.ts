@@ -31,7 +31,7 @@ export default async function getLoan({
   try {
     switch (blockchain.network) {
     case 'ethereum': {
-      const loanId = `${collectionAddress.toLowerCase()}/${nftId}`
+      const loanId = `${collectionAddress}/${nftId}`
       const onChainLoan = await getOnChainLoanById({ loanId }, { networkId: blockchain.networkId })
 
       const web3 = getEthWeb3(blockchain.networkId)
