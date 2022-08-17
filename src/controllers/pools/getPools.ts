@@ -1,3 +1,4 @@
+import BigNumber from 'bignumber.js'
 import _ from 'lodash'
 import appConf from '../../app.conf'
 import { Blockchain, Collection, Fee, LoanOption, Pool } from '../../entities'
@@ -34,7 +35,7 @@ async function mapPool({ blockchain, pools }: MapPoolParams): Promise<Pool[]> {
       blockchain,
       loanOptions: [
         LoanOption.factory({
-          interestBPSPerBlock: pool.interestBPS1000000XBlock,
+          interestBPSPerBlock: new BigNumber(pool.interestBPS1000000XBlock).dividedBy(new BigNumber(1_000_000)),
           loanDurationBlocks: pool.duration / appConf.blocksPerSecond,
           loanDurationSeconds: pool.duration,
           maxLTVBPS: pool.collateralFactorBPS,

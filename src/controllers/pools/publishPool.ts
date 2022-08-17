@@ -1,3 +1,4 @@
+import BigNumber from 'bignumber.js'
 import _ from 'lodash'
 import appConf from '../../app.conf'
 import { NFTCollectionModel, PoolModel } from '../../db'
@@ -34,7 +35,7 @@ async function savePool({ poolData, blockchain }: SavePoolParams) {
     {
       loanDurationBlock: poolData.duration / appConf.blocksPerSecond,
       loanDurationSecond: poolData.duration,
-      interestBpsBlock: poolData.interestBPS1000000XBlock,
+      interestBpsBlock: new BigNumber(poolData.interestBPS1000000XBlock).dividedBy(new BigNumber(1_000_000)),
       maxLtvBps: poolData.collateralFactorBPS,
     },
   ]
