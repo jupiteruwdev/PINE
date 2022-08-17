@@ -23,8 +23,11 @@ type SavePoolParams = {
 }
 
 async function savePool({ poolData, blockchain }: SavePoolParams) {
-  let collection = await NFTCollectionModel.findOne({
-    address: poolData.collection.toLowerCase(),
+  let [collection] = await NFTCollectionModel.find({
+    address: {
+      '$regex': poolData.collection,
+      '$options': 'i',
+    },
   }).lean()
 
   if (collection === undefined) {
