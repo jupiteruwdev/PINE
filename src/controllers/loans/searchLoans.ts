@@ -99,7 +99,7 @@ export default async function searchLoans({
       const dataSource = DataSource.compose(useGraph({ blockchainFilter, collectionAddresses: allCollectionAddresses, lenderAddresses, sortBy, paginateBy }))
       let loans = await dataSource.apply(undefined)
 
-      const uniqCollectionAddresses = _.uniq(loans.map(loan => loan.nft.collection.address))
+      const uniqCollectionAddresses = _.uniq(loans.map(loan => loan.nft.collection.address.toLowerCase()))
 
       const [allCollectionMetadata, allNFTMetadata] = await Promise.all([
         Promise.all(uniqCollectionAddresses.map(async address => ({
@@ -115,7 +115,7 @@ export default async function searchLoans({
       const collectionMetadataDict = allCollectionMetadata.reduce((prev, curr) => ({ ...prev, ...curr }), {})
 
       loans = loans.map((loan, idx) => {
-        const collectionMetadata = collectionMetadataDict[loan.nft.collection.address]
+        const collectionMetadata = collectionMetadataDict[loan.nft.collection.address.toLowerCase()]
         const nftMetadata = allNFTMetadata[idx]
 
         return {
