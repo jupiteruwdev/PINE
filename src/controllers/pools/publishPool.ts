@@ -31,7 +31,7 @@ async function savePool({ poolData, blockchain }: SavePoolParams) {
   }).lean()
 
   if (collection === undefined) {
-    collection = await saveCollection({ collectionAddress: poolData, blockchain })
+    collection = await saveCollection({ collectionAddress: poolData.collection, blockchain })
   }
 
   const loanOptions = [
