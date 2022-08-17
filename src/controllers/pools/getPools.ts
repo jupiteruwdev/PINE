@@ -1,5 +1,6 @@
 import _ from 'lodash'
-import { Blockchain, Collection, Pool } from '../../entities'
+import appConf from '../../app.conf'
+import { Blockchain, Collection, Fee, LoanOption, Pool } from '../../entities'
 import { getOnChainPools } from '../../subgraph'
 import fault from '../../utils/fault'
 import logger from '../../utils/logger'
@@ -21,6 +22,7 @@ type MapPoolParams = {
 async function mapPool({ blockchain, pools }: MapPoolParams): Promise<Pool[]> {
   const poolsData = await Promise.all(_.map(pools, (async pool => {
     const collectionMetadata = await getEthCollectionMetadata({ blockchain, poolAddress: pool.id, collectionAddress: pool.collection })
+
     return Pool.factory({
       version: 2,
       collection: Collection.factory({
@@ -30,11 +32,19 @@ async function mapPool({ blockchain, pools }: MapPoolParams): Promise<Pool[]> {
       }),
       address: pool.id,
       blockchain,
-      loanOptions: [],
+      loanOptions: [
+        LoanOption.factory({
+          interestBPSPerBlock: pool.interestBPS1000000XBlock,
+          loanDurationBlocks: pool.duration / appConf.blocksPerSecond,
+          loanDurationSeconds: pool.duration,
+          maxLTVBPS: pool.collateralFactorBPS,
+          fees: appConf.defaultFees.map(fee => Fee.factory(fee)),
+        }),
+      ],
       lenderAddress: pool.lenderAddress ?? '',
-      routerAddress: '',
-      repayRouterAddress: '',
-      rolloverAddress: '',
+      routerAddress: _.get(appConf.routerAddress, blockchain.networkId),
+      repayRouterAddress: _.get(appConf.repayRouterAddress, blockchain.networkId),
+      rolloverAddress: _.get(appConf.rolloverAddress, blockchain.networkId),
       ethLimit: 0,
       published: false,
     })
