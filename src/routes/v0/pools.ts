@@ -2,7 +2,7 @@ import { Router } from 'express'
 import _ from 'lodash'
 import appConf from '../../app.conf'
 import { countPools, getPool, getPools, publishPool, searchPoolGroups } from '../../controllers'
-import searchPools, { PoolSortDirection, PoolSortType } from '../../controllers/pools/searchPublishedPools'
+import { PoolSortDirection, PoolSortType } from '../../controllers/pools/searchPublishedPools'
 import { Pagination, Pool, PoolGroup, serializeEntityArray } from '../../entities'
 import fault from '../../utils/fault'
 import { getBlockchain, getBlockchainFilter, getNumber, getString } from '../utils/query'
@@ -51,15 +51,10 @@ router.get('/lender', async (req, res, next) => {
   try {
     const blockchainFilter = getBlockchainFilter(req.query, true)
     const lenderAddress = getString(req.query, 'lenderAddress')
-    const publishedPools = await searchPools({
-      blockchainFilter,
-      lenderAddress,
+    const pools = await getPools({
+      blockchainFilter, lenderAddress,
     })
-    const publishedPoolAddresses = publishedPools.map(pool => pool.address.toLowerCase())
-    const unpublishedPools = await getPools({
-      blockchainFilter, lenderAddress, excludeAddresses: publishedPoolAddresses,
-    })
-    const payload = serializeEntityArray([...publishedPools, ...unpublishedPools], Pool.codingResolver)
+    const payload = serializeEntityArray(pools, Pool.codingResolver)
 
     res.status(200).json(payload)
   }
