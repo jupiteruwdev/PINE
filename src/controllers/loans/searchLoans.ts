@@ -11,7 +11,10 @@ import DataSource from '../utils/DataSource'
 export enum LoanSortType {
   POOL_ADDRESS = 'poolAddress',
   COLLECTION_ADDRESS = 'collectionAddress',
-  COLLECTION_NAME = 'collectionName'
+  COLLECTION_NAME = 'collectionName',
+  BORROWED = 'borrowed',
+  RETURNED = 'returned',
+  EXPIRES_AT = 'expiresAt'
 }
 
 export enum LoanSortDirection {
