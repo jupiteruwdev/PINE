@@ -25,8 +25,8 @@ export default async function getEthCollectionMetadata({
 
     const dataSource = DataSource.compose(
       useDb({ blockchain, ...params }),
-      useAlchemy({ blockchain, ...params }),
       useOpenSea({ blockchain, ...params }),
+      useAlchemy({ blockchain, ...params }),
     )
 
     const metadata = await dataSource.apply(undefined)
