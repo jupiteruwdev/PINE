@@ -3,9 +3,9 @@ import { PipelineStage } from 'mongoose'
 import { PoolModel } from '../../db'
 import { mapPool } from '../../db/adapters'
 import { Blockchain, Pool, Value } from '../../entities'
+import { getOnChainPools } from '../../subgraph'
 import fault from '../../utils/fault'
 import getPoolCapacity from './getPoolCapacity'
-import { default as getOnChainPools } from './getPools'
 import getPoolUtilization from './getPoolUtilization'
 import verifyPool from './verifyPool'
 
@@ -33,7 +33,7 @@ async function getPool<IncludeStats extends boolean = false>({
     const pool = mapPool(res[0])
 
     try {
-      await verifyPool({ blockchain, address: pool.address, collectionAddress: pool.collection.address.toLowerCase() })
+      await verifyPool({ blockchain, address: pool.address, collectionAddress: pool.collection.address })
     }
     catch (err) {
       throw fault('ERR_ZOMBIE_POOL', undefined, err)
@@ -62,10 +62,7 @@ async function getPool<IncludeStats extends boolean = false>({
     address: params.address,
     lenderAddress: params.lenderAddress,
     collectionAddress: params.collectionAddress,
-    blockchainFilter: {
-      ethereum: blockchain.networkId,
-    },
-  })
+  }, { networkId: blockchain.networkId })
   const pool = unpublishedPools[0]
 
   if (pool === undefined) {

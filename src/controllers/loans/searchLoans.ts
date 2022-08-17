@@ -103,7 +103,7 @@ export default async function searchLoans({
 
       const [allCollectionMetadata, allNFTMetadata] = await Promise.all([
         Promise.all(uniqCollectionAddresses.map(async address => ({
-          [address]: await getEthCollectionMetadata({ blockchain: Blockchain.Ethereum(blockchainFilter), collectionAddress: address.toLowerCase() }),
+          [address]: await getEthCollectionMetadata({ blockchain: Blockchain.Ethereum(blockchainFilter), collectionAddress: address }),
         }))),
         Promise.all(loans.map(loan => getEthNFTMetadata({
           blockchain: Blockchain.Ethereum(blockchainFilter),
