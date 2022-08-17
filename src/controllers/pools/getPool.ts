@@ -1,10 +1,12 @@
 import BigNumber from 'bignumber.js'
 import { PipelineStage } from 'mongoose'
+import appConf from '../../app.conf'
 import { PoolModel } from '../../db'
 import { mapPool } from '../../db/adapters'
-import { Blockchain, Pool, Value } from '../../entities'
+import { Blockchain, Collection, Fee, LoanOption, Pool, Value } from '../../entities'
 import { getOnChainPools } from '../../subgraph'
 import fault from '../../utils/fault'
+import getEthCollectionMetadata from '../collections/getEthCollectionMetadata'
 import getPoolCapacity from './getPoolCapacity'
 import getPoolUtilization from './getPoolUtilization'
 import verifyPool from './verifyPool'
@@ -63,13 +65,40 @@ async function getPool<IncludeStats extends boolean = false>({
     lenderAddress: params.lenderAddress,
     collectionAddress: params.collectionAddress,
   }, { networkId: blockchain.networkId })
-  const pool = unpublishedPools[0]
+
+  const pool = unpublishedPools.pools[0]
 
   if (pool === undefined) {
     throw fault('ERR_UNKNOWN_POOL')
   }
 
-  return pool
+  const collectionMetadata = await getEthCollectionMetadata({ blockchain, poolAddress: pool.id, collectionAddress: pool.collection })
+
+  return Pool.factory({
+    version: 2,
+    address: pool.id,
+    blockchain,
+    ...pool,
+    collection: Collection.factory({
+      address: pool.collection,
+      blockchain,
+      ...collectionMetadata,
+    }),
+    loanOptions: [
+      LoanOption.factory({
+        loanDurationSeconds: pool.duration,
+        interestBPSPerBlock: pool.interestBPS1000000XBlock / 1_000_000,
+        maxLTVBPS: pool.collateralFactorBPS,
+        fees: appConf.defaultFees.map(fee => Fee.factory(fee)),
+        loanDurationBlocks: pool.duration / 14,
+      }),
+    ],
+    routerAddress: '',
+    repayRouterAddress: '',
+    rolloverAddress: '',
+    ethLimit: 0,
+    published: false,
+  })
 }
 
 export default getPool
