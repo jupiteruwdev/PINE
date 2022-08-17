@@ -6,12 +6,12 @@ import { getOnChainPools } from '../../subgraph'
 import fault from '../../utils/fault'
 import logger from '../../utils/logger'
 import { getEthCollectionMetadata } from '../collections'
+import searchPublishedPools from './searchPublishedPools'
 
 type Params = {
   blockchainFilter?: Blockchain.Filter
   lenderAddress?: string
   address?: string
-  excludeAddresses?: string[]
   collectionAddress?: string
 }
 
@@ -61,23 +61,35 @@ export default async function getPools({
   },
   lenderAddress,
   address,
-  excludeAddresses,
   collectionAddress,
 }: Params): Promise<Pool[]> {
-  logger.info(`Fetching unpublished pools by lender address <${lenderAddress}>, exclude addresses <${excludeAddresses}>, collection address <${collectionAddress}> and address <${address}> on blockchain ${JSON.stringify(blockchainFilter)}`)
+  logger.info(`Fetching unpublished pools by lender address <${lenderAddress}>, collection address <${collectionAddress}> and address <${address}> on blockchain ${JSON.stringify(blockchainFilter)}`)
   let poolsData: Pool[] = []
 
   if (blockchainFilter.ethereum !== undefined) {
     const blockchain = Blockchain.Ethereum(blockchainFilter.ethereum)
+    const publishedPools = await searchPublishedPools({
+      blockchainFilter,
+      lenderAddress,
+      address,
+      collectionAddress,
+    })
+    const excludeAddresses = publishedPools.map(pool => pool.address.toLowerCase())
 
     switch (blockchain.networkId) {
     case Blockchain.Ethereum.Network.MAIN:
       const { pools: poolMainnet } = await getOnChainPools({ lenderAddress, address, excludeAddresses, collectionAddress }, { networkId: blockchain.networkId })
-      poolsData = await mapPool({ blockchain, pools: poolMainnet })
+      poolsData = [
+        ...publishedPools,
+        ...await mapPool({ blockchain, pools: poolMainnet }),
+      ]
       break
     case Blockchain.Ethereum.Network.RINKEBY:
       const { pools: poolsRinkeby } = await getOnChainPools({ lenderAddress, address, excludeAddresses, collectionAddress }, { networkId: blockchain.networkId })
-      poolsData = await mapPool({ blockchain, pools: poolsRinkeby })
+      poolsData = [
+        ...publishedPools,
+        ...await mapPool({ blockchain, pools: poolsRinkeby }),
+      ]
     }
   }
   else {
