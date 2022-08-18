@@ -39,7 +39,8 @@ export default async function getEthValueUSD(amountEth: number | string | BigNum
     return price
   }
   catch (err) {
-    logger.warn('get eth value usd ... WARN')
+    logger.error('Fetching ETH USD price... ERR')
+    if (logger.isErrorEnabled() && !logger.silent) console.error(err)
 
     throw err
   }
