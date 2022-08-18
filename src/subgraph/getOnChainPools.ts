@@ -10,9 +10,12 @@ type Params = {
 }
 
 export default async function getOnChainPools({ lenderAddress, address, excludeAddresses, collectionAddress }: Params, options: Options) {
+  const values = lenderAddress || address || excludeAddresses || collectionAddress ? `(${lenderAddress !== undefined ? '$lenderAddress: String' : ''}${address !== undefined ? ', $address: String' : ''}${excludeAddresses?.length ? ', $excludeAddresses: [String]' : ''}${collectionAddress?.length ? ', $collectionAddress: String' : ''})` : ''
+  const filters = lenderAddress || address || excludeAddresses || collectionAddress ? `(where: {${lenderAddress !== undefined ? 'lenderAddress: $lenderAddress' : ''}${address !== undefined ? ', id: $address' : ''}${excludeAddresses?.length ? ', id_not_in: $excludeAddresses' : ''}${collectionAddress?.length ? ', collection: $collectionAddress' : ''}})` : ''
+
   const request = getRequest(gql`
-    query pools(${lenderAddress !== undefined ? '$lenderAddress: String' : ''}${address !== undefined ? ', $address: String' : ''}${excludeAddresses?.length ? ', $excludeAddresses: [String]' : ''}${collectionAddress?.length ? ', $collectionAddress: String' : ''}) {
-      pools(where: {${lenderAddress !== undefined ? 'lenderAddress: $lenderAddress' : ''}${address !== undefined ? ', id: $address' : ''}${excludeAddresses?.length ? ', id_not_in: $excludeAddresses' : ''}${collectionAddress?.length ? ', collection: $collectionAddress' : ''}}) {
+    query pools${values} {
+      pools${filters} {
         id
         totalUtilization
         collection
