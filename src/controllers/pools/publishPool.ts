@@ -9,6 +9,7 @@ import fault from '../../utils/fault'
 import logger from '../../utils/logger'
 import saveCollection from '../collections/saveCollection'
 import authenticatePoolPublisher from './authenticatePoolPublisher'
+import isPoolPublished from './isPoolPublished'
 
 type Params = {
   blockchain: Blockchain
@@ -30,33 +31,9 @@ async function savePool({ poolData, blockchain }: SavePoolParams) {
     },
   }).lean()
 
-  const pools = await PoolModel.aggregate([
-    {
-      $lookup: {
-        from: 'nftCollections',
-        localField: 'nftCollection',
-        foreignField: '_id',
-        as: 'collection',
-      },
-    },
-    {
-      $unwind: '$collection',
-    },
-    {
-      $addFields: {
-        'collection._address': {
-          $toLower: '$collection.address',
-        },
-      },
-    },
-    {
-      $match: {
-        'collection._address': poolData.collection,
-      },
-    },
-  ]).exec()
+  const isExist = await isPoolPublished({ blockchain, collectionAddress: poolData.collection })
 
-  if (pools?.length) {
+  if (isExist) {
     throw fault('ERR_POOL_EXISTS')
   }
 
