@@ -30,6 +30,36 @@ async function savePool({ poolData, blockchain }: SavePoolParams) {
     },
   }).lean()
 
+  const pools = await PoolModel.aggregate([
+    {
+      $lookup: {
+        from: 'nftCollections',
+        localField: 'nftCollection',
+        foreignField: '_id',
+        as: 'collection',
+      },
+    },
+    {
+      $unwind: '$collection',
+    },
+    {
+      $addFields: {
+        'collection._address': {
+          $toLower: '$collection.address',
+        },
+      },
+    },
+    {
+      $match: {
+        'collection._address': poolData.collection,
+      },
+    },
+  ]).exec()
+
+  if (pools?.length) {
+    throw fault('POOL_EXISTS')
+  }
+
   if (collection === undefined) {
     collection = await saveCollection({ collectionAddress: poolData.collection, blockchain })
   }
