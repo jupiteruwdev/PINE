@@ -23,7 +23,7 @@ router.get('/search', async (req, res, next) => {
 router.get('/floors', async (req, res, next) => {
   try {
     const collectionAddresses = req.query.collectionAddresses
-    if (!collectionAddresses || collectionAddresses === '[]') return res.status(200).json([])
+    if (!collectionAddresses) return res.status(200).json([])
     if (!_.isArray(collectionAddresses)) throw fault('ERR_INVALID_COLLECTION_ADDRESSES')
     if (!((c: any): c is string[] => _.every(c, (e: any) => _.isString(e)))(collectionAddresses)) throw fault('ERR_INVALID_COLLECTION_ADDRESSES')
 
