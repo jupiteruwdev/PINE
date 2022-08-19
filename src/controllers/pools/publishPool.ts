@@ -57,7 +57,7 @@ async function savePool({ poolData, blockchain }: SavePoolParams) {
   ]).exec()
 
   if (pools?.length) {
-    throw fault('POOL_EXISTS')
+    throw fault('ERR_POOL_EXISTS')
   }
 
   if (collection === undefined) {
