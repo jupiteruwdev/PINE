@@ -55,7 +55,7 @@ describe('controllers/valuations/getEthNFTValuation', () => {
   })
 
   describe('Rinkeby', () => {
-    const blockchain = Blockchain.Ethereum(Blockchain.Ethereum.Network.MAIN)
+    const blockchain = Blockchain.Ethereum(Blockchain.Ethereum.Network.RINKEBY)
     let supportedTestNFTs: NFT[]
 
     before(async () => {
