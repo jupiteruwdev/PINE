@@ -10,7 +10,6 @@ type Params = {
   address?: string
 }
 
-async function isPoolPublished(params: Params): Promise<boolean>
 async function isPoolPublished({
   blockchain,
   ...params
