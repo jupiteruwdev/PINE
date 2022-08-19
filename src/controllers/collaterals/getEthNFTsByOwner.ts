@@ -23,8 +23,8 @@ export default async function getEthNFTsByOwner({ blockchain, ownerAddress, popu
   logger.info(`Fetching Ethereum NFTs by owner <${ownerAddress}> on network <${blockchain.networkId}>...`)
 
   const dataSource = DataSource.compose(
-    useMoralis({ blockchain, ownerAddress, populateMetadata }),
     useAlchemy({ blockchain, ownerAddress, populateMetadata }),
+    useMoralis({ blockchain, ownerAddress, populateMetadata }),
   )
 
   let nfts = await dataSource.apply(undefined)
