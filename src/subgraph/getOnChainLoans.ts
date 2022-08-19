@@ -26,26 +26,24 @@ export default async function getOnChainLoans({
   sortBy,
   paginateBy,
 }: Params, options: Options): Promise<any[]> {
-  const orderBy = sortBy !== undefined ? `orderBy: ${sortBy.type === LoanSortType.POOL_ADDRESS ? 'pool' : sortBy.type}, orderDirection: ${sortBy.direction}, ` : ''
+  const orderBy = sortBy !== undefined ? `orderBy: ${sortBy.type === LoanSortType.POOL_ADDRESS ? 'pool' : sortBy.type === LoanSortType.EXPIRES_AT ? 'loanExpiretimestamp' : sortBy.type === LoanSortType.BORROWED ? 'borrowedWei' : sortBy.type === LoanSortType.RETURNED ? 'returnedWei' : sortBy.type}, orderDirection: ${sortBy.direction}, ` : ''
   const pagination = paginateBy !== undefined ? `first: ${paginateBy.count}, skip: ${paginateBy.offset}, ` : ''
+  const values = lenderAddresses?.length || collectionAddresses?.length || poolAddresses?.length || borrowerAddress?.length ? `(${lenderAddresses?.length ? '$lenders: [String]' : ''}${collectionAddresses?.length ? ',$collections: [String]' : ''}${poolAddresses?.length ? ',$pools: [String]' : ''}${borrowerAddress !== undefined ? ',$borrower: String' : ''})` : ''
+
   const request = getRequest(gql`
-    query loans(
-      ${lenderAddresses?.length ? '$lenders: [String],' : ''}
-      ${collectionAddresses?.length ? '$collections: [String],' : ''}
-      ${poolAddresses?.length ? '$pools: [String]' : ''}
-      ${borrowerAddress !== undefined ? '$borrower: String' : ''}
-    ) {
+    query loans${values} {
       loans(
         ${orderBy}
         ${pagination}
         where: {
-          status: "open", 
-          ${lenderAddresses?.length ? 'lenderAddress_in: $lenders, ' : ''}
-          ${collectionAddresses?.length ? 'erc721_in: $collections, ' : ''}
-          ${poolAddresses?.length ? 'pool_in: $pools' : ''}
-          ${borrowerAddress !== undefined ? 'borrower: $borrower' : ''}
+          status: "open"
+          ${lenderAddresses?.length ? ',lenderAddress_in: $lenders' : ''}
+          ${collectionAddresses?.length ? ',erc721_in: $collections' : ''}
+          ${poolAddresses?.length ? ',pool_in: $pools' : ''}
+          ${borrowerAddress !== undefined ? ',borrower: $borrower' : ''}
         }
-      ) {
+      ) 
+    {
         id
         loanStartBlock
         loanExpiretimestamp

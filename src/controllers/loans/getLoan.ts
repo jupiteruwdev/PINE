@@ -31,14 +31,14 @@ export default async function getLoan({
   try {
     switch (blockchain.network) {
     case 'ethereum': {
-      const loanId = `${collectionAddress.toLowerCase()}/${nftId}`
+      const loanId = `${collectionAddress}/${nftId}`
       const onChainLoan = await getOnChainLoanById({ loanId }, { networkId: blockchain.networkId })
 
       const web3 = getEthWeb3(blockchain.networkId)
 
       const [blockNumber, pools, valuation] = await Promise.all([
         web3.eth.getBlockNumber(),
-        searchPublishedPools({ collectionAddress, blockchainFilter: { ethereum: blockchain.networkId }, includeRetired: true }),
+        searchPublishedPools({ address: onChainLoan.pool, blockchainFilter: { ethereum: blockchain.networkId }, includeRetired: true }),
         getEthNFTValuation({ blockchain: blockchain as Blockchain<'ethereum'>, collectionAddress, nftId }),
       ])
 

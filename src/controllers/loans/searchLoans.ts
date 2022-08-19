@@ -11,7 +11,10 @@ import DataSource from '../utils/DataSource'
 export enum LoanSortType {
   POOL_ADDRESS = 'poolAddress',
   COLLECTION_ADDRESS = 'collectionAddress',
-  COLLECTION_NAME = 'collectionName'
+  COLLECTION_NAME = 'collectionName',
+  BORROWED = 'borrowed',
+  RETURNED = 'returned',
+  EXPIRES_AT = 'expiresAt'
 }
 
 export enum LoanSortDirection {
@@ -103,7 +106,7 @@ export default async function searchLoans({
 
       const [allCollectionMetadata, allNFTMetadata] = await Promise.all([
         Promise.all(uniqCollectionAddresses.map(async address => ({
-          [address]: await getEthCollectionMetadata({ blockchain: Blockchain.Ethereum(blockchainFilter), collectionAddress: address.toLowerCase() }),
+          [address]: await getEthCollectionMetadata({ blockchain: Blockchain.Ethereum(blockchainFilter), collectionAddress: address }),
         }))),
         Promise.all(loans.map(loan => getEthNFTMetadata({
           blockchain: Blockchain.Ethereum(blockchainFilter),
