@@ -60,7 +60,7 @@ export function useOpenSea({ blockchain, collectionAddress, nftId }: Params): Da
     if (blockchain.networkId !== Blockchain.Ethereum.Network.MAIN) rethrow(`Unsupported Ethereum network <${blockchain.networkId}>`)
 
     const apiKey = appConf.openseaAPIKey ?? rethrow('Missing OpenSea API key')
-    const collectionMetadata = await getEthCollectionMetadata({ blockchain, collectionAddress, nftId })
+    const collectionMetadata = await getEthCollectionMetadata({ blockchain, collectionAddress, matchSubcollectionBy: { type: 'nftId', value: nftId } })
     const vendorId = collectionMetadata.vendorIds?.['opensea'] ?? rethrow('No vendor ID found')
 
     const res = await getRequest(`https://api.opensea.io/api/v1/collection/${vendorId}/stats`, {
@@ -89,7 +89,7 @@ export function useGemXYZ({ blockchain, collectionAddress, nftId }: Params): Dat
     if (blockchain.networkId !== Blockchain.Ethereum.Network.MAIN) rethrow(`Unsupported Ethereum network <${blockchain.networkId}>`)
 
     const apiKey = appConf.gemxyzAPIKey ?? rethrow('Missing GemXYZ API key')
-    const collectionMetadata = await getEthCollectionMetadata({ blockchain, collectionAddress, nftId })
+    const collectionMetadata = await getEthCollectionMetadata({ blockchain, collectionAddress, matchSubcollectionBy: { type: 'nftId', value: nftId } })
     const vendorId = collectionMetadata.vendorIds?.['gemxyz'] ?? rethrow('No vendor ID found')
 
     const reqData = {

@@ -24,7 +24,7 @@ async function mapPool({ blockchain, pools }: MapPoolParams): Promise<Pool[]> {
   const uniqPools = _.uniqWith(pools, (a, b) => (a.id === b.id && a.collection === b.toLowerCase))
 
   const poolsData = await Promise.all(_.map(uniqPools, (async pool => {
-    const collectionMetadata = await getEthCollectionMetadata({ blockchain, poolAddress: pool.id, collectionAddress: pool.collection })
+    const collectionMetadata = await getEthCollectionMetadata({ blockchain, matchSubcollectionBy: { type: 'poolAddress', value: pool.id }, collectionAddress: pool.collection })
 
     return Pool.factory({
       version: 2,

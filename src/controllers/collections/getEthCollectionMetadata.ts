@@ -12,8 +12,10 @@ import getRequest from '../utils/getRequest'
 type Params = {
   blockchain: Blockchain
   collectionAddress?: string
-  poolAddress?: string
-  nftId?: string
+  matchSubcollectionBy?: {
+    value: string
+    type: 'poolAddress' | 'nftId'
+  }
 }
 
 export default async function getEthCollectionMetadata({
@@ -44,7 +46,7 @@ export default async function getEthCollectionMetadata({
   }
 }
 
-export function useDb({ blockchain, collectionAddress, poolAddress, nftId }: Params): DataSource<CollectionMetadata> {
+export function useDb({ blockchain, collectionAddress, matchSubcollectionBy }: Params): DataSource<CollectionMetadata> {
   return async () => {
     logger.info('...using db to look up metadata for collection')
 
@@ -52,7 +54,7 @@ export function useDb({ blockchain, collectionAddress, poolAddress, nftId }: Par
 
     let docs
 
-    if (poolAddress !== undefined) {
+    if (matchSubcollectionBy?.type === 'poolAddress') {
       const stages: PipelineStage[] = [{
         $addFields: {
           '_address': { $toLower: '$address' },
@@ -61,7 +63,7 @@ export function useDb({ blockchain, collectionAddress, poolAddress, nftId }: Par
         $match: {
           'networkType': blockchain.network,
           'networkId': blockchain.networkId,
-          '_address': poolAddress.toLowerCase(),
+          '_address': matchSubcollectionBy.value.toLowerCase(),
         },
       }, {
         $lookup: {
@@ -90,7 +92,7 @@ export function useDb({ blockchain, collectionAddress, poolAddress, nftId }: Par
       docs = await PoolModel.aggregate(stages).exec()
     }
     else {
-      if (collectionAddress === undefined) rethrow('Parameter `collectionAddress` is required when `poolAddress` is not provided')
+      if (collectionAddress === undefined) rethrow('Parameter `collectionAddress` is required')
 
       const stages: PipelineStage[] = [{
         $addFields: {
@@ -111,7 +113,10 @@ export function useDb({ blockchain, collectionAddress, poolAddress, nftId }: Par
 
     let metadata
 
-    if (nftId !== undefined) {
+    switch (matchSubcollectionBy?.type) {
+    case 'nftId':
+      const nftId = matchSubcollectionBy.value
+
       if (docs.length === 1 && docs[0].matcher === undefined) {
         metadata = {
           name: _.get(docs[0], 'displayName'),
@@ -142,19 +147,29 @@ export function useDb({ blockchain, collectionAddress, poolAddress, nftId }: Par
           isSupported: true,
         }
       }
-    }
-    else if (docs.length === 1) {
-      const doc = docs[0]
+
+      break
+    case 'poolAddress':
+      if (docs.length > 1) rethrow('Unable to determine collection metadata due to more than 1 collection found')
 
       metadata = {
-        name: _.get(doc, 'displayName'),
-        imageUrl: _.get(doc, 'imageUrl'),
-        vendorIds: _.get(doc, 'vendorIds'),
+        name: _.get(docs[0], 'displayName'),
+        imageUrl: _.get(docs[0], 'imageUrl'),
+        vendorIds: _.get(docs[0], 'vendorIds'),
         isSupported: true,
       }
-    }
-    else {
-      rethrow('Unable to determine collection metadata due to more than 1 collection found')
+
+      break
+    default:
+      if (docs.length > 1) rethrow('Unable to determine collection metadata due to more than 1 collection found')
+      if (docs[0].matcher !== undefined) rethrow('Matcher expected for found collection')
+
+      metadata = {
+        name: _.get(docs[0], 'displayName'),
+        imageUrl: _.get(docs[0], 'imageUrl'),
+        vendorIds: _.get(docs[0], 'vendorIds'),
+        isSupported: true,
+      }
     }
 
     return metadata

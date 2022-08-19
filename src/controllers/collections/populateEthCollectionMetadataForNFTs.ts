@@ -2,6 +2,8 @@ import _ from 'lodash'
 import { getCollections, getEthCollectionMetadata } from '.'
 import { Blockchain, NFT } from '../../entities'
 import rethrow from '../../utils/rethrow'
+import DataSource from '../utils/DataSource'
+import { useDb } from './getEthCollectionMetadata'
 
 type Params = {
   blockchain: Blockchain
@@ -20,13 +22,17 @@ export default async function populateEthCollectionMetadataForNFTs({
   const genericMetadataArray = await Promise.all(uniqAddrs.map(async addr => ({ [addr]: await getEthCollectionMetadata({ blockchain, collectionAddress: addr }) })))
   const genericMetadataDict = genericMetadataArray.reduce((prev, curr) => ({ ...prev, ...curr }), {})
 
-  const mutableNFTs = await Promise.all(nfts.map(async nft => {
+  const mutableNFTs = await Promise.all(nfts.map(async (nft, idx) => {
     const addr = nft.collection.address.toLowerCase()
     const needsMatching = matchableAddrs.includes(addr)
 
     let metadata = {}
 
-    if (needsMatching) metadata = await getEthCollectionMetadata({ blockchain, collectionAddress: addr, nftId: nft.id})
+    if (needsMatching) {
+      const dataSource = DataSource.compose(useDb({ blockchain, collectionAddress: addr, matchSubcollectionBy: { type: 'nftId', value: nft.id } }))
+      metadata = await dataSource.apply(undefined).catch(err => ({}))
+    }
+
     if (_.isEmpty(metadata)) metadata = genericMetadataDict[addr]
 
     return {

@@ -26,7 +26,7 @@ export default async function getLoanTerms({ blockchain, collectionAddress, nftI
         collection: Collection.factory({
           address: collectionAddress,
           blockchain,
-          ...await getEthCollectionMetadata({ blockchain, collectionAddress, poolAddress: pool.address, nftId }),
+          ...await getEthCollectionMetadata({ blockchain, collectionAddress, matchSubcollectionBy: { type: 'poolAddress', value: pool.address } }),
         }),
         id: nftId,
         ...await getEthNFTMetadata({ blockchain, collectionAddress, nftId }),
