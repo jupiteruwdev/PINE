@@ -6,7 +6,7 @@ import DataSource from '../utils/DataSource'
 
 type Params = {
   blockchainFilter?: Blockchain.Filter
-  collectionAddresses?: string[],
+  collectionAddresses?: string[]
   collectionNames?: string[]
 }
 
@@ -43,9 +43,7 @@ export function useDb({
     const blockchains = networkTypes.map(networkType => Blockchain.factory({ network: networkType, networkId: blockchainFilter[networkType] }))
 
     const res = await Promise.all(blockchains.map(async blockchain => {
-      let filter
-
-      filter = {
+      const filter = {
         networkType: blockchain.network,
         networkId: blockchain.networkId,
         ...!collectionAddresses ? {} : {
