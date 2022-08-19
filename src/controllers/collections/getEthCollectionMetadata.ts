@@ -133,6 +133,8 @@ export function useDb({ blockchain, collectionAddress, poolAddress, nftId }: Par
           return false
         })
 
+        if (!doc) rethrow('Unable to determine collection metadata due to no matching collection found')
+
         metadata = {
           name: _.get(doc, 'displayName'),
           imageUrl: _.get(doc, 'imageUrl'),

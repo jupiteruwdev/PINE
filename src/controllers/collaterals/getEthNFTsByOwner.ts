@@ -5,7 +5,7 @@ import { Blockchain, Collection, NFT } from '../../entities'
 import fault from '../../utils/fault'
 import logger from '../../utils/logger'
 import rethrow from '../../utils/rethrow'
-import { getEthCollectionMetadata } from '../collections'
+import { populateEthCollectionMetadataForNFTs } from '../collections'
 import DataSource from '../utils/DataSource'
 import getRequest from '../utils/getRequest'
 import normalizeIPFSUri from '../utils/normalizeIPFSUri'
@@ -32,32 +32,13 @@ export default async function getEthNFTsByOwner({ blockchain, ownerAddress, popu
   logger.info(`Fetching Ethereum NFTs by owner <${ownerAddress}> on network <${blockchain.networkId}>... OK: ${nfts.length} result(s)`)
 
   if (populateMetadata === true) {
-    const uniqCollectionAddresses = _.uniq(nfts.map(nft => nft.collection.address.toLowerCase()))
-    const metadataArray = await Promise.all(uniqCollectionAddresses.map(async address => ({ [address]: await getEthCollectionMetadata({ blockchain, collectionAddress: address }) })))
-    const collectionMetadataDict = metadataArray.reduce((prev, curr) => ({ ...prev, ...curr }), {})
-
-    nfts = nfts.map(nft => {
-      const collectionMetadata = collectionMetadataDict[nft.collection.address.toLowerCase()]
-
-      return {
-        ...nft,
-        collection: {
-          ...nft.collection,
-          ...collectionMetadata ?? {},
-        },
-      }
-    })
-
-    return _.sortBy(nfts, [
-      nft => nft.collection.isSupported !== true,
-      nft => nft.collection.name?.toLowerCase(),
-    ])
+    nfts = await populateEthCollectionMetadataForNFTs({ blockchain, nfts })
   }
-  else {
-    return _.sortBy(nfts, [
-      nft => nft.collection.address.toLowerCase(),
-    ])
-  }
+
+  return _.sortBy(nfts, [
+    nft => nft.collection.isSupported !== true,
+    nft => nft.collection.name?.toLowerCase(),
+  ])
 }
 
 export function useAlchemy({ blockchain, ownerAddress, populateMetadata }: Params): DataSource<NFT[]> {
