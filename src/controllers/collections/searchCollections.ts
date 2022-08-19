@@ -28,7 +28,7 @@ export default async function searchCollections({ query, blockchain }: Params): 
         },
       })
     const collections = _.get(collectionData, 'data')
-    return collections.filter((cd: any) => cd.chainId === '1').map((cd: any) => Collection.factory({
+    return collections.filter((cd: any) => cd.chainId === '1' && _.get(cd, 'addresses[0].address') && cd.name && cd.slug).map((cd: any) => Collection.factory({
       address: _.get(cd, 'addresses[0].address'),
       blockchain,
       vendorIds: { opensea: cd.slug },
