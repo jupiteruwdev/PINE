@@ -11,8 +11,8 @@ const packageConf = JSON.parse(fs.readFileSync(path.join(__dirname, '../package.
 
 export default {
   env: process.env.NODE_ENV ?? 'development',
-  version: `v${_.get(packageConf, 'version', '0')}${process.env.NODE_ENV === 'production' ? '' : `-${(process.env.NODE_ENV || 'development').substring(0, 3)}`}`,
-  build: process.env.BUILD_NUMBER ?? '0',
+  version: `v${_.get(packageConf, 'version', 'local')}${process.env.NODE_ENV === 'production' ? '' : `-${(process.env.NODE_ENV || 'development').substring(0, 3)}`}`,
+  build: process.env.BUILD_NUMBER ?? 'local',
   port: process.env.PORT ?? 8080,
   logLevel: process.env.LOG_LEVEL ?? (process.env.NODE_ENV === 'development' ? 'debug' : undefined),
   openseaAPIKey: process.env.OPENSEA_API_KEY,
