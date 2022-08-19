@@ -9,6 +9,7 @@ import fault from '../../utils/fault'
 import logger from '../../utils/logger'
 import saveCollection from '../collections/saveCollection'
 import authenticatePoolPublisher from './authenticatePoolPublisher'
+import isPoolPublished from './isPoolPublished'
 
 type Params = {
   blockchain: Blockchain
@@ -29,6 +30,12 @@ async function savePool({ poolData, blockchain }: SavePoolParams) {
       '$options': 'i',
     },
   }).lean()
+
+  const isExist = await isPoolPublished({ blockchain, collectionAddress: poolData.collection })
+
+  if (isExist) {
+    throw fault('ERR_POOL_EXISTS')
+  }
 
   if (collection === undefined) {
     collection = await saveCollection({ collectionAddress: poolData.collection, blockchain })
