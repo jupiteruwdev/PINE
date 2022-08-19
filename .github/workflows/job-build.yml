@@ -49,7 +49,7 @@ jobs:
           token: ${{ secrets.GH_ACCESS_TOKEN }}
       - name: Set env
         id: env
-        run: echo "::set-output name=build_number::$(git rev-parse --short HEAD).$(git rev-list --count HEAD)"
+        run: echo "::set-output name=build_number::$(echo "$(git rev-parse --short HEAD).$(git rev-list --count HEAD)")
       - name: Authenticate Google Cloud
         id: gcloud
         uses: google-github-actions/auth@v0
