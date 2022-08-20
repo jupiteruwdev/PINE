@@ -60,6 +60,7 @@ export function useDb({ blockchain, collectionAddress, matchSubcollectionBy }: P
         $match: {
           'networkType': blockchain.network,
           'networkId': blockchain.networkId,
+          'retired': { $ne: true },
           'address': {
             $regex: matchSubcollectionBy.value,
             $options: 'i',
@@ -102,7 +103,23 @@ export function useDb({ blockchain, collectionAddress, matchSubcollectionBy }: P
             $options: 'i',
           },
         },
-      }]
+      },
+      {
+        $lookup: {
+          from: 'pools',
+          localField: 'lendingPools',
+          foreignField: '_id',
+          as: 'lendingPools',
+        },
+      }, {
+        $unwind: '$lendingPools',
+      },
+      {
+        $match: {
+          'lendingPools.0.retired': { $ne: true },
+        },
+      },
+      ]
 
       docs = await NFTCollectionModel.aggregate(stages).exec()
     }
