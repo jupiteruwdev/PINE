@@ -28,7 +28,8 @@ namespace DataSource {
 
         try {
           const res = await dataSource.apply(undefined)
-          if (!isResultValid(res)) return res
+          if (!isResultInvalid(res)) return res
+          rethrow('Result fetched from data source is invalid, proceeding to next data source if any')
         }
         catch (err) {
           const tmp = SuperError.deserialize(err)
@@ -66,7 +67,7 @@ namespace DataSource {
 
 export default DataSource
 
-function isResultValid(result: any): boolean {
+function isResultInvalid(result: any): boolean {
   if (_.isEmpty(result)) return !_.isArray(result)
 
   if (_.isPlainObject(result)) {
@@ -74,7 +75,7 @@ function isResultValid(result: any): boolean {
 
     for (const key in result) {
       if (!result.hasOwnProperty(key)) continue
-      hasValue = hasValue || !isResultValid(result[key])
+      hasValue = hasValue || !isResultInvalid(result[key])
     }
 
     return !hasValue
@@ -84,7 +85,7 @@ function isResultValid(result: any): boolean {
     let hasValue = false
 
     for (let i = 0; i < l; i++) {
-      hasValue = hasValue || !isResultValid(result[i])
+      hasValue = hasValue || !isResultInvalid(result[i])
     }
 
     return !hasValue

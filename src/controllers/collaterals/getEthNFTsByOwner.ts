@@ -24,7 +24,7 @@ export default async function getEthNFTsByOwner({ blockchain, ownerAddress, popu
 
   const dataSource = DataSource.compose(
     useAlchemy({ blockchain, ownerAddress, populateMetadata }),
-    useMoralis({ blockchain, ownerAddress, populateMetadata }),
+    // useMoralis({ blockchain, ownerAddress, populateMetadata }),
   )
 
   let nfts = await dataSource.apply(undefined)
@@ -60,7 +60,7 @@ export function useAlchemy({ blockchain, ownerAddress, populateMetadata }: Param
           withMetadata: populateMetadata,
           pageKey: currPageKey,
         },
-      })
+      }).catch(err => rethrow(`Failed to fetch NFTs for owner <${ownerAddress}> using Alchemy: ${err}`))
 
       if (!_.isArray(partialRes)) rethrow('Bad request or unrecognized payload when fetching NFTs from Alchemy API')
       res.push(...partialRes)
@@ -98,7 +98,7 @@ export function useAlchemy({ blockchain, ownerAddress, populateMetadata }: Param
             metadata = await dataSource.apply(undefined)
 
             logger.info(`...fetching metadata for NFT <${collectionAddress}/${tokenId}>... OK`)
-            logger.debug(metadata)
+            logger.debug(JSON.stringify(metadata, undefined, 2))
           }
           catch (err) {
             logger.warn(`...fetching metadata for NFT <${collectionAddress}/${tokenId}>... WARN`)
@@ -112,7 +112,7 @@ export function useAlchemy({ blockchain, ownerAddress, populateMetadata }: Param
           }
 
           logger.info(`...fetching metadata for NFT <${collectionAddress}/${tokenId}>... OK`)
-          logger.debug(metadata)
+          logger.debug(JSON.stringify(metadata, undefined, 2))
         }
       }
 
@@ -153,7 +153,7 @@ export function useMoralis({ blockchain, ownerAddress, populateMetadata }: Param
           format: 'decimal',
           cursor: currCursor,
         },
-      })
+      }).catch(err => rethrow(`Failed to fetch NFTs for owner <${ownerAddress}> using Moralis: ${err}`))
 
       if (!_.isArray(partialRes)) rethrow('Bad request or unrecognized payload when fetching NFTs from Moralis API')
       res.push(...partialRes)
@@ -207,7 +207,7 @@ export function useMoralis({ blockchain, ownerAddress, populateMetadata }: Param
           }
 
           logger.info(`...fetching metadata for NFT <${collectionAddress}/${tokenId}>... OK`)
-          logger.debug(metadata)
+          logger.debug(JSON.stringify(metadata, undefined, 2))
         }
       }
 

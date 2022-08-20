@@ -5,10 +5,14 @@ import http from 'http'
 import ip from 'ip'
 import _ from 'lodash'
 import morgan from 'morgan'
+import util from 'util'
 import appConf from './app.conf'
 import { initDb } from './db'
 import routes from './routes'
 import logger from './utils/logger'
+
+// Remove depth from console logs
+util.inspect.defaultOptions.depth = undefined
 
 initDb()
 
