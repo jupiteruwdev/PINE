@@ -112,68 +112,68 @@ export function useDb({ blockchain, collectionAddress, matchSubcollectionBy }: P
     let metadata
 
     switch (matchSubcollectionBy?.type) {
-      case 'nftId': {
-        const nftId = matchSubcollectionBy.value
-        const dict = docs.reduce((prev, curr) => {
-          const hasMatcher = _.isString(_.get(curr, 'matcher.regex')) && _.isString(_.get(curr, 'matcher.fieldPath'))
+    case 'nftId': {
+      const nftId = matchSubcollectionBy.value
+      const dict = docs.reduce((prev, curr) => {
+        const hasMatcher = _.isString(_.get(curr, 'matcher.regex')) && _.isString(_.get(curr, 'matcher.fieldPath'))
 
-          if (hasMatcher) {
-            return { ...prev, withMatcher: [...prev.withMatcher, curr] }
-          }
-          else {
-            return { ...prev, withoutMatcher: [...prev.withoutMatcher, curr] }
-          }
-        }, { withMatcher: [], withoutMatcher: [] })
-
-        if (dict.withMatcher.length === 0) {
-          // Fallthrough
+        if (hasMatcher) {
+          return { ...prev, withMatcher: [...prev.withMatcher, curr] }
         }
         else {
-          const nftMetadata = await getEthNFTMetadata({ blockchain, collectionAddress: docs[0].address, nftId })
-          const nft = { id: nftId, ...nftMetadata }
-
-          const doc = _.find(dict.withMatcher, t => {
-            const regex = new RegExp(t.matcher.regex)
-            if (regex.test(_.get(nft, t.matcher.fieldPath))) return true
-            return false
-          })
-
-          if (doc) {
-            metadata = {
-              name: _.get(doc, 'displayName'),
-              imageUrl: _.get(doc, 'imageUrl'),
-              vendorIds: _.get(doc, 'vendorIds'),
-            }
-          }
-          else {
-            if (dict.withoutMatcher.length > 1) rethrow('Unable to determine collection metadata due to more than 1 collection found')
-
-            const doc = dict.withoutMatcher[0]
-
-            metadata = {
-              name: _.get(doc, 'displayName'),
-              imageUrl: _.get(doc, 'imageUrl'),
-              vendorIds: _.get(doc, 'vendorIds'),
-            }
-          }
-
-          break
+          return { ...prev, withoutMatcher: [...prev.withoutMatcher, curr] }
         }
+      }, { withMatcher: [], withoutMatcher: [] })
+
+      if (dict.withMatcher.length === 0) {
+        // Fallthrough
       }
-      case 'poolAddress': // Fallthrough
-      default: {
-        if (docs.length > 1) rethrow('Unable to determine collection metadata due to more than 1 collection found')
+      else {
+        const nftMetadata = await getEthNFTMetadata({ blockchain, collectionAddress: docs[0].address, nftId })
+        const nft = { id: nftId, ...nftMetadata }
 
-        const doc = docs[0]
+        const doc = _.find(dict.withMatcher, t => {
+          const regex = new RegExp(t.matcher.regex)
+          if (regex.test(_.get(nft, t.matcher.fieldPath))) return true
+          return false
+        })
 
-        if (doc.matcher !== undefined) rethrow('Matcher expected for found collection')
-
-        metadata = {
-          name: _.get(doc, 'displayName'),
-          imageUrl: _.get(doc, 'imageUrl'),
-          vendorIds: _.get(doc, 'vendorIds'),
+        if (doc) {
+          metadata = {
+            name: _.get(doc, 'displayName'),
+            imageUrl: _.get(doc, 'imageUrl'),
+            vendorIds: _.get(doc, 'vendorIds'),
+          }
         }
+        else {
+          if (dict.withoutMatcher.length > 1) rethrow('Unable to determine collection metadata due to more than 1 collection found')
+
+          const doc = dict.withoutMatcher[0]
+
+          metadata = {
+            name: _.get(doc, 'displayName'),
+            imageUrl: _.get(doc, 'imageUrl'),
+            vendorIds: _.get(doc, 'vendorIds'),
+          }
+        }
+
+        break
       }
+    }
+    case 'poolAddress': // Fallthrough
+    default: {
+      if (docs.length > 1) rethrow('Unable to determine collection metadata due to more than 1 collection found')
+
+      const doc = docs[0]
+
+      if (doc.matcher !== undefined) rethrow('Matcher expected for found collection')
+
+      metadata = {
+        name: _.get(doc, 'displayName'),
+        imageUrl: _.get(doc, 'imageUrl'),
+        vendorIds: _.get(doc, 'vendorIds'),
+      }
+    }
     }
 
     return {
