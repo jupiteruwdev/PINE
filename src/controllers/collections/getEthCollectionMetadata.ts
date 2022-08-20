@@ -12,8 +12,10 @@ import getRequest from '../utils/getRequest'
 type Params = {
   blockchain: Blockchain
   collectionAddress?: string
-  poolAddress?: string
-  nftId?: string
+  matchSubcollectionBy?: {
+    value: string
+    type: 'poolAddress' | 'nftId'
+  }
 }
 
 export default async function getEthCollectionMetadata({
@@ -27,6 +29,7 @@ export default async function getEthCollectionMetadata({
       useDb({ blockchain, ...params }),
       useOpenSea({ blockchain, ...params }),
       useAlchemy({ blockchain, ...params }),
+      useMoralis({ blockchain, ...params }),
     )
 
     const metadata = await dataSource.apply(undefined)
@@ -44,7 +47,7 @@ export default async function getEthCollectionMetadata({
   }
 }
 
-export function useDb({ blockchain, collectionAddress, poolAddress, nftId }: Params): DataSource<CollectionMetadata> {
+export function useDb({ blockchain, collectionAddress, matchSubcollectionBy }: Params): DataSource<CollectionMetadata> {
   return async () => {
     logger.info('...using db to look up metadata for collection')
 
@@ -52,16 +55,15 @@ export function useDb({ blockchain, collectionAddress, poolAddress, nftId }: Par
 
     let docs
 
-    if (poolAddress !== undefined) {
+    if (matchSubcollectionBy?.type === 'poolAddress') {
       const stages: PipelineStage[] = [{
-        $addFields: {
-          '_address': { $toLower: '$address' },
-        },
-      }, {
         $match: {
           'networkType': blockchain.network,
           'networkId': blockchain.networkId,
-          '_address': poolAddress.toLowerCase(),
+          'address': {
+            $regex: matchSubcollectionBy.value,
+            $options: 'i',
+          },
         },
       }, {
         $lookup: {
@@ -74,12 +76,11 @@ export function useDb({ blockchain, collectionAddress, poolAddress, nftId }: Par
         $unwind: '$collection',
       },
       ...collectionAddress === undefined ? [] : [{
-        $addFields: {
-          'collection._address': { $toLower: '$collection.address' },
-        },
-      }, {
         $match: {
-          'collection._address': collectionAddress.toLowerCase(),
+          'collection.address': {
+            $regex: collectionAddress,
+            $options: 'i',
+          },
         },
       }], {
         $replaceRoot: {
@@ -90,17 +91,16 @@ export function useDb({ blockchain, collectionAddress, poolAddress, nftId }: Par
       docs = await PoolModel.aggregate(stages).exec()
     }
     else {
-      if (collectionAddress === undefined) rethrow('Parameter `collectionAddress` is required when `poolAddress` is not provided')
+      if (collectionAddress === undefined) rethrow('Parameter `collectionAddress` is required unless pool address is provided')
 
       const stages: PipelineStage[] = [{
-        $addFields: {
-          '_address': { $toLower: '$address' },
-        },
-      }, {
         $match: {
           'networkType': blockchain.network,
           'networkId': blockchain.networkId,
-          '_address': collectionAddress.toLowerCase(),
+          'address': {
+            $regex: collectionAddress,
+            $options: 'i',
+          },
         },
       }]
 
@@ -111,51 +111,75 @@ export function useDb({ blockchain, collectionAddress, poolAddress, nftId }: Par
 
     let metadata
 
-    if (nftId !== undefined) {
-      if (docs.length === 1 && docs[0].matcher === undefined) {
-        metadata = {
-          name: _.get(docs[0], 'displayName'),
-          imageUrl: _.get(docs[0], 'imageUrl'),
-          vendorIds: _.get(docs[0], 'vendorIds'),
-          isSupported: true,
+    switch (matchSubcollectionBy?.type) {
+    case 'nftId': {
+      const nftId = matchSubcollectionBy.value
+      const dict = docs.reduce((prev, curr) => {
+        const hasMatcher = _.isString(_.get(curr, 'matcher.regex')) && _.isString(_.get(curr, 'matcher.fieldPath'))
+
+        if (hasMatcher) {
+          return { ...prev, withMatcher: [...prev.withMatcher, curr] }
         }
+        else {
+          return { ...prev, withoutMatcher: [...prev.withoutMatcher, curr] }
+        }
+      }, { withMatcher: [], withoutMatcher: [] })
+
+      if (dict.withMatcher.length === 0) {
+        // Fallthrough
       }
       else {
         const nftMetadata = await getEthNFTMetadata({ blockchain, collectionAddress: docs[0].address, nftId })
         const nft = { id: nftId, ...nftMetadata }
 
-        const doc = _.find(docs, t => {
-          if (!_.isString(t.matcher.regex) || !_.isString(t.matcher.fieldPath)) return false
-
+        const doc = _.find(dict.withMatcher, t => {
           const regex = new RegExp(t.matcher.regex)
           if (regex.test(_.get(nft, t.matcher.fieldPath))) return true
-
           return false
         })
 
-        metadata = {
-          name: _.get(doc, 'displayName'),
-          imageUrl: _.get(doc, 'imageUrl'),
-          vendorIds: _.get(doc, 'vendorIds'),
-          isSupported: true,
+        if (doc) {
+          metadata = {
+            name: _.get(doc, 'displayName'),
+            imageUrl: _.get(doc, 'imageUrl'),
+            vendorIds: _.get(doc, 'vendorIds'),
+          }
         }
+        else {
+          if (dict.withoutMatcher.length > 1) rethrow('Unable to determine collection metadata due to more than 1 collection found')
+
+          const doc = dict.withoutMatcher[0]
+
+          metadata = {
+            name: _.get(doc, 'displayName'),
+            imageUrl: _.get(doc, 'imageUrl'),
+            vendorIds: _.get(doc, 'vendorIds'),
+          }
+        }
+
+        break
       }
     }
-    else if (docs.length === 1) {
+    case 'poolAddress': // Fallthrough
+    default: {
+      if (docs.length > 1) rethrow('Unable to determine collection metadata due to more than 1 collection found')
+
       const doc = docs[0]
+
+      if (doc.matcher !== undefined) rethrow('Matcher expected for found collection')
 
       metadata = {
         name: _.get(doc, 'displayName'),
         imageUrl: _.get(doc, 'imageUrl'),
         vendorIds: _.get(doc, 'vendorIds'),
-        isSupported: true,
       }
     }
-    else {
-      rethrow('Unable to determine collection metadata due to more than 1 collection found')
     }
 
-    return metadata
+    return {
+      ...metadata,
+      isSupported: true,
+    }
   }
 }
 
@@ -171,10 +195,10 @@ export function useOpenSea({ blockchain, collectionAddress }: Params): DataSourc
 
     switch (blockchain.networkId) {
     case Blockchain.Ethereum.Network.MAIN:
-      res = await getRequest(`https://api.opensea.io/api/v1/asset_contract/${collectionAddress}`, { headers: { 'X-API-KEY': apiKey } })
+      res = await getRequest(`https://api.opensea.io/api/v1/asset_contract/${collectionAddress}`, { headers: { 'X-API-KEY': apiKey } }).catch(err => rethrow(`Failed to fetch metadata from OpenSea for collection <${collectionAddress}>: ${err}`))
       break
     case Blockchain.Ethereum.Network.RINKEBY:
-      res = await getRequest(`https://testnets-api.opensea.io/api/v1/asset_contract/${collectionAddress}`, { headers: { 'X-API-KEY': apiKey } })
+      res = await getRequest(`https://testnets-api.opensea.io/api/v1/asset_contract/${collectionAddress}`, { headers: { 'X-API-KEY': apiKey } }).catch(err => rethrow(`Failed to metadata from OpenSea for collection <${collectionAddress}>: ${err}`))
       break
     }
 
@@ -210,10 +234,38 @@ export function useAlchemy({ blockchain, collectionAddress }: Params): DataSourc
       params: {
         contractAddress: collectionAddress,
       },
-    })
+    }).catch(err => rethrow(`Failed to fetch metadata from Alchemy for collection <${collectionAddress}>: ${err}`))
 
     const name = _.get(res, 'contractMetadata.name')
     const imageUrl = undefined // Alchemy API does not provide collection image
+
+    return {
+      name,
+      imageUrl,
+    }
+  }
+}
+
+export function useMoralis({ blockchain, collectionAddress }: Params): DataSource<CollectionMetadata> {
+  return async () => {
+    logger.info(`...using Moralis to look up metadata for collection <${collectionAddress}>`)
+
+    if (collectionAddress === undefined) rethrow('Collection address must be provided')
+    if (blockchain?.network !== 'ethereum') rethrow(`Unsupported blockchain <${JSON.stringify(blockchain)}>`)
+
+    const apiKey = appConf.moralisAPIKey ?? rethrow('Missing Moralis API key')
+
+    const res = await getRequest(`https://deep-index.moralis.io/api/v2/nft/${collectionAddress}/metadata`, {
+      headers: {
+        'X-API-Key': apiKey,
+      },
+      params: {
+        chain: 'eth',
+      },
+    }).catch(err => rethrow(`Failed to fetch metadata from Moralis for collection <${collectionAddress}>: ${err}`))
+
+    const name = _.get(res, 'name')
+    const imageUrl = undefined // Moralis API does not provide collection image
 
     return {
       name,

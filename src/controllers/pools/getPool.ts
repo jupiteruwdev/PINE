@@ -73,7 +73,7 @@ async function getPool<IncludeStats extends boolean = false>({
     throw fault('ERR_UNKNOWN_POOL')
   }
 
-  const collectionMetadata = await getEthCollectionMetadata({ blockchain, poolAddress: pool.id, collectionAddress: pool.collection })
+  const collectionMetadata = await getEthCollectionMetadata({ blockchain, matchSubcollectionBy: { type: 'poolAddress', value: pool.id }, collectionAddress: pool.collection })
 
   return Pool.factory({
     version: 2,
