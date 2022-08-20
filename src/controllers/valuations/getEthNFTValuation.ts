@@ -136,12 +136,12 @@ export function useGemXYZ({ blockchain, collectionAddress, nftId }: Params): Dat
       ],
     }
 
-    const res = postRequest('https://gem-public-api.herokuapp.com/assets', reqData, {
+    const res = await postRequest('https://gem-public-api.herokuapp.com/assets', reqData, {
       headers: {
         'Content-Type': 'application/json',
         'X-API-KEY': apiKey,
       },
-    })
+    }).catch(err => rethrow(`Failed to fetch valuation from GemXYZ: ${err}`))
 
     const floorPrice = new BigNumber(_.get(res, 'data.0.currentBasePrice')).div(new BigNumber(10).pow(new BigNumber(18)))
 
