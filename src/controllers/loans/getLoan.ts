@@ -59,7 +59,7 @@ export default async function getLoan({
           collection: Collection.factory({
             address: collectionAddress,
             blockchain,
-            ...await getEthCollectionMetadata({ blockchain, collectionAddress, poolAddress: pool.address, nftId }),
+            ...await getEthCollectionMetadata({ blockchain, collectionAddress, matchSubcollectionBy: { type: 'poolAddress', value: pool.address } }),
           }),
           id: nftId,
           ownerAddress: pool.address,

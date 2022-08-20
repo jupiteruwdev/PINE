@@ -26,14 +26,14 @@ export default async function getLoanTerms({ blockchain, collectionAddress, nftI
         collection: Collection.factory({
           address: collectionAddress,
           blockchain,
-          ...await getEthCollectionMetadata({ blockchain, collectionAddress, poolAddress: pool.address, nftId }),
+          ...await getEthCollectionMetadata({ blockchain, collectionAddress, matchSubcollectionBy: { type: 'poolAddress', value: pool.address } }),
         }),
         id: nftId,
         ...await getEthNFTMetadata({ blockchain, collectionAddress, nftId }),
       }
 
       const valuation = await getEthNFTValuation({ blockchain: blockchain as Blockchain<'ethereum'>, collectionAddress, nftId })
-      const { signature, issuedAtBlock, expiresAtBlock } = await signValuation({ blockchain, nftId, collectionAddress, poolAddress: pool.address, valuation })
+      const { signature, issuedAtBlock, expiresAtBlock } = await signValuation({ blockchain, nftId, collectionAddress, valuation })
 
       const loanTerms: LoanTerms = {
         routerAddress: pool.routerAddress,
@@ -53,7 +53,8 @@ export default async function getLoanTerms({ blockchain, collectionAddress, nftI
 
       if (pool.ethLimit !== 0 && loanTerms.options.some(option => pool.utilization.amount.plus(option.maxBorrow?.amount ?? new BigNumber(0)).gt(new BigNumber(pool.ethLimit ?? 0)))) throw fault('ERR_POOL_OVER_LENDER_DEFINED_UTILIZATION')
 
-      logger.info(`Fetching loan terms for NFT ID <${nftId}> and collection address <${collectionAddress}> on blockchain <${JSON.stringify(blockchain)}>... OK:`, loanTerms)
+      logger.info(`Fetching loan terms for NFT ID <${nftId}> and collection address <${collectionAddress}> on blockchain <${JSON.stringify(blockchain)}>... OK`)
+      logger.debug(JSON.stringify(loanTerms, undefined, 2))
 
       return loanTerms
     }
@@ -62,7 +63,8 @@ export default async function getLoanTerms({ blockchain, collectionAddress, nftI
     }
   }
   catch (err) {
-    logger.error(`Fetching loan terms for NFT ID <${nftId}> and collection address <${collectionAddress}> on blockchain <${JSON.stringify(blockchain)}>... ERR:`, err)
+    logger.error(`Fetching loan terms for NFT ID <${nftId}> and collection address <${collectionAddress}> on blockchain <${JSON.stringify(blockchain)}>... ERR`)
+    if (logger.isErrorEnabled() && !logger.silent) console.error(err)
 
     throw err
   }
