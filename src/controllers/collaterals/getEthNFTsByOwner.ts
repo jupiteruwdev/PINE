@@ -36,7 +36,12 @@ export default async function getEthNFTsByOwner({ blockchain, ownerAddress, popu
     nfts = await populateEthCollectionMetadataForNFTs({ blockchain, nfts })
   }
 
-  return populatePoolAvailabilityForNFTs({ nfts, blockchain })
+  const populatedNfts = await populatePoolAvailabilityForNFTs({ nfts, blockchain })
+
+  return _.sortBy(populatedNfts, [
+    nft => nft.hasPools !== true,
+    nft => nft.collection.name?.toLowerCase(),
+  ])
 }
 
 export function useAlchemy({ blockchain, ownerAddress, populateMetadata }: Params): DataSource<NFT[]> {

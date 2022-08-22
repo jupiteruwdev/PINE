@@ -35,7 +35,7 @@ export default async function populatePoolAvailabilityForNFTs({
     $match: {
       'retired': { $ne: true },
       'collection.address': {
-        $in: addresses,
+        $in: addresses.map(addr => new RegExp(addr, 'i')),
       },
     },
   },
@@ -43,7 +43,7 @@ export default async function populatePoolAvailabilityForNFTs({
   const docs = await PoolModel.aggregate(stages).exec()
   const populatedNfts = await Promise.all(nfts.map(async nft => {
     const hasPools = docs.some(doc => {
-      if (doc.collection.address === nft.collection.address) {
+      if (doc.collection.address.toLowerCase() === nft.collection.address.toLowerCase()) {
         const regexStr = _.get(doc, 'collection.matcher.regex')
         const fieldPath = _.get(doc, 'collection.matcher.fieldPath')
         const hasMatcher = _.isString(regexStr) && _.isString(fieldPath)
@@ -62,8 +62,5 @@ export default async function populatePoolAvailabilityForNFTs({
     }
   }))
 
-  return _.sortBy(populatedNfts, [
-    nft => nft.hasPools !== true,
-    nft => nft.collection.name?.toLowerCase(),
-  ])
+  return populatedNfts
 }
