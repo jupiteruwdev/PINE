@@ -24,7 +24,7 @@ env:
   ETH_RPC_RINKEBY: ${{ secrets.ETH_RPC_RINKEBY }}
   GEMXYZ_API_KEY: ${{ secrets.GEMXYZ_API_KEY }}
   LOG_LEVEL: ${{ secrets.LOG_LEVEL }}
-  MONGO_URI: ${{ secrets.MONGO_URI }}
+  MONGO_URI: ${{ inputs.environment == 'production' && secrets.MONGO_URI || secrets.MONGO_URI_STAGING }}
   MORALIS_API_KEY: ${{ secrets.MORALIS_API_KEY }}
   NFTBANK_API_KEY: ${{ secrets.NFTBANK_API_KEY }}
   OPENSEA_API_KEY: ${{ secrets.OPENSEA_API_KEY }}
