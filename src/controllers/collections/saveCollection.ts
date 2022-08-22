@@ -13,7 +13,7 @@ export default async function saveCollection({ collectionAddress, blockchain }: 
   logger.info(`Saving collection for address <${collectionAddress}>`)
   try {
     const collectionMetadata = await getEthCollectionMetadata({ collectionAddress, blockchain })
-    const res = NFTCollectionModel.create({
+    const res = await NFTCollectionModel.create({
       vendorIds: collectionMetadata.vendorIds,
       address: collectionAddress.toLowerCase(),
       displayName: collectionMetadata.name,
@@ -22,7 +22,7 @@ export default async function saveCollection({ collectionAddress, blockchain }: 
       networkId: blockchain.networkId,
     })
 
-    return res
+    return res.toObject()
   }
   catch (err) {
     throw fault('ERR_SAVE_COLLECTION', undefined, err)
