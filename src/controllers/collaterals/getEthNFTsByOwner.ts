@@ -6,6 +6,7 @@ import fault from '../../utils/fault'
 import logger from '../../utils/logger'
 import rethrow from '../../utils/rethrow'
 import { populateEthCollectionMetadataForNFTs } from '../collections'
+import populatePoolAvailabilityForNFTs from '../pools/populatePoolAvailabilityForNFTs'
 import DataSource from '../utils/DataSource'
 import getRequest from '../utils/getRequest'
 import normalizeIPFSUri from '../utils/normalizeIPFSUri'
@@ -35,8 +36,10 @@ export default async function getEthNFTsByOwner({ blockchain, ownerAddress, popu
     nfts = await populateEthCollectionMetadataForNFTs({ blockchain, nfts })
   }
 
-  return _.sortBy(nfts, [
-    nft => nft.collection.isSupported !== true,
+  const populatedNfts = await populatePoolAvailabilityForNFTs({ nfts, blockchain })
+
+  return _.sortBy(populatedNfts, [
+    nft => nft.hasPools !== true,
     nft => nft.collection.name?.toLowerCase(),
   ])
 }
