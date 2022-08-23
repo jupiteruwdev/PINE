@@ -1,15 +1,26 @@
 import 'dotenv/config'
+import fs from 'fs'
+import _ from 'lodash'
+import path from 'path'
+import { fileURLToPath } from 'url'
 import { Blockchain } from './entities'
+
+const __filename = fileURLToPath(import.meta.url)
+const __dirname = path.dirname(__filename)
+const packageConf = JSON.parse(fs.readFileSync(path.join(__dirname, '../package.json'), { encoding: 'utf8' }))
 
 export default {
   env: process.env.NODE_ENV ?? 'development',
-  version: `v${require('../package.json').version}${process.env.NODE_ENV === 'production' ? '' : `-${(process.env.NODE_ENV || 'development').substring(0, 3)}`}`,
-  build: process.env.BUILD_NUMBER ?? '0',
+  version: `v${_.get(packageConf, 'version', 'local')}${process.env.NODE_ENV === 'production' ? '' : `-${(process.env.NODE_ENV || 'development').substring(0, 3)}`}`,
+  build: process.env.BUILD_NUMBER ?? 'local',
   port: process.env.PORT ?? 8080,
+  logLevel: process.env.LOG_LEVEL ?? (process.env.NODE_ENV === 'development' ? 'debug' : undefined),
   openseaAPIKey: process.env.OPENSEA_API_KEY,
+  gemxyzAPIKey: process.env.GEMXYZ_API_KEY,
   moralisAPIKey: process.env.MORALIS_API_KEY,
   nftbankAPIKey: process.env.NFTBANK_API_KEY,
   alchemyAPIKey: process.env.ALCHEMY_API_KEY,
+  requestTimeoutMs: Number(process.env.REQUEST_TIMEOUT_MS ?? 3000),
   alchemyAPIUrl: {
     [Blockchain.Ethereum.Network.RINKEBY]: process.env.ALCHEMY_API_RINKEBY_URL,
     [Blockchain.Ethereum.Network.MAIN]: process.env.ALCHEMY_API_MAINNET_URL,
@@ -48,8 +59,34 @@ export default {
     [Blockchain.Ethereum.Network.RINKEBY]: '0x150A1a9015Bfaf54e7199eBb6ae35EBDE755D51D',
     [Blockchain.Ethereum.Network.MAIN]: '0x90dFb72736481BBacc7938d2D3673590B92647AE',
   },
+  routerAddress: {
+    [Blockchain.Ethereum.Network.MAIN]: '0x774badBc759234Bff52B0Be11bF61Bb68c9E9A24',
+    [Blockchain.Ethereum.Network.RINKEBY]: '0xFC6c6e4727DA5E1bF79aC9C96155B4cD2faC54E6',
+  },
+  repayRouterAddress: {
+    [Blockchain.Ethereum.Network.MAIN]: '0x1C120cE3853542C0Fe3B75AF8F4c7F223f957d51',
+    [Blockchain.Ethereum.Network.RINKEBY]: '0xFC6c6e4727DA5E1bF79aC9C96155B4cD2faC54E6',
+  },
+  rolloverAddress: {
+    [Blockchain.Ethereum.Network.MAIN]: '0x239f1818f21ebac47306ffa690016aa6a8882a59',
+    [Blockchain.Ethereum.Network.RINKEBY]: '0xC796d62fB1927a13D7E41eBd0c8eA80fdA5Ef80a',
+  },
+  defaultFees: [
+    {
+      type: 'fixed',
+      value: { 'amount': '0.01', 'currency': 'ETH' },
+    },
+    {
+      type: 'percentage',
+      value: 0.0035,
+    },
+  ],
+  blocksPerSecond: 14,
   mongoUri: process.env.MONGO_URI ?? '',
+  tenors: [1, 3, 7, 14, 30],
   tests: {
     walletAddress: process.env.TESTS_WALLET_ADDRESS ?? '',
+    privateKey: process.env.TESTS_WALLET_PRIVATE_KEY ?? '',
+    whaleWalletAddresses: _.compact((process.env.TESTS_WHALE_WALLET_ADDRESSES ?? '').split(',')),
   },
 }

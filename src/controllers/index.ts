@@ -1,4 +1,5 @@
 export * from './collaterals'
+export * from './collections'
 export * from './contracts'
 export * from './loans'
 export * from './pools'

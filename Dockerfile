@@ -12,8 +12,10 @@ COPY package*.json ./
 RUN npm install
 
 COPY src ./src
+COPY tests ./tests
 COPY ts*.json ./
 COPY .eslintrc ./
+COPY .mocharc ./
 
 RUN npm run build
 

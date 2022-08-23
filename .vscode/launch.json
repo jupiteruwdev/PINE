@@ -1,0 +1,31 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Debug",
+      "request": "launch",
+      "type": "node",
+      "console": "integratedTerminal",
+      "env": { "NODE_ENV": "development" },
+      "internalConsoleOptions": "neverOpen",
+      "restart": true,
+      "runtimeExecutable": "${env:NVM_DIR}/nvm-exec",
+      "skipFiles": ["<node_internals>/**"],
+      "sourceMaps": true,
+      "runtimeArgs": [
+        "node"
+      ],
+      "program": "${workspaceRoot}/node_modules/.bin/nodemon",
+      "args": [
+        "--exec",
+        "node --experimental-specifier-resolution node --loader ts-node/esm -r dotenv/config",
+        "--verbose",
+        "--watch",
+        "src",
+        "--ext",
+        "ts,json",
+        "${workspaceRoot}/src/app.ts"
+      ]
+    }
+  ]
+}

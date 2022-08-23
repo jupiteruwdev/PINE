@@ -1,9 +1,9 @@
 import { Contract } from 'web3-eth-contract'
-import ERC721LendingABI from '../../abis/ERC721Lending.json'
-import ERC721LendingABIV2 from '../../abis/ERC721LendingV2.json'
+import ERC721LendingABI from '../../abis/ERC721Lending.json' assert { type: 'json' }
+import ERC721LendingABIV2 from '../../abis/ERC721LendingV2.json' assert { type: 'json' }
 import { Blockchain } from '../../entities'
 import fault from '../../utils/fault'
-import { getEthWeb3 } from '../utils/ethereum'
+import getEthWeb3 from '../utils/getEthWeb3'
 
 type Params = {
   blockchain: Blockchain

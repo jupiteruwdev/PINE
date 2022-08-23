@@ -1,40 +1,45 @@
 import BigNumber from 'bignumber.js'
 import _ from 'lodash'
 import appConf from '../../app.conf'
-import { findAllPools, findOneCollection } from '../../db'
-import { Blockchain, Value } from '../../entities'
+import { Blockchain, Collection, Value } from '../../entities'
 import Loan from '../../entities/lib/Loan'
 import { getOnChainLoanById } from '../../subgraph'
 import fault from '../../utils/fault'
 import logger from '../../utils/logger'
-import { getNFTMetadata } from '../collaterals'
+import { getEthNFTMetadata } from '../collaterals'
+import { getEthCollectionMetadata } from '../collections'
 import { getControlPlaneContract, getPoolContract } from '../contracts'
-import { getEthBlockNumber } from '../utils/ethereum'
-import { getEthCollectionValuation } from '../valuations'
+import { searchPublishedPools } from '../pools'
+import getEthWeb3 from '../utils/getEthWeb3'
+import { getEthNFTValuation } from '../valuations'
 
 type Params = {
   blockchain: Blockchain
   collectionAddress: string
   nftId: string
-  txSpeedBlocks: number
+  txSpeedBlocks?: number
 }
 
-export default async function getLoan({ blockchain, collectionAddress, nftId, txSpeedBlocks }: Params): Promise<Loan | undefined> {
-  logger.info(`Fetching loan position for collection address <${collectionAddress}>, NFT ID <${nftId}>, txSpeedBlocks <${txSpeedBlocks}> and blockchain <${JSON.stringify(blockchain)}>...`)
+export default async function getLoan({
+  blockchain,
+  collectionAddress,
+  nftId,
+  txSpeedBlocks = 0,
+}: Params): Promise<Loan | undefined> {
+  logger.info(`Fetching loan for collection address <${collectionAddress}>, NFT ID <${nftId}>, txSpeedBlocks <${txSpeedBlocks}> and blockchain <${JSON.stringify(blockchain)}>...`)
 
   try {
     switch (blockchain.network) {
     case 'ethereum': {
-      const loanId = `${collectionAddress.toLowerCase()}/${nftId}`
-      const { loan: loanValues } = await getOnChainLoanById({ loanId }, { networkId: blockchain.networkId })
+      const loanId = `${collectionAddress}/${nftId}`
+      const onChainLoan = await getOnChainLoanById({ loanId }, { networkId: blockchain.networkId })
 
-      const collection = await findOneCollection({ address: collectionAddress, blockchain })
-      if (!collection) throw fault('ERR_UNSUPPORTED_COLLECTION')
+      const web3 = getEthWeb3(blockchain.networkId)
 
       const [blockNumber, pools, valuation] = await Promise.all([
-        getEthBlockNumber(blockchain.networkId),
-        findAllPools({ collectionAddress, blockchainFilter: { ethereum: blockchain.networkId }, includeRetired: true }),
-        getEthCollectionValuation({ blockchain: blockchain as Blockchain<'ethereum'>, collectionAddress: collection.address, tokenId: nftId }),
+        web3.eth.getBlockNumber(),
+        searchPublishedPools({ address: onChainLoan.pool, blockchainFilter: { ethereum: blockchain.networkId }, includeRetired: true }),
+        getEthNFTValuation({ blockchain: blockchain as Blockchain<'ethereum'>, collectionAddress, nftId }),
       ])
 
       if (pools.length === 0) throw fault('ERR_UNSUPPORTED_COLLECTION')
@@ -49,34 +54,39 @@ export default async function getLoan({ blockchain, collectionAddress, nftId, tx
 
         // Early exit if loan is fully repaid.
         if (outstandingWithInterestWei.lte(new BigNumber(0))) return undefined
+
         const nft = {
-          collection,
+          collection: Collection.factory({
+            address: collectionAddress,
+            blockchain,
+            ...await getEthCollectionMetadata({ blockchain, collectionAddress, matchSubcollectionBy: { type: 'poolAddress', value: pool.address } }),
+          }),
           id: nftId,
           ownerAddress: pool.address,
-          ...await getNFTMetadata({ blockchain, collectionAddress: collection.address, nftId }),
+          ...await getEthNFTMetadata({ blockchain, collectionAddress, nftId }),
           isSupported: true,
         }
 
         return {
           routerAddress: pool.repayRouterAddress,
-          accuredInterest: Value.$WEI(loanValues.accuredInterestWei),
-          borrowed: Value.$WEI(loanValues.borrowedWei),
-          borrowerAddress: loanValues.borrower,
-          expiresAt: new Date(_.toNumber(loanValues.loanExpiretimestamp) * 1000),
-          interestBPSPerBlock: new BigNumber(loanValues.interestBPS1000000XBlock).dividedBy(new BigNumber(1_000_000)),
-          loanStartBlock: loanValues.loanStartBlock,
-          maxLTVBPS: new BigNumber(loanValues.maxLTVBPS),
+          accuredInterest: Value.$WEI(onChainLoan.accuredInterestWei),
+          borrowed: Value.$WEI(onChainLoan.borrowedWei),
+          borrowerAddress: onChainLoan.borrower,
+          expiresAt: new Date(_.toNumber(onChainLoan.loanExpiretimestamp) * 1000),
+          interestBPSPerBlock: new BigNumber(onChainLoan.interestBPS1000000XBlock).dividedBy(new BigNumber(1_000_000)),
+          loanStartBlock: onChainLoan.loanStartBlock,
+          maxLTVBPS: new BigNumber(onChainLoan.maxLTVBPS),
           nft,
           outstanding: Value.$WEI(outstandingWithInterestWei),
           poolAddress: pool.address,
-          repaidInterest: Value.$WEI(loanValues.repaidInterestWei),
-          returned: Value.$WEI(loanValues.returnedWei),
+          repaidInterest: Value.$WEI(onChainLoan.repaidInterestWei),
+          returned: Value.$WEI(onChainLoan.returnedWei),
           valuation,
           updatedAtBlock: blockNumber,
         }
       }, new Promise(resolve => resolve(undefined)))
 
-      logger.info(`Fetching loan position for collection address <${collectionAddress}>, NFT ID <${nftId}>, txSpeedBlocks <${txSpeedBlocks}> and blockchain <${JSON.stringify(blockchain)}>... OK:`, loan)
+      logger.info(`Fetching loan for collection address <${collectionAddress}>, NFT ID <${nftId}>, txSpeedBlocks <${txSpeedBlocks}> and blockchain <${JSON.stringify(blockchain)}>... OK:`, loan)
 
       return loan
     }
@@ -85,7 +95,7 @@ export default async function getLoan({ blockchain, collectionAddress, nftId, tx
     }
   }
   catch (err) {
-    logger.error(`Fetching loan position for collection address <${collectionAddress}>, NFT ID <${nftId}>, txSpeedBlocks <${txSpeedBlocks}> and blockchain <${JSON.stringify(blockchain)}>... ERR:`, err)
+    logger.error(`Fetching loan for collection address <${collectionAddress}>, NFT ID <${nftId}>, txSpeedBlocks <${txSpeedBlocks}> and blockchain <${JSON.stringify(blockchain)}>... ERR:`, err)
     throw err
   }
 }

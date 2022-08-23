@@ -1,19 +1,26 @@
-/* eslint-disable no-console */
 import SuperError from '@andrewscwei/super-error'
 import cors from 'cors'
 import express, { NextFunction, Request, Response } from 'express'
 import http from 'http'
 import ip from 'ip'
 import _ from 'lodash'
+import morgan from 'morgan'
+import util from 'util'
 import appConf from './app.conf'
 import { initDb } from './db'
 import routes from './routes'
 import logger from './utils/logger'
 
+// Remove depth from console logs
+util.inspect.defaultOptions.depth = undefined
+
 initDb()
+
 const app = express()
 
 app.use(cors())
+app.use(morgan('dev'))
+app.use(express.json())
 app.use('/', routes)
 
 app.use('*', (req, res, next) => {
@@ -28,15 +35,14 @@ app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
   res.setHeader('Content-Type', 'application/json')
 
   if (status === 404) {
-    logger.warning(`Handling 404 error... SKIP: ${err}`)
+    logger.warn(`Handling 404 error... SKIP: ${err}`)
   }
   else if (appConf.env === 'production') {
-    logger.error('Handling 500 error... ERR:', err)
+    logger.error('Handling 500 error... ERR', err)
   }
   else {
-    logger.error('Handling 500 error... ERR:')
-    /* eslint-disable-next-line no-console */
-    console.error(err)
+    logger.error('Handling 500 error... ERR')
+    if (logger.isErrorEnabled() && !logger.silent) console.error(err)
   }
 
   res.status(status).json({
@@ -51,7 +57,7 @@ http
     logger.error('Handling Node exception... ERR:', error)
   })
   .on('listening', () => {
-    logger.info(`⚡ Starting service on ${ip.address()}:${appConf.port}... OK`)
+    logger.info(`⚡ Starting service ${appConf.version}:${appConf.build} on ${ip.address()}:${appConf.port}... OK`)
   })
 
 export default app

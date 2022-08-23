@@ -1,40 +1,43 @@
-import { findOneCollection, findOnePool } from '../../db'
-import { Blockchain, NFT, RolloverTerms, Value } from '../../entities'
+import { Blockchain, Collection, NFT, RolloverTerms, Value } from '../../entities'
 import fault from '../../utils/fault'
 import logger from '../../utils/logger'
-import { getNFTMetadata } from '../collaterals'
-import { getEthCollectionValuation, signValuation } from '../valuations'
+import { getEthNFTMetadata } from '../collaterals'
+import { getLoan } from '../loans'
+import { getPool } from '../pools'
+import { getEthNFTValuation, signValuation } from '../valuations'
 import getFlashLoanSource from './getFlashLoanSource'
 
 type Params = {
   blockchain: Blockchain
   collectionAddress: string
   nftId: string
-  existingLoan: any
 }
 
-export default async function getRolloverTerms({ blockchain, collectionAddress, nftId, existingLoan }: Params): Promise<RolloverTerms> {
+export default async function getRolloverTerms({
+  blockchain,
+  collectionAddress,
+  nftId,
+}: Params): Promise<RolloverTerms> {
   logger.info(`Fetching rollover terms for NFT ID <${nftId}> and collection address <${collectionAddress}> on blockchain <${JSON.stringify(blockchain)}>...`)
 
   try {
     switch (blockchain.network) {
     case 'ethereum': {
-      const collection = await findOneCollection({ address: collectionAddress, blockchain })
-      if (!collection) throw fault('ERR_UNSUPPORTED_COLLECTION')
+      const existingLoan = await getLoan({ blockchain, nftId, collectionAddress })
+      if (!existingLoan || existingLoan.borrowed.amount.lte(existingLoan.returned.amount)) throw fault('ERR_INVALID_ROLLOVER')
 
-      const pool = await findOnePool({ address: existingLoan?.pool, blockchain })
-      const flashLoanSource = await getFlashLoanSource({ blockchain, poolAddress: existingLoan?.pool })
+      const pool = await getPool({ address: existingLoan.poolAddress, blockchain, includeStats: true })
+      const flashLoanSource = await getFlashLoanSource({ blockchain, poolAddress: existingLoan.poolAddress })
       if (!pool) throw fault('ERR_NO_POOLS_AVAILABLE')
 
       const nft: NFT = {
-        collection,
+        collection: Collection.factory({ address: collectionAddress, blockchain }),
         id: nftId,
-        isSupported: true,
-        ...await getNFTMetadata({ blockchain, collectionAddress: collection.address, nftId }),
+        ...await getEthNFTMetadata({ blockchain, collectionAddress, nftId }),
       }
 
-      const valuation = await getEthCollectionValuation({ blockchain: blockchain as Blockchain<'ethereum'>, collectionAddress: collection.address, tokenId: nftId })
-      const { signature, issuedAtBlock, expiresAtBlock } = await signValuation({ blockchain, nftId, collectionAddress: collection.address, poolAddress: pool.address, valuation })
+      const valuation = await getEthNFTValuation({ blockchain: blockchain as Blockchain<'ethereum'>, collectionAddress, nftId })
+      const { signature, issuedAtBlock, expiresAtBlock } = await signValuation({ blockchain, nftId, collectionAddress, valuation })
 
       const loanTerms: RolloverTerms = {
         routerAddress: pool.rolloverAddress,
@@ -47,7 +50,7 @@ export default async function getRolloverTerms({ blockchain, collectionAddress, 
         issuedAtBlock,
         expiresAtBlock,
         poolAddress: pool.address,
-        collection,
+        collection: nft.collection,
       }
 
       loanTerms.options.map(option => {

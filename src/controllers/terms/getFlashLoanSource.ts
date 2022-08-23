@@ -3,12 +3,12 @@ import appConf from '../../app.conf'
 import { Blockchain, Value } from '../../entities'
 import fault from '../../utils/fault'
 import { getPoolContract } from '../contracts'
-import { getPoolCapacity, getPools } from '../pools'
+import { getPoolCapacity, searchPublishedPools } from '../pools'
 
 export default async function getFlashLoanSource({ blockchain, poolAddress }: { blockchain: Blockchain; poolAddress: string }): Promise<{ address: string; capacity: Value }> {
   const contract = await getPoolContract({ blockchain, poolAddress })
   const fundSource = await contract.methods._fundSource().call()
-  const pools = (await getPools({ blockchainFilter: { ethereum: blockchain.networkId } }))
+  const pools = (await searchPublishedPools({ blockchainFilter: { ethereum: blockchain.networkId }, includeStats: true }))
     .filter(e => e.version > 1 && e.address !== poolAddress)
   const poolsWithFundSource = (await Promise.all(pools.map(async e => {
     const tmpContract = await getPoolContract({ blockchain, poolAddress: e.address })

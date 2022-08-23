@@ -1,14 +1,15 @@
-import mongoose, { Schema } from 'mongoose'
+import mongoose from 'mongoose'
+
+const { Schema } = mongoose
 
 const schema = new Schema({
-  _id: Schema.Types.ObjectId,
   retired: Schema.Types.Boolean,
   address: {
     type: Schema.Types.String,
     unique: true,
   },
   networkType: Schema.Types.String,
-  networkId: Schema.Types.Number,
+  networkId: Schema.Types.String,
   loanOptions: [
     {
       loanDurationBlock: Schema.Types.Number,
@@ -19,6 +20,7 @@ const schema = new Schema({
     },
   ],
   poolVersion: Schema.Types.Number,
+  lenderAddress: Schema.Types.String,
   routerAddress: Schema.Types.String,
   repayRouterAddress: Schema.Types.String,
   rolloverAddress: Schema.Types.String,

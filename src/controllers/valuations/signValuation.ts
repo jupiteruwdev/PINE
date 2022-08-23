@@ -3,13 +3,12 @@ import appConf from '../../app.conf'
 import { Blockchain, Valuation } from '../../entities'
 import fault from '../../utils/fault'
 import { getPoolContract } from '../contracts'
-import { getEthBlockNumber, getEthWeb3 } from '../utils/ethereum'
+import getEthWeb3 from '../utils/getEthWeb3'
 
 type Params = {
   blockchain: Blockchain
   collectionAddress: string
   nftId: string
-  poolAddress: string
   valuation: Valuation
 }
 
@@ -19,19 +18,22 @@ type Output = {
   signature: string
 }
 
-export default async function signValuation({ blockchain, nftId, poolAddress, collectionAddress, valuation }: Params): Promise<Output> {
+export default async function signValuation({ blockchain, nftId, collectionAddress, valuation }: Params): Promise<Output> {
   switch (blockchain.network) {
   case 'ethereum': {
     const web3 = getEthWeb3(blockchain.networkId)
-    const blockNumber = await getEthBlockNumber(blockchain.networkId)
+    const blockNumber = await web3.eth.getBlockNumber()
     const expiresAtBlock = blockNumber + appConf.ethValuationExpiryBlocks
+    const valuationEth = valuation.value?.amount
+
+    if (!valuationEth?.isFinite()) throw fault('ERR_SIGN_VALUATION', 'Valuation is invalid')
 
     const contract = await getPoolContract({ blockchain, poolAddress: _.get(appConf.valuationSignerMessageHashAddress, blockchain.networkId) })
     const contractFunc = 'getMessageHash'
     const contractParams = [
       collectionAddress,
-      _.toNumber(nftId),
-      web3.utils.toWei(_.toString(valuation.value?.amount)),
+      nftId,
+      web3.utils.toWei(valuationEth.toFixed()),
       expiresAtBlock,
     ]
 

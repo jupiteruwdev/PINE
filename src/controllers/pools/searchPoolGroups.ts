@@ -1,10 +1,9 @@
 import _ from 'lodash'
 import { Blockchain, PoolGroup, Value } from '../../entities'
 import logger from '../../utils/logger'
-import { SortDirection, SortType } from '../../utils/sort'
-import { getEthValueUSD } from '../utils/ethereum'
-import { getEthCollectionFloorPriceBatch } from '../valuations'
-import getPools from './getPools'
+import { getEthCollectionFloorPrices } from '../collections'
+import getEthValueUSD from '../utils/getEthValueUSD'
+import searchPublishedPools, { PoolSortDirection, PoolSortType } from './searchPublishedPools'
 
 type Params = {
   blockchainFilter?: Blockchain.Filter
@@ -12,8 +11,14 @@ type Params = {
   offset?: number
   count?: number
   collectionName?: string
-  sortBy?: SortType
-  sortDirection?: SortDirection
+  paginateBy?: {
+    count: number
+    offset: number
+  }
+  sortBy?: {
+    type: PoolSortType
+    direction: PoolSortDirection
+  }
 }
 
 export default async function searchPoolGroups({
@@ -22,75 +27,52 @@ export default async function searchPoolGroups({
     solana: Blockchain.Solana.Network.MAINNET,
   },
   collectionAddress,
-  offset,
-  count,
   collectionName,
+  paginateBy,
   sortBy,
-  sortDirection,
 }: Params) {
-  logger.info('Fetching pool groups...')
+  logger.info('Searching pool groups...')
 
   try {
-    const [pools] = await Promise.all([
-      // getEthValueUSD(),
-      getPools({
+    const [ethValueUSD, pools] = await Promise.all([
+      getEthValueUSD(),
+      searchPublishedPools({
         blockchainFilter,
         collectionAddress,
-        offset,
-        count,
         collectionName,
+        includeStats: true,
+        paginateBy,
         sortBy,
-        sortDirection,
       }),
     ])
 
-    const poolGroups: PoolGroup[] = _.compact(
-      pools.map(pool => {
-        if (!pool.collection) return undefined
+    const poolGroups = pools.map(pool => PoolGroup.factory({
+      collection: pool.collection,
+      pools: [pool],
+      totalValueLent: Value.$USD(pool.utilization.amount.times(ethValueUSD.amount)),
+      totalValueLocked: Value.$USD(pool.valueLocked.amount.times(ethValueUSD.amount)),
+    }))
 
-        return {
-          collection: pool.collection,
-          pools: [pool],
-          totalValueLent: Value.$ETH(pool.utilization.amount),
-          totalValueLocked: Value.$ETH(
-            pool.valueLocked.amount
-          ),
-        }
-      })
-    )
+    const ethGroups = _.filter(poolGroups, group => group.collection.blockchain.network === 'ethereum')
+    const ethFloorPrices = await getEthCollectionFloorPrices({ blockchain: Blockchain.Ethereum(blockchainFilter.ethereum), collectionAddresses: ethGroups.map(group => group.collection.address) })
 
-    const ethereumCollectionAddresses = _.filter(
-      poolGroups,
-      stat => stat.collection.blockchain.network === 'ethereum'
-    ).reduce(
-      (cur: any, stat: PoolGroup) => [
-        ...cur,
-        stat.collection.address,
-      ],
-      []
-    )
+    const out = poolGroups.map(group => {
+      const ethIdx = ethGroups.findIndex(t => t.collection.address === group.collection.address)
 
-    const floorPrices = await getEthCollectionFloorPriceBatch({
-      blockchainFilter: {
-        ethereum: blockchainFilter.ethereum,
-      },
-      collectionAddresses: ethereumCollectionAddresses,
-    })
-
-    const out = poolGroups.map((stat, i) => {
-      const curIndex = _.findIndex(floorPrices, fp => fp.collection.address.toLowerCase() === stat.collection.address.toLowerCase())
       return {
-        ...stat,
-        floorPrice: floorPrices.length > curIndex && curIndex !== -1 ? floorPrices[curIndex].value1DReference : undefined,
+        ...group,
+        floorPrice: ethFloorPrices[ethIdx] ?? undefined,
       }
     })
 
-    logger.info('Fetching pool groups... OK', out)
+    logger.info(`Searching pool groups... OK: Found ${out.length} result(s)`)
+    logger.debug(JSON.stringify(out, undefined, 2))
 
     return out
   }
   catch (err) {
-    logger.error('Fetching pool groups... ERR:', err)
+    logger.error('Searching pool groups... ERR')
+    if (logger.isErrorEnabled() && !logger.silent) console.error(err)
 
     throw err
   }

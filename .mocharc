@@ -1,0 +1,21 @@
+{
+  "bail": false,
+  "color": true,
+  "diff": true,
+  "exit": true,
+  "ignore": "**/entities/**/**",
+  "node-option": [
+    "experimental-specifier-resolution=node"
+  ],
+  "full-trace": true,
+  "recursive": true,
+  "reporter": "mochawesome",
+  "reporter-option": [
+    "charts=true",
+    "quiet=true",
+    "reportDir=.tests",
+    "reportPageTitle=Core Service Test Report"
+  ],
+  "require": "ts-node/register",
+  "timeout": 100000
+}
