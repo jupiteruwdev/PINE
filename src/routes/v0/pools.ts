@@ -1,7 +1,7 @@
 import { Router } from 'express'
 import _ from 'lodash'
 import appConf from '../../app.conf'
-import { countPools, getPool, getPools, publishPool, searchPoolGroups } from '../../controllers'
+import { countPools, getPool, getPools, publishPool, searchPoolGroups, unpublishPool } from '../../controllers'
 import { PoolSortDirection, PoolSortType } from '../../controllers/pools/searchPublishedPools'
 import { Pagination, Pool, PoolGroup, serializeEntityArray } from '../../entities'
 import fault from '../../utils/fault'
@@ -100,6 +100,21 @@ router.post('/', async (req, res, next) => {
   }
   catch (err) {
     next(fault('ERR_API_PUBLISH_POOL', undefined, err))
+  }
+})
+
+router.delete('/unpublish/:poolAddress', async (req, res, next) => {
+  try {
+    const blockchain = getBlockchain(req.query)
+    const poolAddress = getString(req.params, 'poolAddress')
+    await unpublishPool({ poolAddress, blockchain })
+
+    res.status(200).json({
+      deleted: true,
+    })
+  }
+  catch (err) {
+    next(fault('ERR_API_UNPUBLISH_POOL', undefined, err))
   }
 })
 
