@@ -103,11 +103,13 @@ router.post('/', async (req, res, next) => {
   }
 })
 
-router.delete('/unpublish/:poolAddress', async (req, res, next) => {
+router.delete('/', async (req, res, next) => {
   try {
-    const blockchain = getBlockchain(req.query)
-    const poolAddress = getString(req.params, 'poolAddress')
-    await unpublishPool({ poolAddress, blockchain })
+    const blockchain = getBlockchain(req.body)
+    const poolAddress = _.get(req.body, 'poolAddress')
+    const payload = _.get(req.body, 'payload')
+    const signature = _.get(req.body, 'signature')
+    await unpublishPool({ poolAddress, blockchain, payload, signature })
 
     res.status(200).json({
       deleted: true,

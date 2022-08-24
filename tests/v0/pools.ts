@@ -176,9 +176,18 @@ describe('/v0/pools', () => {
     })
 
     it('DELETE /v0/pools/unpublish/:poolAddress', async () => {
-      const { body: res } = await request(app).delete('/v0/pools/unpublish/0xc59d88285ab60abbf44ed551d554e86d4ab34442')
-        .query({
+      const payload = JSON.stringify({
+        poolAddress: '0xc59d88285ab60abbf44ed551d554e86d4ab34442',
+      })
+      const web3 = getEthWeb3(Blockchain.Ethereum.Network.MAIN)
+      const wallet = web3.eth.accounts.privateKeyToAccount(appConf.tests.privateKey)
+      const tx = wallet.sign(payload)
+      const { body: res } = await request(app).delete('/v0/pools')
+        .send({
           ethereum: 1,
+          poolAddress: '0xc59d88285ab60abbf44ed551d554e86d4ab34442',
+          payload,
+          signature: tx.signature,
         })
         .expect('Content-Type', /json/)
         .expect(200)
