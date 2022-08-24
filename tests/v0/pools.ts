@@ -6,7 +6,6 @@ import app from '../../src/app'
 import appConf from '../../src/app.conf'
 import { getCollections, searchPublishedPools } from '../../src/controllers'
 import getEthWeb3 from '../../src/controllers/utils/getEthWeb3'
-import { PoolModel } from '../../src/db'
 import { Blockchain, Collection, deserializeEntity, Pool, PoolGroup } from '../../src/entities'
 
 describe('/v0/pools', () => {
@@ -17,12 +16,6 @@ describe('/v0/pools', () => {
     before(async () => {
       pools = await searchPublishedPools({ blockchainFilter: { ethereum: Blockchain.Ethereum.Network.MAIN } })
       collections = await getCollections({ blockchainFilter: { ethereum: Blockchain.Ethereum.Network.MAIN } })
-    })
-
-    after('delete published test pool', async () => {
-      await PoolModel.deleteOne({
-        address: '0xc59d88285ab60abbf44ed551d554e86d4ab34442',
-      }).exec()
     })
 
     it('GET /v0/pools/:poolAddress', async () => {
@@ -180,6 +173,26 @@ describe('/v0/pools', () => {
           expect(res).to.have.property(key)
         }
       }
+    })
+
+    it('DELETE /v0/pools/unpublish/:poolAddress', async () => {
+      const payload = JSON.stringify({
+        poolAddress: '0xc59d88285ab60abbf44ed551d554e86d4ab34442',
+      })
+      const web3 = getEthWeb3(Blockchain.Ethereum.Network.MAIN)
+      const wallet = web3.eth.accounts.privateKeyToAccount(appConf.tests.privateKey)
+      const tx = wallet.sign(payload)
+      const { body: res } = await request(app).delete('/v0/pools')
+        .send({
+          ethereum: 1,
+          poolAddress: '0xc59d88285ab60abbf44ed551d554e86d4ab34442',
+          payload,
+          signature: tx.signature,
+        })
+        .expect('Content-Type', /json/)
+        .expect(200)
+
+      expect(res.deleted).to.equal(true)
     })
   })
 
