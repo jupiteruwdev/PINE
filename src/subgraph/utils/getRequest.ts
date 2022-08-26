@@ -19,10 +19,10 @@ export default function getRequest<T>(query: string) {
     const cacheKey = objectHash({ apiUrl, query, params })
 
     if (useCache === true) {
-      return await getCache(cacheKey, request(apiUrl, query, params))
+      return getCache(cacheKey, request(apiUrl, query, params))
     }
     else {
-      return await setCache(cacheKey, request(apiUrl, query, params))
+      return setCache(cacheKey, request(apiUrl, query, params))
     }
   }
 }
