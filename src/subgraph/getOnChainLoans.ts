@@ -25,7 +25,7 @@ export default async function getOnChainLoans({
   borrowerAddress,
   sortBy,
   paginateBy,
-}: Params, options: Options): Promise<any[]> {
+}: Params, { networkId, useCache }: Options = {}): Promise<any[]> {
   const orderBy = sortBy !== undefined ? `orderBy: ${sortBy.type === LoanSortType.POOL_ADDRESS ? 'pool' : sortBy.type === LoanSortType.EXPIRES_AT ? 'loanExpiretimestamp' : sortBy.type === LoanSortType.BORROWED ? 'borrowedWei' : sortBy.type === LoanSortType.RETURNED ? 'returnedWei' : sortBy.type}, orderDirection: ${sortBy.direction}, ` : ''
   const pagination = paginateBy !== undefined ? `first: ${paginateBy.count}, skip: ${paginateBy.offset}, ` : ''
   const values = lenderAddresses?.length || collectionAddresses?.length || poolAddresses?.length || borrowerAddress?.length ? `(${lenderAddresses?.length ? '$lenders: [String]' : ''}${collectionAddresses?.length ? ',$collections: [String]' : ''}${poolAddresses?.length ? ',$pools: [String]' : ''}${borrowerAddress !== undefined ? ',$borrower: String' : ''})` : ''
@@ -42,7 +42,7 @@ export default async function getOnChainLoans({
           ${poolAddresses?.length ? ',pool_in: $pools' : ''}
           ${borrowerAddress !== undefined ? ',borrower: $borrower' : ''}
         }
-      ) 
+      )
     {
         id
         loanStartBlock
@@ -67,7 +67,7 @@ export default async function getOnChainLoans({
     collections: collectionAddresses?.map(address => address.toLowerCase()),
     pools: poolAddresses?.map(address => address.toLowerCase()),
     borrower: borrowerAddress?.toLowerCase(),
-  }, options)
+  }, { networkId, useCache })
     .then(res => res.loans)
     .catch(err => {
       throw fault('ERR_GQL_BAD_REQUEST', undefined, err)

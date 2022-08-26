@@ -9,7 +9,7 @@ type Params = {
   collectionAddress?: string
 }
 
-export default async function getOnChainPools({ lenderAddress, address, excludeAddresses, collectionAddress }: Params, options: Options) {
+export default async function getOnChainPools({ lenderAddress, address, excludeAddresses, collectionAddress }: Params, { networkId, useCache }: Options = {}) {
   const values = lenderAddress || address || excludeAddresses || collectionAddress ? `(${lenderAddress !== undefined ? '$lenderAddress: String' : ''}${address !== undefined ? ', $address: String' : ''}${excludeAddresses?.length ? ', $excludeAddresses: [String]' : ''}${collectionAddress?.length ? ', $collectionAddress: String' : ''})` : ''
   const filters = lenderAddress || address || excludeAddresses || collectionAddress ? `(where: {${lenderAddress !== undefined ? 'lenderAddress: $lenderAddress' : ''}${address !== undefined ? ', id: $address' : ''}${excludeAddresses?.length ? ', id_not_in: $excludeAddresses' : ''}${collectionAddress?.length ? ', collection: $collectionAddress' : ''}})` : ''
 
@@ -35,7 +35,7 @@ export default async function getOnChainPools({ lenderAddress, address, excludeA
     address: address?.toLowerCase(),
     excludeAddresses: excludeAddresses?.map(address => address.toLowerCase()),
     collectionAddress: collectionAddress?.toLowerCase(),
-  }, options)
+  }, { networkId, useCache })
     .catch(err => {
       throw fault('ERR_GQL_BAD_REQUEST', undefined, err)
     })
