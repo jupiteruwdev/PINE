@@ -14,7 +14,7 @@ router.get('/nft', async (req, res, next) => {
     const collectionAddress = getString(req.query, 'collectionAddress')
     const txSpeedBlocks = _.toNumber(req.query.txSpeedBlocks ?? 0)
     const blockchain = getBlockchain(req.query)
-    const loan = await getLoan({ blockchain, nftId, collectionAddress, txSpeedBlocks })
+    const loan = await getLoan({ blockchain, nftId, collectionAddress, txSpeedBlocks, populateValuation: true })
 
     if (loan === undefined) {
       res.status(404).send()

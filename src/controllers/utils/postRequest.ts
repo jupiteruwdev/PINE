@@ -1,6 +1,8 @@
 import SuperError from '@andrewscwei/super-error'
 import axios from 'axios'
+import objectHash from 'object-hash'
 import appConf from '../../app.conf'
+import { getCache, setCache } from '../../utils/cache'
 import fault from '../../utils/fault'
 import logger from '../../utils/logger'
 
@@ -10,6 +12,7 @@ type Options<T> = {
   host?: string
   params?: Record<string, any>
   timeout?: number
+  useCache?: boolean
   transformPayload?: (data: any) => T
 }
 
@@ -23,23 +26,35 @@ export default async function postRequest<T = any>(
     params,
     transformPayload,
     timeout = appConf.requestTimeoutMs,
+    useCache = true,
   }: Options<T> = {},
 ): Promise<T> {
   try {
-    const res = await axios.post(path, data, {
-      baseURL: host,
-      headers,
-      params,
-      signal: controller?.signal,
-      timeout,
-    })
+    const req = async () => {
+      const res = await axios.post(path, data, {
+        baseURL: host,
+        headers,
+        params,
+        signal: controller?.signal,
+        timeout,
+      })
 
-    const payload = transformPayload ? transformPayload(res.data) : res.data
+      const payload = transformPayload ? transformPayload(res.data) : res.data
 
-    logger.debug(`Making request to <${host ?? ''}${path}>... ${res.status}`)
-    logger.debug(JSON.stringify(payload, undefined, 2))
+      logger.debug(`Making request to <${host ?? ''}${path}>... ${res.status}`)
+      logger.debug(JSON.stringify(payload, undefined, 2))
 
-    return payload
+      return payload
+    }
+
+    const cacheKey = objectHash({ host, path, data, headers, params })
+
+    if (useCache === true) {
+      return await getCache(cacheKey, req)
+    }
+    else {
+      return await setCache(cacheKey, req)
+    }
   }
   catch (err) {
     if (axios.isCancel(err)) {

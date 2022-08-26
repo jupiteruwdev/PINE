@@ -14,8 +14,9 @@ export default async function getCollections(params: Params = {}): Promise<Colle
   logger.info(`Fetching collections with params <${JSON.stringify(params)}>...`)
 
   try {
-    const dataSource = DataSource.compose(useDb(params))
-    const collections = await dataSource.apply(undefined)
+    const collections = await DataSource.fetch(
+      useDb(params),
+    )
 
     logger.info(`Fetching collections with params <${JSON.stringify(params)}>... OK: Found ${collections.length} result(s)`)
     logger.debug(JSON.stringify(collections, undefined, 2))

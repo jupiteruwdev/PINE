@@ -17,12 +17,11 @@ export default async function getEthCollectionFloorPrice({
 }: Params): Promise<Value<'ETH'>> {
   logger.info(`Fetching floor price for collection <${collectionAddress}> on network <${blockchain.networkId}>...`)
 
-  const dataSource = DataSource.compose(
-    useNFTBank({ blockchain, collectionAddress }),
-  )
-
   try {
-    const floorPrice = await dataSource.apply(undefined)
+    const floorPrice = await DataSource.fetch(
+      useNFTBank({ blockchain, collectionAddress }),
+    )
+
     logger.info(`Fetching floor price for collection <${collectionAddress}> on network <${blockchain.networkId}>... OK: ${floorPrice.amount.toFixed()}`)
     return floorPrice
   }
