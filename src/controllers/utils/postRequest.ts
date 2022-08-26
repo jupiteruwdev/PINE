@@ -47,7 +47,7 @@ export default async function postRequest<T = any>(
       return payload
     }
 
-    const cacheKey = objectHash({ host, path, data, headers, params })
+    const cacheKey = objectHash({ host, path, data, headers, params }, { unorderedSets: true, unorderedObjects: true })
 
     if (useCache === true) {
       return await getCache(cacheKey, req)

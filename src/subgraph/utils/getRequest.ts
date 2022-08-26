@@ -18,7 +18,7 @@ export default function getRequest<T>(query: string) {
     const apiUrl = _.get(appConf.subgraphAPIUrl, networkId)
     if (apiUrl === undefined) throw fault('ERR_UNSUPPORTED_BLOCKCHAIN')
 
-    const cacheKey = objectHash({ apiUrl, query, params })
+    const cacheKey = objectHash({ apiUrl, query, params }, { unorderedSets: true, unorderedObjects: true })
 
     if (useCache === true) {
       return getCache(cacheKey, request(apiUrl, query, params), DEFAULT_CACHE_TTL)
