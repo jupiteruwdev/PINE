@@ -6,7 +6,7 @@ type Params = {
   poolAddress: string
 }
 
-export default async function getOnChainPoolByAddress({ poolAddress }: Params, options: Options) {
+export default async function getOnChainPoolByAddress({ poolAddress }: Params, { networkId, useCache }: Options = {}) {
   const request = getRequest(gql`
     query pools($id: ID!) {
       pool(id: $id) {
@@ -24,7 +24,7 @@ export default async function getOnChainPoolByAddress({ poolAddress }: Params, o
     }
   `)
 
-  return request({ id: poolAddress.toLowerCase() }, options)
+  return request({ id: poolAddress.toLowerCase() }, { networkId, useCache })
     .catch(err => {
       throw fault('ERR_GQL_BAD_REQUEST', undefined, err)
     })

@@ -28,12 +28,10 @@ export default async function getEthNFTValuation({
 
     switch (blockchain.networkId) {
     case Blockchain.Ethereum.Network.MAIN:
-      const dataSource = DataSource.compose(
+      const valuation = await DataSource.fetch(
         useOpenSea({ blockchain, collectionAddress, nftId }),
         useGemXYZ({ blockchain, collectionAddress, nftId }),
       )
-
-      const valuation = await dataSource.apply(undefined)
 
       return valuation
     case Blockchain.Ethereum.Network.RINKEBY:
@@ -67,6 +65,7 @@ export function useOpenSea({ blockchain, collectionAddress, nftId }: Params): Da
       headers: {
         'X-API-KEY': apiKey,
       },
+      useCache: false,
     })
 
     const floorPrice = new BigNumber(_.get(res, 'stats.floor_price'))
@@ -141,6 +140,7 @@ export function useGemXYZ({ blockchain, collectionAddress, nftId }: Params): Dat
         'Content-Type': 'application/json',
         'X-API-KEY': apiKey,
       },
+      useCache: false,
     }).catch(err => rethrow(`Failed to fetch valuation from GemXYZ: ${err}`))
 
     const floorPrice = new BigNumber(_.get(res, 'data.0.currentBasePrice')).div(new BigNumber(10).pow(new BigNumber(18)))
