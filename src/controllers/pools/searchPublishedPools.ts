@@ -1,8 +1,11 @@
 import BigNumber from 'bignumber.js'
+import _ from 'lodash'
 import { PipelineStage } from 'mongoose'
 import { PoolModel } from '../../db'
 import { mapPool } from '../../db/adapters'
 import { Blockchain, Pool, Value } from '../../entities'
+import { getEthNFTMetadata } from '../collaterals'
+import Tenor from '../utils/Tenor'
 import getPoolCapacity from './getPoolCapacity'
 import getPoolUtilization from './getPoolUtilization'
 
@@ -25,6 +28,8 @@ type Params<IncludeStats> = {
   includeRetired?: boolean
   includeStats?: IncludeStats
   lenderAddress?: string
+  tenors?: number[]
+  nftId?: string
   paginateBy?: {
     count: number
     offset: number
@@ -33,6 +38,21 @@ type Params<IncludeStats> = {
     type: PoolSortType
     direction: PoolSortDirection
   }
+}
+
+async function filterByNftId(blockchain: Blockchain, docs: any[], nftId: string): Promise<any[]> {
+  const docsWithMatcher = docs.filter(t => _.isString(_.get(t, 'collection.matcher.regex')) && _.isString(_.get(t, 'collection.matcher.fieldPath')))
+
+  if (docsWithMatcher.length > 0) {
+    const metadata = await getEthNFTMetadata({ blockchain, collectionAddress: docsWithMatcher[0].collection.address, nftId })
+    const nftProps = { id: nftId, ...metadata }
+    return docs.filter(doc => {
+      const regex = new RegExp(doc.collection.matcher.regex)
+      if (regex.test(_.get(nftProps, doc.collection.matcher.fieldPath))) return true
+      return false
+    })
+  }
+  return []
 }
 
 async function searchPublishedPools<IncludeStats extends boolean = false>(params?: Params<IncludeStats>): Promise<IncludeStats extends true ? Required<Pool>[] : Pool[]>
@@ -45,7 +65,22 @@ async function searchPublishedPools<IncludeStats extends boolean = false>({
     ...params,
   }))
 
-  const docs = paginateBy === undefined ? await aggregation.exec() : await aggregation.skip(paginateBy.offset).limit(paginateBy.count).exec()
+  let docs
+  if (params.nftId !== undefined) {
+    docs = await aggregation.exec()
+    docs = await filterByNftId(Blockchain.factory({
+      network: 'ethereum',
+      networkId: params.blockchainFilter?.ethereum,
+    }), docs, params.nftId)
+
+    if (paginateBy !== undefined) {
+      docs = docs.slice(paginateBy.offset, paginateBy.offset + paginateBy.count - 1)
+    }
+  }
+  else {
+    docs = paginateBy === undefined || params.nftId === undefined ? await aggregation.exec() : await aggregation.skip(paginateBy.offset).limit(paginateBy.count).exec()
+  }
+
   const pools = docs.map(mapPool)
 
   if (includeStats !== true) return pools
@@ -90,6 +125,7 @@ function getPipelineStages({
   lenderAddress,
   sortBy,
   address,
+  tenors,
 }: Params<never> = {}): PipelineStage[] {
   const blockchain = Blockchain.Ethereum(blockchainFilter.ethereum)
 
@@ -107,6 +143,11 @@ function getPipelineStages({
   const poolFilter = [
     ...address === undefined ? [] : [{
       'address': address.toLowerCase(),
+    }],
+    ...tenors === undefined ? [] : [{
+      'loanOptions.loanDurationSecond': {
+        $in: Tenor.convertTenors(tenors),
+      },
     }],
   ]
 
