@@ -41,19 +41,17 @@ type Params<IncludeStats> = {
 }
 
 async function filterByNftId(blockchain: Blockchain, docs: any[], nftId: string): Promise<any[]> {
-  const docsWithMatcher = docs.filter(t => _.isString(_.get(t, 'collection.matcher.regex')) && _.isString(_.get(t, 'collection.matcher.fieldPath')))
-
-  if (docsWithMatcher.length > 0) {
-    const metadata = await getEthNFTMetadata({ blockchain, collectionAddress: docsWithMatcher[0].collection.address, nftId })
-    const nftProps = { id: nftId, ...metadata }
-    const subDocs = docs.filter(doc => {
+  const metadata = await getEthNFTMetadata({ blockchain, collectionAddress: docs[0].collection.address, nftId })
+  const nftProps = { id: nftId, ...metadata }
+  const subDocs = docs.filter(doc => {
+    if (_.isString(_.get(doc, 'collection.matcher.regex')) && _.isString(_.get(doc, 'collection.matcher.fieldPath'))) {
       const regex = new RegExp(doc.collection.matcher.regex)
       if (regex.test(_.get(nftProps, doc.collection.matcher.fieldPath))) return true
       return false
-    })
-    return subDocs.length ? subDocs : docs
-  }
-  return docs
+    }
+    return true
+  })
+  return subDocs.length ? subDocs : docs
 }
 
 async function searchPublishedPools<IncludeStats extends boolean = false>(params?: Params<IncludeStats>): Promise<IncludeStats extends true ? Required<Pool>[] : Pool[]>
