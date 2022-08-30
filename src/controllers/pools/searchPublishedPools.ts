@@ -78,7 +78,7 @@ async function searchPublishedPools<IncludeStats extends boolean = false>({
     }
   }
   else {
-    docs = paginateBy === undefined || params.nftId === undefined ? await aggregation.exec() : await aggregation.skip(paginateBy.offset).limit(paginateBy.count).exec()
+    docs = paginateBy === undefined ? await aggregation.exec() : await aggregation.skip(paginateBy.offset).limit(paginateBy.count).exec()
   }
 
   const pools = docs.map(mapPool)
