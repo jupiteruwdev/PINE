@@ -20,12 +20,11 @@ export default async function getEthCollectionFloorPrices({
 
   logger.info(`Fetching floor prices for collections <${collectionAddresses}> on network <${blockchain.networkId}>...`)
 
-  const dataSource = DataSource.compose(
-    useNFTBank({ blockchain, collectionAddresses }),
-  )
-
   try {
-    const floorPrices = await dataSource.apply(undefined)
+    const floorPrices = await DataSource.fetch(
+      useNFTBank({ blockchain, collectionAddresses }),
+    )
+
     logger.info(`Fetching floor prices for collections <${collectionAddresses}> on network <${blockchain.networkId}>... OK: ${floorPrices.map(t => t.amount.toFixed())}`)
     return floorPrices
   }

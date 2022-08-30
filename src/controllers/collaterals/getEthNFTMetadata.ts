@@ -36,13 +36,11 @@ export default async function getEthNFTMetadata({
   tokenUri,
 }: Params): Promise<NFTMetadata> {
   try {
-    const dataSource = DataSource.compose(
+    const metadata = await DataSource.fetch(
       useTokenUri({ tokenUri }),
       useAlchemy({ blockchain, collectionAddress, nftId }),
       useContract({ blockchain, collectionAddress, nftId }),
     )
-
-    const metadata = await dataSource.apply(undefined)
 
     return metadata
   }

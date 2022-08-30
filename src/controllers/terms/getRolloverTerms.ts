@@ -39,7 +39,7 @@ export default async function getRolloverTerms({
       const valuation = await getEthNFTValuation({ blockchain: blockchain as Blockchain<'ethereum'>, collectionAddress, nftId })
       const { signature, issuedAtBlock, expiresAtBlock } = await signValuation({ blockchain, nftId, collectionAddress, valuation })
 
-      const loanTerms: RolloverTerms = {
+      const loanTerms = RolloverTerms.factory({
         routerAddress: pool.rolloverAddress,
         flashLoanSourceContractAddress: flashLoanSource?.address,
         maxFlashLoanValue: flashLoanSource?.capacity,
@@ -51,7 +51,7 @@ export default async function getRolloverTerms({
         expiresAtBlock,
         poolAddress: pool.address,
         collection: nft.collection,
-      }
+      })
 
       loanTerms.options.map(option => {
         option.maxBorrow = Value.$ETH(option.maxLTVBPS.div(10_000).times(loanTerms.valuation.value?.amount ?? 0))

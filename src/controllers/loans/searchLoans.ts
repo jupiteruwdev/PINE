@@ -99,8 +99,7 @@ export default async function searchLoans({
           ...collectionAddresses.map(address => address.toLowerCase()),
         ]
       }
-      const dataSource = DataSource.compose(useGraph({ blockchainFilter, collectionAddresses: allCollectionAddresses, lenderAddresses, sortBy, paginateBy }))
-      let loans = await dataSource.apply(undefined)
+      let loans = await DataSource.fetch(useGraph({ blockchainFilter, collectionAddresses: allCollectionAddresses, lenderAddresses, sortBy, paginateBy }))
 
       const uniqCollectionAddresses = _.uniq(loans.map(loan => loan.nft.collection.address.toLowerCase()))
 

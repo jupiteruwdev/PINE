@@ -13,7 +13,7 @@ namespace DataSource {
    *
    * @param dataSources - A set of asynchronous data sources returning the same type of data.
    *
-   * @returns The first fetched non-empty data.
+   * @returns The composed {@link DataSource}.
    */
   export function compose<T>(...dataSources: DataSource<T>[]): DataSource<T> {
     return async () => {
@@ -39,6 +39,19 @@ namespace DataSource {
 
       rethrow(fault('ERR_OUT_OF_DATA_SOURCES', 'Exhausted all data sources yielding no non-empty result', errorStack))
     }
+  }
+
+  /**
+   * Fetches data from the specified data sources in order, following the same rules as
+   * {@link compose}.
+   *
+   * @param dataSources - A set of asynchronous data sources returning the same type of data.
+   *
+   * @returns The first fetched non-empty data.
+   */
+  export async function fetch<T>(...dataSources: DataSource<T>[]): Promise<T> {
+    const res = await compose(...dataSources).apply(undefined)
+    return res
   }
 
   /**
