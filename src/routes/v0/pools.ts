@@ -2,7 +2,7 @@ import { Router } from 'express'
 import _ from 'lodash'
 import appConf from '../../app.conf'
 import { countPools, getPool, getPools, publishPool, searchPoolGroups, unpublishPool } from '../../controllers'
-import { PoolSortDirection, PoolSortType } from '../../controllers/pools/searchPublishedPools'
+import searchPublishedPools, { PoolSortDirection, PoolSortType } from '../../controllers/pools/searchPublishedPools'
 import { Pagination, Pool, PoolGroup, serializeEntityArray } from '../../entities'
 import fault from '../../utils/fault'
 import { getBlockchain, getBlockchainFilter, getNumber, getString } from '../utils/query'
@@ -85,6 +85,33 @@ router.get('/:poolAddress', async (req, res, next) => {
   }
   catch (err) {
     next(fault('ERR_API_FETCH_POOL', undefined, err))
+  }
+})
+
+router.get('/', async (req, res, next) => {
+  try {
+    const blockchainFilter = getBlockchainFilter(req.query, true)
+    const tenors = (req.query.tenors as string[])?.map(tenor => _.toNumber(tenor))
+    const nftId = getString(req.query, 'nftId', { optional: true })
+    const collectionAddress = getString(req.query, 'collectionAddress', { optional: true })
+    const sortByType = getString(req.query, 'sort', { optional: true }) as PoolSortType
+    const sortByDirection = getString(req.query, 'direction', { optional: true }) as PoolSortDirection
+    const sortBy = sortByType !== undefined ? { type: sortByType, direction: sortByDirection ?? PoolSortDirection.ASC } : undefined
+
+    const pools = await searchPublishedPools({
+      blockchainFilter,
+      collectionAddress,
+      tenors,
+      sortBy,
+      nftId,
+    })
+
+    const payload = serializeEntityArray(pools, Pool.codingResolver)
+
+    res.status(200).json(payload)
+  }
+  catch (err) {
+    next(fault('ERR_API_GET_POOLS', undefined, err))
   }
 })
 
