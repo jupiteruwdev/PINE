@@ -16,6 +16,7 @@ jobs:
     needs: [build]
     with:
       image: ${{ needs.build.outputs.image }}
+      service_label: core
     secrets: inherit
   notify:
     name: Notify

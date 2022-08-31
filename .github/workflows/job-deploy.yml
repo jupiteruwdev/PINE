@@ -1,6 +1,10 @@
 on:
   workflow_call:
     inputs:
+      service_label:
+        description: The service label on Google Cloud Run
+        required: true
+        type: string
       image:
         description: The Docker image to deploy
         required: true
@@ -23,7 +27,7 @@ jobs:
       - name: Deploy
         run: |
           gcloud config set project ${{ secrets.GCP_PROJECT }}
-          services=$(gcloud run services list --platform managed --filter="metadata.labels.ref=${{ github.ref_name }}" | awk 'NR >= 2 {print $2}' | sed -n -e 'H;${x;s/\n/,/g;s/^,//;p;}')
+          services=$(gcloud run services list --platform managed --filter="metadata.labels.service=${{ inputs.service_label }} AND metadata.labels.ref=${{ github.ref_name }}" | awk 'NR >= 2 {print $2}' | sed -n -e 'H;${x;s/\n/,/g;s/^,//;p;}')
           for service in $(echo $services | sed "s/,/ /g")
           do
             region=$(gcloud run services list --platform managed --filter=metadata.name=$service | awk 'NR == 2 {print $3}')
