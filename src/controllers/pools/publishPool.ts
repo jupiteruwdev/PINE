@@ -29,13 +29,8 @@ async function savePool({ poolData, blockchain }: SavePoolParams) {
       '$regex': poolData.collection,
       '$options': 'i',
     },
+    matcher: null,
   }).lean()
-
-  const isExist = await isPoolPublished({ blockchain, collectionAddress: poolData.collection })
-
-  if (isExist) {
-    throw fault('ERR_POOL_EXISTS')
-  }
 
   if (collection === undefined) {
     collection = await saveCollection({ collectionAddress: poolData.collection, blockchain })
