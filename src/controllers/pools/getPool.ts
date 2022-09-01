@@ -150,6 +150,10 @@ function getPipelineStages({
       $and: collectionFilter,
     },
   }], {
+    $sort: {
+      'loanOptions.interestBpsBlock': 1,
+    },
+  }, {
     $limit: 1,
   }]
 
