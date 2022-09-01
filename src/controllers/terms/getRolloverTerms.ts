@@ -11,12 +11,14 @@ type Params = {
   blockchain: Blockchain
   collectionAddress: string
   nftId: string
+  poolAddress?: string
 }
 
 export default async function getRolloverTerms({
   blockchain,
   collectionAddress,
   nftId,
+  poolAddress,
 }: Params): Promise<RolloverTerms> {
   logger.info(`Fetching rollover terms for NFT ID <${nftId}> and collection address <${collectionAddress}> on blockchain <${JSON.stringify(blockchain)}>...`)
 
@@ -26,8 +28,8 @@ export default async function getRolloverTerms({
       const existingLoan = await getLoan({ blockchain, nftId, collectionAddress })
       if (!existingLoan || existingLoan.borrowed.amount.lte(existingLoan.returned.amount)) throw fault('ERR_INVALID_ROLLOVER')
 
-      const pool = await getPool({ address: existingLoan.poolAddress, blockchain, includeStats: true })
-      const flashLoanSource = await getFlashLoanSource({ blockchain, poolAddress: existingLoan.poolAddress })
+      const pool = await getPool({ address: poolAddress, blockchain, includeStats: true })
+      const flashLoanSource = await getFlashLoanSource({ blockchain, poolAddress: pool.address })
       if (!pool) throw fault('ERR_NO_POOLS_AVAILABLE')
 
       const nft: NFT = {
