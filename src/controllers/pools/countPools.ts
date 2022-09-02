@@ -103,39 +103,7 @@ function getPipelineStages({
     $match: {
       $and: poolFilter,
     },
-  }], {
-    $addFields: {
-      name: {
-        $toLower: {
-          $trim: {
-            input: '$collection.displayName',
-            chars: '"',
-          },
-        },
-      },
-      interest: {
-        $min: '$loanOptions.interestBpsBlock',
-      },
-      interestOverride: {
-        $min: '$loanOptions.interestBpsBlockOverride',
-      },
-      maxLTV: {
-        $max: '$loanOptions.maxLtvBps',
-      },
-    },
-  }, {
-    $addFields: {
-      lowestAPR: {
-        $cond: {
-          if: {
-            $ne: ['$interestOverride', null],
-          },
-          then: '$interestOverride',
-          else: '$interest',
-        },
-      },
-    },
-  }]
+  }]]
 
   return stages
 }
