@@ -56,7 +56,7 @@ export default async function getRolloverTerms({
       })
 
       loanTerms.options.map(option => {
-        option.maxBorrow = Value.$ETH(option.maxLTVBPS.div(10_000).times(loanTerms.valuation.value?.amount ?? 0))
+        option.maxBorrow = Value.$ETH(option.maxLTVBPS.div(10_000).times(loanTerms.valuation.value?.amount ?? 0).toFixed(6))
         option.fees = [
           {
             type: 'percentage',

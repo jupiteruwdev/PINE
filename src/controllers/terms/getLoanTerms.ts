@@ -49,7 +49,7 @@ export default async function getLoanTerms({ blockchain, collectionAddress, nftI
       }
 
       loanTerms.options.map(option => {
-        option.maxBorrow = Value.$ETH(option.maxLTVBPS.div(10_000).times(loanTerms.valuation.value?.amount ?? 0))
+        option.maxBorrow = Value.$ETH(option.maxLTVBPS.div(10_000).times(loanTerms.valuation.value?.amount ?? 0).toFixed(6))
       })
 
       if (pool.ethLimit !== 0 && loanTerms.options.some(option => pool.utilization.amount.plus(option.maxBorrow?.amount ?? new BigNumber(0)).gt(new BigNumber(pool.ethLimit ?? 0)))) throw fault('ERR_POOL_OVER_LENDER_DEFINED_UTILIZATION')
