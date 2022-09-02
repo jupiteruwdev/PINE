@@ -82,6 +82,7 @@ export default {
     },
   ],
   blocksPerSecond: 14,
+  ethMaxDecimalPlaces: 6,
   mongoUri: process.env.MONGO_URI ?? '',
   tenors: [1, 3, 7, 14, 30],
   tests: {
