@@ -40,7 +40,7 @@ type Params<IncludeStats> = {
   }
 }
 
-async function filterByNftId(blockchain: Blockchain, docs: any[], nftId: string): Promise<any[]> {
+export async function filterByNftId(blockchain: Blockchain, docs: any[], nftId: string): Promise<any[]> {
   const metadata = await getEthNFTMetadata({ blockchain, collectionAddress: docs[0].collection.address, nftId })
   const nftProps = { id: nftId, ...metadata }
   const subDocs = docs.filter(doc => {

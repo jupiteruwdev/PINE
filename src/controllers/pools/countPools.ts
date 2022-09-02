@@ -1,20 +1,32 @@
 import { PipelineStage } from 'mongoose'
 import { PoolModel } from '../../db'
 import { Blockchain } from '../../entities'
+import Tenor from '../utils/Tenor'
+import { filterByNftId } from './searchPublishedPools'
 
 type Params = {
   blockchainFilter?: Blockchain.Filter
   collectionAddress?: string
   collectionName?: string
   includeRetired?: boolean
+  address?: string
+  lenderAddress?: string
+  tenors?: number[]
+  nftId?: string
 }
 
 export default async function countPools(params: Params = {}): Promise<number> {
   const aggregation = PoolModel.aggregate(getPipelineStages(params))
-  const res = await aggregation.count('count').exec()
-  const count = res[0]?.count ?? 0
+  let docs = await aggregation.exec()
 
-  return count
+  if (params.nftId !== undefined) {
+    docs = await filterByNftId(Blockchain.factory({
+      network: 'ethereum',
+      networkId: params.blockchainFilter?.ethereum,
+    }), docs, params.nftId)
+  }
+
+  return docs.length
 }
 
 function getPipelineStages({
@@ -25,23 +37,39 @@ function getPipelineStages({
   collectionAddress,
   collectionName,
   includeRetired = false,
+  address,
+  lenderAddress,
+  tenors,
 }: Params): PipelineStage[] {
   const blockchain = Blockchain.Ethereum(blockchainFilter.ethereum)
 
   const collectionFilter = [
     ...collectionAddress === undefined ? [] : [{
-      'collection.address': collectionAddress,
+      'collection._address': collectionAddress.toLowerCase(),
     }],
-    ...collectionName === undefined ? [] : [{ 'collection.displayName': {
-      $regex: `.*${collectionName}.*`,
-      $options: 'i',
-    } }],
+    ...collectionName === undefined ? [] : [{
+      'collection.displayName': {
+        $regex: `.*${collectionName}.*`,
+        $options: 'i',
+      },
+    }],
+  ]
+  const poolFilter = [
+    ...address === undefined ? [] : [{
+      'address': address.toLowerCase(),
+    }],
+    ...tenors === undefined ? [] : [{
+      'loanOptions.loanDurationSecond': {
+        $in: Tenor.convertTenors(tenors),
+      },
+    }],
   ]
 
-  return [{
+  const stages: PipelineStage[] = [{
     $match: {
       'networkType': blockchain.network,
       'networkId': blockchain.networkId,
+      ...lenderAddress === undefined ? {} : { lenderAddress },
       ...includeRetired === true ? {} : { retired: { $ne: true } },
     },
   }, {
@@ -55,8 +83,27 @@ function getPipelineStages({
     $unwind: '$collection',
   },
   ...collectionFilter.length === 0 ? [] : [{
+    $addFields: {
+      'collection._address': {
+        $toLower: '$collection.address',
+      },
+    },
+  }, {
     $match: {
       $and: collectionFilter,
     },
+  }],
+  ...poolFilter.length === 0 ? [] : [{
+    $addFields: {
+      'address': {
+        $toLower: '$address',
+      },
+    },
+  }, {
+    $match: {
+      $and: poolFilter,
+    },
   }]]
+
+  return stages
 }

@@ -97,6 +97,10 @@ router.get('/', async (req, res, next) => {
     const sortByType = getString(req.query, 'sort', { optional: true }) as PoolSortType
     const sortByDirection = getString(req.query, 'direction', { optional: true }) as PoolSortDirection
     const sortBy = sortByType !== undefined ? { type: sortByType, direction: sortByDirection ?? PoolSortDirection.ASC } : undefined
+    const paginateByOffset = getNumber(req.query, 'offset', { optional: true })
+    const paginateByCount = getNumber(req.query, 'count', { optional: true })
+    const paginateBy = paginateByOffset !== undefined && paginateByCount !== undefined ? { count: paginateByCount, offset: paginateByOffset } : undefined
+    const totalCount = await countPools({ collectionAddress, blockchainFilter, tenors, nftId })
 
     const pools = await searchPublishedPools({
       blockchainFilter,
@@ -104,11 +108,14 @@ router.get('/', async (req, res, next) => {
       tenors,
       sortBy,
       nftId,
+      paginateBy,
     })
 
     const payload = serializeEntityArray(pools, Pool.codingResolver)
+    const nextOffset = (paginateBy?.offset ?? 0) + pools.length
+    const pagination = Pagination.serialize({ data: payload, totalCount, nextOffset: nextOffset === totalCount - 1 ? undefined : nextOffset })
 
-    res.status(200).json(payload)
+    res.status(200).json(pagination)
   }
   catch (err) {
     next(fault('ERR_API_GET_POOLS', undefined, err))
