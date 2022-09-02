@@ -19,9 +19,10 @@ export default async function getPNPLTermsByUrl({ parsedURL }: Params): Promise<
 
   switch (hostname) {
   case 'opensea.io': {
-    const [, , , collectionAddress, nftId] = parsedURL.pathname.split('/')
-    if (!Web3.utils.isAddress(collectionAddress)) throw fault('ERR_PNPL_INVALID_URL')
+    const collectionAddress = RegExp(/0x[a-fA-F0-9]{40}/).exec(parsedURL.pathname)?.at(0)
+    const nftId = RegExp(/(\d+$)|(\/\d+\/)/).exec(parsedURL.pathname)?.at(0)
     if (!collectionAddress || !nftId) throw fault('ERR_PNPL_INVALID_URL')
+    if (!Web3.utils.isAddress(collectionAddress)) throw fault('ERR_PNPL_INVALID_URL')
 
     return getOpenSeaPNPLTerms({
       openseaVersion: 'main',
@@ -31,9 +32,10 @@ export default async function getPNPLTermsByUrl({ parsedURL }: Params): Promise<
     })
   }
   case 'testnets.opensea.io': {
-    const [, , , collectionAddress, nftId] = parsedURL.pathname.split('/')
-    if (!Web3.utils.isAddress(collectionAddress)) throw fault('ERR_PNPL_INVALID_URL')
+    const collectionAddress = RegExp(/0x[a-fA-F0-9]{40}/).exec(parsedURL.pathname)?.at(0)
+    const nftId = RegExp(/(\d+$)|(\/\d+\/)/).exec(parsedURL.pathname)?.at(0)
     if (!collectionAddress || !nftId) throw fault('ERR_PNPL_INVALID_URL')
+    if (!Web3.utils.isAddress(collectionAddress)) throw fault('ERR_PNPL_INVALID_URL')
 
     return getOpenSeaPNPLTerms({
       openseaVersion: 'rinkeby',
