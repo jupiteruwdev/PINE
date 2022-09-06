@@ -1,5 +1,5 @@
 import _ from 'lodash'
-import { Collection } from '../../entities'
+import { Collection } from '../entities'
 
 export default function mapCollection(data: Record<string, any>): Collection {
   const address = _.get(data, 'address')

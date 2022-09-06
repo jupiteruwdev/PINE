@@ -1,5 +1,5 @@
 import { NFTCollectionModel } from '../../db'
-import { mapCollection } from '../../db/adapters'
+import { mapCollection } from '../../adapters/db'
 import { Blockchain, Collection } from '../../entities'
 import logger from '../../utils/logger'
 import DataSource from '../utils/DataSource'

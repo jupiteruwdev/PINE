@@ -1,7 +1,7 @@
 import BigNumber from 'bignumber.js'
 import _ from 'lodash'
-import { Fee, LoanOption, Pool } from '../../entities'
-import fault from '../../utils/fault'
+import { Fee, LoanOption, Pool } from '../entities'
+import fault from '../utils/fault'
 import mapCollection from './mapCollection'
 
 function mapLoanOption(

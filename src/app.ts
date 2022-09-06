@@ -14,7 +14,14 @@ import logger from './utils/logger'
 // Remove depth from console logs
 util.inspect.defaultOptions.depth = undefined
 
-initDb()
+initDb({
+  onError: err => {
+
+  },
+  onOpen: () => {
+
+  },
+})
 
 const app = express()
 
