@@ -1,12 +1,12 @@
 import BigNumber from 'bignumber.js'
 import _ from 'lodash'
-import { mapPool } from '../../adapters/db'
 import appConf from '../../app.conf'
 import { NFTCollectionModel, PoolModel } from '../../db'
 import { Blockchain, Fee, Pool } from '../../entities'
 import { getOnChainPoolByAddress } from '../../subgraph'
 import fault from '../../utils/fault'
 import logger from '../../utils/logger'
+import { mapPool } from '../adapters'
 import saveCollection from '../collections/saveCollection'
 import authenticatePoolPublisher from './authenticatePoolPublisher'
 
