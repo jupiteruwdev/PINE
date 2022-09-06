@@ -3,7 +3,10 @@
   "color": true,
   "diff": true,
   "exit": true,
-  "ignore": "**/entities/**/**",
+  "ignore": [
+    "**/db/**/**",
+    "**/entities/**/**"
+  ],
   "node-option": [
     "experimental-specifier-resolution=node"
   ],
