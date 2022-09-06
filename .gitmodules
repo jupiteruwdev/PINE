@@ -4,3 +4,6 @@
 [submodule "src/entities"]
 	path = src/entities
 	url = https://github.com/pinedefi/entities
+[submodule "src/db"]
+	path = src/db
+	url = https://github.com/pinedefi/db

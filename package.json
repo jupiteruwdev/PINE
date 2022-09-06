@@ -18,7 +18,7 @@
     "test:int:ts": "cross-env NODE_ENV=test MOCHAWESOME_REPORTFILENAME=integration mocha --config .mocharc -r ts-node/register -n loader=ts-node/esm --extension ts \"tests/$npm_config_files\"",
     "ship:start": "docker-compose -f docker-compose.yml up --build",
     "ship:test": "docker-compose -f docker-compose.test.yml up --build --exit-code-from app",
-    "lint": "eslint --ext .ts --ignore-pattern entities src",
+    "lint": "eslint --ext .ts --ignore-pattern entities --ignore-pattern db src",
     "lint:fix": "npm run lint -- --fix"
   },
   "license": "NOLICENSE",

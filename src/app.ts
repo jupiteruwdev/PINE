@@ -9,12 +9,21 @@ import util from 'util'
 import appConf from './app.conf'
 import { initDb } from './db'
 import routes from './routes'
+import fault from './utils/fault'
 import logger from './utils/logger'
 
 // Remove depth from console logs
 util.inspect.defaultOptions.depth = undefined
 
-initDb()
+initDb({
+  onError: err => {
+    logger.error('Establishing database conection... ERR:', err)
+    throw fault('ERR_DB_CONNECTION', undefined, err)
+  },
+  onOpen: () => {
+    logger.info('Establishing database connection... OK')
+  },
+})
 
 const app = express()
 

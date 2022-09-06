@@ -1,7 +1,7 @@
 import { NFTCollectionModel } from '../../db'
-import { mapCollection } from '../../db/adapters'
 import { Blockchain, Collection } from '../../entities'
 import logger from '../../utils/logger'
+import { mapCollection } from '../adapters'
 import DataSource from '../utils/DataSource'
 
 type Params = {
