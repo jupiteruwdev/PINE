@@ -8,7 +8,7 @@ jobs:
     uses: ./.github/workflows/job-build.yml
     with:
       push: true
-      environment: ${{ github.ref_name == 'main' && 'production' || 'staging' }}
+      use_prod_apis: ${{ github.ref_name == 'main' }}
     secrets: inherit
   deploy:
     name: Deploy
