@@ -1,7 +1,9 @@
 import BigNumber from 'bignumber.js'
+import Web3 from 'web3'
 import { Blockchain, GlobalStats, Value } from '../../entities'
+import { getOnChainGlobalStats } from '../../subgraph'
 import logger from '../../utils/logger'
-import { getPoolHistoricalLent, searchPublishedPools } from '../pools'
+import { searchPublishedPools } from '../pools'
 import getEthValueUSD from '../utils/getEthValueUSD'
 
 type Params = {
@@ -29,8 +31,8 @@ export default async function getGlobalStats({
     const totalValueLockedUSD = pools.reduce((p, c) => p.plus(c.valueLocked.amount), new BigNumber(0)).times(ethValueUSD.amount)
     const totalCapacityUSD = totalValueLockedUSD.minus(totalUtilizationUSD)
 
-    const lentEthPerPool = await Promise.all(pools.map(pool => getPoolHistoricalLent({ blockchain: Blockchain.Ethereum(blockchainFilter), poolAddress: pool.address })))
-    const totalLentETH = lentEthPerPool.reduce((p, c) => p.plus(c.amount), new BigNumber(0))
+    const { globalStat } = await getOnChainGlobalStats()
+    const totalLentETH = Web3.utils.fromWei(globalStat.historicalLentOut)
 
     const globalStats: GlobalStats = {
       capacity: Value.$USD(totalCapacityUSD),

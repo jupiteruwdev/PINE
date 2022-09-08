@@ -1,7 +1,6 @@
 export { default as countPools } from './countPools'
 export { default as getPool } from './getPool'
 export { default as getPoolCapacity } from './getPoolCapacity'
-export { default as getPoolHistoricalLent } from './getPoolHistoricalLent'
 export { default as getPools } from './getPools'
 export { default as getPoolUtilization } from './getPoolUtilization'
 export { default as isPoolPublished } from './isPoolPublished'
