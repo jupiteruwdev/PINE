@@ -45,6 +45,8 @@ export default function mapPool(data: Record<string, any>): Pool {
   const ethLimit = _.toNumber(_.get(data, 'ethLimit', 0))
   const lenderAddress = _.get(data, 'lenderAddress', '')
   const published = _.get(data, 'published', true)
+  const tokenAddress = _.get(data, 'tokenAddress')
+  const fundSource = _.get(data, 'fundSource')
   const loanOptions = _.get(data, 'loanOptions', []).map((t: any) =>
     mapLoanOption(t, defaultFees)
   )
@@ -70,6 +72,8 @@ export default function mapPool(data: Record<string, any>): Pool {
     repayRouterAddress,
     rolloverAddress,
     ethLimit,
+    tokenAddress,
+    fundSource,
     published,
   })
 }

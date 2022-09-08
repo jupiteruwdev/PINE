@@ -49,6 +49,8 @@ async function savePool({ poolData, blockchain }: SavePoolParams) {
     address: poolData.id,
     networkType: blockchain.network,
     networkId: blockchain.networkId,
+    tokenAddress: poolData.supportedCurrency,
+    fundSource: poolData.fundSource,
     loanOptions,
     poolVersion: 2,
     lenderAddress: poolData.lenderAddress,

@@ -49,7 +49,7 @@ async function getPool<IncludeStats extends boolean = false>({
       { amount: capacityEth },
     ] = await Promise.all([
       getPoolUtilization({ blockchain, poolAddress: pool.address }),
-      getPoolCapacity({ blockchain, poolAddress: pool.address }),
+      getPoolCapacity({ blockchain, poolAddress: pool.address, tokenAddress: pool.tokenAddress, fundSource: pool.fundSource }),
     ])
 
     const valueLockedEth = capacityEth.plus(utilizationEth).gt(new BigNumber(pool.ethLimit || Number.POSITIVE_INFINITY)) ? new BigNumber(pool.ethLimit ?? 0) : capacityEth.plus(utilizationEth)
@@ -80,6 +80,8 @@ async function getPool<IncludeStats extends boolean = false>({
     address: pool.id,
     blockchain,
     ...pool,
+    tokenAddress: pool.supportedCurrency,
+    fundSource: pool.fundSource,
     collection: Collection.factory({
       address: pool.collection,
       blockchain,
