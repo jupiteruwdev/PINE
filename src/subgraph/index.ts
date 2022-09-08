@@ -1,3 +1,4 @@
+export { default as getOnChainGlobalStats } from './getOnChainGlobalStats'
 export { default as getOnChainLoanById } from './getOnChainLoanById'
 export { default as getOnChainLoans } from './getOnChainLoans'
 export { default as getOnChainPoolByAddress } from './getOnChainPoolByAddress'
