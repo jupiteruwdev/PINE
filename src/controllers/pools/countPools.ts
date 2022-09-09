@@ -11,6 +11,7 @@ type Params = {
   includeRetired?: boolean
   address?: string
   lenderAddress?: string
+  groupBy?: boolean
   tenors?: number[]
   nftId?: string
 }
@@ -40,6 +41,7 @@ function getPipelineStages({
   address,
   lenderAddress,
   tenors,
+  groupBy = false,
 }: Params): PipelineStage[] {
   const blockchain = Blockchain.Ethereum(blockchainFilter.ethereum)
 
@@ -103,7 +105,18 @@ function getPipelineStages({
     $match: {
       $and: poolFilter,
     },
-  }]]
+  }],
+  ...groupBy ? [{
+    $group: {
+      _id: '$collection.address',
+      pools: {
+        $push: '$$ROOT',
+      },
+    },
+  },
+  {
+    $unset: '_id',
+  }] : []]
 
   return stages
 }

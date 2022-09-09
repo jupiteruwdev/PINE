@@ -46,7 +46,7 @@ describe('controllers/pools/searchPublishedPools', () => {
 
   // TODO: Pool is retired?
   it.skip('can search pools with pool address', async () => {
-    const pools = await searchPublishedPools({ address: '0x609fee5870739611fea720ad5d86be458b47596a' })
+    const pools = await searchPublishedPools({ address: '0x609fee5870739611fea720ad5d86be458b47596a' }) as Pool[]
 
     expect(pools).to.have.length(1)
     expect(pools[0].address).equals('0x609fee5870739611fea720ad5d86be458b47596a')

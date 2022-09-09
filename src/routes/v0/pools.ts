@@ -34,7 +34,7 @@ router.get('/groups/search', async (req, res, next) => {
     const paginateByOffset = getNumber(req.query, 'offset', { optional: true })
     const paginateByCount = getNumber(req.query, 'count', { optional: true })
     const paginateBy = paginateByOffset !== undefined && paginateByCount !== undefined ? { count: paginateByCount, offset: paginateByOffset } : undefined
-    const totalCount = await countPools({ collectionAddress, blockchainFilter, collectionName })
+    const totalCount = await countPools({ collectionAddress, blockchainFilter, collectionName, groupBy: true })
     const poolGroups = await searchPoolGroups({ collectionAddress, collectionName, blockchainFilter, paginateBy, sortBy })
     const payload = serializeEntityArray(poolGroups, PoolGroup.codingResolver)
     const nextOffset = (paginateBy?.offset ?? 0) + poolGroups.length
@@ -102,14 +102,14 @@ router.get('/', async (req, res, next) => {
     const paginateBy = paginateByOffset !== undefined && paginateByCount !== undefined ? { count: paginateByCount, offset: paginateByOffset } : undefined
     const totalCount = await countPools({ collectionAddress, blockchainFilter, tenors, nftId })
 
-    const pools = await searchPublishedPools({
+    const pools = (await searchPublishedPools({
       blockchainFilter,
       collectionAddress,
       tenors,
       sortBy,
       nftId,
       paginateBy,
-    })
+    })) as Pool[]
 
     const payload = serializeEntityArray(pools, Pool.codingResolver)
     const nextOffset = (paginateBy?.offset ?? 0) + pools.length

@@ -1,5 +1,6 @@
+import BigNumber from 'bignumber.js'
 import _ from 'lodash'
-import { Blockchain, PoolGroup, Value } from '../../entities'
+import { Blockchain, Pool, PoolGroup, Value } from '../../entities'
 import logger from '../../utils/logger'
 import { getEthCollectionFloorPrices } from '../collections'
 import getEthValueUSD from '../utils/getEthValueUSD'
@@ -34,7 +35,7 @@ export default async function searchPoolGroups({
   logger.info('Searching pool groups...')
 
   try {
-    const [ethValueUSD, pools] = await Promise.all([
+    const [ethValueUSD, groups] = await Promise.all([
       getEthValueUSD(),
       searchPublishedPools({
         blockchainFilter,
@@ -42,15 +43,26 @@ export default async function searchPoolGroups({
         collectionName,
         includeStats: true,
         paginateBy,
+        groupBy: true,
         sortBy,
       }),
     ])
 
-    const poolGroups = pools.map(pool => PoolGroup.factory({
-      collection: pool.collection,
-      pools: [pool],
-      totalValueLent: Value.$USD(pool.utilization.amount.times(ethValueUSD.amount)),
-      totalValueLocked: Value.$USD(pool.valueLocked.amount.times(ethValueUSD.amount)),
+    const pools = groups as Required<Pool>[][]
+
+    const poolGroups = pools.map((group: Required<Pool>[]) => PoolGroup.factory({
+      collection: group[0].collection,
+      pools: group,
+      totalValueLent: Value.$USD(
+        group
+          .reduce((sum, pool: Pool) => sum.plus(pool.utilization?.amount || 0), new BigNumber(0))
+          .times(ethValueUSD.amount)
+      ),
+      totalValueLocked: Value.$USD(
+        group
+          .reduce((sum, pool: Pool) => sum.plus(pool.valueLocked?.amount || 0), new BigNumber(0))
+          .times(ethValueUSD.amount)
+      ),
     }))
 
     const ethGroups = _.filter(poolGroups, group => group.collection.blockchain.network === 'ethereum')

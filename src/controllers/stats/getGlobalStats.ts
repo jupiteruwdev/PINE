@@ -1,5 +1,5 @@
 import BigNumber from 'bignumber.js'
-import { Blockchain, GlobalStats, Value } from '../../entities'
+import { Blockchain, GlobalStats, Pool, Value } from '../../entities'
 import logger from '../../utils/logger'
 import { getPoolHistoricalLent, searchPublishedPools } from '../pools'
 import getEthValueUSD from '../utils/getEthValueUSD'
@@ -19,11 +19,12 @@ export default async function getGlobalStats({
 
     const [
       ethValueUSD,
-      pools,
+      poolGroups,
     ] = await Promise.all([
       getEthValueUSD(),
       searchPublishedPools({ blockchainFilter, includeStats: true, includeRetired: true }),
     ])
+    const pools = poolGroups as Required<Pool>[]
 
     const totalUtilizationUSD = pools.reduce((p, c) => p.plus(c.utilization.amount), new BigNumber(0)).times(ethValueUSD.amount)
     const totalValueLockedUSD = pools.reduce((p, c) => p.plus(c.valueLocked.amount), new BigNumber(0)).times(ethValueUSD.amount)

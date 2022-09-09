@@ -1,6 +1,6 @@
 import BigNumber from 'bignumber.js'
 import _ from 'lodash'
-import { Blockchain, Collection, Loan, NFT, Value } from '../../entities'
+import { Blockchain, Collection, Loan, NFT, Pool, Value } from '../../entities'
 import { getOnChainLoans } from '../../subgraph'
 import fault from '../../utils/fault'
 import logger from '../../utils/logger'
@@ -84,7 +84,7 @@ export default async function getLoansByCollection({
 
 export function useGraph({ blockchain, collectionAddress }: Params): DataSource<Loan[]> {
   return async () => {
-    const pools = await searchPublishedPools({ collectionAddress, blockchainFilter: { [blockchain.network]: blockchain.networkId } })
+    const pools = await searchPublishedPools({ collectionAddress, blockchainFilter: { [blockchain.network]: blockchain.networkId } }) as Pool[]
     const poolAddresses = pools.map(pool => pool.address)
     const onChainLoans = await getOnChainLoans({ poolAddresses }, { networkId: blockchain.networkId })
 

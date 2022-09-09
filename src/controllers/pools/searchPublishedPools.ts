@@ -2,7 +2,7 @@ import BigNumber from 'bignumber.js'
 import _ from 'lodash'
 import { PipelineStage } from 'mongoose'
 import { PoolModel } from '../../db'
-import { Blockchain, Pool, Value } from '../../entities'
+import { AnyCurrency, Blockchain, Pool, Value } from '../../entities'
 import { mapPool } from '../adapters'
 import { getEthNFTMetadata } from '../collaterals'
 import Tenor from '../utils/Tenor'
@@ -30,6 +30,7 @@ type Params<IncludeStats> = {
   lenderAddress?: string
   tenors?: number[]
   nftId?: string
+  groupBy?: boolean
   paginateBy?: {
     count: number
     offset: number
@@ -57,12 +58,38 @@ export async function filterByNftId(blockchain: Blockchain, docs: any[], nftId: 
   return docs
 }
 
-async function searchPublishedPools<IncludeStats extends boolean = false>(params?: Params<IncludeStats>): Promise<IncludeStats extends true ? Required<Pool>[] : Pool[]>
+function constructPools(pools: Pool[]): Promise<Pool<AnyCurrency>[]> {
+  const constructedPools = Promise.all(pools.map(async pool => {
+    const [{ amount: utilizationEth }, { amount: capacityEth }] =
+      await Promise.all([
+        getPoolUtilization({
+          blockchain: pool.blockchain,
+          poolAddress: pool.address,
+        }),
+        getPoolCapacity({
+          blockchain: pool.blockchain,
+          poolAddress: pool.address,
+        }),
+      ])
+
+    const valueLockedEth = capacityEth.plus(utilizationEth).gt(new BigNumber(pool.ethLimit || Number.POSITIVE_INFINITY)) ? new BigNumber(pool.ethLimit ?? 0) : capacityEth.plus(utilizationEth)
+
+    return Pool.factory({
+      ...pool,
+      utilization: Value.$ETH(utilizationEth),
+      valueLocked: Value.$ETH(valueLockedEth),
+    })
+  }))
+
+  return constructedPools
+}
+
+async function searchPublishedPools<IncludeStats extends boolean = false>(params?: Params<IncludeStats>): Promise<IncludeStats extends true ? Required<Pool>[] | Required<Pool>[][] : Pool[] | Pool[][]>
 async function searchPublishedPools<IncludeStats extends boolean = false>({
   includeStats,
   paginateBy,
   ...params
-}: Params<IncludeStats> = {}): Promise<Pool[]> {
+}: Params<IncludeStats> = {}): Promise<Pool[] | Pool[][]> {
   const aggregation = PoolModel.aggregate(getPipelineStages({
     ...params,
   }))
@@ -83,33 +110,12 @@ async function searchPublishedPools<IncludeStats extends boolean = false>({
     docs = paginateBy === undefined ? await aggregation.exec() : await aggregation.skip(paginateBy.offset).limit(paginateBy.count).exec()
   }
 
-  const pools = docs.map(mapPool)
+  const pools = params.groupBy ? docs.map(doc => doc.pools.map(mapPool)) : docs.map(mapPool)
 
   if (includeStats !== true) return pools
 
-  const poolsWithStats = await Promise.all(
-    pools.map(async pool => {
-      const [{ amount: utilizationEth }, { amount: capacityEth }] =
-        await Promise.all([
-          getPoolUtilization({
-            blockchain: pool.blockchain,
-            poolAddress: pool.address,
-          }),
-          getPoolCapacity({
-            blockchain: pool.blockchain,
-            poolAddress: pool.address,
-          }),
-        ])
-
-      const valueLockedEth = capacityEth.plus(utilizationEth).gt(new BigNumber(pool.ethLimit || Number.POSITIVE_INFINITY)) ? new BigNumber(pool.ethLimit ?? 0) : capacityEth.plus(utilizationEth)
-
-      return Pool.factory({
-        ...pool,
-        utilization: Value.$ETH(utilizationEth),
-        valueLocked: Value.$ETH(valueLockedEth),
-      })
-    })
-  )
+  const poolsWithStats = params.groupBy
+    ? await Promise.all(pools.map(group => constructPools(group))) : await constructPools(pools)
 
   return poolsWithStats
 }
@@ -128,6 +134,7 @@ function getPipelineStages({
   sortBy,
   address,
   tenors,
+  groupBy = false,
 }: Params<never> = {}): PipelineStage[] {
   const blockchain = Blockchain.Ethereum(blockchainFilter.ethereum)
 
@@ -223,33 +230,51 @@ function getPipelineStages({
         },
       },
     },
-  }]
+  },
+  ...groupBy ? [{
+    $group: {
+      _id: '$collection.address',
+      pools: {
+        $push: '$$ROOT',
+      },
+    },
+  },
+  {
+    $unset: '_id',
+  }] : [],
+  ]
+
+  const nameSortField = groupBy ? 'pools.name' : 'name'
+  const interestSortField = groupBy ? 'pools.lowestAPR' : 'lowestAPR'
+  const ltvSortField = groupBy ? 'pools.maxLTV' : 'maxLTV'
 
   switch (sortBy?.type) {
   case PoolSortType.NAME:
     stages.push({
       $sort: {
-        name: sortBy?.direction === PoolSortDirection.DESC ? -1 : 1,
+        [nameSortField]: sortBy?.direction === PoolSortDirection.DESC ? -1 : 1,
       },
     })
     break
   case PoolSortType.INTEREST:
     stages.push({
       $sort: {
-        lowestAPR: sortBy?.direction === PoolSortDirection.DESC ? -1 : 1,
-        name: 1,
+        [interestSortField]: sortBy?.direction === PoolSortDirection.DESC ? -1 : 1,
+        [nameSortField]: 1,
       },
     })
     break
   case PoolSortType.LTV:
     stages.push({
       $sort: {
-        maxLTV: sortBy?.direction === PoolSortDirection.DESC ? -1 : 1,
-        name: 1,
+        [ltvSortField]: sortBy?.direction === PoolSortDirection.DESC ? -1 : 1,
+        [nameSortField]: 1,
       },
     })
     break
   }
 
-  return stages
+  return [
+    ...stages,
+  ]
 }
