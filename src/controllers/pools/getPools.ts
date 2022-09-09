@@ -34,6 +34,8 @@ async function mapPool({ blockchain, pools }: MapPoolParams): Promise<Pool[]> {
         ...collectionMetadata,
       }),
       address: pool.id,
+      tokenAddress: pool.supportedCurrency,
+      fundSource: pool.fundSource,
       blockchain,
       loanOptions: [
         LoanOption.factory({

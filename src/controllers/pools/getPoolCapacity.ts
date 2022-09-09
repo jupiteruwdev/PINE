@@ -6,9 +6,11 @@ import getEthWeb3 from '../utils/getEthWeb3'
 type Params = {
   blockchain: Blockchain
   poolAddress: string
+  tokenAddress?: string
+  fundSource?: string
 }
 
-export default async function getPoolCapacity({ blockchain, poolAddress }: Params): Promise<Value> {
+export default async function getPoolCapacity({ blockchain, poolAddress, tokenAddress, fundSource }: Params): Promise<Value> {
   switch (blockchain.network) {
   case 'ethereum': {
     const web3 = getEthWeb3(blockchain.networkId)
@@ -21,14 +23,15 @@ export default async function getPoolCapacity({ blockchain, poolAddress }: Param
       const balanceEth = web3.utils.fromWei(balanceWei)
       return Value.$ETH(balanceEth)
     case 2:
-      const tokenAddress = await contract.methods._supportedCurrency().call().catch((err: unknown) => { throw fault('ERR_CONTRACT_FUNC_SUPPORTED_CURRENCY', undefined, err) })
-      const fundSource = await contract.methods._fundSource().call().catch((err: unknown) => { throw fault('ERR_CONTRACT_FUNC_FUND_SOURCE', undefined, err) })
-      const tokenContract = getTokenContract({ blockchain, address: tokenAddress })
-      const balanceWethWei = await tokenContract.methods.balanceOf(fundSource).call().catch((err: unknown) => { throw fault('ERR_CONTRACT_FUNC_FUND_SOURCE_BALANCE', undefined, err) })
-      const balanceWEth = web3.utils.fromWei(balanceWethWei)
-      return Value.$ETH(balanceWEth)
+      if (tokenAddress) {
+        const tokenContract = getTokenContract({ blockchain, address: tokenAddress })
+        const balanceWethWei = await tokenContract.methods.balanceOf(fundSource).call().catch((err: unknown) => { throw fault('ERR_CONTRACT_FUNC_FUND_SOURCE_BALANCE', undefined, err) })
+        const balanceWEth = web3.utils.fromWei(balanceWethWei)
+        return Value.$ETH(balanceWEth)
+      }
+      return Value.$ETH(0)
     default:
-      fault('ERR_INVALID_POOL_VERSION')
+      throw fault('ERR_INVALID_POOL_VERSION')
     }
   }
   default:
