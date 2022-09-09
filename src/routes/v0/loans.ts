@@ -1,6 +1,6 @@
 import { Router } from 'express'
 import _ from 'lodash'
-import { countLoans, getLoan, getLoansByBorrower, getLoansByCollection, searchLoans } from '../../controllers'
+import { countLoans, getLoan, getLoansByBorrower, getLoansByCollection, isLoanExtendable, searchLoans } from '../../controllers'
 import { LoanSortDirection, LoanSortType } from '../../controllers/loans/searchLoans'
 import { Blockchain, Loan, Pagination, serializeEntityArray } from '../../entities'
 import fault from '../../utils/fault'
@@ -26,6 +26,21 @@ router.get('/nft', async (req, res, next) => {
   }
   catch (err) {
     next(fault('ERR_API_FETCH_LOAN_BY_NFT', undefined, err))
+  }
+})
+
+router.get('/nft/extendable', async (req, res, next) => {
+  try {
+    const nftId = getString(req.query, 'nftId')
+    const collectionAddress = getString(req.query, 'collectionAddress')
+    const blockchain = getBlockchain(req.query)
+    const isExtendable = await isLoanExtendable({ blockchain, collectionAddress, nftId })
+    const payload = { isExtendable }
+
+    res.status(200).json(payload)
+  }
+  catch (err) {
+    next(fault('ERR_API_EXTENDABLE', undefined, err))
   }
 })
 

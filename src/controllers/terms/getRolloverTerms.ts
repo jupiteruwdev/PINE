@@ -3,7 +3,7 @@ import { Blockchain, Collection, NFT, RolloverTerms, Value } from '../../entitie
 import fault from '../../utils/fault'
 import logger from '../../utils/logger'
 import { getEthNFTMetadata } from '../collaterals'
-import { getLoan } from '../loans'
+import { isLoanExtendable } from '../loans'
 import { getPool } from '../pools'
 import { getEthNFTValuation, signValuation } from '../valuations'
 import getFlashLoanSource from './getFlashLoanSource'
@@ -26,12 +26,13 @@ export default async function getRolloverTerms({
   try {
     switch (blockchain.network) {
     case 'ethereum': {
-      const existingLoan = await getLoan({ blockchain, nftId, collectionAddress })
-      if (!existingLoan || existingLoan.borrowed.amount.lte(existingLoan.returned.amount)) throw fault('ERR_INVALID_ROLLOVER')
+      const canRollover = await isLoanExtendable({ blockchain, collectionAddress, nftId })
+      if (!canRollover) throw fault('ERR_INVALID_ROLLOVER')
 
       const pool = await getPool({ address: poolAddress, blockchain, includeStats: true })
-      const flashLoanSource = await getFlashLoanSource({ blockchain, poolAddress: pool.address })
       if (!pool) throw fault('ERR_NO_POOLS_AVAILABLE')
+
+      const flashLoanSource = await getFlashLoanSource({ blockchain, poolAddress: pool.address })
 
       const nft: NFT = {
         collection: Collection.factory({ address: collectionAddress, blockchain }),
