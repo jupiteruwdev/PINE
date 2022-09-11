@@ -29,7 +29,7 @@ export default async function getRolloverTerms({
       const canRollover = await isLoanExtendable({ blockchain, collectionAddress, nftId })
       if (!canRollover) throw fault('ERR_INVALID_ROLLOVER')
 
-      const pool = await getPool({ address: poolAddress, blockchain, includeStats: true })
+      const pool = await getPool({ address: poolAddress, blockchain, collectionAddress, includeStats: true })
       if (!pool) throw fault('ERR_NO_POOLS_AVAILABLE')
 
       const flashLoanSource = await getFlashLoanSource({ blockchain, poolAddress: pool.address })
