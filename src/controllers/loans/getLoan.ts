@@ -1,7 +1,7 @@
 import BigNumber from 'bignumber.js'
 import _ from 'lodash'
 import appConf from '../../app.conf'
-import { Blockchain, Collection, Pool, Value } from '../../entities'
+import { Blockchain, Collection, Value } from '../../entities'
 import Loan from '../../entities/lib/Loan'
 import { getOnChainLoanById } from '../../subgraph'
 import fault from '../../utils/fault'
@@ -38,7 +38,7 @@ export default async function getLoan({
 
       const web3 = getEthWeb3(blockchain.networkId)
 
-      const [blockNumber, poolGroups, valuation] = await Promise.all([
+      const [blockNumber, pools, valuation] = await Promise.all([
         web3.eth.getBlockNumber(),
         searchPublishedPools({ address: onChainLoan.pool, blockchainFilter: { ethereum: blockchain.networkId }, includeRetired: true }),
         populateValuation === true
@@ -46,8 +46,7 @@ export default async function getLoan({
           : undefined,
       ])
 
-      if (poolGroups.length === 0) throw fault('ERR_UNSUPPORTED_COLLECTION')
-      const pools = poolGroups as Pool[]
+      if (pools.length === 0) throw fault('ERR_UNSUPPORTED_COLLECTION')
 
       const loan = pools.reduce<Promise<Loan | undefined>>(async (l, pool) => {
         const rL = await l

@@ -1,6 +1,6 @@
 import _ from 'lodash'
 import appConf from '../../app.conf'
-import { Blockchain, Pool, Value } from '../../entities'
+import { Blockchain, Value } from '../../entities'
 import fault from '../../utils/fault'
 import { getPoolContract } from '../contracts'
 import { getPool, getPoolCapacity, searchPublishedPools } from '../pools'
@@ -8,7 +8,7 @@ import { getPool, getPoolCapacity, searchPublishedPools } from '../pools'
 export default async function getFlashLoanSource({ poolAddress, blockchain }: { poolAddress: string; blockchain: Blockchain }): Promise<{ address: string; capacity: Value }> {
   const pool = await getPool({ address: poolAddress, blockchain, includeStats: false })
   const fundSource = pool.fundSource
-  const pools = (await searchPublishedPools({ blockchainFilter: { ethereum: blockchain.networkId }, includeStats: true }) as Required<Pool>[])
+  const pools = (await searchPublishedPools({ blockchainFilter: { ethereum: blockchain.networkId }, includeStats: true }))
     .filter(e => e.version > 1 && e.address !== poolAddress)
   const poolsWithFundSource = pools.filter(e => e.fundSource !== fundSource)
   if (poolsWithFundSource.length > 0) {

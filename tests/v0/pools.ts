@@ -4,7 +4,7 @@ import { describe, it } from 'mocha'
 import request from 'supertest'
 import app from '../../src/app'
 import appConf from '../../src/app.conf'
-import { getCollections, searchPublishedPools } from '../../src/controllers'
+import { countPools, getCollections, searchPublishedPools } from '../../src/controllers'
 import getEthWeb3 from '../../src/controllers/utils/getEthWeb3'
 import { Blockchain, Collection, deserializeEntity, Pool, PoolGroup } from '../../src/entities'
 
@@ -54,7 +54,7 @@ describe('/v0/pools', () => {
     })
 
     it('GET /v0/pools/groups/search?offset=*&count=*', async () => {
-      const expectedPoolGroups = await searchPublishedPools({ blockchainFilter: { ethereum: Blockchain.Ethereum.Network.MAIN }, groupBy: true })
+      const expectedPoolGroupsLength = await countPools({ blockchainFilter: { ethereum: Blockchain.Ethereum.Network.MAIN }, groupBy: true, includeRetired: true })
       const { body: res } = await request(app).get('/v0/pools/groups/search')
         .query({
           ethereum: Blockchain.Ethereum.Network.MAIN,
@@ -66,7 +66,7 @@ describe('/v0/pools', () => {
 
       expect(res.data).be.an('array')
       expect(res.data).to.have.length(10)
-      expect(res.totalCount).to.equal(expectedPoolGroups.length)
+      expect(res.totalCount).to.equal(expectedPoolGroupsLength)
       expect(res.nextOffset).to.equal(10)
       res.data.every((poolGroup: any) => expect(poolGroup).to.have.keys(...Object.keys(PoolGroup.codingResolver)))
     })
