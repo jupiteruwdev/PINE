@@ -12,13 +12,7 @@
   ],
   "full-trace": true,
   "recursive": true,
-  "reporter": "mochawesome",
-  "reporter-option": [
-    "charts=true",
-    "quiet=true",
-    "reportDir=.tests",
-    "reportPageTitle=Core Service Test Report"
-  ],
+  "reporter": "spec",
   "require": "ts-node/register",
   "timeout": 100000
 }
