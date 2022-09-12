@@ -4,7 +4,7 @@ import { describe, it } from 'mocha'
 import request from 'supertest'
 import app from '../../src/app'
 import appConf from '../../src/app.conf'
-import { countPools, getCollections, searchPublishedPools } from '../../src/controllers'
+import { countPoolGroups, getCollections, searchPublishedPools } from '../../src/controllers'
 import getEthWeb3 from '../../src/controllers/utils/getEthWeb3'
 import { Blockchain, Collection, deserializeEntity, Pool, PoolGroup } from '../../src/entities'
 
@@ -54,7 +54,7 @@ describe('/v0/pools', () => {
     })
 
     it('GET /v0/pools/groups/search?offset=*&count=*', async () => {
-      const expectedPoolGroupsLength = await countPools({ blockchainFilter: { ethereum: Blockchain.Ethereum.Network.MAIN }, groupBy: true, includeRetired: true })
+      const expectedPoolGroupsLength = await countPoolGroups({ blockchainFilter: { ethereum: Blockchain.Ethereum.Network.MAIN }, includeRetired: true })
       const { body: res } = await request(app).get('/v0/pools/groups/search')
         .query({
           ethereum: Blockchain.Ethereum.Network.MAIN,
