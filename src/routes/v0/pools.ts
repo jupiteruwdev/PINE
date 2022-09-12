@@ -1,7 +1,7 @@
 import { Router } from 'express'
 import _ from 'lodash'
 import appConf from '../../app.conf'
-import { countPools, getPool, getPools, publishPool, searchPoolGroups, unpublishPool } from '../../controllers'
+import { countPoolGroups, countPools, getPool, getPools, publishPool, searchPoolGroups, unpublishPool } from '../../controllers'
 import searchPublishedPools, { PoolSortDirection, PoolSortType } from '../../controllers/pools/searchPublishedPools'
 import { Pagination, Pool, PoolGroup, serializeEntityArray } from '../../entities'
 import fault from '../../utils/fault'
@@ -34,7 +34,7 @@ router.get('/groups/search', async (req, res, next) => {
     const paginateByOffset = getNumber(req.query, 'offset', { optional: true })
     const paginateByCount = getNumber(req.query, 'count', { optional: true })
     const paginateBy = paginateByOffset !== undefined && paginateByCount !== undefined ? { count: paginateByCount, offset: paginateByOffset } : undefined
-    const totalCount = await countPools({ collectionAddress, blockchainFilter, collectionName })
+    const totalCount = await countPoolGroups({ collectionAddress, blockchainFilter, collectionName, includeRetired: true })
     const poolGroups = await searchPoolGroups({ collectionAddress, collectionName, blockchainFilter, paginateBy, sortBy })
     const payload = serializeEntityArray(poolGroups, PoolGroup.codingResolver)
     const nextOffset = (paginateBy?.offset ?? 0) + poolGroups.length

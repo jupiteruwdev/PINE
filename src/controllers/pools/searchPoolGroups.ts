@@ -1,9 +1,15 @@
+import BigNumber from 'bignumber.js'
 import _ from 'lodash'
-import { Blockchain, PoolGroup, Value } from '../../entities'
+import { PipelineStage } from 'mongoose'
+import { PoolModel } from '../../db'
+import { AnyCurrency, Blockchain, Pool, PoolGroup, Value } from '../../entities'
 import logger from '../../utils/logger'
+import { mapPool } from '../adapters'
 import { getEthCollectionFloorPrices } from '../collections'
 import getEthValueUSD from '../utils/getEthValueUSD'
-import searchPublishedPools, { PoolSortDirection, PoolSortType } from './searchPublishedPools'
+import getPoolCapacity from './getPoolCapacity'
+import getPoolUtilization from './getPoolUtilization'
+import { PoolSortDirection, PoolSortType } from './searchPublishedPools'
 
 type Params = {
   blockchainFilter?: Blockchain.Filter
@@ -21,6 +27,171 @@ type Params = {
   }
 }
 
+function constructPools(pools: Pool[]): Promise<Pool<AnyCurrency>[]> {
+  const constructedPools = Promise.all(pools.map(async pool => {
+    const [{ amount: utilizationEth }, { amount: capacityEth }] =
+      await Promise.all([
+        getPoolUtilization({
+          blockchain: pool.blockchain,
+          poolAddress: pool.address,
+        }),
+        getPoolCapacity({ blockchain: pool.blockchain, poolAddress: pool.address, fundSource: pool.fundSource, tokenAddress: pool.tokenAddress }),
+      ])
+
+    const valueLockedEth = capacityEth.plus(utilizationEth).gt(new BigNumber(pool.ethLimit || Number.POSITIVE_INFINITY)) ? new BigNumber(pool.ethLimit ?? 0) : capacityEth.plus(utilizationEth)
+
+    return Pool.factory({
+      ...pool,
+      utilization: Value.$ETH(utilizationEth),
+      valueLocked: Value.$ETH(valueLockedEth),
+    })
+  }))
+
+  return constructedPools
+}
+
+async function searchPublishedPoolGroups({
+  paginateBy,
+  ...params
+}: Params = {}): Promise<Pool[][]> {
+  const aggregation = PoolModel.aggregate(getPipelineStages({
+    ...params,
+  }))
+
+  const docs = paginateBy === undefined ? await aggregation.exec() : await aggregation.skip(paginateBy.offset).limit(paginateBy.count).exec()
+
+  const pools = docs.map(doc => doc.pools.map(mapPool))
+
+  const poolsWithStats = await Promise.all(pools.map(group => constructPools(group)))
+
+  return poolsWithStats
+}
+
+function getPipelineStages({
+  blockchainFilter = {
+    ethereum: Blockchain.Ethereum.Network.MAIN,
+    solana: Blockchain.Solana.Network.MAINNET,
+  },
+  collectionAddress,
+  collectionName,
+  sortBy,
+}: Params = {}): PipelineStage[] {
+  const blockchain = Blockchain.Ethereum(blockchainFilter.ethereum)
+
+  const collectionFilter = [
+    ...collectionAddress === undefined ? [] : [{
+      'collection._address': collectionAddress.toLowerCase(),
+    }],
+    ...collectionName === undefined ? [] : [{
+      'collection.displayName': {
+        $regex: `.*${collectionName}.*`,
+        $options: 'i',
+      },
+    }],
+  ]
+
+  const stages: PipelineStage[] = [{
+    $match: {
+      'networkType': blockchain.network,
+      'networkId': blockchain.networkId,
+    },
+  }, {
+    $lookup: {
+      from: 'nftCollections',
+      localField: 'nftCollection',
+      foreignField: '_id',
+      as: 'collection',
+    },
+  }, {
+    $unwind: '$collection',
+  },
+  ...collectionFilter.length === 0 ? [] : [{
+    $addFields: {
+      'collection._address': {
+        $toLower: '$collection.address',
+      },
+    },
+  }, {
+    $match: {
+      $and: collectionFilter,
+    },
+  }], {
+    $addFields: {
+      name: {
+        $toLower: {
+          $trim: {
+            input: '$collection.displayName',
+            chars: '"',
+          },
+        },
+      },
+      interest: {
+        $min: '$loanOptions.interestBpsBlock',
+      },
+      interestOverride: {
+        $min: '$loanOptions.interestBpsBlockOverride',
+      },
+      maxLTV: {
+        $max: '$loanOptions.maxLtvBps',
+      },
+    },
+  }, {
+    $addFields: {
+      lowestAPR: {
+        $cond: {
+          if: {
+            $ne: ['$interestOverride', null],
+          },
+          then: '$interestOverride',
+          else: '$interest',
+        },
+      },
+    },
+  },
+  {
+    $group: {
+      _id: '$collection.address',
+      pools: {
+        $push: '$$ROOT',
+      },
+    },
+  },
+  {
+    $unset: '_id',
+  },
+  ]
+
+  switch (sortBy?.type) {
+  case PoolSortType.NAME:
+    stages.push({
+      $sort: {
+        'pools.name': sortBy?.direction === PoolSortDirection.DESC ? -1 : 1,
+      },
+    })
+    break
+  case PoolSortType.INTEREST:
+    stages.push({
+      $sort: {
+        'pools.lowestAPR': sortBy?.direction === PoolSortDirection.DESC ? -1 : 1,
+        'pools.name': 1,
+      },
+    })
+    break
+  case PoolSortType.LTV:
+    stages.push({
+      $sort: {
+        'pools.maxLTV': sortBy?.direction === PoolSortDirection.DESC ? -1 : 1,
+        'pools.name': 1,
+      },
+    })
+    break
+  }
+
+  return [
+    ...stages,
+  ]
+}
+
 export default async function searchPoolGroups({
   blockchainFilter = {
     ethereum: Blockchain.Ethereum.Network.MAIN,
@@ -34,23 +205,32 @@ export default async function searchPoolGroups({
   logger.info('Searching pool groups...')
 
   try {
-    const [ethValueUSD, pools] = await Promise.all([
+    const [ethValueUSD, groups] = await Promise.all([
       getEthValueUSD(),
-      searchPublishedPools({
+      searchPublishedPoolGroups({
         blockchainFilter,
         collectionAddress,
         collectionName,
-        includeStats: true,
         paginateBy,
         sortBy,
       }),
     ])
 
-    const poolGroups = pools.map(pool => PoolGroup.factory({
-      collection: pool.collection,
-      pools: [pool],
-      totalValueLent: Value.$USD(pool.utilization.amount.times(ethValueUSD.amount)),
-      totalValueLocked: Value.$USD(pool.valueLocked.amount.times(ethValueUSD.amount)),
+    const pools = groups as Required<Pool>[][]
+
+    const poolGroups = pools.map((group: Required<Pool>[]) => PoolGroup.factory({
+      collection: group[0].collection,
+      pools: group,
+      totalValueLent: Value.$USD(
+        group
+          .reduce((sum, pool: Pool) => sum.plus(pool.utilization?.amount || 0), new BigNumber(0))
+          .times(ethValueUSD.amount)
+      ),
+      totalValueLocked: Value.$USD(
+        group
+          .reduce((sum, pool: Pool) => sum.plus(pool.valueLocked?.amount || 0), new BigNumber(0))
+          .times(ethValueUSD.amount)
+      ),
     }))
 
     const ethGroups = _.filter(poolGroups, group => group.collection.blockchain.network === 'ethereum')

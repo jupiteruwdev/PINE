@@ -87,26 +87,24 @@ async function searchPublishedPools<IncludeStats extends boolean = false>({
 
   if (includeStats !== true) return pools
 
-  const poolsWithStats = await Promise.all(
-    pools.map(async pool => {
-      const [{ amount: utilizationEth }, { amount: capacityEth }] =
-        await Promise.all([
-          getPoolUtilization({
-            blockchain: pool.blockchain,
-            poolAddress: pool.address,
-          }),
-          getPoolCapacity({ blockchain: pool.blockchain, poolAddress: pool.address, fundSource: pool.fundSource, tokenAddress: pool.tokenAddress }),
-        ])
+  const poolsWithStats = await Promise.all(pools.map(async pool => {
+    const [{ amount: utilizationEth }, { amount: capacityEth }] =
+      await Promise.all([
+        getPoolUtilization({
+          blockchain: pool.blockchain,
+          poolAddress: pool.address,
+        }),
+        getPoolCapacity({ blockchain: pool.blockchain, poolAddress: pool.address, fundSource: pool.fundSource, tokenAddress: pool.tokenAddress }),
+      ])
 
-      const valueLockedEth = capacityEth.plus(utilizationEth).gt(new BigNumber(pool.ethLimit || Number.POSITIVE_INFINITY)) ? new BigNumber(pool.ethLimit ?? 0) : capacityEth.plus(utilizationEth)
+    const valueLockedEth = capacityEth.plus(utilizationEth).gt(new BigNumber(pool.ethLimit || Number.POSITIVE_INFINITY)) ? new BigNumber(pool.ethLimit ?? 0) : capacityEth.plus(utilizationEth)
 
-      return Pool.factory({
-        ...pool,
-        utilization: Value.$ETH(utilizationEth),
-        valueLocked: Value.$ETH(valueLockedEth),
-      })
+    return Pool.factory({
+      ...pool,
+      utilization: Value.$ETH(utilizationEth),
+      valueLocked: Value.$ETH(valueLockedEth),
     })
-  )
+  }))
 
   return poolsWithStats
 }
@@ -220,7 +218,8 @@ function getPipelineStages({
         },
       },
     },
-  }]
+  },
+  ]
 
   switch (sortBy?.type) {
   case PoolSortType.NAME:
