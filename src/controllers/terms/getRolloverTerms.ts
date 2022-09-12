@@ -1,3 +1,4 @@
+import BigNumber from 'bignumber.js'
 import appConf from '../../app.conf'
 import { Blockchain, Collection, NFT, RolloverTerms, Value } from '../../entities'
 import fault from '../../utils/fault'
@@ -58,7 +59,7 @@ export default async function getRolloverTerms({
       })
 
       loanTerms.options.map(option => {
-        option.maxBorrow = Value.$ETH(option.maxLTVBPS.div(10_000).times(loanTerms.valuation.value?.amount ?? 0).toFixed(appConf.ethMaxDecimalPlaces))
+        option.maxBorrow = Value.$ETH(option.maxLTVBPS.div(10_000).times(loanTerms.valuation.value?.amount ?? 0).toFixed(appConf.ethMaxDecimalPlaces, BigNumber.ROUND_DOWN))
         option.fees = [
           {
             type: 'percentage',
