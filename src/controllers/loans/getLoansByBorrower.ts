@@ -59,7 +59,6 @@ export default async function getLoansByBorrower({
       })
 
       sortedLoans = _.sortBy(loans, [
-        loan => loan.nft.collection.isSupported !== true,
         loan => loan.nft.collection.name?.toLowerCase(),
       ])
     }

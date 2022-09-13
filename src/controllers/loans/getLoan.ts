@@ -68,7 +68,6 @@ export default async function getLoan({
           id: nftId,
           ownerAddress: pool.address,
           ...await getEthNFTMetadata({ blockchain, collectionAddress, nftId }),
-          isSupported: true,
         }
 
         return Loan.factory({
