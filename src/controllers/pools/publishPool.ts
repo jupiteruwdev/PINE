@@ -9,6 +9,7 @@ import logger from '../../utils/logger'
 import { mapPool } from '../adapters'
 import saveCollection from '../collections/saveCollection'
 import authenticatePoolPublisher from './authenticatePoolPublisher'
+import getPool from './getPool'
 
 type Params = {
   blockchain: Blockchain
@@ -43,6 +44,35 @@ async function savePool({ poolData, blockchain }: SavePoolParams) {
       maxLtvBps: poolData.collateralFactorBPS,
     },
   ]
+
+  const poolExist = await getPool({
+    blockchain,
+    address: poolData.id,
+    includeRetired: true,
+  })
+
+  if (poolExist) {
+    if (poolExist.retired === true) {
+      await PoolModel.updateOne(
+        {
+          address: poolExist.address,
+        },
+        {
+          $set: {
+            retired: false,
+          },
+        }
+      ).exec()
+
+      return {
+        ...poolExist,
+        retired: false,
+      }
+    }
+    else {
+      throw fault('ERR_POOL_EXIST')
+    }
+  }
 
   const res = await PoolModel.create({
     retired: false,

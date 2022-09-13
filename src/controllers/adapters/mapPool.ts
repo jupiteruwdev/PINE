@@ -50,6 +50,7 @@ export default function mapPool(data: Record<string, any>): Pool {
   const loanOptions = _.get(data, 'loanOptions', []).map((t: any) =>
     mapLoanOption(t, defaultFees)
   )
+  const retired = _.get(data, 'retired')
 
   if (!_.isString(address)) throw TypeError('Failed to map key "address"')
   if (!networkType) throw TypeError('Failed to map key "networkType"')
@@ -75,5 +76,6 @@ export default function mapPool(data: Record<string, any>): Pool {
     tokenAddress,
     fundSource,
     published,
+    retired,
   })
 }
