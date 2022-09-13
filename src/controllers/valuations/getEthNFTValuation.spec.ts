@@ -20,11 +20,9 @@ describe('controllers/valuations/getEthNFTValuation', () => {
     let supportedWhaleNFTs: NFT[][]
 
     before(async () => {
-      const testNFTs = await getEthNFTsByOwner({ blockchain, ownerAddress: TEST_WALLET_ADDRESS, populateMetadata: true })
-      supportedTestNFTs = testNFTs.filter(nft => nft.collection.isSupported === true)
+      supportedTestNFTs = await getEthNFTsByOwner({ blockchain, ownerAddress: TEST_WALLET_ADDRESS, populateMetadata: true })
 
-      const whaleNFTs = await Promise.all(WHALE_WALLET_ADDRESSES.map(address => getEthNFTsByOwner({ blockchain, ownerAddress: address, populateMetadata: true })))
-      supportedWhaleNFTs = whaleNFTs.map(nfts => nfts.filter(nft => nft.collection.isSupported === true))
+      supportedWhaleNFTs = await Promise.all(WHALE_WALLET_ADDRESSES.map(address => getEthNFTsByOwner({ blockchain, ownerAddress: address, populateMetadata: true })))
     })
 
     it('can get valuation of each supported NFT in test wallet', async () => {
@@ -59,8 +57,7 @@ describe('controllers/valuations/getEthNFTValuation', () => {
     let supportedTestNFTs: NFT[]
 
     before(async () => {
-      const testNFTs = await getEthNFTsByOwner({ blockchain, ownerAddress: TEST_WALLET_ADDRESS, populateMetadata: true })
-      supportedTestNFTs = testNFTs.filter(nft => nft.collection.isSupported === true)
+      supportedTestNFTs = await getEthNFTsByOwner({ blockchain, ownerAddress: TEST_WALLET_ADDRESS, populateMetadata: true })
     })
 
     it('can get valuation of each supported NFT in test wallet', async () => {

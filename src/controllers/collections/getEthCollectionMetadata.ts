@@ -152,10 +152,7 @@ export function useDb({ blockchain, collectionAddress, matchSubcollectionBy }: P
       }
     }
 
-    return {
-      ...metadata,
-      isSupported: true,
-    }
+    return metadata
   }
 }
 
