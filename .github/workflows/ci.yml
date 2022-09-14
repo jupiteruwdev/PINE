@@ -8,7 +8,7 @@ jobs:
     uses: ./.github/workflows/job-build.yml
     with:
       push: false
-      environment: staging
+      use_prod_apis: false
     secrets: inherit
   notify:
     name: Notify

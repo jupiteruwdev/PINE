@@ -1,4 +1,5 @@
 import BigNumber from 'bignumber.js'
+import appConf from '../../app.conf'
 import { Blockchain, Collection, LoanTerms, NFT, Value } from '../../entities'
 import fault from '../../utils/fault'
 import logger from '../../utils/logger'
@@ -10,16 +11,17 @@ import { getEthNFTValuation, signValuation } from '../valuations'
 type Params = {
   blockchain: Blockchain
   collectionAddress: string
+  poolAddress?: string
   nftId: string
 }
 
-export default async function getLoanTerms({ blockchain, collectionAddress, nftId }: Params): Promise<LoanTerms> {
+export default async function getLoanTerms({ blockchain, collectionAddress, nftId, poolAddress }: Params): Promise<LoanTerms> {
   logger.info(`Fetching loan terms for NFT ID <${nftId}> and collection Address <${collectionAddress}> on blockchain <${JSON.stringify(blockchain)}>...`)
 
   try {
     switch (blockchain.network) {
     case 'ethereum': {
-      const pool = await getPool({ collectionAddress, blockchain, includeStats: true })
+      const pool = await getPool({ address: poolAddress, collectionAddress, blockchain, includeStats: true })
       if (!pool) throw fault('ERR_NO_POOLS_AVAILABLE')
 
       const nft: NFT = {
@@ -48,7 +50,7 @@ export default async function getLoanTerms({ blockchain, collectionAddress, nftI
       }
 
       loanTerms.options.map(option => {
-        option.maxBorrow = Value.$ETH(option.maxLTVBPS.div(10_000).times(loanTerms.valuation.value?.amount ?? 0))
+        option.maxBorrow = Value.$ETH(option.maxLTVBPS.div(10_000).times(loanTerms.valuation.value?.amount ?? 0).toFixed(appConf.ethMaxDecimalPlaces, BigNumber.ROUND_DOWN))
       })
 
       if (pool.ethLimit !== 0 && loanTerms.options.some(option => pool.utilization.amount.plus(option.maxBorrow?.amount ?? new BigNumber(0)).gt(new BigNumber(pool.ethLimit ?? 0)))) throw fault('ERR_POOL_OVER_LENDER_DEFINED_UTILIZATION')

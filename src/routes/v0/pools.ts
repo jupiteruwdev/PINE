@@ -1,8 +1,8 @@
 import { Router } from 'express'
 import _ from 'lodash'
 import appConf from '../../app.conf'
-import { countPools, getPool, getPools, publishPool, searchPoolGroups } from '../../controllers'
-import { PoolSortDirection, PoolSortType } from '../../controllers/pools/searchPublishedPools'
+import { countPoolGroups, countPools, getPool, getPools, publishPool, searchPoolGroups, unpublishPool } from '../../controllers'
+import searchPublishedPools, { PoolSortDirection, PoolSortType } from '../../controllers/pools/searchPublishedPools'
 import { Pagination, Pool, PoolGroup, serializeEntityArray } from '../../entities'
 import fault from '../../utils/fault'
 import { getBlockchain, getBlockchainFilter, getNumber, getString } from '../utils/query'
@@ -34,7 +34,7 @@ router.get('/groups/search', async (req, res, next) => {
     const paginateByOffset = getNumber(req.query, 'offset', { optional: true })
     const paginateByCount = getNumber(req.query, 'count', { optional: true })
     const paginateBy = paginateByOffset !== undefined && paginateByCount !== undefined ? { count: paginateByCount, offset: paginateByOffset } : undefined
-    const totalCount = await countPools({ collectionAddress, blockchainFilter, collectionName })
+    const totalCount = await countPoolGroups({ collectionAddress, blockchainFilter, collectionName, includeRetired: true })
     const poolGroups = await searchPoolGroups({ collectionAddress, collectionName, blockchainFilter, paginateBy, sortBy })
     const payload = serializeEntityArray(poolGroups, PoolGroup.codingResolver)
     const nextOffset = (paginateBy?.offset ?? 0) + poolGroups.length
@@ -88,6 +88,40 @@ router.get('/:poolAddress', async (req, res, next) => {
   }
 })
 
+router.get('/', async (req, res, next) => {
+  try {
+    const blockchainFilter = getBlockchainFilter(req.query, true)
+    const tenors = (req.query.tenors as string[])?.map(tenor => _.toNumber(tenor))
+    const nftId = getString(req.query, 'nftId', { optional: true })
+    const collectionAddress = getString(req.query, 'collectionAddress', { optional: true })
+    const sortByType = getString(req.query, 'sort', { optional: true }) as PoolSortType
+    const sortByDirection = getString(req.query, 'direction', { optional: true }) as PoolSortDirection
+    const sortBy = sortByType !== undefined ? { type: sortByType, direction: sortByDirection ?? PoolSortDirection.ASC } : undefined
+    const paginateByOffset = getNumber(req.query, 'offset', { optional: true })
+    const paginateByCount = getNumber(req.query, 'count', { optional: true })
+    const paginateBy = paginateByOffset !== undefined && paginateByCount !== undefined ? { count: paginateByCount, offset: paginateByOffset } : undefined
+    const totalCount = await countPools({ collectionAddress, blockchainFilter, tenors, nftId })
+
+    const pools = await searchPublishedPools({
+      blockchainFilter,
+      collectionAddress,
+      tenors,
+      sortBy,
+      nftId,
+      paginateBy,
+    })
+
+    const payload = serializeEntityArray(pools, Pool.codingResolver)
+    const nextOffset = (paginateBy?.offset ?? 0) + pools.length
+    const pagination = Pagination.serialize({ data: payload, totalCount, nextOffset: nextOffset === totalCount - 1 ? undefined : nextOffset })
+
+    res.status(200).json(pagination)
+  }
+  catch (err) {
+    next(fault('ERR_API_GET_POOLS', undefined, err))
+  }
+})
+
 router.post('/', async (req, res, next) => {
   try {
     const blockchain = getBlockchain(req.body)
@@ -100,6 +134,23 @@ router.post('/', async (req, res, next) => {
   }
   catch (err) {
     next(fault('ERR_API_PUBLISH_POOL', undefined, err))
+  }
+})
+
+router.delete('/', async (req, res, next) => {
+  try {
+    const blockchain = getBlockchain(req.body)
+    const poolAddress = _.get(req.body, 'poolAddress')
+    const payload = _.get(req.body, 'payload')
+    const signature = _.get(req.body, 'signature')
+    await unpublishPool({ poolAddress, blockchain, payload, signature })
+
+    res.status(200).json({
+      deleted: true,
+    })
+  }
+  catch (err) {
+    next(fault('ERR_API_UNPUBLISH_POOL', undefined, err))
   }
 })
 

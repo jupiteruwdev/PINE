@@ -2,14 +2,13 @@ import BigNumber from 'bignumber.js'
 import _ from 'lodash'
 import appConf from '../../app.conf'
 import { NFTCollectionModel, PoolModel } from '../../db'
-import { mapPool } from '../../db/adapters'
 import { Blockchain, Fee, Pool } from '../../entities'
 import { getOnChainPoolByAddress } from '../../subgraph'
 import fault from '../../utils/fault'
 import logger from '../../utils/logger'
+import { mapPool } from '../adapters'
 import saveCollection from '../collections/saveCollection'
 import authenticatePoolPublisher from './authenticatePoolPublisher'
-import isPoolPublished from './isPoolPublished'
 
 type Params = {
   blockchain: Blockchain
@@ -29,13 +28,8 @@ async function savePool({ poolData, blockchain }: SavePoolParams) {
       '$regex': poolData.collection,
       '$options': 'i',
     },
+    matcher: null,
   }).lean()
-
-  const isExist = await isPoolPublished({ blockchain, collectionAddress: poolData.collection })
-
-  if (isExist) {
-    throw fault('ERR_POOL_EXISTS')
-  }
 
   if (collection === undefined) {
     collection = await saveCollection({ collectionAddress: poolData.collection, blockchain })
@@ -55,6 +49,8 @@ async function savePool({ poolData, blockchain }: SavePoolParams) {
     address: poolData.id,
     networkType: blockchain.network,
     networkId: blockchain.networkId,
+    tokenAddress: poolData.supportedCurrency,
+    fundSource: poolData.fundSource,
     loanOptions,
     poolVersion: 2,
     lenderAddress: poolData.lenderAddress,

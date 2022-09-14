@@ -3,10 +3,10 @@ import _ from 'lodash'
 import { PipelineStage } from 'mongoose'
 import appConf from '../../app.conf'
 import { PoolModel } from '../../db'
-import { mapPool } from '../../db/adapters'
 import { Blockchain, Collection, Fee, LoanOption, Pool, Value } from '../../entities'
 import { getOnChainPools } from '../../subgraph'
 import fault from '../../utils/fault'
+import { mapPool } from '../adapters'
 import getEthCollectionMetadata from '../collections/getEthCollectionMetadata'
 import getPoolCapacity from './getPoolCapacity'
 import getPoolUtilization from './getPoolUtilization'
@@ -49,7 +49,7 @@ async function getPool<IncludeStats extends boolean = false>({
       { amount: capacityEth },
     ] = await Promise.all([
       getPoolUtilization({ blockchain, poolAddress: pool.address }),
-      getPoolCapacity({ blockchain, poolAddress: pool.address }),
+      getPoolCapacity({ blockchain, poolAddress: pool.address, tokenAddress: pool.tokenAddress, fundSource: pool.fundSource }),
     ])
 
     const valueLockedEth = capacityEth.plus(utilizationEth).gt(new BigNumber(pool.ethLimit || Number.POSITIVE_INFINITY)) ? new BigNumber(pool.ethLimit ?? 0) : capacityEth.plus(utilizationEth)
@@ -80,6 +80,8 @@ async function getPool<IncludeStats extends boolean = false>({
     address: pool.id,
     blockchain,
     ...pool,
+    tokenAddress: pool.supportedCurrency,
+    fundSource: pool.fundSource,
     collection: Collection.factory({
       address: pool.collection,
       blockchain,
@@ -150,6 +152,10 @@ function getPipelineStages({
       $and: collectionFilter,
     },
   }], {
+    $sort: {
+      'loanOptions.interestBpsBlock': 1,
+    },
+  }, {
     $limit: 1,
   }]
 

@@ -11,7 +11,7 @@ on:
         type: string
 jobs:
   default:
-    name: Cloud Run
+    name: Deploy
     runs-on: ubuntu-latest
     permissions:
       id-token: write

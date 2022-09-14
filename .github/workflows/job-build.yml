@@ -6,9 +6,14 @@ on:
         description: Specifies if the built Docker image should be pushed to remote registry
         required: false
         type: boolean
-      environment:
-        default: production
-        description: Specifies the environment of the built image (affects external APIs used)
+      use_prod_apis:
+        default: false
+        description: Specifies whether production environment should be used for external APIs and services (i.e. database, subgraph, etc)
+        required: false
+        type: string
+      checkout_ref:
+        default: ''
+        description: The ref argument provided to the checkout action
         required: false
         type: string
     outputs:
@@ -23,19 +28,20 @@ env:
   ETH_RPC_MAINNET: ${{ secrets.ETH_RPC_MAINNET }}
   ETH_RPC_RINKEBY: ${{ secrets.ETH_RPC_RINKEBY }}
   GEMXYZ_API_KEY: ${{ secrets.GEMXYZ_API_KEY }}
+  LUNARCRUSH_API_KEY: ${{ secrets.LUNARCRUSH_API_KEY }}
   LOG_LEVEL: ${{ secrets.LOG_LEVEL }}
-  MONGO_URI: ${{ inputs.environment == 'production' && secrets.MONGO_URI || secrets.MONGO_URI_STAGING }}
+  MONGO_URI: ${{ inputs.use_prod_apis && secrets.MONGO_URI || secrets.MONGO_URI_STAGING }}
   MORALIS_API_KEY: ${{ secrets.MORALIS_API_KEY }}
   NFTBANK_API_KEY: ${{ secrets.NFTBANK_API_KEY }}
   OPENSEA_API_KEY: ${{ secrets.OPENSEA_API_KEY }}
-  SUBGRAPH_API_MAINNET_URL: ${{ inputs.environment == 'production' && secrets.SUBGRAPH_API_MAINNET_URL || secrets.SUBGRAPH_API_MAINNET_URL_STAGING }}
-  SUBGRAPH_API_RINKEBY_URL: ${{ inputs.environment == 'production' && secrets.SUBGRAPH_API_RINKEBY_URL || secrets.SUBGRAPH_API_RINKEBY_URL_STAGING }}
+  SUBGRAPH_API_MAINNET_URL: ${{ inputs.use_prod_apis && secrets.SUBGRAPH_API_MAINNET_URL || secrets.SUBGRAPH_API_MAINNET_URL_STAGING }}
+  SUBGRAPH_API_RINKEBY_URL: ${{ inputs.use_prod_apis && secrets.SUBGRAPH_API_RINKEBY_URL || secrets.SUBGRAPH_API_RINKEBY_URL_STAGING }}
   TESTS_WALLET_ADDRESS: ${{ secrets.TESTS_WALLET_ADDRESS }}
   TESTS_WHALE_WALLET_ADDRESSES: ${{ secrets.TESTS_WHALE_WALLET_ADDRESSES }}
   TESTS_WALLET_PRIVATE_KEY: ${{ secrets.TESTS_WALLET_PRIVATE_KEY }}
 jobs:
   default:
-    name: Docker
+    name: Build
     runs-on: ubuntu-latest
     outputs:
       image: ${{ inputs.push && fromJSON(steps.meta.outputs.json).tags[0] || '' }}
@@ -47,6 +53,7 @@ jobs:
         with:
           submodules: recursive
           token: ${{ secrets.GH_ACCESS_TOKEN }}
+          ref: ${{ inputs.checkout_ref }}
       - name: Set env
         id: env
         run: |
@@ -81,11 +88,6 @@ jobs:
           target: test
       - name: Run tests
         run: IMAGE_TAG=test-${{ github.sha }} docker-compose -f docker-compose.test.yml up --exit-code-from app
-      - name: Persist test reports
-        uses: actions/upload-artifact@v3
-        with:
-          name: test-reports
-          path: .tests/
       - name: Set metadata
         id: meta
         uses: docker/metadata-action@v3

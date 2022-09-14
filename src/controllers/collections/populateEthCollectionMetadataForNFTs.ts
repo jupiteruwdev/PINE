@@ -29,8 +29,9 @@ export default async function populateEthCollectionMetadataForNFTs({
     let metadata = {}
 
     if (checkMatching) {
-      const dataSource = DataSource.compose(useDb({ blockchain, collectionAddress: addr, matchSubcollectionBy: { type: 'nftId', value: nft.id } }))
-      metadata = await dataSource.apply(undefined).catch(err => ({}))
+      metadata = await DataSource.fetch(
+        useDb({ blockchain, collectionAddress: addr, matchSubcollectionBy: { type: 'nftId', value: nft.id } }),
+      ).catch(err => ({}))
     }
 
     if (_.isEmpty(metadata)) metadata = genericMetadataDict[addr]

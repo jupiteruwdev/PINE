@@ -23,12 +23,10 @@ export default async function getEthNFTsByOwner({ blockchain, ownerAddress, popu
 
   logger.info(`Fetching Ethereum NFTs by owner <${ownerAddress}> on network <${blockchain.networkId}>...`)
 
-  const dataSource = DataSource.compose(
+  let nfts = await DataSource.fetch(
     useAlchemy({ blockchain, ownerAddress, populateMetadata }),
     // useMoralis({ blockchain, ownerAddress, populateMetadata }),
   )
-
-  let nfts = await dataSource.apply(undefined)
 
   logger.info(`Fetching Ethereum NFTs by owner <${ownerAddress}> on network <${blockchain.networkId}>... OK: ${nfts.length} result(s)`)
 
@@ -93,12 +91,10 @@ export function useAlchemy({ blockchain, ownerAddress, populateMetadata }: Param
           const tokenUri = _.get(entry, 'tokenUri.gateway')
 
           try {
-            const dataSource = DataSource.compose(
+            metadata = await DataSource.fetch(
               useTokenUri({ tokenUri }),
               useContract({ blockchain, collectionAddress, nftId: tokenId }),
             )
-
-            metadata = await dataSource.apply(undefined)
 
             logger.info(`...fetching metadata for NFT <${collectionAddress}/${tokenId}>... OK`)
             logger.debug(JSON.stringify(metadata, undefined, 2))
@@ -188,12 +184,10 @@ export function useMoralis({ blockchain, ownerAddress, populateMetadata }: Param
           const tokenUri = _.get(entry, 'token_uri')
 
           try {
-            const dataSource = DataSource.compose(
+            metadata = await DataSource.fetch(
               useTokenUri({ tokenUri }),
               useContract({ blockchain, collectionAddress, nftId: tokenId }),
             )
-
-            metadata = await dataSource.apply(undefined)
 
             logger.info(`...fetching metadata for NFT <${collectionAddress}/${tokenId}>... OK`)
             logger.debug(metadata)

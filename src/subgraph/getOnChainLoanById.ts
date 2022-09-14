@@ -6,7 +6,7 @@ type Params = {
   loanId: string
 }
 
-export default async function getOnChainLoanById({ loanId }: Params, options: Options): Promise<any> {
+export default async function getOnChainLoanById({ loanId }: Params, { networkId, useCache }: Options = {}): Promise<any> {
   const request = getRequest(gql`
     query loan($id: ID!) {
       loan(id: $id) {
@@ -27,7 +27,7 @@ export default async function getOnChainLoanById({ loanId }: Params, options: Op
     }
   `)
 
-  return request({ id: loanId.toLowerCase() }, options)
+  return request({ id: loanId.toLowerCase() }, { networkId, useCache })
     .then(res => res.loan)
     .catch(err => {
       throw fault('ERR_GQL_BAD_REQUEST', undefined, err)

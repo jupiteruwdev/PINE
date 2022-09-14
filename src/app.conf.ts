@@ -20,6 +20,7 @@ export default {
   moralisAPIKey: process.env.MORALIS_API_KEY,
   nftbankAPIKey: process.env.NFTBANK_API_KEY,
   alchemyAPIKey: process.env.ALCHEMY_API_KEY,
+  lunarCrushAPIKey: process.env.LUNARCRUSH_API_KEY,
   requestTimeoutMs: Number(process.env.REQUEST_TIMEOUT_MS ?? 3000),
   alchemyAPIUrl: {
     [Blockchain.Ethereum.Network.RINKEBY]: process.env.ALCHEMY_API_RINKEBY_URL,
@@ -82,6 +83,7 @@ export default {
     },
   ],
   blocksPerSecond: 14,
+  ethMaxDecimalPlaces: 6,
   mongoUri: process.env.MONGO_URI ?? '',
   tenors: [1, 3, 7, 14, 30],
   tests: {

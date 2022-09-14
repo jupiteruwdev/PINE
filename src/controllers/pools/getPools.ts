@@ -34,6 +34,8 @@ async function mapPool({ blockchain, pools }: MapPoolParams): Promise<Pool[]> {
         ...collectionMetadata,
       }),
       address: pool.id,
+      tokenAddress: pool.supportedCurrency,
+      fundSource: pool.fundSource,
       blockchain,
       loanOptions: [
         LoanOption.factory({
@@ -80,10 +82,10 @@ export default async function getPools({
 
     switch (blockchain.networkId) {
     case Blockchain.Ethereum.Network.MAIN:
-      const { pools: poolMainnet } = await getOnChainPools({ lenderAddress, address, excludeAddresses, collectionAddress }, { networkId: blockchain.networkId })
+      const { pools: poolsMainnet } = await getOnChainPools({ lenderAddress, address, excludeAddresses, collectionAddress }, { networkId: blockchain.networkId })
       poolsData = [
         ...publishedPools,
-        ...await mapPool({ blockchain, pools: poolMainnet }),
+        ...await mapPool({ blockchain, pools: poolsMainnet }),
       ]
       break
     case Blockchain.Ethereum.Network.RINKEBY:

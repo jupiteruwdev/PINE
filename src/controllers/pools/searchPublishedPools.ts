@@ -1,8 +1,11 @@
 import BigNumber from 'bignumber.js'
+import _ from 'lodash'
 import { PipelineStage } from 'mongoose'
 import { PoolModel } from '../../db'
-import { mapPool } from '../../db/adapters'
 import { Blockchain, Pool, Value } from '../../entities'
+import { mapPool } from '../adapters'
+import { getEthNFTMetadata } from '../collaterals'
+import Tenor from '../utils/Tenor'
 import getPoolCapacity from './getPoolCapacity'
 import getPoolUtilization from './getPoolUtilization'
 
@@ -25,6 +28,8 @@ type Params<IncludeStats> = {
   includeRetired?: boolean
   includeStats?: IncludeStats
   lenderAddress?: string
+  tenors?: number[]
+  nftId?: string
   paginateBy?: {
     count: number
     offset: number
@@ -33,6 +38,23 @@ type Params<IncludeStats> = {
     type: PoolSortType
     direction: PoolSortDirection
   }
+}
+
+export async function filterByNftId(blockchain: Blockchain, docs: any[], nftId: string): Promise<any[]> {
+  if (docs.length) {
+    const metadata = await getEthNFTMetadata({ blockchain, collectionAddress: docs[0].collection.address, nftId })
+    const nftProps = { id: nftId, ...metadata }
+    const subDocs = docs.filter(doc => {
+      if (_.isString(_.get(doc, 'collection.matcher.regex')) && _.isString(_.get(doc, 'collection.matcher.fieldPath'))) {
+        const regex = new RegExp(doc.collection.matcher.regex)
+        if (regex.test(_.get(nftProps, doc.collection.matcher.fieldPath))) return true
+        return false
+      }
+      return true
+    })
+    return subDocs.length ? subDocs : docs
+  }
+  return docs
 }
 
 async function searchPublishedPools<IncludeStats extends boolean = false>(params?: Params<IncludeStats>): Promise<IncludeStats extends true ? Required<Pool>[] : Pool[]>
@@ -45,34 +67,44 @@ async function searchPublishedPools<IncludeStats extends boolean = false>({
     ...params,
   }))
 
-  const docs = paginateBy === undefined ? await aggregation.exec() : await aggregation.skip(paginateBy.offset).limit(paginateBy.count).exec()
+  let docs
+  if (params.nftId !== undefined) {
+    docs = await aggregation.exec()
+    docs = await filterByNftId(Blockchain.factory({
+      network: 'ethereum',
+      networkId: params.blockchainFilter?.ethereum,
+    }), docs, params.nftId)
+
+    if (paginateBy !== undefined) {
+      docs = docs.slice(paginateBy.offset, paginateBy.offset + paginateBy.count - 1)
+    }
+  }
+  else {
+    docs = paginateBy === undefined ? await aggregation.exec() : await aggregation.skip(paginateBy.offset).limit(paginateBy.count).exec()
+  }
+
   const pools = docs.map(mapPool)
 
   if (includeStats !== true) return pools
 
-  const poolsWithStats = await Promise.all(
-    pools.map(async pool => {
-      const [{ amount: utilizationEth }, { amount: capacityEth }] =
-        await Promise.all([
-          getPoolUtilization({
-            blockchain: pool.blockchain,
-            poolAddress: pool.address,
-          }),
-          getPoolCapacity({
-            blockchain: pool.blockchain,
-            poolAddress: pool.address,
-          }),
-        ])
+  const poolsWithStats = await Promise.all(pools.map(async pool => {
+    const [{ amount: utilizationEth }, { amount: capacityEth }] =
+      await Promise.all([
+        getPoolUtilization({
+          blockchain: pool.blockchain,
+          poolAddress: pool.address,
+        }),
+        getPoolCapacity({ blockchain: pool.blockchain, poolAddress: pool.address, fundSource: pool.fundSource, tokenAddress: pool.tokenAddress }),
+      ])
 
-      const valueLockedEth = capacityEth.plus(utilizationEth).gt(new BigNumber(pool.ethLimit || Number.POSITIVE_INFINITY)) ? new BigNumber(pool.ethLimit ?? 0) : capacityEth.plus(utilizationEth)
+    const valueLockedEth = capacityEth.plus(utilizationEth).gt(new BigNumber(pool.ethLimit || Number.POSITIVE_INFINITY)) ? new BigNumber(pool.ethLimit ?? 0) : capacityEth.plus(utilizationEth)
 
-      return Pool.factory({
-        ...pool,
-        utilization: Value.$ETH(utilizationEth),
-        valueLocked: Value.$ETH(valueLockedEth),
-      })
+    return Pool.factory({
+      ...pool,
+      utilization: Value.$ETH(utilizationEth),
+      valueLocked: Value.$ETH(valueLockedEth),
     })
-  )
+  }))
 
   return poolsWithStats
 }
@@ -90,6 +122,7 @@ function getPipelineStages({
   lenderAddress,
   sortBy,
   address,
+  tenors,
 }: Params<never> = {}): PipelineStage[] {
   const blockchain = Blockchain.Ethereum(blockchainFilter.ethereum)
 
@@ -107,6 +140,11 @@ function getPipelineStages({
   const poolFilter = [
     ...address === undefined ? [] : [{
       'address': address.toLowerCase(),
+    }],
+    ...tenors === undefined ? [] : [{
+      'loanOptions.loanDurationSecond': {
+        $in: Tenor.convertTenors(tenors),
+      },
     }],
   ]
 
@@ -180,7 +218,8 @@ function getPipelineStages({
         },
       },
     },
-  }]
+  },
+  ]
 
   switch (sortBy?.type) {
   case PoolSortType.NAME:

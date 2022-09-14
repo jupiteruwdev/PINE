@@ -4,9 +4,8 @@ import { describe, it } from 'mocha'
 import request from 'supertest'
 import app from '../../src/app'
 import appConf from '../../src/app.conf'
-import { getCollections, searchPublishedPools } from '../../src/controllers'
+import { countPoolGroups, getCollections, searchPublishedPools } from '../../src/controllers'
 import getEthWeb3 from '../../src/controllers/utils/getEthWeb3'
-import { PoolModel } from '../../src/db'
 import { Blockchain, Collection, deserializeEntity, Pool, PoolGroup } from '../../src/entities'
 
 describe('/v0/pools', () => {
@@ -15,14 +14,8 @@ describe('/v0/pools', () => {
     let collections: Collection[] = []
 
     before(async () => {
-      pools = await searchPublishedPools({ blockchainFilter: { ethereum: Blockchain.Ethereum.Network.MAIN } })
+      pools = await searchPublishedPools({ blockchainFilter: { ethereum: Blockchain.Ethereum.Network.MAIN } }) as Pool[]
       collections = await getCollections({ blockchainFilter: { ethereum: Blockchain.Ethereum.Network.MAIN } })
-    })
-
-    after('delete published test pool', async () => {
-      await PoolModel.deleteOne({
-        address: '0xc59d88285ab60abbf44ed551d554e86d4ab34442',
-      }).exec()
     })
 
     it('GET /v0/pools/:poolAddress', async () => {
@@ -61,6 +54,7 @@ describe('/v0/pools', () => {
     })
 
     it('GET /v0/pools/groups/search?offset=*&count=*', async () => {
+      const expectedPoolGroupsLength = await countPoolGroups({ blockchainFilter: { ethereum: Blockchain.Ethereum.Network.MAIN }, includeRetired: true })
       const { body: res } = await request(app).get('/v0/pools/groups/search')
         .query({
           ethereum: Blockchain.Ethereum.Network.MAIN,
@@ -72,7 +66,7 @@ describe('/v0/pools', () => {
 
       expect(res.data).be.an('array')
       expect(res.data).to.have.length(10)
-      expect(res.totalCount).to.equal(pools.length)
+      expect(res.totalCount).to.equal(expectedPoolGroupsLength)
       expect(res.nextOffset).to.equal(10)
       res.data.every((poolGroup: any) => expect(poolGroup).to.have.keys(...Object.keys(PoolGroup.codingResolver)))
     })
@@ -180,6 +174,26 @@ describe('/v0/pools', () => {
           expect(res).to.have.property(key)
         }
       }
+    })
+
+    it('DELETE /v0/pools/unpublish/:poolAddress', async () => {
+      const payload = JSON.stringify({
+        poolAddress: '0xc59d88285ab60abbf44ed551d554e86d4ab34442',
+      })
+      const web3 = getEthWeb3(Blockchain.Ethereum.Network.MAIN)
+      const wallet = web3.eth.accounts.privateKeyToAccount(appConf.tests.privateKey)
+      const tx = wallet.sign(payload)
+      const { body: res } = await request(app).delete('/v0/pools')
+        .send({
+          ethereum: 1,
+          poolAddress: '0xc59d88285ab60abbf44ed551d554e86d4ab34442',
+          payload,
+          signature: tx.signature,
+        })
+        .expect('Content-Type', /json/)
+        .expect(200)
+
+      expect(res.deleted).to.equal(true)
     })
   })
 
