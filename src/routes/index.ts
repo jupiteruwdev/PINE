@@ -8,9 +8,18 @@ const router = Router()
 router.get('/health', (req, res) => res.sendStatus(200))
 
 router.get('/version', async (req, res) => {
+  let workerVersion
+
+  try {
+    workerVersion = await getWorkerVersion()
+  }
+  catch (err) {
+    workerVersion = String(err)
+  }
+
   res.send({
     core: `${appConf.version}/${appConf.build}`,
-    worker: await getWorkerVersion(),
+    worker: workerVersion,
   })
 })
 
