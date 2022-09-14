@@ -72,7 +72,6 @@ async function savePool({ poolData, blockchain }: SavePoolParams) {
 
   return mapPool({
     ...pool.toObject(),
-    loanOptions,
     collection,
   })
 }
