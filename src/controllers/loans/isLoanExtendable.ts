@@ -1,6 +1,7 @@
 import { getLoan } from '.'
 import { Blockchain } from '../../entities'
 import fault from '../../utils/fault'
+import { countPools } from '../pools'
 
 type Params = {
   blockchain: Blockchain
@@ -19,7 +20,12 @@ export default async function isLoanExtendable({
     if (loan === undefined) return false
 
     const isRepaid = loan.returned.amount.gte(loan.borrowed.amount)
-    return !isRepaid
+    if (isRepaid) return false
+
+    const numPools = await countPools({ blockchainFilter: { [blockchain.network]: blockchain.networkId }, collectionAddress })
+    if (numPools <= 0) return false
+
+    return true
   }
   default:
     throw fault('ERR_UNSUPPORTED_BLOCKCHAIN')
