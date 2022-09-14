@@ -35,5 +35,5 @@ jobs:
           for service in $(echo $services | sed "s/,/ /g")
           do
             region=$(gcloud run services list --platform managed --filter=metadata.name=$service | awk 'NR == 2 {print $3}')
-            gcloud run deploy $service --image ${{ inputs.image }} --vpc-connector ${{ inputs.vpc_connector_name }} --platform managed --region $region
+            gcloud run deploy $service --image ${{ inputs.image }} --vpc-connector ${{ inputs.vpc_connector_name }} --vpc-egress all-traffic --platform managed --region $region
           done
