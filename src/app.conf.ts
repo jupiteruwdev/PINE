@@ -91,4 +91,5 @@ export default {
     privateKey: process.env.TESTS_WALLET_PRIVATE_KEY ?? '',
     whaleWalletAddresses: _.compact((process.env.TESTS_WHALE_WALLET_ADDRESSES ?? '').split(',')),
   },
+  workerUrl: process.env.WORKER_URL,
 }

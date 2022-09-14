@@ -31,6 +31,7 @@ env:
   LUNARCRUSH_API_KEY: ${{ secrets.LUNARCRUSH_API_KEY }}
   LOG_LEVEL: ${{ secrets.LOG_LEVEL }}
   MONGO_URI: ${{ inputs.use_prod_apis && secrets.MONGO_URI || secrets.MONGO_URI_STAGING }}
+  WORKER_URL: ${{ inputs.use_prod_apis && secrets.WORKER_URL || secrets.WORKER_URL_STAGING }}
   MORALIS_API_KEY: ${{ secrets.MORALIS_API_KEY }}
   NFTBANK_API_KEY: ${{ secrets.NFTBANK_API_KEY }}
   OPENSEA_API_KEY: ${{ secrets.OPENSEA_API_KEY }}
