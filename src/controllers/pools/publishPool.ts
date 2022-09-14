@@ -9,7 +9,6 @@ import logger from '../../utils/logger'
 import { mapPool } from '../adapters'
 import saveCollection from '../collections/saveCollection'
 import authenticatePoolPublisher from './authenticatePoolPublisher'
-import getPool from './getPool'
 
 type Params = {
   blockchain: Blockchain
@@ -45,33 +44,23 @@ async function savePool({ poolData, blockchain }: SavePoolParams) {
     },
   ]
 
-  const poolExist = await getPool({
-    blockchain,
+  const poolExist = await PoolModel.findOneAndUpdate({
     address: poolData.id,
-    includeRetired: true,
-  })
+    retired: true,
+  }, {
+    $set: {
+      retired: false,
+    },
+  }, {
+    returnDocument: 'after',
+  }).exec()
 
   if (poolExist) {
-    if (poolExist.retired === true) {
-      await PoolModel.updateOne(
-        {
-          address: poolExist.address,
-        },
-        {
-          $set: {
-            retired: false,
-          },
-        }
-      ).exec()
-
-      return {
-        ...poolExist,
-        retired: false,
-      }
-    }
-    else {
-      throw fault('ERR_POOL_EXIST')
-    }
+    return mapPool({
+      ...poolExist.toObject(),
+      loanOptions,
+      collection,
+    })
   }
 
   const res = await PoolModel.create({
