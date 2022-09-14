@@ -44,45 +44,34 @@ async function savePool({ poolData, blockchain }: SavePoolParams) {
     },
   ]
 
-  const poolExist = await PoolModel.findOneAndUpdate({
+  const pool = await PoolModel.findOneAndUpdate({
     address: poolData.id,
     retired: true,
   }, {
     $set: {
+      address: poolData.id,
+      networkType: blockchain.network,
+      networkId: blockchain.networkId,
+      tokenAddress: poolData.supportedCurrency,
+      fundSource: poolData.fundSource,
+      loanOptions,
+      poolVersion: 2,
+      lenderAddress: poolData.lenderAddress,
+      routerAddress: _.get(appConf.routerAddress, blockchain.networkId),
+      repayRouterAddress: _.get(appConf.repayRouterAddress, blockchain.networkId),
+      rolloverAddress: _.get(appConf.rolloverAddress, blockchain.networkId),
+      ethLimit: 0,
+      nftCollection: collection?._id,
+      defaultFees: appConf.defaultFees.map(fee => Fee.factory(fee)),
       retired: false,
     },
   }, {
     returnDocument: 'after',
+    upsert: true,
   }).exec()
 
-  if (poolExist) {
-    return mapPool({
-      ...poolExist.toObject(),
-      loanOptions,
-      collection,
-    })
-  }
-
-  const res = await PoolModel.create({
-    retired: false,
-    address: poolData.id,
-    networkType: blockchain.network,
-    networkId: blockchain.networkId,
-    tokenAddress: poolData.supportedCurrency,
-    fundSource: poolData.fundSource,
-    loanOptions,
-    poolVersion: 2,
-    lenderAddress: poolData.lenderAddress,
-    routerAddress: _.get(appConf.routerAddress, blockchain.networkId),
-    repayRouterAddress: _.get(appConf.repayRouterAddress, blockchain.networkId),
-    rolloverAddress: _.get(appConf.rolloverAddress, blockchain.networkId),
-    ethLimit: 0,
-    nftCollection: collection?._id,
-    defaultFees: appConf.defaultFees.map(fee => Fee.factory(fee)),
-  })
-
   return mapPool({
-    ...res.toObject(),
+    ...pool.toObject(),
     loanOptions,
     collection,
   })
