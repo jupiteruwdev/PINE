@@ -5,6 +5,10 @@ on:
         description: The service label on Google Cloud Run
         required: true
         type: string
+      vpc_connector_name:
+        description: The name of the VPC connector
+        required: true
+        type: string
       image:
         description: The Docker image to deploy
         required: true
@@ -31,5 +35,5 @@ jobs:
           for service in $(echo $services | sed "s/,/ /g")
           do
             region=$(gcloud run services list --platform managed --filter=metadata.name=$service | awk 'NR == 2 {print $3}')
-            gcloud run deploy $service --image ${{ inputs.image }} --platform managed --region $region
+            gcloud run deploy $service --image ${{ inputs.image }} --vpc-connector ${{ inputs.vpc_connector_name }} --platform managed --region $region
           done
