@@ -1,4 +1,3 @@
-import BigNumber from 'bignumber.js'
 import _ from 'lodash'
 import appConf from '../../app.conf'
 import { NFTCollectionModel, PoolModel } from '../../db'
@@ -35,15 +34,6 @@ async function savePool({ poolData, blockchain }: SavePoolParams) {
     collection = await saveCollection({ collectionAddress: poolData.collection, blockchain })
   }
 
-  const loanOptions = [
-    {
-      loanDurationBlock: poolData.duration / appConf.blocksPerSecond,
-      loanDurationSecond: poolData.duration,
-      interestBpsBlock: new BigNumber(poolData.interestBPS1000000XBlock).dividedBy(new BigNumber(1_000_000)),
-      maxLtvBps: poolData.collateralFactorBPS,
-    },
-  ]
-
   const pool = await PoolModel.findOneAndUpdate({
     address: poolData.id,
     retired: true,
@@ -54,7 +44,6 @@ async function savePool({ poolData, blockchain }: SavePoolParams) {
       networkId: blockchain.networkId,
       tokenAddress: poolData.supportedCurrency,
       fundSource: poolData.fundSource,
-      loanOptions,
       poolVersion: 2,
       lenderAddress: poolData.lenderAddress,
       routerAddress: _.get(appConf.routerAddress, blockchain.networkId),
