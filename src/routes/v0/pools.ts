@@ -3,6 +3,7 @@ import _ from 'lodash'
 import appConf from '../../app.conf'
 import { countPoolGroups, countPools, getPool, getPools, publishPool, searchPoolGroups, unpublishPool } from '../../controllers'
 import searchPublishedPools, { PoolSortDirection, PoolSortType } from '../../controllers/pools/searchPublishedPools'
+import scheduleWorker from '../../controllers/utils/scheduleWorker'
 import { Pagination, Pool, PoolGroup, serializeEntityArray } from '../../entities'
 import fault from '../../utils/fault'
 import { getBlockchain, getBlockchainFilter, getNumber, getString } from '../utils/query'
@@ -134,6 +135,18 @@ router.post('/', async (req, res, next) => {
   }
   catch (err) {
     next(fault('ERR_API_PUBLISH_POOL', undefined, err))
+  }
+})
+
+router.post('/sync', async (req, res, next) => {
+  try {
+    await scheduleWorker('syncPools')
+    res.status(200).send({
+      success: 'success',
+    })
+  }
+  catch (err) {
+    next(fault('ERR_API_SYNC_POOL', undefined, err))
   }
 })
 
