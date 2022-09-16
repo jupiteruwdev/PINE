@@ -9,22 +9,27 @@ This project requires the following environment variables defined in `.env`. In 
 ```sh
 # .env
 
-ALCHEMY_API_KEY=
-ALCHEMY_API_MAINNET_URL=
-ALCHEMY_API_RINKEBY_URL=
-ETH_RPC_MAINNET=
-ETH_RPC_RINKEBY=
-LOG_LEVEL=
-MORALIS_API_KEY=
-NFTBANK_API_KEY=
-OPENSEA_API_KEY=
-SUBGRAPH_API_MAINNET_URL=
-SUBGRAPH_API_RINKEBY_URL=
-MONGO_URI=
-VALUATION_SIGNER=
-GEMXYZ_API_KEY=
-LUNARCRUSH_API_KEY=
-REQUEST_TIMEOUT_MS=
+LOG_LEVEL # Log level (see Logging section below, logging is disabled if unspecified)
+REQUEST_TIMEOUT_MS # Default timeout for all external API requests, in milliseconds
+
+ALCHEMY_API_KEY # API key for Alchemy
+MORALIS_API_KEY # API key for Moralis
+NFTBANK_API_KEY # API key for NFTBank
+OPENSEA_API_KEY # API key for OpenSea
+GEMXYZ_API_KEY # API key for Gem.xyz
+LUNARCRUSH_API_KEY # API key for LunarCrush
+
+ETH_RPC_MAINNET # URL to the RPC node for Ethereum Rinkeby
+ETH_RPC_RINKEBY # URL to the RPC node for Ethereum Mainnet
+
+MONGO_URI # URI of MongoDB
+WORKER_URL # URL of the worker
+ALCHEMY_API_MAINNET_URL # URL of Mainnet Alchemy API
+ALCHEMY_API_RINKEBY_URL # URL of Rinkeby Alchemy API
+SUBGRAPH_API_MAINNET_URL # URL of Mainnet subgraph
+SUBGRAPH_API_RINKEBY_URL # URL of Rinkeby subgraph
+
+VALUATION_SIGNER # Key for signing NFT valuations
 ```
 
 The following are environment variables used by unit and integration tests:
@@ -32,9 +37,9 @@ The following are environment variables used by unit and integration tests:
 ```sh
 # .env
 
-TESTS_WALLET_ADDRESS=<address>
-TESTS_WALLET_PRIVATE_KEY=<key>
-TESTS_WHALE_WALLET_ADDRESSES=<address_1>,<address_2>,<address_3>
+TESTS_WALLET_ADDRESS=<address> # Address of wallet to assume when running unit/integration tests
+TESTS_WALLET_PRIVATE_KEY=<key> # Private key of the test wallet above
+TESTS_WHALE_WALLET_ADDRESSES=<address_1>,<address_2>,<address_3> # Addresses of third-party wallets that should be tested against when running unit/integration tests
 ```
 
 ## Usage

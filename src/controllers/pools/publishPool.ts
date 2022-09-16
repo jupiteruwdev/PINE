@@ -1,4 +1,3 @@
-import BigNumber from 'bignumber.js'
 import _ from 'lodash'
 import appConf from '../../app.conf'
 import { NFTCollectionModel, PoolModel } from '../../db'
@@ -35,36 +34,33 @@ async function savePool({ poolData, blockchain }: SavePoolParams) {
     collection = await saveCollection({ collectionAddress: poolData.collection, blockchain })
   }
 
-  const loanOptions = [
-    {
-      loanDurationBlock: poolData.duration / appConf.blocksPerSecond,
-      loanDurationSecond: poolData.duration,
-      interestBpsBlock: new BigNumber(poolData.interestBPS1000000XBlock).dividedBy(new BigNumber(1_000_000)),
-      maxLtvBps: poolData.collateralFactorBPS,
-    },
-  ]
-
-  const res = await PoolModel.create({
-    retired: false,
+  const pool = await PoolModel.findOneAndUpdate({
     address: poolData.id,
-    networkType: blockchain.network,
-    networkId: blockchain.networkId,
-    tokenAddress: poolData.supportedCurrency,
-    fundSource: poolData.fundSource,
-    loanOptions,
-    poolVersion: 2,
-    lenderAddress: poolData.lenderAddress,
-    routerAddress: _.get(appConf.routerAddress, blockchain.networkId),
-    repayRouterAddress: _.get(appConf.repayRouterAddress, blockchain.networkId),
-    rolloverAddress: _.get(appConf.rolloverAddress, blockchain.networkId),
-    ethLimit: 0,
-    nftCollection: collection?._id,
-    defaultFees: appConf.defaultFees.map(fee => Fee.factory(fee)),
-  })
+    retired: true,
+  }, {
+    $set: {
+      address: poolData.id,
+      networkType: blockchain.network,
+      networkId: blockchain.networkId,
+      tokenAddress: poolData.supportedCurrency,
+      fundSource: poolData.fundSource,
+      poolVersion: 2,
+      lenderAddress: poolData.lenderAddress,
+      routerAddress: _.get(appConf.routerAddress, blockchain.networkId),
+      repayRouterAddress: _.get(appConf.repayRouterAddress, blockchain.networkId),
+      rolloverAddress: _.get(appConf.rolloverAddress, blockchain.networkId),
+      ethLimit: 0,
+      nftCollection: collection?._id,
+      defaultFees: appConf.defaultFees.map(fee => Fee.factory(fee)),
+      retired: false,
+    },
+  }, {
+    returnDocument: 'after',
+    upsert: true,
+  }).exec()
 
   return mapPool({
-    ...res.toObject(),
-    loanOptions,
+    ...pool.toObject(),
     collection,
   })
 }

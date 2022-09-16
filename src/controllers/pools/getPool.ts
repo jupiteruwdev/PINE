@@ -3,7 +3,7 @@ import _ from 'lodash'
 import { PipelineStage } from 'mongoose'
 import appConf from '../../app.conf'
 import { PoolModel } from '../../db'
-import { Blockchain, Collection, Fee, LoanOption, Pool, Value } from '../../entities'
+import { Blockchain, Collection, Pool, Value } from '../../entities'
 import { getOnChainPools } from '../../subgraph'
 import fault from '../../utils/fault'
 import { mapPool } from '../adapters'
@@ -87,15 +87,7 @@ async function getPool<IncludeStats extends boolean = false>({
       blockchain,
       ...collectionMetadata,
     }),
-    loanOptions: [
-      LoanOption.factory({
-        loanDurationSeconds: pool.duration,
-        interestBPSPerBlock: pool.interestBPS1000000XBlock / 1_000_000,
-        maxLTVBPS: pool.collateralFactorBPS,
-        fees: appConf.defaultFees.map(fee => Fee.factory(fee)),
-        loanDurationBlocks: pool.duration / appConf.blocksPerSecond,
-      }),
-    ],
+    loanOptions: [],
     routerAddress: _.get(appConf.routerAddress, blockchain.networkId),
     repayRouterAddress: _.get(appConf.repayRouterAddress, blockchain.networkId),
     rolloverAddress: _.get(appConf.rolloverAddress, blockchain.networkId),

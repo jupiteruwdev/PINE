@@ -17,6 +17,7 @@ jobs:
     with:
       image: ${{ needs.build.outputs.image }}
       service_label: core
+      vpc_connector_name: core
     secrets: inherit
   notify:
     name: Notify
