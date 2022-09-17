@@ -1,8 +1,9 @@
 import _ from 'lodash'
-import { PoolModel } from '../../db'
-import { Blockchain } from '../../entities'
+import { NFTCollectionModel, PoolModel } from '../../db'
+import { Blockchain, Pool } from '../../entities'
 import fault from '../../utils/fault'
 import logger from '../../utils/logger'
+import { mapPool } from '../adapters'
 import authenticatePoolPublisher from './authenticatePoolPublisher'
 
 type Params = {
@@ -17,7 +18,7 @@ export default async function unpublishPool({
   blockchain,
   payload,
   signature,
-}: Params) {
+}: Params): Promise<Pool> {
   logger.info(`Unpublishing pool for address <${poolAddress}>`)
 
   try {
@@ -32,7 +33,14 @@ export default async function unpublishPool({
         },
       }).exec()
 
+      const collection = await NFTCollectionModel.findById(res?.nftCollection)
+
       if (_.isNull(res)) throw fault('ERR_UNPUBLISH_POOL_POOL_NOT_FOUND')
+
+      return mapPool({
+        ...res.toObject(),
+        collection: collection?.toObject(),
+      })
 
       break
     default:
