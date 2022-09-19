@@ -61,58 +61,64 @@ jobs:
           ref: ${{ inputs.checkout_ref }}
       - name: Set env
         id: env
+        run: echo "::set-output name=build_number::$(git rev-parse --short HEAD).$(git rev-list --count ${{ github.ref }})"
+      - name: Test
         run: |
-          echo "::set-output name=build_number::$(git rev-parse --short HEAD).$(git rev-list --count ${{ github.ref }})"
-      - name: Authenticate Google Cloud
-        id: gcloud
-        uses: google-github-actions/auth@v0
-        with:
-          token_format: access_token
-          workload_identity_provider: ${{ secrets.GCP_WORKLOAD_IDENTITY_PROVIDER }}
-          service_account: ${{ secrets.GCP_SERVICE_ACC }}
-      - name: Set up Cloud SDK
-        uses: google-github-actions/setup-gcloud@v0
-      - name: Login to GCR
-        uses: docker/login-action@v1
-        with:
-          registry: gcr.io
-          username: oauth2accesstoken
-          password: ${{ steps.gcloud.outputs.access_token }}
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v1
-      - name: Build test target
-        uses: docker/build-push-action@v2
-        with:
-          build-args: BUILD_NUMBER=${{ steps.env.outputs.build_number }}
-          cache-from: type=gha,scope=${{ github.workflow }}
-          cache-to: type=gha,scope=${{ github.workflow }},mode=max
-          context: .
-          load: true
-          push: false
-          tags: ${{ inputs.image_name }}:test-${{ github.sha }}
-          target: test
-      - name: Run tests
-        env:
-          IMAGE_NAME: ${{ inputs.image_name }}
-          IMAGE_TAG: test-${{ github.sha }}
-        run: docker-compose -f docker-compose.test.yml up --exit-code-from app
-      - name: Set metadata
-        id: meta
-        uses: docker/metadata-action@v3
-        if: ${{ inputs.push }}
-        with:
-          images: ${{ inputs.image_name }}
-          tags: |
-            type=sha,prefix=,format=short,priority=1000,suffix=${{ !endsWith(github.ref, github.event.repository.default_branch) && format('-{0}', github.ref_name) || '' }}
-            type=raw,value=latest,suffix=${{ !endsWith(github.ref, github.event.repository.default_branch) && format('-{0}', github.ref_name) || '' }}
-      - name: Build release target
-        uses: docker/build-push-action@v2
-        with:
-          build-args: BUILD_NUMBER=${{ steps.env.outputs.build_number }}
-          cache-from: type=gha,scope=${{ github.workflow }}
-          cache-to: type=gha,scope=${{ github.workflow }},mode=max
-          context: .
-          labels: ${{ steps.meta.outputs.labels }}
-          push: ${{ inputs.push }}
-          tags: ${{ steps.meta.outputs.tags }}
-          target: release
+          echo "TEST"
+          echo "${{ steps.env.outputs.build_number }}"
+          echo "${{ github.ref }}"
+          git rev-list ${{ github.ref }}
+          git rev-list HEAD
+      # - name: Authenticate Google Cloud
+      #   id: gcloud
+      #   uses: google-github-actions/auth@v0
+      #   with:
+      #     token_format: access_token
+      #     workload_identity_provider: ${{ secrets.GCP_WORKLOAD_IDENTITY_PROVIDER }}
+      #     service_account: ${{ secrets.GCP_SERVICE_ACC }}
+      # - name: Set up Cloud SDK
+      #   uses: google-github-actions/setup-gcloud@v0
+      # - name: Login to GCR
+      #   uses: docker/login-action@v1
+      #   with:
+      #     registry: gcr.io
+      #     username: oauth2accesstoken
+      #     password: ${{ steps.gcloud.outputs.access_token }}
+      # - name: Set up Docker Buildx
+      #   uses: docker/setup-buildx-action@v1
+      # - name: Build test target
+      #   uses: docker/build-push-action@v2
+      #   with:
+      #     build-args: BUILD_NUMBER=${{ steps.env.outputs.build_number }}
+      #     cache-from: type=gha,scope=${{ github.workflow }}
+      #     cache-to: type=gha,scope=${{ github.workflow }},mode=max
+      #     context: .
+      #     load: true
+      #     push: false
+      #     tags: ${{ inputs.image_name }}:test-${{ github.sha }}
+      #     target: test
+      # - name: Run tests
+      #   env:
+      #     IMAGE_NAME: ${{ inputs.image_name }}
+      #     IMAGE_TAG: test-${{ github.sha }}
+      #   run: docker-compose -f docker-compose.test.yml up --exit-code-from app
+      # - name: Set metadata
+      #   id: meta
+      #   uses: docker/metadata-action@v3
+      #   if: ${{ inputs.push }}
+      #   with:
+      #     images: ${{ inputs.image_name }}
+      #     tags: |
+      #       type=sha,prefix=,format=short,priority=1000,suffix=${{ !endsWith(github.ref, github.event.repository.default_branch) && format('-{0}', github.ref_name) || '' }}
+      #       type=raw,value=latest,suffix=${{ !endsWith(github.ref, github.event.repository.default_branch) && format('-{0}', github.ref_name) || '' }}
+      # - name: Build release target
+      #   uses: docker/build-push-action@v2
+      #   with:
+      #     build-args: BUILD_NUMBER=${{ steps.env.outputs.build_number }}
+      #     cache-from: type=gha,scope=${{ github.workflow }}
+      #     cache-to: type=gha,scope=${{ github.workflow }},mode=max
+      #     context: .
+      #     labels: ${{ steps.meta.outputs.labels }}
+      #     push: ${{ inputs.push }}
+      #     tags: ${{ steps.meta.outputs.tags }}
+      #     target: release
