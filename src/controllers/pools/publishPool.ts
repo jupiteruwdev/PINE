@@ -7,6 +7,7 @@ import fault from '../../utils/fault'
 import logger from '../../utils/logger'
 import { mapPool } from '../adapters'
 import saveCollection from '../collections/saveCollection'
+import scheduleWorker from '../utils/scheduleWorker'
 import authenticatePoolPublisher from './authenticatePoolPublisher'
 
 type Params = {
@@ -33,6 +34,8 @@ async function savePool({ poolData, blockchain }: SavePoolParams) {
   if (collection === undefined) {
     collection = await saveCollection({ collectionAddress: poolData.collection, blockchain })
   }
+
+  await scheduleWorker('syncPools')
 
   const pool = await PoolModel.findOneAndUpdate({
     address: poolData.id,

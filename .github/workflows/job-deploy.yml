@@ -1,12 +1,12 @@
 on:
   workflow_call:
     inputs:
-      service_label:
-        description: The service label on Google Cloud Run
+      cloud_run_ref_label:
+        description: The ref label on Google Cloud Run
         required: true
         type: string
-      vpc_connector_name:
-        description: The name of the VPC connector
+      cloud_run_service_label:
+        description: The service label on Google Cloud Run
         required: true
         type: string
       image:
@@ -23,17 +23,29 @@ jobs:
       - name: Authenticate Google Cloud
         uses: google-github-actions/auth@v0
         with:
+          service_account: ${{ secrets.GCP_SERVICE_ACC }}
           token_format: access_token
           workload_identity_provider: ${{ secrets.GCP_WORKLOAD_IDENTITY_PROVIDER }}
-          service_account: ${{ secrets.GCP_SERVICE_ACC }}
       - name: Set up Cloud SDK
         uses: google-github-actions/setup-gcloud@v0
       - name: Deploy
         run: |
           gcloud config set project ${{ secrets.GCP_PROJECT }}
-          services=$(gcloud run services list --platform managed --filter="metadata.labels.service=${{ inputs.service_label }} AND metadata.labels.ref=${{ github.ref_name }}" | awk 'NR >= 2 {print $2}' | sed -n -e 'H;${x;s/\n/,/g;s/^,//;p;}')
-          for service in $(echo $services | sed "s/,/ /g")
-          do
-            region=$(gcloud run services list --platform managed --filter=metadata.name=$service | awk 'NR == 2 {print $3}')
-            gcloud run deploy $service --image ${{ inputs.image }} --vpc-connector ${{ inputs.vpc_connector_name }} --vpc-egress all-traffic --platform managed --region $region
-          done
+          service_label=${{ inputs.cloud_run_service_label }}
+          ref_label=${{ inputs.cloud_run_ref_label }}
+          services=$(gcloud run services list --platform managed --filter="metadata.labels.service=$service_label AND metadata.labels.ref=$ref_label" | awk 'NR >= 2 {print $2}' | sed -n -e 'H;${x;s/\n/,/g;s/^,//;p;}')
+
+          if [ ! -z $services ]; then
+            for service in $(echo $services | sed "s/,/ /g")
+            do
+              region=$(gcloud run services list --platform managed --filter=metadata.name=$service | awk 'NR == 2 {print $3}')
+              echo -e "Deploying to ${service}... image=${{ inputs.image }}, region=${region}"
+              gcloud run deploy $service \
+                --image ${{ inputs.image }} \
+                --platform managed \
+                --region $region
+              echo -e "Deploying to ${service}... OK"
+            done
+          else
+            echo -e "No Cloud Run service(s) found for service label <$service_label> and ref label <$ref_label>, skipping deploy"
+          fi

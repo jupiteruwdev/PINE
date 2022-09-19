@@ -6,6 +6,11 @@ on:
         description: Specifies if the built Docker image should be pushed to remote registry
         required: false
         type: boolean
+      image_name:
+        default: image
+        description: Specifies the Docker image name
+        required: true
+        type: string
       use_prod_apis:
         default: false
         description: Specifies whether production environment should be used for external APIs and services (i.e. database, subgraph, etc)
@@ -21,7 +26,6 @@ on:
         description: The built Docker image
         value: ${{ jobs.default.outputs.image }}
 env:
-  IMAGE_NAME: gcr.io/pinedefi/core-service
   ALCHEMY_API_KEY: ${{ secrets.ALCHEMY_API_KEY }}
   ALCHEMY_API_MAINNET_URL: ${{ secrets.ALCHEMY_API_MAINNET_URL }}
   ALCHEMY_API_RINKEBY_URL: ${{ secrets.ALCHEMY_API_RINKEBY_URL }}
@@ -85,16 +89,19 @@ jobs:
           context: .
           load: true
           push: false
-          tags: ${{ env.IMAGE_NAME }}:test-${{ github.sha }}
+          tags: ${{ inputs.image_name }}:test-${{ github.sha }}
           target: test
       - name: Run tests
-        run: IMAGE_TAG=test-${{ github.sha }} docker-compose -f docker-compose.test.yml up --exit-code-from app
+        env:
+          IMAGE_NAME: ${{ inputs.image_name }}
+          IMAGE_TAG: test-${{ github.sha }}
+        run: docker-compose -f docker-compose.test.yml up --exit-code-from app
       - name: Set metadata
         id: meta
         uses: docker/metadata-action@v3
         if: ${{ inputs.push }}
         with:
-          images: ${{ env.IMAGE_NAME }}
+          images: ${{ inputs.image_name }}
           tags: |
             type=sha,prefix=,format=short,priority=1000,suffix=${{ !endsWith(github.ref, github.event.repository.default_branch) && format('-{0}', github.ref_name) || '' }}
             type=raw,value=latest,suffix=${{ !endsWith(github.ref, github.event.repository.default_branch) && format('-{0}', github.ref_name) || '' }}
