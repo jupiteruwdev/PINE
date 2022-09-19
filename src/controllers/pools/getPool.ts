@@ -105,25 +105,27 @@ function getPipelineStages({
   includeRetired = false,
   lenderAddress,
 }: Params<never>): PipelineStage[] {
-  const collectionFilter = [
-    ...collectionAddress === undefined ? [] : [{
-      'collection._address': collectionAddress,
-    }],
-  ]
-
   const stages: PipelineStage[] = [{
-    $addFields: {
-      '_address': {
-        $toLower: '$address',
-      },
-    },
-  }, {
     $match: {
       'networkType': blockchain.network,
       'networkId': blockchain.networkId,
-      ...address === undefined ? {} : { _address: address.toLowerCase() },
-      ...lenderAddress === undefined ? {} : { lenderAddress },
-      ...includeRetired === true ? {} : { retired: { $ne: true } },
+      ...address === undefined ? {} : {
+        address: {
+          $regex: address,
+          $options: 'i',
+        },
+      },
+      ...lenderAddress === undefined ? {} : {
+        lenderAddress: {
+          $regex: lenderAddress,
+          $options: 'i',
+        },
+      },
+      ...includeRetired === true ? {} : {
+        retired: {
+          $ne: true,
+        },
+      },
     },
   }, {
     $lookup: {
@@ -135,13 +137,12 @@ function getPipelineStages({
   }, {
     $unwind: '$collection',
   },
-  ...collectionFilter.length === 0 ? [] : [{
-    $addFields: {
-      'collection._address': { $toLower: '$collection.address' },
-    },
-  }, {
+  ...collectionAddress === undefined ? [] : [{
     $match: {
-      $and: collectionFilter,
+      'collection.address': {
+        $regex: collectionAddress,
+        $options: 'i',
+      },
     },
   }], {
     $sort: {
