@@ -56,9 +56,10 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3
         with:
+          fetch-depth: 0
+          ref: ${{ inputs.checkout_ref }}
           submodules: recursive
           token: ${{ secrets.GH_ACCESS_TOKEN }}
-          ref: ${{ inputs.checkout_ref }}
       - name: Set env
         id: env
         run: echo "::set-output name=build_number::$(git rev-parse --short HEAD).$(git rev-list --count ${{ github.ref }})"
