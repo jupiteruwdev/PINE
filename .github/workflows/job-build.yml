@@ -67,8 +67,9 @@ jobs:
           echo "TEST"
           echo "${{ steps.env.outputs.build_number }}"
           echo "${{ github.ref }}"
-          git rev-list --count origin/${{ github.ref }}
+          git rev-list --count ${{ github.ref }}
           git rev-list --count HEAD
+          git shortlog ${{ github.ref }} | grep -E '^[ ]+\w+' | wc -l
       # - name: Authenticate Google Cloud
       #   id: gcloud
       #   uses: google-github-actions/auth@v0
