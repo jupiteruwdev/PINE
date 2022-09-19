@@ -80,7 +80,10 @@ function getPipelineStages({
 
   const collectionFilter = [
     ...collectionAddress === undefined ? [] : [{
-      'collection._address': collectionAddress.toLowerCase(),
+      'collection.address': {
+        $regex: collectionAddress,
+        $options: 'i',
+      },
     }],
     ...collectionName === undefined ? [] : [{
       'collection.displayName': {
@@ -106,15 +109,7 @@ function getPipelineStages({
     $unwind: '$collection',
   },
   ...collectionFilter.length === 0 ? [] : [{
-    $addFields: {
-      'collection._address': {
-        $toLower: '$collection.address',
-      },
-    },
-  }, {
-    $match: {
-      $and: collectionFilter,
-    },
+    $match: { $and: collectionFilter },
   }], {
     $addFields: {
       name: {

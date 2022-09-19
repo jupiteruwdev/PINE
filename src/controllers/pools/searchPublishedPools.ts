@@ -128,7 +128,10 @@ function getPipelineStages({
 
   const collectionFilter = [
     ...collectionAddress === undefined ? [] : [{
-      'collection._address': collectionAddress.toLowerCase(),
+      'collection.address': {
+        $regex: collectionAddress,
+        $options: 'i',
+      },
     }],
     ...collectionName === undefined ? [] : [{
       'collection.displayName': {
@@ -139,7 +142,10 @@ function getPipelineStages({
   ]
   const poolFilter = [
     ...address === undefined ? [] : [{
-      'address': address.toLowerCase(),
+      'address': {
+        $regex: address,
+        $options: 'i',
+      },
     }],
     ...tenors === undefined ? [] : [{
       'loanOptions.loanDurationSecond': {
@@ -166,26 +172,10 @@ function getPipelineStages({
     $unwind: '$collection',
   },
   ...collectionFilter.length === 0 ? [] : [{
-    $addFields: {
-      'collection._address': {
-        $toLower: '$collection.address',
-      },
-    },
-  }, {
-    $match: {
-      $and: collectionFilter,
-    },
+    $match: { $and: collectionFilter },
   }],
   ...poolFilter.length === 0 ? [] : [{
-    $addFields: {
-      'address': {
-        $toLower: '$address',
-      },
-    },
-  }, {
-    $match: {
-      $and: poolFilter,
-    },
+    $match: { $and: poolFilter },
   }], {
     $addFields: {
       name: {
