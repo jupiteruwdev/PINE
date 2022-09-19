@@ -7,25 +7,23 @@ jobs:
     name: Development
     uses: ./.github/workflows/job-build.yml
     with:
-      push: false
-      use_prod_apis: false
       checkout_ref: development
+      image_name: gcr.io/pinedefi/core-service
     secrets: inherit
   build:
     name: Staging
     uses: ./.github/workflows/job-build.yml
     with:
-      push: false
-      use_prod_apis: false
       checkout_ref: staging
+      image_name: gcr.io/pinedefi/core-service
     secrets: inherit
   production:
     name: Production
     uses: ./.github/workflows/job-build.yml
     with:
-      push: false
-      use_prod_apis: true
+      image_name: gcr.io/pinedefi/core-service
       checkout_ref: ${{ github.event.repository.default_branch }}
+      use_prod_apis: true
     secrets: inherit
   notify:
     name: Notify

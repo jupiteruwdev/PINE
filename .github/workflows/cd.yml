@@ -7,6 +7,7 @@ jobs:
     name: Build
     uses: ./.github/workflows/job-build.yml
     with:
+      image_name: gcr.io/pinedefi/core-service
       push: true
       use_prod_apis: ${{ github.ref_name == 'main' }}
     secrets: inherit
@@ -15,9 +16,9 @@ jobs:
     uses: ./.github/workflows/job-deploy.yml
     needs: [build]
     with:
+      cloud_run_ref_label: ${{ github.ref_name }}
+      cloud_run_service_label: core
       image: ${{ needs.build.outputs.image }}
-      service_label: core
-      vpc_connector_name: core
     secrets: inherit
   notify:
     name: Notify
