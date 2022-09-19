@@ -66,6 +66,9 @@ jobs:
         run: |
           echo "TEST"
           echo "${{ steps.env.outputs.build_number }}"
+          echo "${{ github.ref }}"
+          git rev-list ${{ github.ref }}
+          git rev-list HEAD
       # - name: Authenticate Google Cloud
       #   id: gcloud
       #   uses: google-github-actions/auth@v0
