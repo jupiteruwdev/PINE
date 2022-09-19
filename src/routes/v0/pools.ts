@@ -6,7 +6,7 @@ import searchPublishedPools, { PoolSortDirection, PoolSortType } from '../../con
 import scheduleWorker from '../../controllers/utils/scheduleWorker'
 import { Pagination, Pool, PoolGroup, serializeEntityArray } from '../../entities'
 import fault from '../../utils/fault'
-import { getBlockchain, getBlockchainFilter, getNumber, getString } from '../utils/query'
+import { getBlockchain, getBlockchainFilter, getBoolean, getNumber, getString } from '../utils/query'
 
 const router = Router()
 
@@ -78,8 +78,10 @@ router.get('/tenors', async (req, res, next) => {
 router.get('/:poolAddress', async (req, res, next) => {
   try {
     const blockchain = getBlockchain(req.query)
+    const includeRetired = getBoolean(req.query, 'includeRetired', { optional: true })
     const poolAddress = getString(req.params, 'poolAddress')
-    const pool = await getPool({ blockchain, address: poolAddress, includeStats: true })
+
+    const pool = await getPool({ blockchain, address: poolAddress, includeStats: true, includeRetired })
     const payload = Pool.serialize(pool)
 
     res.status(200).json(payload)
