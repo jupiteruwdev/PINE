@@ -33,7 +33,7 @@ RUN npm prune --production
 
 
 # Final production build.
-FROM node:17.5.0-alpine AS release
+FROM node:17.5.0-slim AS release
 
 ARG BUILD_NUMBER
 
