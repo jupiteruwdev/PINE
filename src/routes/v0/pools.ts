@@ -156,11 +156,9 @@ router.delete('/', async (req, res, next) => {
     const poolAddress = _.get(req.body, 'poolAddress')
     const payload = _.get(req.body, 'payload')
     const signature = _.get(req.body, 'signature')
-    await unpublishPool({ poolAddress, blockchain, payload, signature })
+    const deletedPool = await unpublishPool({ poolAddress, blockchain, payload, signature })
 
-    res.status(200).json({
-      deleted: true,
-    })
+    res.status(200).json(deletedPool)
   }
   catch (err) {
     next(fault('ERR_API_UNPUBLISH_POOL', undefined, err))
