@@ -6,7 +6,7 @@ import searchPublishedPools, { PoolSortDirection, PoolSortType } from '../../con
 import scheduleWorker from '../../controllers/utils/scheduleWorker'
 import { Pagination, Pool, PoolGroup, serializeEntityArray } from '../../entities'
 import fault from '../../utils/fault'
-import { getBlockchain, getBlockchainFilter, getNumber, getString } from '../utils/query'
+import { getBlockchain, getBlockchainFilter, getBoolean, getNumber, getString } from '../utils/query'
 
 const router = Router()
 
@@ -78,8 +78,10 @@ router.get('/tenors', async (req, res, next) => {
 router.get('/:poolAddress', async (req, res, next) => {
   try {
     const blockchain = getBlockchain(req.query)
+    const includeRetired = getBoolean(req.query, 'includeRetired', { optional: true })
     const poolAddress = getString(req.params, 'poolAddress')
-    const pool = await getPool({ blockchain, address: poolAddress, includeStats: true })
+
+    const pool = await getPool({ blockchain, address: poolAddress, includeStats: true, includeRetired })
     const payload = Pool.serialize(pool)
 
     res.status(200).json(payload)
@@ -156,11 +158,9 @@ router.delete('/', async (req, res, next) => {
     const poolAddress = _.get(req.body, 'poolAddress')
     const payload = _.get(req.body, 'payload')
     const signature = _.get(req.body, 'signature')
-    await unpublishPool({ poolAddress, blockchain, payload, signature })
+    const deletedPool = await unpublishPool({ poolAddress, blockchain, payload, signature })
 
-    res.status(200).json({
-      deleted: true,
-    })
+    res.status(200).json(deletedPool)
   }
   catch (err) {
     next(fault('ERR_API_UNPUBLISH_POOL', undefined, err))
