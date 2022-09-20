@@ -81,6 +81,7 @@ export default async function getPools({
       lenderAddress,
       address,
       collectionAddress,
+      includeStats: true,
     })
     const excludeAddresses = publishedPools.map(pool => pool.address.toLowerCase())
 
