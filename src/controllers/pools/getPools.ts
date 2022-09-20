@@ -1,10 +1,13 @@
+import BigNumber from 'bignumber.js'
 import _ from 'lodash'
 import appConf from '../../app.conf'
-import { Blockchain, Collection, Pool } from '../../entities'
+import { Blockchain, Collection, Pool, Value } from '../../entities'
 import { getOnChainPools } from '../../subgraph'
 import fault from '../../utils/fault'
 import logger from '../../utils/logger'
 import { getEthCollectionMetadata } from '../collections'
+import getPoolCapacity from './getPoolCapacity'
+import getPoolUtilization from './getPoolUtilization'
 import searchPublishedPools from './searchPublishedPools'
 
 type Params = {
@@ -24,6 +27,14 @@ async function mapPool({ blockchain, pools }: MapPoolParams): Promise<Pool[]> {
 
   const poolsData = await Promise.all(_.map(uniqPools, (async pool => {
     const collectionMetadata = await getEthCollectionMetadata({ blockchain, matchSubcollectionBy: { type: 'poolAddress', value: pool.id }, collectionAddress: pool.collection })
+    const [
+      { amount: utilizationEth },
+      { amount: capacityEth },
+    ] = await Promise.all([
+      getPoolUtilization({ blockchain, poolAddress: pool.id }),
+      getPoolCapacity({ blockchain, poolAddress: pool.id, tokenAddress: pool.supportedCurrency, fundSource: pool.fundSource }),
+    ])
+    const valueLockedEth = capacityEth.plus(utilizationEth).gt(new BigNumber(pool.ethLimit || Number.POSITIVE_INFINITY)) ? new BigNumber(pool.ethLimit ?? 0) : capacityEth.plus(utilizationEth)
 
     return Pool.factory({
       version: 2,
@@ -43,6 +54,8 @@ async function mapPool({ blockchain, pools }: MapPoolParams): Promise<Pool[]> {
       rolloverAddress: _.get(appConf.rolloverAddress, blockchain.networkId),
       ethLimit: 0,
       published: false,
+      utilization: Value.$ETH(utilizationEth),
+      valueLocked: Value.$ETH(valueLockedEth),
     })
   })))
 
