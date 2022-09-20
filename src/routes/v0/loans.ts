@@ -17,7 +17,7 @@ router.get('/nft', async (req, res, next) => {
     const loan = await getLoan({ blockchain, nftId, collectionAddress, txSpeedBlocks, populateValuation: true })
 
     if (loan === undefined) {
-      res.status(404).send()
+      res.status(404).send({ error: fault('ERR_API_FETCH_LOAN_NOT_FOUND') })
     }
     else {
       const payload = Loan.serialize(loan)
