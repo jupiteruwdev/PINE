@@ -3,13 +3,14 @@ import _ from 'lodash'
 import { PipelineStage } from 'mongoose'
 import appConf from '../../app.conf'
 import { PoolModel } from '../../db'
-import { Blockchain, Collection, Pool, Value } from '../../entities'
+import { Blockchain, Collection, Fee, LoanOption, Pool, Value } from '../../entities'
 import { getOnChainPools } from '../../subgraph'
 import fault from '../../utils/fault'
 import { mapPool } from '../adapters'
 import getEthCollectionMetadata from '../collections/getEthCollectionMetadata'
 import getPoolCapacity from './getPoolCapacity'
 import getPoolUtilization from './getPoolUtilization'
+import getOnChainLoanOptions from './getOnChainLoanOptions'
 import verifyPool from './verifyPool'
 
 type Params<IncludeStats> = {
@@ -74,6 +75,7 @@ async function getPool<IncludeStats extends boolean = false>({
   }
 
   const collectionMetadata = await getEthCollectionMetadata({ blockchain, matchSubcollectionBy: { type: 'poolAddress', value: pool.id }, collectionAddress: pool.collection })
+  const loanOptionsDict = await getOnChainLoanOptions({ addresses: [pool.id], networkId: blockchain.networkId })
 
   return Pool.factory({
     version: 2,
@@ -87,7 +89,13 @@ async function getPool<IncludeStats extends boolean = false>({
       blockchain,
       ...collectionMetadata,
     }),
-    loanOptions: [],
+    loanOptions: loanOptionsDict[pool.id]?.map((lo: any) => LoanOption.factory({
+      interestBPSPerBlock: lo.interestBpsBlock,
+      loanDurationBlocks: lo.loanDurationSecond / appConf.blocksPerSecond,
+      loanDurationSeconds: lo.loanDurationSecond,
+      maxLTVBPS: lo.maxLtvBps,
+      fees: appConf.defaultFees.map(fee => Fee.factory(fee)),
+    })),
     routerAddress: _.get(appConf.routerAddress, blockchain.networkId),
     repayRouterAddress: _.get(appConf.repayRouterAddress, blockchain.networkId),
     rolloverAddress: _.get(appConf.rolloverAddress, blockchain.networkId),
