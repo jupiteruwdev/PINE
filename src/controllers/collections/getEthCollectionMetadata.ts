@@ -25,14 +25,12 @@ export default async function getEthCollectionMetadata({
   try {
     logger.info(`Fetching metadata for collection using params <${JSON.stringify(params)}> on blockchain <${JSON.stringify(blockchain)}>...`)
 
-    const dataSource = DataSource.compose(
+    const metadata = await DataSource.fetch(
       useDb({ blockchain, ...params }),
       useOpenSea({ blockchain, ...params }),
       useAlchemy({ blockchain, ...params }),
       useMoralis({ blockchain, ...params }),
     )
-
-    const metadata = await dataSource.apply(undefined)
 
     logger.info(`Fetching metadata for collection using params <${JSON.stringify(params)}> on blockchain <${JSON.stringify(blockchain)}>... OK`)
     logger.debug(JSON.stringify(metadata, undefined, 2))
@@ -154,10 +152,7 @@ export function useDb({ blockchain, collectionAddress, matchSubcollectionBy }: P
       }
     }
 
-    return {
-      ...metadata,
-      isSupported: true,
-    }
+    return metadata
   }
 }
 

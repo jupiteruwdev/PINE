@@ -1,6 +1,6 @@
 import { Router } from 'express'
 import _ from 'lodash'
-import { getEthCollectionFloorPrices, searchCollections } from '../../controllers'
+import { getEthCollectionFloorPrices, getNFTOTD, searchCollections } from '../../controllers'
 import { Blockchain, Collection, serializeEntityArray, Value } from '../../entities'
 import fault from '../../utils/fault'
 import { getBlockchain, getBlockchainFilter, getString } from '../utils/query'
@@ -32,6 +32,17 @@ router.get('/floors', async (req, res, next) => {
     const payload = serializeEntityArray(prices, Value.codingResolver)
 
     res.status(200).json(payload)
+  }
+  catch (err) {
+    next(fault('ERR_API_FETCH_VALUATIONS', undefined, err))
+  }
+})
+
+router.get('/nftoftheday', async (req, res, next) => {
+  try {
+    const collectionName = await getNFTOTD()
+
+    res.status(200).json(collectionName)
   }
   catch (err) {
     next(fault('ERR_API_FETCH_VALUATIONS', undefined, err))

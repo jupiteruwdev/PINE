@@ -7,8 +7,7 @@ jobs:
     name: Build
     uses: ./.github/workflows/job-build.yml
     with:
-      push: false
-      environment: staging
+      image_name: gcr.io/pinedefi/core-service
     secrets: inherit
   notify:
     name: Notify

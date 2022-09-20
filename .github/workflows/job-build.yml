@@ -6,9 +6,19 @@ on:
         description: Specifies if the built Docker image should be pushed to remote registry
         required: false
         type: boolean
-      environment:
-        default: production
-        description: Specifies the environment of the built image (affects external APIs used)
+      image_name:
+        default: image
+        description: Specifies the Docker image name
+        required: true
+        type: string
+      use_prod_apis:
+        default: false
+        description: Specifies whether production environment should be used for external APIs and services (i.e. database, subgraph, etc)
+        required: false
+        type: string
+      checkout_ref:
+        default: ''
+        description: The ref argument provided to the checkout action
         required: false
         type: string
     outputs:
@@ -16,26 +26,27 @@ on:
         description: The built Docker image
         value: ${{ jobs.default.outputs.image }}
 env:
-  IMAGE_NAME: gcr.io/pinedefi/core-service
   ALCHEMY_API_KEY: ${{ secrets.ALCHEMY_API_KEY }}
   ALCHEMY_API_MAINNET_URL: ${{ secrets.ALCHEMY_API_MAINNET_URL }}
   ALCHEMY_API_RINKEBY_URL: ${{ secrets.ALCHEMY_API_RINKEBY_URL }}
   ETH_RPC_MAINNET: ${{ secrets.ETH_RPC_MAINNET }}
   ETH_RPC_RINKEBY: ${{ secrets.ETH_RPC_RINKEBY }}
   GEMXYZ_API_KEY: ${{ secrets.GEMXYZ_API_KEY }}
+  LUNARCRUSH_API_KEY: ${{ secrets.LUNARCRUSH_API_KEY }}
   LOG_LEVEL: ${{ secrets.LOG_LEVEL }}
-  MONGO_URI: ${{ inputs.environment == 'production' && secrets.MONGO_URI || secrets.MONGO_URI_STAGING }}
+  MONGO_URI: ${{ inputs.use_prod_apis && secrets.MONGO_URI || secrets.MONGO_URI_STAGING }}
+  WORKER_URL: ${{ inputs.use_prod_apis && secrets.WORKER_URL || secrets.WORKER_URL_STAGING }}
   MORALIS_API_KEY: ${{ secrets.MORALIS_API_KEY }}
   NFTBANK_API_KEY: ${{ secrets.NFTBANK_API_KEY }}
   OPENSEA_API_KEY: ${{ secrets.OPENSEA_API_KEY }}
-  SUBGRAPH_API_MAINNET_URL: ${{ inputs.environment == 'production' && secrets.SUBGRAPH_API_MAINNET_URL || secrets.SUBGRAPH_API_MAINNET_URL_STAGING }}
-  SUBGRAPH_API_RINKEBY_URL: ${{ inputs.environment == 'production' && secrets.SUBGRAPH_API_RINKEBY_URL || secrets.SUBGRAPH_API_RINKEBY_URL_STAGING }}
+  SUBGRAPH_API_MAINNET_URL: ${{ inputs.use_prod_apis && secrets.SUBGRAPH_API_MAINNET_URL || secrets.SUBGRAPH_API_MAINNET_URL_STAGING }}
+  SUBGRAPH_API_RINKEBY_URL: ${{ inputs.use_prod_apis && secrets.SUBGRAPH_API_RINKEBY_URL || secrets.SUBGRAPH_API_RINKEBY_URL_STAGING }}
   TESTS_WALLET_ADDRESS: ${{ secrets.TESTS_WALLET_ADDRESS }}
   TESTS_WHALE_WALLET_ADDRESSES: ${{ secrets.TESTS_WHALE_WALLET_ADDRESSES }}
   TESTS_WALLET_PRIVATE_KEY: ${{ secrets.TESTS_WALLET_PRIVATE_KEY }}
 jobs:
   default:
-    name: Docker
+    name: Build
     runs-on: ubuntu-latest
     outputs:
       image: ${{ inputs.push && fromJSON(steps.meta.outputs.json).tags[0] || '' }}
@@ -45,12 +56,13 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3
         with:
+          fetch-depth: 0
+          ref: ${{ inputs.checkout_ref }}
           submodules: recursive
           token: ${{ secrets.GH_ACCESS_TOKEN }}
       - name: Set env
         id: env
-        run: |
-          echo "::set-output name=build_number::$(git rev-parse --short HEAD).$(git rev-list --count ${{ github.ref }})"
+        run: echo "::set-output name=build_number::$(git rev-parse --short HEAD).$(git rev-list --count ${{ github.ref }})"
       - name: Authenticate Google Cloud
         id: gcloud
         uses: google-github-actions/auth@v0
@@ -77,21 +89,19 @@ jobs:
           context: .
           load: true
           push: false
-          tags: ${{ env.IMAGE_NAME }}:test-${{ github.sha }}
+          tags: ${{ inputs.image_name }}:test-${{ github.sha }}
           target: test
       - name: Run tests
-        run: IMAGE_TAG=test-${{ github.sha }} docker-compose -f docker-compose.test.yml up --exit-code-from app
-      - name: Persist test reports
-        uses: actions/upload-artifact@v3
-        with:
-          name: test-reports
-          path: .tests/
+        env:
+          IMAGE_NAME: ${{ inputs.image_name }}
+          IMAGE_TAG: test-${{ github.sha }}
+        run: docker-compose -f docker-compose.test.yml up --exit-code-from app
       - name: Set metadata
         id: meta
         uses: docker/metadata-action@v3
         if: ${{ inputs.push }}
         with:
-          images: ${{ env.IMAGE_NAME }}
+          images: ${{ inputs.image_name }}
           tags: |
             type=sha,prefix=,format=short,priority=1000,suffix=${{ !endsWith(github.ref, github.event.repository.default_branch) && format('-{0}', github.ref_name) || '' }}
             type=raw,value=latest,suffix=${{ !endsWith(github.ref, github.event.repository.default_branch) && format('-{0}', github.ref_name) || '' }}

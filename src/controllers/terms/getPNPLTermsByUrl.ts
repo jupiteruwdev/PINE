@@ -6,6 +6,7 @@ import getOpenSeaPNPLTerms from './getOpenSeaPNPLTerms'
 
 type Params = {
   parsedURL: URL
+  poolAddress?: string
 }
 
 /**
@@ -14,7 +15,7 @@ type Params = {
  *
  * @returns pnpl terms.
  */
-export default async function getPNPLTermsByUrl({ parsedURL }: Params): Promise<PNPLTerms> {
+export default async function getPNPLTermsByUrl({ parsedURL, poolAddress }: Params): Promise<PNPLTerms> {
   const hostname = parsedURL.hostname
 
   switch (hostname) {
@@ -29,6 +30,7 @@ export default async function getPNPLTermsByUrl({ parsedURL }: Params): Promise<
       blockchain: Blockchain.Ethereum(Blockchain.Ethereum.Network.MAIN),
       collectionAddress,
       nftId,
+      poolAddress,
     })
   }
   case 'testnets.opensea.io': {
@@ -42,6 +44,7 @@ export default async function getPNPLTermsByUrl({ parsedURL }: Params): Promise<
       blockchain: Blockchain.Ethereum(Blockchain.Ethereum.Network.RINKEBY),
       collectionAddress,
       nftId,
+      poolAddress,
     })
   }
   case 'looksrare.org': {
@@ -54,6 +57,7 @@ export default async function getPNPLTermsByUrl({ parsedURL }: Params): Promise<
       blockchain: Blockchain.Ethereum(Blockchain.Ethereum.Network.MAIN),
       collectionAddress,
       nftId,
+      poolAddress,
     })
   }
   case 'rinkeby.looksrare.org': {
@@ -66,6 +70,7 @@ export default async function getPNPLTermsByUrl({ parsedURL }: Params): Promise<
       blockchain: Blockchain.Ethereum(Blockchain.Ethereum.Network.RINKEBY),
       collectionAddress,
       nftId,
+      poolAddress,
     })
   }
   default:

@@ -15,7 +15,7 @@ type Params = {
   nftId?: string
 }
 
-export default async function countPools(params: Params = {}): Promise<number> {
+export default async function countPoolGroups(params: Params = {}): Promise<number> {
   const aggregation = PoolModel.aggregate(getPipelineStages(params))
   let docs = await aggregation.exec()
 
@@ -93,7 +93,18 @@ function getPipelineStages({
   }],
   ...poolFilter.length === 0 ? [] : [{
     $match: { $and: poolFilter },
-  }]]
+  }],
+  {
+    $group: {
+      _id: '$collection.address',
+      pools: {
+        $push: '$$ROOT',
+      },
+    },
+  },
+  {
+    $unset: '_id',
+  }]
 
   return stages
 }

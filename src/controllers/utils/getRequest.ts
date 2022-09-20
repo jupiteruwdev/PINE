@@ -1,6 +1,8 @@
 import SuperError from '@andrewscwei/super-error'
 import axios from 'axios'
+import objectHash from 'object-hash'
 import appConf from '../../app.conf'
+import { getCache, setCache } from '../../utils/cache'
 import fault from '../../utils/fault'
 import logger from '../../utils/logger'
 
@@ -10,6 +12,7 @@ type Options<T> = {
   host?: string
   params?: Record<string, any>
   timeout?: number
+  useCache?: boolean
   transformPayload?: (data: any) => T
 }
 
@@ -17,28 +20,40 @@ export default async function getRequest<T = any>(
   path: string,
   {
     controller,
-    host,
     headers,
+    host,
     params,
     timeout = appConf.requestTimeoutMs,
+    useCache = true,
     transformPayload,
   }: Options<T> = {},
 ): Promise<T> {
   try {
-    const res = await axios.get(path, {
-      baseURL: host,
-      headers,
-      params,
-      signal: controller?.signal,
-      timeout,
-    })
+    const req = async () => {
+      const res = await axios.get(path, {
+        baseURL: host,
+        headers,
+        params,
+        signal: controller?.signal,
+        timeout,
+      })
 
-    const payload = transformPayload ? transformPayload(res.data) : res.data
+      const payload = transformPayload ? transformPayload(res.data) : res.data
 
-    logger.debug(`Making request to <${host ?? ''}${path}>... ${res.status}`)
-    logger.debug(JSON.stringify(payload, undefined, 2))
+      logger.debug(`Making request to <${host ?? ''}${path}>... ${res.status}`)
+      logger.debug(JSON.stringify(payload, undefined, 2))
 
-    return payload
+      return payload
+    }
+
+    const cacheKey = objectHash({ host, path, headers, params }, { unorderedSets: true, unorderedObjects: true })
+
+    if (useCache === true) {
+      return await getCache(cacheKey, req)
+    }
+    else {
+      return await setCache(cacheKey, req)
+    }
   }
   catch (err) {
     if (axios.isCancel(err)) {

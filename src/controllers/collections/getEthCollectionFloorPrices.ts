@@ -20,12 +20,11 @@ export default async function getEthCollectionFloorPrices({
 
   logger.info(`Fetching floor prices for collections <${collectionAddresses}> on network <${blockchain.networkId}>...`)
 
-  const dataSource = DataSource.compose(
-    useNFTBank({ blockchain, collectionAddresses }),
-  )
-
   try {
-    const floorPrices = await dataSource.apply(undefined)
+    const floorPrices = await DataSource.fetch(
+      useNFTBank({ blockchain, collectionAddresses }),
+    )
+
     logger.info(`Fetching floor prices for collections <${collectionAddresses}> on network <${blockchain.networkId}>... OK: ${floorPrices.map(t => t.amount.toFixed())}`)
     return floorPrices
   }
@@ -53,7 +52,7 @@ export function useNFTBank({ blockchain, collectionAddresses }: Params): DataSou
         headers: {
           'X-API-Key': apiKey,
         },
-        timeout: 10000, // TODO: Why so slow
+        timeout: 20000, // TODO: Why so slow
       })
 
       if (!_.isArray(res)) rethrow('Unexpected payload while looking up floor prices from NFTBank')

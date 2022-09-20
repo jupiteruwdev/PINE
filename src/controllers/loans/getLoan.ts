@@ -17,6 +17,7 @@ type Params = {
   blockchain: Blockchain
   collectionAddress: string
   nftId: string
+  populateValuation?: boolean
   txSpeedBlocks?: number
 }
 
@@ -24,6 +25,7 @@ export default async function getLoan({
   blockchain,
   collectionAddress,
   nftId,
+  populateValuation = false,
   txSpeedBlocks = 0,
 }: Params): Promise<Loan | undefined> {
   logger.info(`Fetching loan for collection address <${collectionAddress}>, NFT ID <${nftId}>, txSpeedBlocks <${txSpeedBlocks}> and blockchain <${JSON.stringify(blockchain)}>...`)
@@ -39,7 +41,9 @@ export default async function getLoan({
       const [blockNumber, pools, valuation] = await Promise.all([
         web3.eth.getBlockNumber(),
         searchPublishedPools({ address: onChainLoan.pool, blockchainFilter: { ethereum: blockchain.networkId }, includeRetired: true }),
-        getEthNFTValuation({ blockchain: blockchain as Blockchain<'ethereum'>, collectionAddress, nftId }),
+        populateValuation === true
+          ? getEthNFTValuation({ blockchain: blockchain as Blockchain<'ethereum'>, collectionAddress, nftId })
+          : undefined,
       ])
 
       if (pools.length === 0) throw fault('ERR_UNSUPPORTED_COLLECTION')
@@ -64,10 +68,9 @@ export default async function getLoan({
           id: nftId,
           ownerAddress: pool.address,
           ...await getEthNFTMetadata({ blockchain, collectionAddress, nftId }),
-          isSupported: true,
         }
 
-        return {
+        return Loan.factory({
           routerAddress: pool.repayRouterAddress,
           accuredInterest: Value.$WEI(onChainLoan.accuredInterestWei),
           borrowed: Value.$WEI(onChainLoan.borrowedWei),
@@ -83,7 +86,7 @@ export default async function getLoan({
           returned: Value.$WEI(onChainLoan.returnedWei),
           valuation,
           updatedAtBlock: blockNumber,
-        }
+        })
       }, new Promise(resolve => resolve(undefined)))
 
       logger.info(`Fetching loan for collection address <${collectionAddress}>, NFT ID <${nftId}>, txSpeedBlocks <${txSpeedBlocks}> and blockchain <${JSON.stringify(blockchain)}>... OK:`, loan)

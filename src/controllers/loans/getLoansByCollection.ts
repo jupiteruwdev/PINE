@@ -23,8 +23,7 @@ export default async function getLoansByCollection({
   try {
     logger.info(`Fetching loans by collection <${collectionAddress}> on blockchain <${JSON.stringify(blockchain)}>...`)
 
-    const dataSource = DataSource.compose(useGraph({ blockchain, collectionAddress }))
-    let loans = await dataSource.apply(undefined)
+    let loans = await DataSource.fetch(useGraph({ blockchain, collectionAddress }))
     let sortedLoans: Loan[] = []
 
     if (populateMetadata === true) {
@@ -60,7 +59,6 @@ export default async function getLoansByCollection({
       })
 
       sortedLoans = _.sortBy(loans, [
-        loan => loan.nft.collection.isSupported !== true,
         loan => loan.nft.collection.name?.toLowerCase(),
       ])
     }
