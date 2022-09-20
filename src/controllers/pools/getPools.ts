@@ -1,7 +1,7 @@
 import BigNumber from 'bignumber.js'
 import _ from 'lodash'
 import appConf from '../../app.conf'
-import { Blockchain, Collection, Fee, LoanOption, Pool } from '../../entities'
+import { Blockchain, Collection, Fee, LoanOption, Pool, Value } from '../../entities'
 import { getOnChainPools } from '../../subgraph'
 import fault from '../../utils/fault'
 import logger from '../../utils/logger'
