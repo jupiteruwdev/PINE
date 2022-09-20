@@ -193,7 +193,13 @@ describe('/v0/pools', () => {
         .expect('Content-Type', /json/)
         .expect(200)
 
-      expect(res.deleted).to.equal(true)
+      const pool = Pool.factory(res)
+
+      for (const key in pool) {
+        if (Object.prototype.hasOwnProperty.call(pool, key) && _.get(pool, key)) {
+          expect(res).to.have.property(key)
+        }
+      }
     })
   })
 

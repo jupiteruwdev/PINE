@@ -51,6 +51,34 @@ export function getNumber<Optional extends boolean = false>(query: Query, key: s
 }
 
 /**
+ * Searches for and returns a boolean value from a request query based on the specified key.
+ *
+ * @param query - The request query to search for key.
+ * @param key - The key.
+ * @param options - See {@link Options}.
+ *
+ * @returns The boolean value.
+ *
+ * @throws If `optional` is `false` and the boolean value cannot be found or derived.
+ */
+export function getBoolean<Optional extends boolean = false>(query: Query, key: string, options?: Options<Optional>): Optional extends true ? boolean | undefined : boolean
+export function getBoolean<Optional extends boolean = false>(query: Query, key: string, { optional }: Options<Optional> = {}): boolean | undefined {
+  const value = _.get(query, key)?.toString()
+
+  switch (value?.toLowerCase()) {
+  case 'true':
+  case 'yes':
+    return true
+  case 'false':
+  case 'no':
+    return false
+  default:
+    if (optional === true) return undefined
+    throw fault('ERR_INVALID_QUERY', `Cannot derive boolean from key "${key}"`)
+  }
+}
+
+/**
  * Parses a request query to look for and generate a {@link Blockchain.Filter} dictionary. This
  * function expects the query to have key-value pairs in "<blockchain name>-<network ID>" format.
  *
