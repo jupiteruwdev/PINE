@@ -53,7 +53,7 @@ router.get('/lender', async (req, res, next) => {
     const blockchainFilter = getBlockchainFilter(req.query, true)
     const lenderAddress = getString(req.query, 'lenderAddress')
     const pools = await getPools({
-      blockchainFilter, lenderAddress,
+      blockchainFilter, lenderAddress, includeStats: true,
     })
     const payload = serializeEntityArray(pools, Pool.codingResolver)
 
