@@ -85,6 +85,7 @@ export function useGraph({ blockchain, collectionAddress }: Params): DataSource<
   return async () => {
     const pools = await searchPublishedPools({ collectionAddress, blockchainFilter: { [blockchain.network]: blockchain.networkId } })
     const poolAddresses = pools.map(pool => pool.address)
+    if (!poolAddresses.length) return []
     const onChainLoans = await getOnChainLoans({ poolAddresses }, { networkId: blockchain.networkId })
 
     const loans = onChainLoans.map(loan => {
