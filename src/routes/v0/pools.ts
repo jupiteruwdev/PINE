@@ -131,7 +131,8 @@ router.post('/', async (req, res, next) => {
     const poolAddress = _.get(req.body, 'poolAddress')
     const payload = _.get(req.body, 'payload')
     const signature = _.get(req.body, 'signature')
-    const pool = await publishPool({ blockchain, poolAddress, payload, signature })
+    const ethLimit = _.get(req.body, 'ethLimit')
+    const pool = await publishPool({ blockchain, poolAddress, payload, signature, ethLimit })
 
     res.status(200).json(pool)
   }
