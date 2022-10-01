@@ -83,7 +83,7 @@ export default async function getLoansByCollection({
 
 export function useGraph({ blockchain, collectionAddress }: Params): DataSource<Loan[]> {
   return async () => {
-    const pools = await searchPublishedPools({ collectionAddress, blockchainFilter: { [blockchain.network]: blockchain.networkId } })
+    const pools = await searchPublishedPools({ collectionAddress, includeRetired: true, blockchainFilter: { [blockchain.network]: blockchain.networkId } })
     const poolAddresses = pools.map(pool => pool.address)
     if (!poolAddresses.length) return []
     const onChainLoans = await getOnChainLoans({ poolAddresses }, { networkId: blockchain.networkId })
