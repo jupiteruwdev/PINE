@@ -75,6 +75,21 @@ router.get('/tenors', async (req, res, next) => {
   }
 })
 
+router.get('/tenors/count', async (req, res, next) => {
+  try {
+    const nftId = getString(req.query, 'nftId', { optional: true })
+    const blockchainFilter = getBlockchainFilter(req.query, true)
+    const collectionAddress = getString(req.query, 'collectionAddress', { optional: true })
+    const tenors = appConf.tenors
+    const count = await Promise.all(tenors.map(tenor => countPools({ collectionAddress, blockchainFilter, tenors: [tenor], nftId })))
+
+    res.status(200).json({ count })
+  }
+  catch (err) {
+    next(fault('ERR_API_GET_TENORS', undefined, err))
+  }
+})
+
 router.get('/:poolAddress', async (req, res, next) => {
   try {
     const blockchain = getBlockchain(req.query)
