@@ -1,5 +1,6 @@
 export { default as countPoolGroups } from './countPoolGroups'
 export { default as countPools } from './countPools'
+export { default as countPoolsByTenors } from './countPoolsByTenors'
 export { default as getPool } from './getPool'
 export { default as getPoolCapacity } from './getPoolCapacity'
 export { default as getPools } from './getPools'

@@ -1,7 +1,7 @@
 import { Router } from 'express'
 import _ from 'lodash'
 import appConf from '../../app.conf'
-import { countPoolGroups, countPools, getPool, getPools, publishPool, searchPoolGroups, unpublishPool } from '../../controllers'
+import { countPoolGroups, countPools, countPoolsByTenors, getPool, getPools, publishPool, searchPoolGroups, unpublishPool } from '../../controllers'
 import searchPublishedPools, { PoolSortDirection, PoolSortType } from '../../controllers/pools/searchPublishedPools'
 import scheduleWorker from '../../controllers/utils/scheduleWorker'
 import { Pagination, Pool, PoolGroup, serializeEntityArray } from '../../entities'
@@ -69,6 +69,20 @@ router.get('/tenors', async (req, res, next) => {
     const tenors = appConf.tenors
 
     res.status(200).json({ tenors })
+  }
+  catch (err) {
+    next(fault('ERR_API_GET_TENORS', undefined, err))
+  }
+})
+
+router.get('/tenors/count', async (req, res, next) => {
+  try {
+    const nftId = getString(req.query, 'nftId', { optional: true })
+    const blockchainFilter = getBlockchainFilter(req.query, true)
+    const collectionAddress = getString(req.query, 'collectionAddress', { optional: true })
+    const count = await countPoolsByTenors({ blockchainFilter, collectionAddress, nftId })
+
+    res.status(200).json({ count })
   }
   catch (err) {
     next(fault('ERR_API_GET_TENORS', undefined, err))
