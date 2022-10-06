@@ -17,7 +17,7 @@ describe('controllers/collections/getCollections', () => {
     })
   })
 
-  describe('Rinkeby', () => {
+  describe.skip('Rinkeby', () => {
     it('can fetch all saved collections', async () => {
       const collections = await getCollections({ blockchainFilter: { ethereum: Blockchain.Ethereum.Network.RINKEBY } })
       expect(collections).to.have.length.greaterThan(0)
