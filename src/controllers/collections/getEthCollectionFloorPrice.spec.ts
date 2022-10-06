@@ -42,7 +42,7 @@ describe('controllers/collections/getEthCollectionFloorPrice', () => {
     })
   })
 
-  describe('Rinkeby', () => {
+  describe.skip('Rinkeby', () => {
     const blockchain = Blockchain.Ethereum(Blockchain.Ethereum.Network.RINKEBY)
     let collectionsInTestWallet: Collection[]
 

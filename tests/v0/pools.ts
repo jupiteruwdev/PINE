@@ -203,7 +203,7 @@ describe('/v0/pools', () => {
     })
   })
 
-  describe('Ethereum Rinkeby', () => {
+  describe.skip('Ethereum Rinkeby', () => {
     let collections: Collection[] = []
 
     before(async () => {

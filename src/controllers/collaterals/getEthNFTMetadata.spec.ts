@@ -40,7 +40,7 @@ describe('controllers/collaterals/getEthNFTMetadata', () => {
     })
   })
 
-  describe('Rinkeby', () => {
+  describe.skip('Rinkeby', () => {
     const blockchain = Blockchain.Ethereum(Blockchain.Ethereum.Network.RINKEBY)
 
     let testNFTs: NFT[]

@@ -7,7 +7,7 @@ describe('controllers/utils/getEthWeb3', () => {
     assert(getEthWeb3(Blockchain.Ethereum.Network.MAIN))
   })
 
-  it('can create Web3 object for Rinkeby', async () => {
+  it.skip('can create Web3 object for Rinkeby', async () => {
     assert(getEthWeb3(Blockchain.Ethereum.Network.RINKEBY))
   })
 })
