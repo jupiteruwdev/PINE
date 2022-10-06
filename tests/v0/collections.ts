@@ -22,7 +22,7 @@ describe('/v0/collections', () => {
     })
   })
 
-  describe('Ethereum Rinkeby', () => {
+  describe.skip('Ethereum Rinkeby', () => {
     it('GET /v0/collections/floors?collectionAddresses=*', async () => {
       const collections = await getCollections({ blockchainFilter: { ethereum: Blockchain.Ethereum.Network.RINKEBY } })
 

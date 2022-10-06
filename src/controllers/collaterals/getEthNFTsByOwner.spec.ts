@@ -53,7 +53,7 @@ describe('controllers/collaterals/getEthNFTsByOwner', () => {
     })
   })
 
-  describe('Rinkeby', () => {
+  describe.skip('Rinkeby', () => {
     const blockchain = Blockchain.Ethereum(Blockchain.Ethereum.Network.RINKEBY)
 
     it(`can get NFTs for test wallet <${TEST_WALLET_ADDRESS}> without metadata`, async () => {
