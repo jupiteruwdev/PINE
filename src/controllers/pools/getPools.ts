@@ -6,9 +6,9 @@ import { getOnChainPools } from '../../subgraph'
 import fault from '../../utils/fault'
 import logger from '../../utils/logger'
 import { getEthCollectionMetadata } from '../collections'
+import getOnChainLoanOptions from './getOnChainLoanOptions'
 import getPoolCapacity from './getPoolCapacity'
 import getPoolUtilization from './getPoolUtilization'
-import getOnChainLoanOptions from './getOnChainLoanOptions'
 import searchPublishedPools from './searchPublishedPools'
 
 type Params = {
@@ -62,7 +62,7 @@ async function mapPool({ blockchain, pools, loanOptionsDict, includeStats }: Map
         loanDurationSeconds: lo.loanDurationSecond,
         maxLTVBPS: lo.maxLtvBps,
         fees: appConf.defaultFees.map(fee => Fee.factory(fee)),
-      })),
+      })) || [],
       lenderAddress: pool.lenderAddress ?? '',
       routerAddress: _.get(appConf.routerAddress, blockchain.networkId),
       repayRouterAddress: _.get(appConf.repayRouterAddress, blockchain.networkId),

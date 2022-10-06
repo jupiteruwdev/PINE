@@ -215,7 +215,10 @@ export default async function searchPoolGroups({
 
     const poolGroups = pools.map((group: Required<Pool>[]) => PoolGroup.factory({
       collection: group[0].collection,
-      pools: group,
+      pools: group.map(pool => ({
+        ...pool,
+        valueLocked: Value.$USD(pool.valueLocked.amount.times(ethValueUSD.amount)),
+      })),
       totalValueLent: Value.$USD(
         group
           .reduce((sum, pool: Pool) => sum.plus(pool.utilization?.amount || 0), new BigNumber(0))

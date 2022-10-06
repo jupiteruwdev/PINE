@@ -15,14 +15,16 @@ type Params = {
   poolAddress: string
   payload: string
   signature: string
+  ethLimit: number
 }
 
 type SavePoolParams = {
   blockchain: Blockchain
   poolData: any
+  ethLimit: number
 }
 
-async function savePool({ poolData, blockchain }: SavePoolParams) {
+async function savePool({ poolData, blockchain, ethLimit }: SavePoolParams) {
   let [collection] = await NFTCollectionModel.find({
     address: {
       '$regex': poolData.collection,
@@ -52,7 +54,7 @@ async function savePool({ poolData, blockchain }: SavePoolParams) {
       routerAddress: _.get(appConf.routerAddress, blockchain.networkId),
       repayRouterAddress: _.get(appConf.repayRouterAddress, blockchain.networkId),
       rolloverAddress: _.get(appConf.rolloverAddress, blockchain.networkId),
-      ethLimit: 0,
+      ethLimit,
       nftCollection: collection?._id,
       defaultFees: appConf.defaultFees.map(fee => Fee.factory(fee)),
       retired: false,
@@ -73,6 +75,7 @@ export default async function publishPool({
   poolAddress,
   payload,
   signature,
+  ethLimit,
 }: Params): Promise<Pool> {
   logger.info(`Publishing pools for address <${poolAddress}>`)
   let pool: Pool
@@ -86,6 +89,7 @@ export default async function publishPool({
         pool = await savePool({
           poolData: poolMainnet,
           blockchain,
+          ethLimit,
         })
         break
       case Blockchain.Ethereum.Network.RINKEBY:
@@ -94,6 +98,7 @@ export default async function publishPool({
         pool = await savePool({
           poolData: poolRinkeby,
           blockchain,
+          ethLimit,
         })
         break
       default:
