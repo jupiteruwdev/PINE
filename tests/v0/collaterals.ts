@@ -24,7 +24,7 @@ describe('/v0/collaterals', () => {
     })
   })
 
-  describe('Ethereum Rinkeby', () => {
+  describe.skip('Ethereum Rinkeby', () => {
     it('GET /v0/collaterals?owner=*', async () => {
       const { body: res } = await request(app).get('/v0/collaterals')
         .query({

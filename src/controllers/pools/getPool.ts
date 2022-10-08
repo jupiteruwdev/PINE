@@ -8,9 +8,9 @@ import { getOnChainPools } from '../../subgraph'
 import fault from '../../utils/fault'
 import { mapPool } from '../adapters'
 import getEthCollectionMetadata from '../collections/getEthCollectionMetadata'
+import getOnChainLoanOptions from './getOnChainLoanOptions'
 import getPoolCapacity from './getPoolCapacity'
 import getPoolUtilization from './getPoolUtilization'
-import getOnChainLoanOptions from './getOnChainLoanOptions'
 import verifyPool from './verifyPool'
 
 type Params<IncludeStats> = {
@@ -95,7 +95,7 @@ async function getPool<IncludeStats extends boolean = false>({
       loanDurationSeconds: lo.loanDurationSecond,
       maxLTVBPS: lo.maxLtvBps,
       fees: appConf.defaultFees.map(fee => Fee.factory(fee)),
-    })),
+    })) || [],
     routerAddress: _.get(appConf.routerAddress, blockchain.networkId),
     repayRouterAddress: _.get(appConf.repayRouterAddress, blockchain.networkId),
     rolloverAddress: _.get(appConf.rolloverAddress, blockchain.networkId),

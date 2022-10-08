@@ -52,7 +52,7 @@ describe('controllers/valuations/getEthNFTValuation', () => {
     })
   })
 
-  describe('Rinkeby', () => {
+  describe.skip('Rinkeby', () => {
     const blockchain = Blockchain.Ethereum(Blockchain.Ethereum.Network.RINKEBY)
     let supportedTestNFTs: NFT[]
 
