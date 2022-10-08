@@ -25,6 +25,7 @@ export default {
   alchemyAPIUrl: {
     [Blockchain.Ethereum.Network.RINKEBY]: process.env.ALCHEMY_API_RINKEBY_URL,
     [Blockchain.Ethereum.Network.MAIN]: process.env.ALCHEMY_API_MAINNET_URL,
+    [Blockchain.Ethereum.Network.GOERLI]: process.env.ALCHEMY_API_GOERLI_URL,
   },
   subgraphAPIUrl: {
     [Blockchain.Ethereum.Network.RINKEBY]: process.env.SUBGRAPH_API_RINKEBY_URL,
