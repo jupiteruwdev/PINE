@@ -11,7 +11,6 @@ import { getEthCollectionMetadata } from '../collections'
 import { getControlPlaneContract, getPoolContract } from '../contracts'
 import { searchPublishedPools } from '../pools'
 import getEthWeb3 from '../utils/getEthWeb3'
-import { getEthNFTValuation } from '../valuations'
 
 type Params = {
   blockchain: Blockchain
@@ -38,12 +37,9 @@ export default async function getLoan({
 
       const web3 = getEthWeb3(blockchain.networkId)
 
-      const [blockNumber, pools, valuation] = await Promise.all([
+      const [blockNumber, pools] = await Promise.all([
         web3.eth.getBlockNumber(),
         searchPublishedPools({ address: onChainLoan.pool, blockchainFilter: { ethereum: blockchain.networkId }, includeRetired: true }),
-        populateValuation === true
-          ? getEthNFTValuation({ blockchain: blockchain as Blockchain<'ethereum'>, collectionAddress, nftId })
-          : undefined,
       ])
 
       if (pools.length === 0) throw fault('ERR_UNSUPPORTED_COLLECTION')
@@ -84,7 +80,7 @@ export default async function getLoan({
           poolAddress: pool.address,
           repaidInterest: Value.$WEI(onChainLoan.repaidInterestWei),
           returned: Value.$WEI(onChainLoan.returnedWei),
-          valuation,
+          valuation: populateValuation === true ? pool.collection.valuation : undefined,
           updatedAtBlock: blockNumber,
         })
       }, new Promise(resolve => resolve(undefined)))
