@@ -1,5 +1,5 @@
 import _ from 'lodash'
-import { Collection } from '../../entities'
+import { Collection, Valuation } from '../../entities'
 
 export default function mapCollection(data: Record<string, any>): Collection {
   const address = _.get(data, 'address')
@@ -8,6 +8,7 @@ export default function mapCollection(data: Record<string, any>): Collection {
   const vendorIds = _.get(data, 'vendorIds')
   const imageUrl = _.get(data, 'imageUrl')
   const name = _.get(data, 'displayName')
+  const valuation = _.get(data, 'valuation')
 
   if (!_.isString(address)) throw TypeError('Failed to map key "address"')
   if (!_.isString(name)) throw TypeError('Failed to map key "name"')
@@ -20,5 +21,6 @@ export default function mapCollection(data: Record<string, any>): Collection {
     vendorIds,
     imageUrl,
     name,
+    valuation: Valuation.factory(valuation),
   })
 }
