@@ -1,6 +1,6 @@
 import { Router } from 'express'
 import _ from 'lodash'
-import { getEthCollectionFloorPrices, getNFTOTD, searchCollections } from '../../controllers'
+import { getEthCollectionFloorPrices, getEthNFTValuation, getNFTOTD, searchCollections } from '../../controllers'
 import { Blockchain, Collection, serializeEntityArray, Value } from '../../entities'
 import fault from '../../utils/fault'
 import { getBlockchain, getBlockchainFilter, getString } from '../utils/query'
@@ -34,7 +34,7 @@ router.get('/floors', async (req, res, next) => {
     res.status(200).json(payload)
   }
   catch (err) {
-    next(fault('ERR_API_FETCH_VALUATIONS', undefined, err))
+    next(fault('ERR_API_FETCH_FLOOR_PRICES', undefined, err))
   }
 })
 
@@ -45,7 +45,22 @@ router.get('/nftoftheday', async (req, res, next) => {
     res.status(200).json(collectionName)
   }
   catch (err) {
-    next(fault('ERR_API_FETCH_VALUATIONS', undefined, err))
+    next(fault('ERR_API_FETCH_NFT_OF_THE_DAY', undefined, err))
+  }
+})
+
+router.get('/valuation', async (req, res, next) => {
+  try {
+    const blockchain = getBlockchain(req.query) as Blockchain<'ethereum'>
+    const collectionAddress = getString(req.query, 'collectionAddress')
+    const nftId = getString(req.query, 'nftId')
+
+    const valuation = await getEthNFTValuation({ blockchain, collectionAddress, nftId })
+
+    res.status(200).json({ valuation })
+  }
+  catch (err) {
+    next(fault('ERR_API_FETCH_VALUATION', undefined, err))
   }
 })
 
