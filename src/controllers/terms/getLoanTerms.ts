@@ -4,7 +4,7 @@ import { Blockchain, Collection, LoanTerms, NFT, Value } from '../../entities'
 import fault from '../../utils/fault'
 import logger from '../../utils/logger'
 import { getEthNFTMetadata } from '../collaterals'
-import { getEthCollectionMetadata } from '../collections'
+import { getEthCollectionMetadata, verifyCollectionWithMatcher } from '../collections'
 import { getPool } from '../pools'
 import { getEthNFTValuation, signValuation } from '../valuations'
 
@@ -21,6 +21,8 @@ export default async function getLoanTerms({ blockchain, collectionAddress, nftI
   try {
     switch (blockchain.network) {
     case 'ethereum': {
+      // verify collection is valid one with matcher
+      await verifyCollectionWithMatcher({ blockchain, collectionAddress, matchSubcollectionBy: { type: 'nftId', value: nftId } })
       const pool = await getPool({ address: poolAddress, collectionAddress, blockchain, includeStats: true })
       if (!pool) throw fault('ERR_NO_POOLS_AVAILABLE')
 
