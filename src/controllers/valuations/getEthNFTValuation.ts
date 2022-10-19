@@ -135,7 +135,7 @@ export function useGemXYZ({ blockchain, collectionAddress, nftId }: Params): Dat
       ],
     }
 
-    const res = await postRequest('https://gem-public-api.herokuapp.com/assets', reqData, {
+    const res = await postRequest('https://gem-public-api-v2.herokuapp.com/assets', reqData, {
       headers: {
         'Content-Type': 'application/json',
         'X-API-KEY': apiKey,
