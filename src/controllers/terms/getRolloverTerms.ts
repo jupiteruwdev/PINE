@@ -35,6 +35,9 @@ export default async function getRolloverTerms({
 
       const pool = await getPool({ address: poolAddress, blockchain, collectionAddress, includeStats: true })
       if (!pool) throw fault('ERR_NO_POOLS_AVAILABLE')
+      if (pool.collection.valuation && (pool.collection.valuation?.timestamp || 0) < new Date().getTime() - appConf.valuationLimitation) {
+        throw fault('INVALID_VALUATION_TIMESTAMP')
+      }
 
       const flashLoanSource = await getFlashLoanSource({ blockchain, poolAddress: pool.address })
 

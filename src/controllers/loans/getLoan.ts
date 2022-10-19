@@ -47,6 +47,10 @@ export default async function getLoan({
       const loan = pools.reduce<Promise<Loan | undefined>>(async (l, pool) => {
         const rL = await l
         if (rL) return rL
+        if (pool.collection.valuation?.timestamp ?? 0 < new Date().getTime() - appConf.valuationLimitation) {
+          throw fault('INVALID_VALUATION_TIMESTAMP')
+        }
+
         const contract = await getPoolContract({ blockchain, poolAddress: pool.address })
         const loanDetails = await contract.methods._loans(nftId).call()
         const controlPlaneContract = getControlPlaneContract({ blockchain, address: _.get(appConf.controlPlaneContractAddress, blockchain.networkId) })
