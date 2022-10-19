@@ -47,7 +47,8 @@ export default async function getLoan({
       const loan = pools.reduce<Promise<Loan | undefined>>(async (l, pool) => {
         const rL = await l
         if (rL) return rL
-        if (pool.collection.valuation?.timestamp ?? 0 < new Date().getTime() - appConf.valuationLimitation) {
+
+        if (pool.collection.valuation && (pool.collection.valuation?.timestamp || 0) < new Date().getTime() - appConf.valuationLimitation) {
           throw fault('INVALID_VALUATION_TIMESTAMP')
         }
 
