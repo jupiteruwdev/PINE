@@ -16,7 +16,7 @@ export default async function searchCollections({ query, blockchain }: Params): 
 
   switch (blockchain.networkId) {
   case Blockchain.Ethereum.Network.MAIN:
-    const collectionData = await postRequest('https://gem-public-api.herokuapp.com/collections',
+    const collectionData = await postRequest('https://gem-public-api-v2.herokuapp.com/collections',
       {
         filters: { searchText: query },
         sort: { sevenDayVolume: -1 },
