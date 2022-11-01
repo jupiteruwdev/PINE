@@ -25,6 +25,9 @@ export default async function getLoanTerms({ blockchain, collectionAddress, nftI
       await verifyCollectionWithMatcher({ blockchain, collectionAddress, matchSubcollectionBy: { type: 'nftId', value: nftId } })
       const pool = await getPool({ address: poolAddress, collectionAddress, blockchain, includeStats: true })
       if (!pool) throw fault('ERR_NO_POOLS_AVAILABLE')
+      if (pool.collection.valuation && (pool.collection.valuation?.timestamp || 0) < new Date().getTime() - appConf.valuationLimitation) {
+        throw fault('INVALID_VALUATION_TIMESTAMP')
+      }
 
       const nft: NFT = {
         collection: Collection.factory({

@@ -33,7 +33,6 @@ export default async function populatePoolAvailabilityForNFTs({
   },
   {
     $match: {
-      'retired': { $ne: true },
       'collection.address': {
         $in: addresses.map(addr => new RegExp(addr, 'i')),
       },

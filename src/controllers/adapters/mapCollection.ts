@@ -21,6 +21,6 @@ export default function mapCollection(data: Record<string, any>): Collection {
     vendorIds,
     imageUrl,
     name,
-    valuation: Valuation.factory(valuation),
+    valuation: valuation ? Valuation.factory(valuation) : undefined,
   })
 }
