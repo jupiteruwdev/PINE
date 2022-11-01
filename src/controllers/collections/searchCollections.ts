@@ -16,7 +16,7 @@ export default async function searchCollections({ query, blockchain }: Params): 
 
   switch (blockchain.networkId) {
   case Blockchain.Ethereum.Network.MAIN:
-    const collectionData = await postRequest('https://gem-public-api.herokuapp.com/collections',
+    const collectionData = await postRequest('https://gem-public-api-v2.herokuapp.com/collections',
       {
         filters: { searchText: query },
         sort: { sevenDayVolume: -1 },
@@ -26,6 +26,7 @@ export default async function searchCollections({ query, blockchain }: Params): 
         headers: {
           'X-API-KEY': apiKey,
         },
+        timeout: 10000,
       })
     const collections = _.get(collectionData, 'data')
     return collections.filter((cd: any) => cd.chainId === '1' && _.get(cd, 'addresses[0].address') && cd.name && cd.slug).map((cd: any) => Collection.factory({
