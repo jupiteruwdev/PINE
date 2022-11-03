@@ -15,9 +15,9 @@ describe('controllers/terms/getLoanTerms', () => {
       try {
         getLoanTerms({
           blockchain,
-          collectionAddress: '0x57f1887a8bf19b14fc0df6fd9b2acc9af147ea85',
-          nftId:
-            '106369246037029649328055829632442584247486253961123343830773461538413336232366',
+          collectionAddresses: ['0x57f1887a8bf19b14fc0df6fd9b2acc9af147ea85'],
+          nftIds:
+            ['106369246037029649328055829632442584247486253961123343830773461538413336232366'],
         })
       }
       catch (err: any) {
