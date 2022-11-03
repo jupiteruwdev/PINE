@@ -95,6 +95,7 @@ function getPipelineStages({
 
   const stages: PipelineStage[] = [{
     $match: {
+      'retired': { $ne: true },
       'networkType': blockchain.network,
       'networkId': blockchain.networkId,
     },
