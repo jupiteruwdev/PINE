@@ -30,6 +30,7 @@ async function getPool<IncludeStats extends boolean = false>(params: Params<Incl
 async function getPool<IncludeStats extends boolean = false>({
   blockchain,
   includeStats,
+  nft,
   ...params
 }: Params<IncludeStats>): Promise<Pool> {
   const res = await PoolModel.aggregate(getPipelineStages({
@@ -64,7 +65,7 @@ async function getPool<IncludeStats extends boolean = false>({
       ])
 
       const valueLockedEth = capacityEth.plus(utilizationEth).gt(new BigNumber(pool.ethLimit || Number.POSITIVE_INFINITY)) ? new BigNumber(pool.ethLimit ?? 0) : capacityEth.plus(utilizationEth)
-      if (!!pool.collection?.valuation?.amount && pool.ethLimit !== 0 && pool.loanOptions.some(option => utilizationEth.plus(pool.collection.valuation.amount ?? new BigNumber(0)).gt(new BigNumber(pool.ethLimit ?? 0)))) continue
+      if (!!pool.collection?.valuation?.value?.amount && pool.ethLimit !== 0 && pool.loanOptions.some(option => utilizationEth.plus(pool.collection?.valuation?.value?.amount ?? new BigNumber(0)).gt(new BigNumber(pool.ethLimit ?? 0)))) continue
       return {
         ...pool,
         utilization: Value.$ETH(utilizationEth),
