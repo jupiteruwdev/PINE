@@ -21,7 +21,7 @@ export default {
   nftbankAPIKey: process.env.NFTBANK_API_KEY,
   alchemyAPIKey: process.env.ALCHEMY_API_KEY,
   lunarCrushAPIKey: process.env.LUNARCRUSH_API_KEY,
-  requestTimeoutMs: Number(process.env.REQUEST_TIMEOUT_MS ?? 10000),
+  requestTimeoutMs: Number(process.env.REQUEST_TIMEOUT_MS ?? 30000),
   alchemyAPIUrl: {
     [Blockchain.Ethereum.Network.RINKEBY]: process.env.ALCHEMY_API_RINKEBY_URL,
     [Blockchain.Ethereum.Network.MAIN]: process.env.ALCHEMY_API_MAINNET_URL,
