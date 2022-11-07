@@ -60,25 +60,6 @@ export async function filterByNftId(blockchain: Blockchain, docs: any[], nftIds:
   return docs
 }
 
-async function filterPoolsByInterest(docs: any[]): Promise<any[]> {
-  const filteredPools: any[] = []
-
-  docs.map(doc => {
-    const existIndex = filteredPools.findIndex(p => doc.collection.address === p.collection.address)
-
-    if (existIndex !== -1) {
-      if (doc.interest > filteredPools[existIndex].interest) {
-        filteredPools.splice(existIndex, 1, doc)
-      }
-    }
-    else {
-      filteredPools.push(doc)
-    }
-  })
-
-  return filteredPools
-}
-
 async function searchPublishedMultiplePools<IncludeStats extends boolean = false>(params?: Params<IncludeStats>): Promise<IncludeStats extends true ? Required<Pool>[] : Pool[]>
 async function searchPublishedMultiplePools<IncludeStats extends boolean = false>({
   includeStats,
@@ -105,7 +86,7 @@ async function searchPublishedMultiplePools<IncludeStats extends boolean = false
     docs = paginateBy === undefined ? await aggregation.exec() : await aggregation.skip(paginateBy.offset).limit(paginateBy.count).exec()
   }
 
-  const pools = (await filterPoolsByInterest(docs)).map(mapPool)
+  const pools = docs.map(mapPool)
 
   if (includeStats !== true) return pools
 
