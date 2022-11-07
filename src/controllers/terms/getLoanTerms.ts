@@ -22,7 +22,7 @@ export default async function getLoanTerms({ blockchain, collectionAddress, nftI
     switch (blockchain.network) {
     case 'ethereum': {
       // verify collection is valid one with matcher
-      await verifyCollectionWithMatcher({ blockchain, collectionAddress, matchSubcollectionBy: { type: 'nftId', value: nftId } })
+      // await verifyCollectionWithMatcher({ blockchain, collectionAddress, matchSubcollectionBy: { type: 'nftId', value: nftId } })
       const pool = await getPool({ address: poolAddress, collectionAddress, blockchain, includeStats: true })
       if (!pool) throw fault('ERR_NO_POOLS_AVAILABLE')
       if (pool.collection.valuation && (pool.collection.valuation?.timestamp || 0) < new Date().getTime() - appConf.valuationLimitation) {
@@ -57,8 +57,6 @@ export default async function getLoanTerms({ blockchain, collectionAddress, nftI
       loanTerms.options.map(option => {
         option.maxBorrow = Value.$ETH(option.maxLTVBPS.div(10_000).times(loanTerms.valuation.value?.amount ?? 0).toFixed(appConf.ethMaxDecimalPlaces, BigNumber.ROUND_DOWN))
       })
-
-      if (pool.ethLimit !== 0 && loanTerms.options.some(option => pool.utilization.amount.plus(option.maxBorrow?.amount ?? new BigNumber(0)).gt(new BigNumber(pool.ethLimit ?? 0)))) throw fault('ERR_POOL_OVER_LENDER_DEFINED_UTILIZATION')
 
       logger.info(`Fetching loan terms for NFT ID <${nftId}> and collection address <${collectionAddress}> on blockchain <${JSON.stringify(blockchain)}>... OK`)
       logger.debug(JSON.stringify(loanTerms, undefined, 2))

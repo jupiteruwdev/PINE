@@ -29,7 +29,7 @@ export default async function getRolloverTerms({
     switch (blockchain.network) {
     case 'ethereum': {
       // verify collection is valid one with matcher
-      await verifyCollectionWithMatcher({ blockchain, collectionAddress, matchSubcollectionBy: { type: 'nftId', value: nftId } })
+      // await verifyCollectionWithMatcher({ blockchain, collectionAddress, matchSubcollectionBy: { type: 'nftId', value: nftId } })
       const canRollover = await isLoanExtendable({ blockchain, collectionAddress, nftId })
       if (!canRollover) throw fault('ERR_INVALID_ROLLOVER')
 

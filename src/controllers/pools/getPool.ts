@@ -34,31 +34,38 @@ async function getPool<IncludeStats extends boolean = false>({
   })).exec()
 
   if (res.length) {
-    const pool = mapPool(res[0])
+    for (const resPool of res) {
+      const pool = mapPool(resPool)
+      if (_.isString(_.get(pool, 'collection.matcher.regex')) && _.isString(_.get(pool, 'collection.matcher.fieldPath'))) {
+        const regex = new RegExp(pool.collection.matcher.regex)
+        if (!regex.test(_.get(nftProps, pool.collection.matcher.fieldPath))) {
+          continue
+        }
+      }
+      try {
+        await verifyPool({ blockchain, address: pool.address, collectionAddress: pool.collection.address })
+      }
+      catch (err) {
+        throw fault('ERR_ZOMBIE_POOL', undefined, err)
+      }
 
-    try {
-      await verifyPool({ blockchain, address: pool.address, collectionAddress: pool.collection.address })
-    }
-    catch (err) {
-      throw fault('ERR_ZOMBIE_POOL', undefined, err)
-    }
+      if (includeStats !== true) return pool
 
-    if (includeStats !== true) return pool
+      const [
+        { amount: utilizationEth },
+        { amount: capacityEth },
+      ] = await Promise.all([
+        getPoolUtilization({ blockchain, poolAddress: pool.address }),
+        getPoolCapacity({ blockchain, poolAddress: pool.address, tokenAddress: pool.tokenAddress, fundSource: pool.fundSource }),
+      ])
 
-    const [
-      { amount: utilizationEth },
-      { amount: capacityEth },
-    ] = await Promise.all([
-      getPoolUtilization({ blockchain, poolAddress: pool.address }),
-      getPoolCapacity({ blockchain, poolAddress: pool.address, tokenAddress: pool.tokenAddress, fundSource: pool.fundSource }),
-    ])
-
-    const valueLockedEth = capacityEth.plus(utilizationEth).gt(new BigNumber(pool.ethLimit || Number.POSITIVE_INFINITY)) ? new BigNumber(pool.ethLimit ?? 0) : capacityEth.plus(utilizationEth)
-
-    return {
-      ...pool,
-      utilization: Value.$ETH(utilizationEth),
-      valueLocked: Value.$ETH(valueLockedEth),
+      const valueLockedEth = capacityEth.plus(utilizationEth).gt(new BigNumber(pool.ethLimit || Number.POSITIVE_INFINITY)) ? new BigNumber(pool.ethLimit ?? 0) : capacityEth.plus(utilizationEth)
+      if (!!pool.collection?.valuation && pool.ethLimit !== 0 && pool.loanOptions.some(option => utilizationEth.plus(pool.collection.valuation ?? new BigNumber(0)).gt(new BigNumber(pool.ethLimit ?? 0)))) continue
+      return {
+        ...pool,
+        utilization: Value.$ETH(utilizationEth),
+        valueLocked: Value.$ETH(valueLockedEth),
+      }
     }
   }
 
