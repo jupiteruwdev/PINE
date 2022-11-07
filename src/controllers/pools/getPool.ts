@@ -20,6 +20,10 @@ type Params<IncludeStats> = {
   includeStats?: IncludeStats
   lenderAddress?: string
   address?: string
+  nft?: {
+    id?: string
+    name?: string
+  }
 }
 
 async function getPool<IncludeStats extends boolean = false>(params: Params<IncludeStats>): Promise<IncludeStats extends true ? Required<Pool> : Pool>
@@ -36,9 +40,9 @@ async function getPool<IncludeStats extends boolean = false>({
   if (res.length) {
     for (const resPool of res) {
       const pool = mapPool(resPool)
-      if (_.isString(_.get(pool, 'collection.matcher.regex')) && _.isString(_.get(pool, 'collection.matcher.fieldPath'))) {
-        const regex = new RegExp(pool.collection.matcher.regex)
-        if (!regex.test(_.get(nftProps, pool.collection.matcher.fieldPath))) {
+      if (_.isString(_.get(resPool, 'collection.matcher.regex')) && _.isString(_.get(resPool, 'collection.matcher.fieldPath'))) {
+        const regex = new RegExp(resPool.collection.matcher.regex)
+        if (!regex.test(_.get(nft, resPool.collection.matcher.fieldPath))) {
           continue
         }
       }

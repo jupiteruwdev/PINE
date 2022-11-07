@@ -23,7 +23,8 @@ export default async function getLoanTerms({ blockchain, collectionAddress, nftI
     case 'ethereum': {
       // verify collection is valid one with matcher
       // await verifyCollectionWithMatcher({ blockchain, collectionAddress, matchSubcollectionBy: { type: 'nftId', value: nftId } })
-      const pool = await getPool({ address: poolAddress, collectionAddress, blockchain, includeStats: true })
+      const nftMetadata = await getEthNFTMetadata({ blockchain, collectionAddress, nftId })
+      const pool = await getPool({ address: poolAddress, collectionAddress, blockchain, includeStats: true, nft: { id: nftId, name: nftMetadata.name } })
       if (!pool) throw fault('ERR_NO_POOLS_AVAILABLE')
       if (pool.collection.valuation && (pool.collection.valuation?.timestamp || 0) < new Date().getTime() - appConf.valuationLimitation) {
         throw fault('INVALID_VALUATION_TIMESTAMP')
@@ -36,7 +37,7 @@ export default async function getLoanTerms({ blockchain, collectionAddress, nftI
           ...await getEthCollectionMetadata({ blockchain, collectionAddress, matchSubcollectionBy: { type: 'poolAddress', value: pool.address } }),
         }),
         id: nftId,
-        ...await getEthNFTMetadata({ blockchain, collectionAddress, nftId }),
+        ...nftMetadata,
       }
 
       const valuation = pool.collection.valuation ?? await getEthNFTValuation({ blockchain: blockchain as Blockchain<'ethereum'>, collectionAddress, nftId })
