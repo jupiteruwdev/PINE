@@ -63,7 +63,8 @@ export default async function getRolloverTerms({
       })))
       const loanTerms: RolloverTerms[] = []
       for (let i = 0; i < pools.length; i++) {
-        const { signature, issuedAtBlock, expiresAtBlock } = await signValuation({ blockchain, nftId: nftIds[i], collectionAddress: collectionAddresses[i], valuation: valuations[i] })
+        const index = collectionAddresses.findIndex(collectionAddress => collectionAddress === pools[i].collection.address)
+        const { signature, issuedAtBlock, expiresAtBlock } = await signValuation({ blockchain, nftId: nftIds[index], collectionAddress: collectionAddresses[index], valuation: valuations[i] })
 
         const loanTerm = RolloverTerms.factory({
           routerAddress: pools[i].rolloverAddress,
@@ -72,11 +73,11 @@ export default async function getRolloverTerms({
           valuation: valuations[i],
           signature,
           options: pools[i].loanOptions,
-          nft: nfts[i],
+          nft: nfts[index],
           issuedAtBlock,
           expiresAtBlock,
           poolAddress: pools[i].address,
-          collection: nfts[i].collection,
+          collection: nfts[index].collection,
         })
 
         loanTerm.options.map(option => {
