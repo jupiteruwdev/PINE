@@ -43,10 +43,10 @@ export default async function getLoanTerms({ blockchain, collectionAddresses, nf
           collection: Collection.factory({
             address: collectionAddress,
             blockchain,
-            ...collectionsMetadata,
+            ...collectionsMetadata[i],
           }),
           id: nftIds[i],
-          ...nftsMetadata,
+          ...nftsMetadata[i],
         })
       }
 
