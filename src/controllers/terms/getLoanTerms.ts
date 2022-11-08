@@ -79,9 +79,9 @@ export default async function getLoanTerms({ blockchain, collectionAddresses, nf
           option.maxBorrow = Value.$ETH(option.maxLTVBPS.div(10_000).times(loanTerm.valuation.value?.amount ?? 0).toFixed(appConf.ethMaxDecimalPlaces, BigNumber.ROUND_DOWN))
         })
 
-        if (pools[i].ethLimit !== 0 && loanTerm.options.some(option => pools[i].utilization.amount.plus(option.maxBorrow?.amount ?? new BigNumber(0)).gt(new BigNumber(pools[i].ethLimit ?? 0)))) throw fault('ERR_POOL_OVER_LENDER_DEFINED_UTILIZATION')
-
-        loanTerms.push(loanTerm)
+        if (!(pools[i].ethLimit !== 0 && loanTerm.options.some(option => pools[i].utilization.amount.plus(option.maxBorrow?.amount ?? new BigNumber(0)).gt(new BigNumber(pools[i].ethLimit ?? 0))))) {
+          loanTerms.push(loanTerm)
+        }
 
         logger.info(`Fetching loan terms for NFT ID <${nftIds[i]}> and collection address <${collectionAddresses[i]}> on blockchain <${JSON.stringify(blockchain)}>... OK`)
         logger.debug(JSON.stringify(loanTerms, undefined, 2))
