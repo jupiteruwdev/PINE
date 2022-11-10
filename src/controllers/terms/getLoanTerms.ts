@@ -4,7 +4,7 @@ import { Blockchain, Collection, LoanTerms, NFT, Value } from '../../entities'
 import fault from '../../utils/fault'
 import logger from '../../utils/logger'
 import { getEthNFTMetadata } from '../collaterals'
-import { getEthCollectionMetadata, verifyCollectionWithMatcher } from '../collections'
+import { getEthCollectionMetadata } from '../collections'
 import { getPool } from '../pools'
 import { getEthNFTValuation, signValuation } from '../valuations'
 

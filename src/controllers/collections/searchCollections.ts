@@ -4,6 +4,8 @@ import { Blockchain, Collection } from '../../entities'
 import fault from '../../utils/fault'
 import logger from '../../utils/logger'
 import postRequest from '../utils/postRequest'
+import getNFTSales from './getNFTSales'
+import getSpamContracts from './getSpamContracts'
 
 type Params = {
   query: string
@@ -28,14 +30,29 @@ export default async function searchCollections({ query, blockchain }: Params): 
         },
         timeout: 10000,
       })
+    console.log({ collectionData })
     const collections = _.get(collectionData, 'data')
-    return collections.filter((cd: any) => cd.chainId === '1' && _.get(cd, 'addresses[0].address') && cd.name && cd.slug).map((cd: any) => Collection.factory({
+    const spamContracts = await getSpamContracts({ blockchain })
+    const nonSpamCollections = collections.filter((cd: any) => cd.chainId === '1' && _.get(cd, 'addresses[0].address') && cd.name && cd.slug && spamContracts.includes(_.get(cd, 'addresses[0].address'))).map((cd: any) => Collection.factory({
       address: _.get(cd, 'addresses[0].address'),
       blockchain,
       vendorIds: { opensea: cd.slug },
       name: cd.name,
       imageUrl: cd.imageUrl ?? '',
     }))
+
+    const pomises = await Promise.all([
+      ...nonSpamCollections.map((collection: Collection) => getNFTSales({ blockchain, contractAddress: collection.address })),
+    ])
+
+    console.log({ pomises })
+
+    // nonSpamCollections.map((collection, index) => {
+
+    // })
+
+    return nonSpamCollections
+
   default:
     const err = fault('ERR_UNSUPPORTED_BLOCKCHAIN')
     logger.error(`Fetching collection for search text <${query}>... ERR:`, err)
