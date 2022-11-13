@@ -29,6 +29,7 @@ export default async function getEthNFTValuation({
     switch (blockchain.networkId) {
     case Blockchain.Ethereum.Network.MAIN:
       const valuation = await DataSource.fetch(
+        useSpicyest({ blockchain, collectionAddress, nftId }),
         useAlchemy({ blockchain, collectionAddress, nftId }),
         useOpenSea({ blockchain, collectionAddress, nftId }),
         useGemXYZ({ blockchain, collectionAddress, nftId }),
@@ -49,6 +50,32 @@ export default async function getEthNFTValuation({
     if (logger.isErrorEnabled() && !logger.silent) console.error(err)
 
     throw err
+  }
+}
+
+export function useSpicyest({ blockchain, collectionAddress, nftId }: Params): DataSource<Valuation> {
+  return async () => {
+    logger.info(`...using Spicyest to determine valuation for Ethereum NFT <${collectionAddress}/${nftId}>`)
+
+    if (blockchain.networkId !== Blockchain.Ethereum.Network.MAIN) rethrow(`Unsupported Ethereum network <${blockchain.networkId}>`)
+
+    const apiKey = 'iJiIsICJ9eyJhbGcnR5cCIUzI1NI6IkpXViO' ?? rethrow('Missing Spicyest API key')
+
+    const res = await getRequest(`https://api.spicyest.com/floor?address=${collectionAddress}`, {
+      headers: {
+        'X-API-KEY': apiKey,
+      },
+      useCache: false,
+    })
+    if (res?.currency !== 'ETH') rethrow('Wrong currency')
+    const floorPrice = new BigNumber(_.get(res, 'price'))
+
+    const valuation = Valuation.factory({
+      value: Value.$ETH(floorPrice),
+      value24Hr: Value.$ETH(floorPrice),
+    })
+
+    return valuation
   }
 }
 

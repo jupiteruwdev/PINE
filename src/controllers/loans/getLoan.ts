@@ -41,8 +41,44 @@ export default async function getLoan({
         web3.eth.getBlockNumber(),
         searchPublishedPools({ address: onChainLoan.pool, blockchainFilter: { ethereum: blockchain.networkId }, includeRetired: true }),
       ])
+      // Special case. If pool is unpublished. We cannot find the pool in the database anymore.
+      if (pools.length === 0) {
+        const contract = await getPoolContract({ blockchain, poolAddress: onChainLoan.pool })
+        const loanDetails = await contract.methods._loans(nftId).call()
+        const controlPlaneContract = getControlPlaneContract({ blockchain, address: _.get(appConf.controlPlaneContractAddress, blockchain.networkId) })
+        const outstandingWithInterestWei = new BigNumber(await controlPlaneContract.methods.outstanding(loanDetails, txSpeedBlocks).call())
 
-      if (pools.length === 0) throw fault('ERR_UNSUPPORTED_COLLECTION')
+        if (outstandingWithInterestWei.lte(new BigNumber(0))) return undefined
+
+        const nft = {
+          collection: Collection.factory({
+            address: collectionAddress,
+            blockchain,
+            ...await getEthCollectionMetadata({ blockchain, collectionAddress, matchSubcollectionBy: { type: 'nftId', value: nftId } }),
+          }),
+          id: nftId,
+          ownerAddress: onChainLoan.pool,
+          ...await getEthNFTMetadata({ blockchain, collectionAddress, nftId }),
+        }
+
+        return Loan.factory({
+          routerAddress: '0x1E23F78896F6d4F0e25D7bcD49bb2f7eee62EF98',
+          accuredInterest: Value.$WEI(onChainLoan.accuredInterestWei),
+          borrowed: Value.$WEI(onChainLoan.borrowedWei),
+          borrowerAddress: onChainLoan.borrower,
+          expiresAt: new Date(_.toNumber(onChainLoan.loanExpiretimestamp) * 1000),
+          interestBPSPerBlock: new BigNumber(onChainLoan.interestBPS1000000XBlock).dividedBy(new BigNumber(1_000_000)),
+          loanStartBlock: onChainLoan.loanStartBlock,
+          maxLTVBPS: new BigNumber(onChainLoan.maxLTVBPS),
+          nft,
+          outstanding: Value.$WEI(outstandingWithInterestWei),
+          poolAddress: onChainLoan.pool,
+          repaidInterest: Value.$WEI(onChainLoan.repaidInterestWei),
+          returned: Value.$WEI(onChainLoan.returnedWei),
+          valuation: undefined,
+          updatedAtBlock: blockNumber,
+        })
+      }
 
       const loan = pools.reduce<Promise<Loan | undefined>>(async (l, pool) => {
         const rL = await l
