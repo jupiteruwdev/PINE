@@ -4,7 +4,7 @@ import { Blockchain, Collection, LoanTerms, NFT, Value } from '../../entities'
 import fault from '../../utils/fault'
 import logger from '../../utils/logger'
 import { getEthNFTMetadata } from '../collaterals'
-import { getEthCollectionMetadata, verifyCollectionWithMatcher } from '../collections'
+import { getEthCollectionMetadata } from '../collections'
 import { getPool } from '../pools'
 import { getEthNFTValuation, signValuation } from '../valuations'
 
@@ -25,7 +25,7 @@ export default async function getLoanTerms({ blockchain, collectionAddress, nftI
       // await verifyCollectionWithMatcher({ blockchain, collectionAddress, matchSubcollectionBy: { type: 'nftId', value: nftId } })
       const nftMetadata = await getEthNFTMetadata({ blockchain, collectionAddress, nftId })
       const pool = await getPool({ address: poolAddress, collectionAddress, blockchain, includeStats: true, nft: { id: nftId, name: nftMetadata.name } })
-      if (!pool) throw fault('ERR_NO_POOLS_AVAILABLE')
+      if (!pool || !pool.published) throw fault('ERR_NO_POOLS_AVAILABLE')
       if (pool.collection.valuation && (pool.collection.valuation?.timestamp || 0) < new Date().getTime() - appConf.valuationLimitation) {
         throw fault('INVALID_VALUATION_TIMESTAMP')
       }
