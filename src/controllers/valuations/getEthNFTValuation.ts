@@ -59,7 +59,7 @@ export function useSpicyest({ blockchain, collectionAddress, nftId }: Params): D
 
     if (blockchain.networkId !== Blockchain.Ethereum.Network.MAIN) rethrow(`Unsupported Ethereum network <${blockchain.networkId}>`)
 
-    const apiKey = 'iJiIsICJ9eyJhbGcnR5cCIUzI1NI6IkpXViO' ?? rethrow('Missing Alchemy API key')
+    const apiKey = 'iJiIsICJ9eyJhbGcnR5cCIUzI1NI6IkpXViO' ?? rethrow('Missing Spicyest API key')
 
     const res = await getRequest(`https://api.spicyest.com/floor?address=${collectionAddress}`, {
       headers: {
