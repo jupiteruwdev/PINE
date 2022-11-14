@@ -13,6 +13,9 @@ router.get('/borrow', async (req, res, next) => {
     const poolAddress = getString(req.query, 'poolAddress', { optional: true })
     const blockchain = getBlockchain(req.query)
     const loanTerms = await getLoanTerms({ blockchain, nftIds: [nftId], collectionAddresses: [collectionAddress], poolAddresses: poolAddress ? [poolAddress] : undefined })
+    if (!loanTerms.length) {
+      next(fault('ERR_NO_POOLS_AVAILABLE'))
+    }
     const payload = LoanTerms.serialize(loanTerms[0])
     res.status(200).json(payload)
   }
@@ -28,6 +31,9 @@ router.get('/rollover', async (req, res, next) => {
     const poolAddress = getString(req.query, 'poolAddress', { optional: true })
     const blockchain = getBlockchain(req.query)
     const rolloverTerms = await getRolloverTerms({ blockchain, nftIds: [nftId], collectionAddresses: [collectionAddress], poolAddresses: poolAddress ? [poolAddress] : undefined })
+    if (!rolloverTerms.length) {
+      next(fault('ERR_NO_POOLS_AVAILABLE'))
+    }
     const payload = RolloverTerms.serialize(rolloverTerms[0])
 
     res.status(200).json(payload)
@@ -49,6 +55,10 @@ router.get('/pnpl', async (req, res, next) => {
     }
     catch (err) {
       return next(err)
+    }
+
+    if (!pnplTerms.length) {
+      next(fault('ERR_NO_POOLS_AVAILABLE'))
     }
 
     const payload = PNPLTerms.serialize(pnplTerms[0])
