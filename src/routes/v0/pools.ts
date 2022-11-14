@@ -118,6 +118,7 @@ router.get('/', async (req, res, next) => {
     const paginateByCount = getNumber(req.query, 'count', { optional: true })
     const paginateBy = paginateByOffset !== undefined && paginateByCount !== undefined ? { count: paginateByCount, offset: paginateByOffset } : undefined
     const totalCount = await countPools({ collectionAddress, blockchainFilter, tenors, nftId })
+    const checkLimit = getBoolean(req.query, 'checkLimit', { optional: true })
 
     const pools = await searchPublishedPools({
       blockchainFilter,
@@ -126,6 +127,8 @@ router.get('/', async (req, res, next) => {
       sortBy,
       nftId,
       paginateBy,
+      checkLimit,
+      includeStats: checkLimit,
     })
 
     const payload = serializeEntityArray(pools, Pool.codingResolver)

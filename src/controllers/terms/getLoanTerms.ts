@@ -27,7 +27,7 @@ export default async function getLoanTerms({ blockchain, collectionAddresses, nf
         ethereum: blockchain.networkId,
       }, includeStats: true })
 
-      if (!pools) throw fault('ERR_NO_POOLS_AVAILABLE')
+      if (!pools || !!pools.find(pool => !pool.published)) throw fault('ERR_NO_POOLS_AVAILABLE')
       if (pools.find(pool => pool.collection.valuation && (pool.collection.valuation?.timestamp || 0) < new Date().getTime() - appConf.valuationLimitation)) {
         throw fault('INVALID_VALUATION_TIMESTAMP')
       }
