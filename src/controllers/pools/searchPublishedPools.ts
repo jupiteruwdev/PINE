@@ -8,6 +8,7 @@ import { getEthNFTMetadata } from '../collaterals'
 import Tenor from '../utils/Tenor'
 import getPoolCapacity from './getPoolCapacity'
 import getPoolUtilization from './getPoolUtilization'
+import fault from '../../utils/fault'
 
 export enum PoolSortType {
   NAME = 'name',
@@ -27,6 +28,7 @@ type Params<IncludeStats> = {
   collectionName?: string
   includeRetired?: boolean
   includeStats?: IncludeStats
+  checkLimit?: boolean
   lenderAddress?: string
   tenors?: number[]
   nftId?: string
@@ -60,6 +62,7 @@ export async function filterByNftId(blockchain: Blockchain, docs: any[], nftId: 
 async function searchPublishedPools<IncludeStats extends boolean = false>(params?: Params<IncludeStats>): Promise<IncludeStats extends true ? Required<Pool>[] : Pool[]>
 async function searchPublishedPools<IncludeStats extends boolean = false>({
   includeStats,
+  checkLimit,
   paginateBy,
   ...params
 }: Params<IncludeStats> = {}): Promise<Pool[]> {
@@ -85,6 +88,7 @@ async function searchPublishedPools<IncludeStats extends boolean = false>({
 
   const pools = docs.map(mapPool)
 
+  if (checkLimit && !includeStats) throw fault('ERR_NO_STATS_TO_CHECK')
   if (includeStats !== true) return pools
 
   const poolsWithStats = await Promise.all(pools.map(async pool => {
@@ -106,6 +110,9 @@ async function searchPublishedPools<IncludeStats extends boolean = false>({
     })
   }))
 
+  if (checkLimit) {
+    return poolsWithStats.filter(pool => !(!!pool.collection?.valuation?.value?.amount && pool.ethLimit !== 0 && pool.loanOptions.some(option => pool.utilization?.amount.plus(pool.collection?.valuation?.value?.amount ?? new BigNumber(0)).gt(new BigNumber(pool.ethLimit ?? 0)))))
+  }
   return poolsWithStats
 }
 
