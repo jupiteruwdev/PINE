@@ -87,6 +87,7 @@ export default {
     },
   ],
   blocksPerSecond: 14,
+  valuationLimitation: 60 * 30 * 1000,
   ethMaxDecimalPlaces: 6,
   mongoUri: process.env.MONGO_URI ?? '',
   tenors: [1, 3, 7, 14, 30],

@@ -29,19 +29,23 @@ export default async function getRolloverTerms({
     switch (blockchain.network) {
     case 'ethereum': {
       // verify collection is valid one with matcher
-      await verifyCollectionWithMatcher({ blockchain, collectionAddress, matchSubcollectionBy: { type: 'nftId', value: nftId } })
+      // await verifyCollectionWithMatcher({ blockchain, collectionAddress, matchSubcollectionBy: { type: 'nftId', value: nftId } })
+      const nftMetadata = await getEthNFTMetadata({ blockchain, collectionAddress, nftId })
       const canRollover = await isLoanExtendable({ blockchain, collectionAddress, nftId })
       if (!canRollover) throw fault('ERR_INVALID_ROLLOVER')
 
-      const pool = await getPool({ address: poolAddress, blockchain, collectionAddress, includeStats: true })
+      const pool = await getPool({ address: poolAddress, blockchain, collectionAddress, includeStats: true, nft: { id: nftId, name: nftMetadata.name } })
       if (!pool) throw fault('ERR_NO_POOLS_AVAILABLE')
+      if (pool.collection.valuation && (pool.collection.valuation?.timestamp || 0) < new Date().getTime() - appConf.valuationLimitation) {
+        throw fault('INVALID_VALUATION_TIMESTAMP')
+      }
 
       const flashLoanSource = await getFlashLoanSource({ blockchain, poolAddress: pool.address })
 
       const nft: NFT = {
         collection: Collection.factory({ address: collectionAddress, blockchain }),
         id: nftId,
-        ...await getEthNFTMetadata({ blockchain, collectionAddress, nftId }),
+        ...nftMetadata,
       }
 
       const valuation = pool.collection.valuation ?? await getEthNFTValuation({ blockchain: blockchain as Blockchain<'ethereum'>, collectionAddress, nftId })

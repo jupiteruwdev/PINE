@@ -20,12 +20,17 @@ type Params<IncludeStats> = {
   includeStats?: IncludeStats
   lenderAddress?: string
   address?: string
+  nft?: {
+    id?: string
+    name?: string
+  }
 }
 
 async function getPool<IncludeStats extends boolean = false>(params: Params<IncludeStats>): Promise<IncludeStats extends true ? Required<Pool> : Pool>
 async function getPool<IncludeStats extends boolean = false>({
   blockchain,
   includeStats,
+  nft,
   ...params
 }: Params<IncludeStats>): Promise<Pool> {
   const res = await PoolModel.aggregate(getPipelineStages({
@@ -34,31 +39,42 @@ async function getPool<IncludeStats extends boolean = false>({
   })).exec()
 
   if (res.length) {
-    const pool = mapPool(res[0])
+    for (const resPool of res) {
+      const pool = mapPool(resPool)
+      if (_.isString(_.get(resPool, 'collection.matcher.regex')) && _.isString(_.get(resPool, 'collection.matcher.fieldPath'))) {
+        const regex = new RegExp(resPool.collection.matcher.regex)
+        if (!regex.test(_.get(nft, resPool.collection.matcher.fieldPath))) {
+          continue
+        }
+      }
+      try {
+        await verifyPool({ blockchain, address: pool.address, collectionAddress: pool.collection.address })
+      }
+      catch (err) {
+        throw fault('ERR_ZOMBIE_POOL', undefined, err)
+      }
 
-    try {
-      await verifyPool({ blockchain, address: pool.address, collectionAddress: pool.collection.address })
-    }
-    catch (err) {
-      throw fault('ERR_ZOMBIE_POOL', undefined, err)
-    }
+      if (includeStats !== true) return pool
 
-    if (includeStats !== true) return pool
+      const [
+        { amount: utilizationEth },
+        { amount: capacityEth },
+      ] = await Promise.all([
+        getPoolUtilization({ blockchain, poolAddress: pool.address }),
+        getPoolCapacity({ blockchain, poolAddress: pool.address, tokenAddress: pool.tokenAddress, fundSource: pool.fundSource }),
+      ])
 
-    const [
-      { amount: utilizationEth },
-      { amount: capacityEth },
-    ] = await Promise.all([
-      getPoolUtilization({ blockchain, poolAddress: pool.address }),
-      getPoolCapacity({ blockchain, poolAddress: pool.address, tokenAddress: pool.tokenAddress, fundSource: pool.fundSource }),
-    ])
-
-    const valueLockedEth = capacityEth.plus(utilizationEth).gt(new BigNumber(pool.ethLimit || Number.POSITIVE_INFINITY)) ? new BigNumber(pool.ethLimit ?? 0) : capacityEth.plus(utilizationEth)
-
-    return {
-      ...pool,
-      utilization: Value.$ETH(utilizationEth),
-      valueLocked: Value.$ETH(valueLockedEth),
+      const valueLockedEth = capacityEth.plus(utilizationEth).gt(new BigNumber(pool.ethLimit || Number.POSITIVE_INFINITY)) ? new BigNumber(pool.ethLimit ?? 0) : capacityEth.plus(utilizationEth)
+      if (!!pool.collection?.valuation?.value?.amount && pool.ethLimit !== 0 && pool.loanOptions.some(option => utilizationEth.plus(pool.collection?.valuation?.value?.amount ?? new BigNumber(0)).gt(new BigNumber(pool.ethLimit ?? 0)))) {
+        continue
+      }
+      else {
+        return {
+          ...pool,
+          utilization: Value.$ETH(utilizationEth),
+          valueLocked: Value.$ETH(valueLockedEth),
+        }
+      }
     }
   }
 
@@ -156,8 +172,6 @@ function getPipelineStages({
     $sort: {
       'loanOptions.interestBpsBlock': 1,
     },
-  }, {
-    $limit: 1,
   }]
 
   return stages
