@@ -5,7 +5,7 @@ import { getCollections } from '../../src/controllers'
 import { Blockchain, Value } from '../../src/entities'
 
 describe('/v0/collections', () => {
-  describe('Ethereum Mainnet', () => {
+  describe.skip('Ethereum Mainnet', () => {
     it('GET /v0/collections/floors?collectionAddresses=*', async () => {
       const collections = await getCollections({ blockchainFilter: { ethereum: Blockchain.Ethereum.Network.MAIN } })
 
