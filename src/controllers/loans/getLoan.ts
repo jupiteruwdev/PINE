@@ -108,7 +108,7 @@ export default async function getLoan({
         }
 
         return Loan.factory({
-          routerAddress: pool.repayRouterAddress ,
+          routerAddress: pool.repayRouterAddress,
           accuredInterest: Value.$WEI(onChainLoan.accuredInterestWei),
           borrowed: Value.$WEI(onChainLoan.borrowedWei),
           borrowerAddress: onChainLoan.borrower,
