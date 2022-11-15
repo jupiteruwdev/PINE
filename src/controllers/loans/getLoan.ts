@@ -62,7 +62,7 @@ export default async function getLoan({
         }
 
         return Loan.factory({
-          routerAddress: '0x1E23F78896F6d4F0e25D7bcD49bb2f7eee62EF98',
+          routerAddress: '0x1C120cE3853542C0Fe3B75AF8F4c7F223f957d51',
           accuredInterest: Value.$WEI(onChainLoan.accuredInterestWei),
           borrowed: Value.$WEI(onChainLoan.borrowedWei),
           borrowerAddress: onChainLoan.borrower,
@@ -108,7 +108,7 @@ export default async function getLoan({
         }
 
         return Loan.factory({
-          routerAddress: pool.repayRouterAddress,
+          routerAddress: pool.repayRouterAddress ,
           accuredInterest: Value.$WEI(onChainLoan.accuredInterestWei),
           borrowed: Value.$WEI(onChainLoan.borrowedWei),
           borrowerAddress: onChainLoan.borrower,
