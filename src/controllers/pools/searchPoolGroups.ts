@@ -1,16 +1,13 @@
 import BigNumber from 'bignumber.js'
-import _ from 'lodash'
 import { PipelineStage } from 'mongoose'
 import { PoolModel } from '../../db'
 import { AnyCurrency, Blockchain, Pool, PoolGroup, Value } from '../../entities'
 import logger from '../../utils/logger'
 import { mapPool } from '../adapters'
-import { getEthCollectionFloorPrices } from '../collections'
 import getEthValueUSD from '../utils/getEthValueUSD'
 import getPoolCapacity from './getPoolCapacity'
 import getPoolUtilization from './getPoolUtilization'
 import { PoolSortDirection, PoolSortType } from './searchPublishedPools'
-import $ETH = Value.$ETH;
 
 type Params = {
   blockchainFilter?: Blockchain.Filter
