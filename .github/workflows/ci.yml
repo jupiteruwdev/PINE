@@ -1,17 +1,25 @@
 name: CI
 on:
-  push:
-    branches-ignore: [development, staging, main]
+  pull_request:
+    types: [labeled, opened, synchronize, unlabeled, closed]
+
+permissions:
+  contents: read
+  id-token: write
+  checks: write
+
 jobs:
-  build:
-    name: Build
-    uses: ./.github/workflows/job-build.yml
-    with:
-      image_name: gcr.io/pinedefi/core-service
+  build-and-test:
+    if: github.event.action != 'unlabeled' && github.event.action != 'closed'
+    name: Build and test
+    uses: ./.github/workflows/build-and-test.yml
     secrets: inherit
+    with:
+      run_tests: true
+  
   notify:
     name: Notify
-    needs: [build]
+    needs: build-and-test
     if: ${{ always() }}
     runs-on: ubuntu-latest
     steps:
@@ -20,3 +28,44 @@ jobs:
           success-prefix: 🌲
           success: ${{ needs.build.result == 'success' }}
           webhook-url: ${{ secrets.SLACK_DEVOPS_WEBHOOK_URL }}
+  
+  deploy-preview:
+    if: |
+      (github.event.action == 'labeled' && github.event.label.name == ':rocket: deploy') ||
+      (github.event.action != 'labeled' && contains(github.event.pull_request.labels.*.name, ':rocket: deploy'))
+    needs: build-and-test
+    name: Deploy Preview environment
+    uses: ./.github/workflows/deploy.yml
+    secrets: inherit
+    with:
+      cloud_run_service_name: core-dev
+      version: ${{ needs.build-and-test.outputs.version }}
+      preview: true
+      environment: "pr-${{ github.event.number }}"
+
+  clean-up-preview:
+    if: |
+      (github.event.action == 'unlabeled' && github.event.label.name == ':rocket: deploy') ||
+      (github.event.action == 'closed' && contains(github.event.pull_request.labels.*.name, ':rocket: deploy'))
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Authenticate Google Cloud
+        uses: google-github-actions/auth@v1
+        with:
+          workload_identity_provider: ${{ secrets.GCP_WORKLOAD_IDENTITY_PROVIDER }}
+          service_account: ${{ secrets.GCP_SERVICE_ACC }}
+      - name: 'Set up Cloud SDK'
+        uses: google-github-actions/setup-gcloud@v1
+        with:
+          project_id: ${{ secrets.GCP_PROJECT }}
+  
+      - name: Remove preview service traffic tag
+        run: gcloud run services update-traffic core-dev --region us-central1 --remove-tags pr-${{ github.event.number }}
+      
+      - name: Delete GitHub Deployment environment
+        uses: bobheadxi/deployments@v1.3.0
+        with:
+          step: delete-env
+          token: ${{ secrets.GH_ACCESS_TOKEN }}
+          env: "pr-${{ github.event.number }}"
