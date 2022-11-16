@@ -5,8 +5,8 @@ import getLooksRarePNPLTerms from './getLooksRarePNPLTerms'
 import getOpenSeaPNPLTerms from './getOpenSeaPNPLTerms'
 
 type Params = {
-  parsedURL: URL
-  poolAddress?: string
+  parsedURLs: URL[]
+  poolAddresses?: string[]
 }
 
 /**
@@ -15,65 +15,87 @@ type Params = {
  *
  * @returns pnpl terms.
  */
-export default async function getPNPLTermsByUrl({ parsedURL, poolAddress }: Params): Promise<PNPLTerms> {
-  const hostname = parsedURL.hostname
+export default async function getPNPLTermsByUrl({ parsedURLs, poolAddresses }: Params): Promise<PNPLTerms[]> {
+  const openseaHostnames = parsedURLs.filter(url => url.hostname === 'opensea.io')
+  const openseaTestHostnames = parsedURLs.filter(url => url.hostname === 'testnets.opensea.io')
+  const looksrareHostnames = parsedURLs.filter(url => url.hostname === 'looksrare.org')
+  const looksrareTestHostnames = parsedURLs.filter(url => url.hostname === 'rinkeby.looksrare.org')
 
-  switch (hostname) {
-  case 'opensea.io': {
-    const collectionAddress = RegExp(/0x[a-fA-F0-9]{40}/).exec(parsedURL.pathname)?.at(0)
-    const nftId = RegExp(/(\d+$)|(\/\d+\/)/).exec(parsedURL.pathname)?.at(0)
-    if (!collectionAddress || !nftId) throw fault('ERR_PNPL_INVALID_URL')
-    if (!Web3.utils.isAddress(collectionAddress)) throw fault('ERR_PNPL_INVALID_URL')
+  let terms: PNPLTerms[] = []
 
-    return getOpenSeaPNPLTerms({
+  if (openseaHostnames.length) {
+    const collectionAddresses = openseaHostnames.map(parsedURL => RegExp(/0x[a-fA-F0-9]{40}/).exec(parsedURL.pathname)?.at(0)).filter(address => !!address) as string[]
+    const nftIds = openseaHostnames.map(parsedURL => RegExp(/(\d+$)|(\/\d+\/)/).exec(parsedURL.pathname)?.at(0)).filter(nftId => !!nftId) as string[]
+    if (collectionAddresses.length !== openseaHostnames.length || nftIds.length !== openseaHostnames.length) throw fault('ERR_PNPL_INVALID_URL')
+    if (collectionAddresses.find(collectionAddress => !Web3.utils.isAddress(collectionAddress))) throw fault('ERR_PNPL_INVALID_URL')
+
+    terms = terms.concat(await getOpenSeaPNPLTerms({
       openseaVersion: 'main',
       blockchain: Blockchain.Ethereum(Blockchain.Ethereum.Network.MAIN),
-      collectionAddress,
-      nftId,
-      poolAddress,
-    })
+      collectionAddresses,
+      nftIds,
+      poolAddresses,
+    }),
+    )
   }
-  case 'testnets.opensea.io': {
-    const collectionAddress = RegExp(/0x[a-fA-F0-9]{40}/).exec(parsedURL.pathname)?.at(0)
-    const nftId = RegExp(/(\d+$)|(\/\d+\/)/).exec(parsedURL.pathname)?.at(0)
-    if (!collectionAddress || !nftId) throw fault('ERR_PNPL_INVALID_URL')
-    if (!Web3.utils.isAddress(collectionAddress)) throw fault('ERR_PNPL_INVALID_URL')
+  if (openseaTestHostnames.length) {
+    const collectionAddresses = openseaHostnames.map(parsedURL => RegExp(/0x[a-fA-F0-9]{40}/).exec(parsedURL.pathname)?.at(0)).filter(address => !!address) as string[]
+    const nftIds = openseaHostnames.map(parsedURL => RegExp(/(\d+$)|(\/\d+\/)/).exec(parsedURL.pathname)?.at(0)).filter(nftId => !!nftId) as string[]
+    if (collectionAddresses.length !== openseaHostnames.length || nftIds.length !== openseaHostnames.length) throw fault('ERR_PNPL_INVALID_URL')
+    if (collectionAddresses.find(collectionAddress => !Web3.utils.isAddress(collectionAddress))) throw fault('ERR_PNPL_INVALID_URL')
 
-    return getOpenSeaPNPLTerms({
+    terms = terms.concat(await getOpenSeaPNPLTerms({
       openseaVersion: 'rinkeby',
       blockchain: Blockchain.Ethereum(Blockchain.Ethereum.Network.RINKEBY),
-      collectionAddress,
-      nftId,
-      poolAddress,
-    })
+      collectionAddresses,
+      nftIds,
+      poolAddresses,
+    }))
   }
-  case 'looksrare.org': {
+  if (looksrareHostnames.length) {
     // https://looksrare.org/collections/0x306b1ea3ecdf94aB739F1910bbda052Ed4A9f949/3060
-    const [, , collectionAddress, nftId] = parsedURL.pathname.split('/')
-    if (!Web3.utils.isAddress(collectionAddress)) throw fault('ERR_PNPL_INVALID_URL')
-    if (!collectionAddress || !nftId) throw fault('ERR_PNPL_INVALID_URL')
+    const [collectionAddresses, nftIds]: [string[], string[]] = parsedURLs.reduce((pre: [string[], string[]], cur) => {
+      const [, , collectionAddress, nftId] = cur.pathname.split('/')
+      return [
+        [...pre[0], collectionAddress],
+        [...pre[1], nftId],
+      ]
+    }, [[], []])
+    // const [, , collectionAddress, nftId] = parsedURL.pathname.split('/')
+    if (!collectionAddresses.find(collectionAddress => !Web3.utils.isAddress(collectionAddress))) throw fault('ERR_PNPL_INVALID_URL')
+    if (collectionAddresses.length !== nftIds.length || nftIds.length !== looksrareHostnames.length) throw fault('ERR_PNPL_INVALID_URL')
 
-    return getLooksRarePNPLTerms({
+    terms = terms.concat(await getLooksRarePNPLTerms({
       blockchain: Blockchain.Ethereum(Blockchain.Ethereum.Network.MAIN),
-      collectionAddress,
-      nftId,
-      poolAddress,
-    })
+      collectionAddresses,
+      nftIds,
+      poolAddresses,
+    }))
   }
-  case 'rinkeby.looksrare.org': {
+  if (looksrareTestHostnames.length) {
     // https://looksrare.org/collections/0x306b1ea3ecdf94aB739F1910bbda052Ed4A9f949/3060
-    const [, , collectionAddress, nftId] = parsedURL.pathname.split('/')
-    if (!Web3.utils.isAddress(collectionAddress)) throw fault('ERR_PNPL_INVALID_URL')
-    if (!collectionAddress || !nftId) throw fault('ERR_PNPL_INVALID_URL')
+    const [collectionAddresses, nftIds]: [string[], string[]] = parsedURLs.reduce((pre: [string[], string[]], cur) => {
+      const [, , collectionAddress, nftId] = cur.pathname.split('/')
+      return [
+        [...pre[0], collectionAddress],
+        [...pre[1], nftId],
+      ]
+    }, [[], []])
+    // const [, , collectionAddress, nftId] = parsedURL.pathname.split('/')
+    if (!collectionAddresses.find(collectionAddress => !Web3.utils.isAddress(collectionAddress))) throw fault('ERR_PNPL_INVALID_URL')
+    if (collectionAddresses.length !== nftIds.length || nftIds.length !== looksrareHostnames.length) throw fault('ERR_PNPL_INVALID_URL')
 
-    return getLooksRarePNPLTerms({
+    terms = terms.concat(await getLooksRarePNPLTerms({
       blockchain: Blockchain.Ethereum(Blockchain.Ethereum.Network.RINKEBY),
-      collectionAddress,
-      nftId,
-      poolAddress,
-    })
+      collectionAddresses,
+      nftIds,
+      poolAddresses,
+    }))
   }
-  default:
+
+  if (!terms.length) {
     throw fault('ERR_PNPL_UNSUPPORTED_MARKETPLACE')
   }
+
+  return terms
 }

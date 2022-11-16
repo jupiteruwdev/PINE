@@ -8,26 +8,26 @@ import { getEthNFTMetadata } from '../collaterals'
 
 type Params = {
   blockchain: Blockchain
-  collectionAddress?: string
+  collectionAddresses?: string[]
   matchSubcollectionBy?: {
-    value: string
+    values: string[]
     type: 'nftId'
   }
 }
 
-export default async function verifyCollectionWithMatcher({ blockchain, collectionAddress, matchSubcollectionBy }: Params) {
+export default async function verifyCollectionWithMatcher({ blockchain, collectionAddresses, matchSubcollectionBy }: Params) {
   logger.info('...using db to look up metadata for collection')
 
   if (blockchain?.network !== 'ethereum') rethrow(`Unsupported blockchain <${JSON.stringify(blockchain)}>`)
 
-  if (collectionAddress === undefined) rethrow('Parameter `collectionAddress` is required unless pool address is provided')
+  if (collectionAddresses === undefined) rethrow('Parameter `collectionAddresses` is required unless pool address is provided')
 
   const stages: PipelineStage[] = [{
     $match: {
       'networkType': blockchain.network,
       'networkId': blockchain.networkId,
       'address': {
-        $regex: collectionAddress,
+        $regex: collectionAddresses.join('|'),
         $options: 'i',
       },
     },
@@ -40,23 +40,26 @@ export default async function verifyCollectionWithMatcher({ blockchain, collecti
   const docsWithMatcher = docs.filter(t => _.isString(_.get(t, 'matcher.regex')) && _.isString(_.get(t, 'matcher.fieldPath')))
 
   if (docsWithMatcher.length > 0) {
-    const nftId = matchSubcollectionBy?.value
-    const nftMetadata = await getEthNFTMetadata({ blockchain, collectionAddress: docs[0].address, nftId })
-    const nftProps = { id: nftId, ...nftMetadata }
+    try {
+      await Promise.all(collectionAddresses.map((collectionAddresses, index) =>
+        new Promise<void>(async (resolve, reject) => {
+          const nftId = matchSubcollectionBy?.values[index]
+          const nftMetadata = await getEthNFTMetadata({ blockchain, collectionAddress: collectionAddresses[index], nftId })
+          const nftProps = { id: nftId, ...nftMetadata }
 
-    const doc = _.find(docsWithMatcher, t => {
-      const regex = new RegExp(t.matcher.regex)
-      if (regex.test(_.get(nftProps, t.matcher.fieldPath))) return true
-      return false
-    })
+          const doc = _.find(docsWithMatcher, t => {
+            const regex = new RegExp(t.matcher.regex)
+            if (regex.test(_.get(nftProps, t.matcher.fieldPath))) return true
+            return false
+          })
 
-    if (!doc) rethrow('No matching collection found in db')
+          if (!doc) reject('No matching collection found in db')
+          resolve()
+        })))
+    }
+    catch (err: any) {
+      rethrow(err.message)
+    }
   }
-  else {
-    if (docs.length > 1) rethrow('Unable to determine collection due to more than 1 collection found')
-
-    const doc = docs[0]
-
-    if (doc.matcher !== undefined) rethrow('Matcher expected for found collection')
-  }
+  else if (docs.find(doc => doc.matcher !== undefined)) { rethrow('Matcher expected for found collection') }
 }
