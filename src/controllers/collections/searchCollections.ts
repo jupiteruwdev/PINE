@@ -4,6 +4,8 @@ import { Blockchain, Collection } from '../../entities'
 import fault from '../../utils/fault'
 import logger from '../../utils/logger'
 import postRequest from '../utils/postRequest'
+import DataSource from '../utils/DataSource'
+import getRequest from '../utils/getRequest'
 
 type Params = {
   query: string
@@ -12,10 +14,65 @@ type Params = {
 
 export default async function searchCollections({ query, blockchain }: Params): Promise<Collection[]> {
   logger.info(`Fetching collection by search text <${query}>...`)
-  const apiKey = appConf.gemxyzAPIKey
-
   switch (blockchain.networkId) {
   case Blockchain.Ethereum.Network.MAIN:
+    return DataSource.fetch(
+      useAlchemyContract({ query, blockchain }),
+      useAlchemy({ query, blockchain }),
+      useGemXYZ({ query, blockchain }),
+    )
+
+  default:
+    const err = fault('ERR_UNSUPPORTED_BLOCKCHAIN')
+    logger.error(`Fetching collection for search text <${query}>... ERR:`, err)
+    throw err
+  }
+}
+
+function useAlchemy({ query, blockchain }: { query: string; blockchain: Blockchain }): DataSource<Collection[]> {
+  return async () => {
+    const apiKey = appConf.alchemyAPIKey
+    const collectionData = await getRequest(_.get(appConf.alchemyAPIUrl, blockchain.networkId).slice(0, -3) + 'nft/v2/' + apiKey + '/searchContractMetadata',
+      {
+        params: {
+          query,
+        },
+        timeout: 10000,
+      })
+    return collectionData.filter((cd: any) => cd?.contractMetadata?.tokenType === 'ERC721' && cd?.address && cd?.contractMetadata?.name && cd?.contractMetadata?.openSea?.collectionName).map((cd: any) => Collection.factory({
+      address: cd?.address,
+      blockchain,
+      vendorIds: { opensea: cd?.contractMetadata?.openSea?.collectionName },
+      name: cd?.contractMetadata?.name,
+      imageUrl: cd?.contractMetadata?.imageUrl ?? '',
+    }))
+  }
+}
+
+function useAlchemyContract({ query, blockchain }: { query: string; blockchain: Blockchain }): DataSource<Collection[]> {
+  return async () => {
+    const apiKey = appConf.alchemyAPIKey
+    const cd = await getRequest(_.get(appConf.alchemyAPIUrl, blockchain.networkId).slice(0, -3) + 'nft/v2/' + apiKey + '/getContractMetadata',
+      {
+        params: {
+          contractAddress: query,
+        },
+        timeout: 10000,
+      })
+    if (!cd) throw fault('NO_SUCH_CONTRACT')
+    return [Collection.factory({
+      address: cd?.address,
+      blockchain,
+      vendorIds: { opensea: cd?.contractMetadata?.openSea?.collectionName },
+      name: cd?.contractMetadata?.name,
+      imageUrl: cd?.contractMetadata?.imageUrl ?? '',
+    })]
+  }
+}
+
+function useGemXYZ({ query, blockchain }: { query: string; blockchain: Blockchain }): DataSource<Collection[]> {
+  return async () => {
+    const apiKey = appConf.gemxyzAPIKey
     const collectionData = await postRequest('https://gem-public-api-v2.herokuapp.com/collections',
       {
         filters: { searchText: query },
@@ -36,9 +93,5 @@ export default async function searchCollections({ query, blockchain }: Params): 
       name: cd.name,
       imageUrl: cd.imageUrl ?? '',
     }))
-  default:
-    const err = fault('ERR_UNSUPPORTED_BLOCKCHAIN')
-    logger.error(`Fetching collection for search text <${query}>... ERR:`, err)
-    throw err
   }
 }
