@@ -17,6 +17,7 @@ export default async function searchCollections({ query, blockchain }: Params): 
   switch (blockchain.networkId) {
   case Blockchain.Ethereum.Network.MAIN:
     return DataSource.fetch(
+      useAlchemyContract({ query, blockchain }),
       useAlchemy({ query, blockchain }),
       useGemXYZ({ query, blockchain }),
     )
@@ -31,7 +32,7 @@ export default async function searchCollections({ query, blockchain }: Params): 
 function useAlchemy({ query, blockchain }: { query: string; blockchain: Blockchain }): DataSource<Collection[]> {
   return async () => {
     const apiKey = appConf.alchemyAPIKey
-    const collectionData = await getRequest(_.get(appConf.alchemyAPIUrl, blockchain.networkId) + apiKey + '/searchContractMetadata',
+    const collectionData = await getRequest(_.get(appConf.alchemyAPIUrl, blockchain.networkId).slice(0, -3) + 'nft/v2/' + apiKey + '/searchContractMetadata',
       {
         params: {
           query,
@@ -45,6 +46,27 @@ function useAlchemy({ query, blockchain }: { query: string; blockchain: Blockcha
       name: cd?.contractMetadata?.name,
       imageUrl: cd?.contractMetadata?.imageUrl ?? '',
     }))
+  }
+}
+
+function useAlchemyContract({ query, blockchain }: { query: string; blockchain: Blockchain }): DataSource<Collection[]> {
+  return async () => {
+    const apiKey = appConf.alchemyAPIKey
+    const cd = await getRequest(_.get(appConf.alchemyAPIUrl, blockchain.networkId).slice(0, -3) + 'nft/v2/' + apiKey + '/getContractMetadata',
+      {
+        params: {
+          contractAddress: query,
+        },
+        timeout: 10000,
+      })
+    if (!cd) throw fault('NO_SUCH_CONTRACT')
+    return [Collection.factory({
+      address: cd?.address,
+      blockchain,
+      vendorIds: { opensea: cd?.contractMetadata?.openSea?.collectionName },
+      name: cd?.contractMetadata?.name,
+      imageUrl: cd?.contractMetadata?.imageUrl ?? '',
+    })]
   }
 }
 
