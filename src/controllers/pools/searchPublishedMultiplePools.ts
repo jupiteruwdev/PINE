@@ -8,7 +8,6 @@ import { getEthNFTMetadata } from '../collaterals'
 import Tenor from '../utils/Tenor'
 import getPoolCapacity from './getPoolCapacity'
 import getPoolUtilization from './getPoolUtilization'
-import fault from '../../utils/fault'
 
 export enum PoolSortType {
   NAME = 'name',
@@ -23,15 +22,14 @@ export enum PoolSortDirection {
 
 type Params<IncludeStats> = {
   blockchainFilter?: Blockchain.Filter
-  collectionAddress?: string
-  address?: string
+  collectionAddresses?: string[]
+  addresses?: string[]
   collectionName?: string
   includeRetired?: boolean
   includeStats?: IncludeStats
-  checkLimit?: boolean
   lenderAddress?: string
   tenors?: number[]
-  nftId?: string
+  nftIds?: string[]
   paginateBy?: {
     count: number
     offset: number
@@ -42,27 +40,29 @@ type Params<IncludeStats> = {
   }
 }
 
-export async function filterByNftId(blockchain: Blockchain, docs: any[], nftId: string): Promise<any[]> {
+export async function filterByNftId(blockchain: Blockchain, docs: any[], nftIds: string[]): Promise<any[]> {
   if (docs.length) {
-    const metadata = await getEthNFTMetadata({ blockchain, collectionAddress: docs[0].collection.address, nftId })
-    const nftProps = { id: nftId, ...metadata }
-    const subDocs = docs.filter(doc => {
-      if (_.isString(_.get(doc, 'collection.matcher.regex')) && _.isString(_.get(doc, 'collection.matcher.fieldPath'))) {
-        const regex = new RegExp(doc.collection.matcher.regex)
-        if (regex.test(_.get(nftProps, doc.collection.matcher.fieldPath))) return true
-        return false
-      }
-      return true
+    let subDocs = docs
+    nftIds.forEach(async nftId => {
+      const metadata = await getEthNFTMetadata({ blockchain, collectionAddress: docs[0].collection.address, nftId })
+      const nftProps = { id: nftId, ...metadata }
+      subDocs = subDocs.concat(docs.filter(doc => {
+        if (_.isString(_.get(doc, 'collection.matcher.regex')) && _.isString(_.get(doc, 'collection.matcher.fieldPath'))) {
+          const regex = new RegExp(doc.collection.matcher.regex)
+          if (regex.test(_.get(nftProps, doc.collection.matcher.fieldPath))) return true
+          return false
+        }
+        return true
+      }))
     })
     return subDocs.length ? subDocs : docs
   }
   return docs
 }
 
-async function searchPublishedPools<IncludeStats extends boolean = false>(params?: Params<IncludeStats>): Promise<IncludeStats extends true ? Required<Pool>[] : Pool[]>
-async function searchPublishedPools<IncludeStats extends boolean = false>({
+async function searchPublishedMultiplePools<IncludeStats extends boolean = false>(params?: Params<IncludeStats>): Promise<IncludeStats extends true ? Required<Pool>[] : Pool[]>
+async function searchPublishedMultiplePools<IncludeStats extends boolean = false>({
   includeStats,
-  checkLimit,
   paginateBy,
   ...params
 }: Params<IncludeStats> = {}): Promise<Pool[]> {
@@ -71,12 +71,12 @@ async function searchPublishedPools<IncludeStats extends boolean = false>({
   }))
 
   let docs
-  if (params.nftId !== undefined) {
+  if (params.nftIds !== undefined) {
     docs = await aggregation.exec()
     docs = await filterByNftId(Blockchain.factory({
       network: 'ethereum',
       networkId: params.blockchainFilter?.ethereum,
-    }), docs, params.nftId)
+    }), docs, params.nftIds)
 
     if (paginateBy !== undefined) {
       docs = docs.slice(paginateBy.offset, paginateBy.offset + paginateBy.count - 1)
@@ -88,7 +88,6 @@ async function searchPublishedPools<IncludeStats extends boolean = false>({
 
   const pools = docs.map(mapPool)
 
-  if (checkLimit && !includeStats) throw fault('ERR_NO_STATS_TO_CHECK')
   if (includeStats !== true) return pools
 
   const poolsWithStats = await Promise.all(pools.map(async pool => {
@@ -110,33 +109,30 @@ async function searchPublishedPools<IncludeStats extends boolean = false>({
     })
   }))
 
-  if (checkLimit) {
-    return poolsWithStats.filter(pool => !(!!pool.collection?.valuation?.value?.amount && pool.ethLimit !== 0 && pool.loanOptions.some(option => pool.utilization?.amount.plus(pool.collection?.valuation?.value?.amount ?? new BigNumber(0)).gt(new BigNumber(pool.ethLimit ?? 0)))))
-  }
   return poolsWithStats
 }
 
-export default searchPublishedPools
+export default searchPublishedMultiplePools
 
 function getPipelineStages({
   blockchainFilter = {
     ethereum: Blockchain.Ethereum.Network.MAIN,
     solana: Blockchain.Solana.Network.MAINNET,
   },
-  collectionAddress,
+  collectionAddresses,
   collectionName,
   includeRetired = false,
   lenderAddress,
   sortBy,
-  address,
+  addresses,
   tenors,
 }: Params<never> = {}): PipelineStage[] {
   const blockchain = Blockchain.Ethereum(blockchainFilter.ethereum)
 
   const collectionFilter = [
-    ...collectionAddress === undefined ? [] : [{
+    ...collectionAddresses === undefined ? [] : [{
       'collection.address': {
-        $regex: collectionAddress,
+        $regex: collectionAddresses.join('|'),
         $options: 'i',
       },
     }],
@@ -148,9 +144,9 @@ function getPipelineStages({
     }],
   ]
   const poolFilter = [
-    ...address === undefined ? [] : [{
+    ...addresses === undefined ? [] : [{
       'address': {
-        $regex: address,
+        $regex: addresses.join('|'),
         $options: 'i',
       },
     }],
@@ -194,7 +190,9 @@ function getPipelineStages({
         },
       },
       interest: {
-        $min: '$loanOptions.interestBpsBlock',
+        $toDouble: {
+          $min: '$loanOptions.interestBpsBlock',
+        },
       },
       interestOverride: {
         $min: '$loanOptions.interestBpsBlockOverride',

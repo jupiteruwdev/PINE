@@ -65,11 +65,15 @@ async function getPool<IncludeStats extends boolean = false>({
       ])
 
       const valueLockedEth = capacityEth.plus(utilizationEth).gt(new BigNumber(pool.ethLimit || Number.POSITIVE_INFINITY)) ? new BigNumber(pool.ethLimit ?? 0) : capacityEth.plus(utilizationEth)
-      if (!!pool.collection?.valuation?.value?.amount && pool.ethLimit !== 0 && pool.loanOptions.some(option => utilizationEth.plus(pool.collection?.valuation?.value?.amount ?? new BigNumber(0)).gt(new BigNumber(pool.ethLimit ?? 0)))) continue
-      return {
-        ...pool,
-        utilization: Value.$ETH(utilizationEth),
-        valueLocked: Value.$ETH(valueLockedEth),
+      if (!!pool.collection?.valuation?.value?.amount && pool.ethLimit !== 0 && pool.loanOptions.some(option => utilizationEth.plus(pool.collection?.valuation?.value?.amount ?? new BigNumber(0)).gt(new BigNumber(pool.ethLimit ?? 0)))) {
+        continue
+      }
+      else {
+        return {
+          ...pool,
+          utilization: Value.$ETH(utilizationEth),
+          valueLocked: Value.$ETH(valueLockedEth),
+        }
       }
     }
   }
@@ -168,8 +172,6 @@ function getPipelineStages({
     $sort: {
       'loanOptions.interestBpsBlock': 1,
     },
-  }, {
-    $limit: 1,
   }]
 
   return stages
