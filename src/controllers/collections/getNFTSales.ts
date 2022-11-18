@@ -1,6 +1,8 @@
 import _ from 'lodash'
 import appConf from '../../app.conf'
 import { Blockchain } from '../../entities'
+import fault from '../../utils/fault'
+import logger from '../../utils/logger'
 import rethrow from '../../utils/rethrow'
 import getRequest from '../utils/getRequest'
 
@@ -14,15 +16,30 @@ type Params = {
 }
 
 export default async function getNFTSales({ contractAddress, blockchain, ...props }: Params): Promise<Record<string, any>> {
-  const apiHost = _.get(appConf.alchemyAPIUrl, blockchain.networkId) ?? rethrow(`Missing Alchemy API URL for blockchain <${JSON.stringify(blockchain)}>`)
-  const apiKey = appConf.alchemyAPIKey ?? rethrow('Missing Alchemy API key')
+  try {
+    logger.info(`Fetching nft sales for contract <${contractAddress}> on network <${blockchain.networkId}>...`)
+    switch (blockchain.networkId) {
+    case Blockchain.Ethereum.Network.MAIN:
+      const apiHost = _.get(appConf.alchemyNFTAPIUrl, blockchain.networkId) ?? rethrow(`Missing Alchemy API URL for blockchain <${JSON.stringify(blockchain)}>`)
+      const apiKey = appConf.alchemyAPIKey ?? rethrow('Missing Alchemy API key')
 
-  const res = await getRequest(`${apiHost}${apiKey}/getNFTSales`, {
-    params: {
-      contractAddress,
-      ...props,
-    },
-  })
+      const res = await getRequest(`${apiHost}${apiKey}/getNFTSales`, {
+        params: {
+          contractAddress,
+          ...props,
+        },
+      })
 
-  return res
+      return res
+    default:
+      const err = fault('ERR_UNSUPPORTED_BLOCKCHAIN')
+      logger.error(`Fetching nft sales for contract <${contractAddress}>... ERR:`, err)
+      throw err
+    }
+  }
+  catch (err) {
+    logger.info(`Fetching nft sales for contract <${contractAddress}> on network <${blockchain.networkId}>... ERR`)
+    throw fault('ERR_FETCHING_CONTRACT_FLOOR_PRICE', undefined, err)
+  }
+
 }

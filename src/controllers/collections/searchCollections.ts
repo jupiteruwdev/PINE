@@ -4,6 +4,7 @@ import { Blockchain, Collection } from '../../entities'
 import fault from '../../utils/fault'
 import logger from '../../utils/logger'
 import postRequest from '../utils/postRequest'
+import getFloorPrice from './getFloorPrice'
 import getNFTSales from './getNFTSales'
 import getSpamContracts from './getSpamContracts'
 
@@ -30,7 +31,6 @@ export default async function searchCollections({ query, blockchain }: Params): 
         },
         timeout: 10000,
       })
-    console.log({ collectionData })
     const collections = _.get(collectionData, 'data')
     const spamContracts = await getSpamContracts({ blockchain })
     const nonSpamCollections = collections.filter((cd: any) => cd.chainId === '1' && _.get(cd, 'addresses[0].address') && cd.name && cd.slug && spamContracts.includes(_.get(cd, 'addresses[0].address'))).map((cd: any) => Collection.factory({
@@ -41,15 +41,14 @@ export default async function searchCollections({ query, blockchain }: Params): 
       imageUrl: cd.imageUrl ?? '',
     }))
 
-    const pomises = await Promise.all([
-      ...nonSpamCollections.map((collection: Collection) => getNFTSales({ blockchain, contractAddress: collection.address })),
+    const [nftSales, floorPrices] = await Promise.all([
+      nonSpamCollections.map((collection: Collection) => getNFTSales({ blockchain, contractAddress: collection.address })),
+      nonSpamCollections.map((collection: Collection) => getFloorPrice({ blockchain, contractAddress: collection.address })),
     ])
 
-    console.log({ pomises })
-
-    // nonSpamCollections.map((collection, index) => {
-
-    // })
+    console.log(nftSales.length)
+    console.log(floorPrices.length)
+    // console.log({})
 
     return nonSpamCollections
 
