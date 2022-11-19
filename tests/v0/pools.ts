@@ -64,11 +64,11 @@ describe('/v0/pools', () => {
         .expect('Content-Type', /json/)
         .expect(200)
 
-      expect(res.data).be.an('array')
-      expect(res.data).to.have.length(10)
-      expect(res.totalCount).to.equal(expectedPoolGroupsLength)
-      expect(res.nextOffset).to.equal(10)
-      res.data.every((poolGroup: any) => expect(poolGroup).to.have.keys(...Object.keys(PoolGroup.codingResolver)))
+      expect(res.collections.data).be.an('array')
+      expect(res.collections.data).to.have.length(10)
+      expect(res.collections.totalCount).to.equal(expectedPoolGroupsLength)
+      expect(res.collections.nextOffset).to.equal(10)
+      res.collections.data.every((poolGroup: any) => expect(poolGroup).to.have.keys(...Object.keys(PoolGroup.codingResolver)))
     })
 
     it('GET /v0/pools/groups/search?collectionAddress=*&offset=*&count=*', async () => {
@@ -83,12 +83,12 @@ describe('/v0/pools', () => {
           .expect('Content-Type', /json/)
           .expect(200)
 
-        expect(res.data).be.an('array')
+        expect(res.collections.data).be.an('array')
 
-        if (res.data.length === 1) {
-          expect(res.totalCount).to.equal(1)
-          expect(res.nextOffset).to.equal(1)
-          res.data.every((poolGroup: any) => expect(poolGroup).to.have.keys(...Object.keys(PoolGroup.codingResolver)))
+        if (res.collections.data.length === 1) {
+          expect(res.collections.totalCount).to.equal(1)
+          expect(res.collections.nextOffset).to.equal(1)
+          res.collections.data.every((poolGroup: any) => expect(poolGroup).to.have.keys(...Object.keys(PoolGroup.codingResolver)))
         }
       }))
     })
@@ -104,12 +104,12 @@ describe('/v0/pools', () => {
         .expect('Content-Type', /json/)
         .expect(200)
 
-      expect(res.data).be.an('array')
+      expect(res.collections.data).be.an('array')
 
-      if (res.data.length === 1) {
-        expect(res.totalCount).to.equal(1)
-        expect(res.nextOffset).to.equal(1)
-        res.data.every((poolGroup: any) => expect(poolGroup).to.have.keys(...Object.keys(PoolGroup.codingResolver)))
+      if (res.collections.data.length === 1) {
+        expect(res.collections.totalCount).to.equal(1)
+        expect(res.collections.nextOffset).to.equal(1)
+        res.collections.data.every((poolGroup: any) => expect(poolGroup).to.have.keys(...Object.keys(PoolGroup.codingResolver)))
       }
     })
 
@@ -125,12 +125,12 @@ describe('/v0/pools', () => {
         .expect('Content-Type', /json/)
         .expect(200)
 
-      expect(res.data).be.an('array')
-      expect(res.data).to.have.length(10)
+      expect(res.collections.data).be.an('array')
+      expect(res.collections.data).to.have.length(10)
 
-      if (res.data.length === 1) {
-        expect(res.totalCount).to.equal(pools.length)
-        expect(res.nextOffset).to.equal(10)
+      if (res.collections.data.length === 1) {
+        expect(res.collections.totalCount).to.equal(pools.length)
+        expect(res.collections.nextOffset).to.equal(10)
         res.data.every((poolGroup: any) => expect(poolGroup).to.have.keys(...Object.keys(PoolGroup.codingResolver)))
       }
     })
