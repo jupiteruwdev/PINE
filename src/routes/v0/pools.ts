@@ -43,7 +43,7 @@ router.get('/groups/search', async (req, res, next) => {
     const pagination = Pagination.serialize({ data: payload, totalCount, nextOffset: nextOffset === totalCount - 1 ? undefined : nextOffset })
     res.status(200).json({
       collections: pagination,
-      activePoolCount
+      activePoolCount,
     })
   }
   catch (err) {
