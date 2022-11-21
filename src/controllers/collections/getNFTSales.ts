@@ -23,14 +23,15 @@ export default async function getNFTSales({ contractAddress, blockchain, ...prop
       const apiHost = _.get(appConf.alchemyNFTAPIUrl, blockchain.networkId) ?? rethrow(`Missing Alchemy API URL for blockchain <${JSON.stringify(blockchain)}>`)
       const apiKey = appConf.alchemyAPIKey ?? rethrow('Missing Alchemy API key')
 
-      const res = await getRequest(`${apiHost}${apiKey}/getNFTSales`, {
+      const { nftSales } = await getRequest(`${apiHost}${apiKey}/getNFTSales`, {
         params: {
           contractAddress,
           ...props,
+          limit: 10,
         },
       })
 
-      return res
+      return nftSales
     default:
       const err = fault('ERR_UNSUPPORTED_BLOCKCHAIN')
       logger.error(`Fetching nft sales for contract <${contractAddress}>... ERR:`, err)

@@ -19,13 +19,13 @@ export default async function getFloorPrice({ contractAddress, blockchain }: Par
       const apiHost = _.get(appConf.alchemyNFTAPIUrl, blockchain.networkId) ?? rethrow(`Missing Alchemy API URL for blockchain <${JSON.stringify(blockchain)}>`)
       const apiKey = appConf.alchemyAPIKey ?? rethrow('Missing Alchemy API key')
 
-      const res = await getRequest(`${apiHost}${apiKey}/getFloorPrice`, {
+      const floorPrice = await getRequest(`${apiHost}${apiKey}/getFloorPrice`, {
         params: {
           contractAddress,
         },
       })
 
-      return res
+      return floorPrice
     default:
       const err = fault('ERR_UNSUPPORTED_BLOCKCHAIN')
       logger.error(`Fetching floor price for contract <${contractAddress}>... ERR:`, err)
