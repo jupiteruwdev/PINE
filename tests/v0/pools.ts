@@ -55,7 +55,7 @@ describe('/v0/pools', () => {
 
     it('GET /v0/pools/groups/search?offset=*&count=*', async () => {
       const expectedPoolGroupsLength = await countPoolGroups({ blockchainFilter: { ethereum: Blockchain.Ethereum.Network.MAIN }, includeRetired: true })
-      const activePoolCount = await countPools({ blockchainFilter: { ethereum: Blockchain.Ethereum.Network.MAIN }, includeRetired: true })
+      const poolCount = await countPools({ blockchainFilter: { ethereum: Blockchain.Ethereum.Network.MAIN }, includeRetired: true })
       const { body: res } = await request(app).get('/v0/pools/groups/search')
         .query({
           ethereum: Blockchain.Ethereum.Network.MAIN,
@@ -65,12 +65,12 @@ describe('/v0/pools', () => {
         .expect('Content-Type', /json/)
         .expect(200)
 
-      expect(res.collections.data).be.an('array')
-      expect(res.collections.data).to.have.length(10)
-      expect(res.collections.totalCount).to.equal(expectedPoolGroupsLength)
-      expect(res.collections.nextOffset).to.equal(10)
-      expect(res.activePoolCount).to.equal(activePoolCount)
-      res.collections.data.every((poolGroup: any) => expect(poolGroup).to.have.keys(...Object.keys(PoolGroup.codingResolver)))
+      expect(res.poolGroups.data).be.an('array')
+      expect(res.poolGroups.data).to.have.length(10)
+      expect(res.poolGroups.totalCount).to.equal(expectedPoolGroupsLength)
+      expect(res.poolGroups.nextOffset).to.equal(10)
+      expect(res.poolCount).to.equal(poolCount)
+      res.poolGroups.data.every((poolGroup: any) => expect(poolGroup).to.have.keys(...Object.keys(PoolGroup.codingResolver)))
     })
 
     it('GET /v0/pools/groups/search?collectionAddress=*&offset=*&count=*', async () => {
@@ -85,12 +85,12 @@ describe('/v0/pools', () => {
           .expect('Content-Type', /json/)
           .expect(200)
 
-        expect(res.collections.data).be.an('array')
+        expect(res.poolGroups.data).be.an('array')
 
-        if (res.collections.data.length === 1) {
-          expect(res.collections.totalCount).to.equal(1)
-          expect(res.collections.nextOffset).to.equal(1)
-          res.collections.data.every((poolGroup: any) => expect(poolGroup).to.have.keys(...Object.keys(PoolGroup.codingResolver)))
+        if (res.poolGroups.data.length === 1) {
+          expect(res.poolGroups.totalCount).to.equal(1)
+          expect(res.poolGroups.nextOffset).to.equal(1)
+          res.poolGroups.data.every((poolGroup: any) => expect(poolGroup).to.have.keys(...Object.keys(PoolGroup.codingResolver)))
         }
       }))
     })
@@ -106,12 +106,12 @@ describe('/v0/pools', () => {
         .expect('Content-Type', /json/)
         .expect(200)
 
-      expect(res.collections.data).be.an('array')
+      expect(res.poolGroups.data).be.an('array')
 
-      if (res.collections.data.length === 1) {
-        expect(res.collections.totalCount).to.equal(1)
-        expect(res.collections.nextOffset).to.equal(1)
-        res.collections.data.every((poolGroup: any) => expect(poolGroup).to.have.keys(...Object.keys(PoolGroup.codingResolver)))
+      if (res.poolGroups.data.length === 1) {
+        expect(res.poolGroups.totalCount).to.equal(1)
+        expect(res.poolGroups.nextOffset).to.equal(1)
+        res.poolGroups.data.every((poolGroup: any) => expect(poolGroup).to.have.keys(...Object.keys(PoolGroup.codingResolver)))
       }
     })
 
@@ -127,12 +127,12 @@ describe('/v0/pools', () => {
         .expect('Content-Type', /json/)
         .expect(200)
 
-      expect(res.collections.data).be.an('array')
-      expect(res.collections.data).to.have.length(10)
+      expect(res.poolGroups.data).be.an('array')
+      expect(res.poolGroups.data).to.have.length(10)
 
-      if (res.collections.data.length === 1) {
-        expect(res.collections.totalCount).to.equal(pools.length)
-        expect(res.collections.nextOffset).to.equal(10)
+      if (res.poolGroups.data.length === 1) {
+        expect(res.poolGroups.totalCount).to.equal(pools.length)
+        expect(res.poolGroups.nextOffset).to.equal(10)
         res.data.every((poolGroup: any) => expect(poolGroup).to.have.keys(...Object.keys(PoolGroup.codingResolver)))
       }
     })
