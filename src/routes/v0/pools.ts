@@ -40,6 +40,7 @@ router.get('/groups/search', async (req, res, next) => {
     const payload = serializeEntityArray(poolGroups, PoolGroup.codingResolver)
     const nextOffset = (paginateBy?.offset ?? 0) + poolGroups.length
     const pagination = Pagination.serialize({ data: payload, totalCount, nextOffset: nextOffset === totalCount - 1 ? undefined : nextOffset })
+
     res.status(200).json(pagination)
   }
   catch (err) {
