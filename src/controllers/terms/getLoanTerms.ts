@@ -61,7 +61,7 @@ export default async function getLoanTerms({ blockchain, collectionAddresses, nf
       const loanTerms: LoanTerms[] = []
 
       for (let i = 0; i < pools.length; i++) {
-        const index = collectionAddresses.findIndex(collectionAddress => collectionAddress === pools[i].collection.address)
+        const index = collectionAddresses.findIndex(collectionAddress => collectionAddress.toLowerCase() === pools[i].collection.address.toLowerCase())
         const { signature, issuedAtBlock, expiresAtBlock } = await signValuation({ blockchain, nftId: nftIds[index], collectionAddress: collectionAddresses[index], valuation: valuations[i] })
 
         const loanTerm: LoanTerms = {

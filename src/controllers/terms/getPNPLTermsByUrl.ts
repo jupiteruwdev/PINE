@@ -62,7 +62,7 @@ export default async function getPNPLTermsByUrl({ parsedURLs, poolAddresses }: P
       ]
     }, [[], []])
     // const [, , collectionAddress, nftId] = parsedURL.pathname.split('/')
-    if (!collectionAddresses.find(collectionAddress => !Web3.utils.isAddress(collectionAddress))) throw fault('ERR_PNPL_INVALID_URL')
+    if (collectionAddresses.find(collectionAddress => !Web3.utils.isAddress(collectionAddress))) throw fault('ERR_PNPL_INVALID_URL')
     if (collectionAddresses.length !== nftIds.length || nftIds.length !== looksrareHostnames.length) throw fault('ERR_PNPL_INVALID_URL')
 
     terms = terms.concat(await getLooksRarePNPLTerms({
@@ -82,7 +82,7 @@ export default async function getPNPLTermsByUrl({ parsedURLs, poolAddresses }: P
       ]
     }, [[], []])
     // const [, , collectionAddress, nftId] = parsedURL.pathname.split('/')
-    if (!collectionAddresses.find(collectionAddress => !Web3.utils.isAddress(collectionAddress))) throw fault('ERR_PNPL_INVALID_URL')
+    if (collectionAddresses.find(collectionAddress => !Web3.utils.isAddress(collectionAddress))) throw fault('ERR_PNPL_INVALID_URL')
     if (collectionAddresses.length !== nftIds.length || nftIds.length !== looksrareHostnames.length) throw fault('ERR_PNPL_INVALID_URL')
 
     terms = terms.concat(await getLooksRarePNPLTerms({
