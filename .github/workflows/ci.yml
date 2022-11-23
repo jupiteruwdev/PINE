@@ -26,7 +26,7 @@ jobs:
       - uses: andrewscwei/slack-action@v1.0.0
         with:
           success-prefix: 🌲
-          success: ${{ needs.build.result == 'success' }}
+          success: ${{ needs.build-and-test.result == 'success' }}
           webhook-url: ${{ secrets.SLACK_DEVOPS_WEBHOOK_URL }}
   
   deploy-preview:
