@@ -48,7 +48,6 @@ export default async function searchCollections({ query, blockchain }: Params): 
       imageUrl: cd.imageUrl ?? '',
     }))
 
-
     const collectionResults = await Promise.all(
       nonSpamCollections.map(async (collection: Collection) => {
         const sales = await getNFTSales({ blockchain, contractAddress: collection.address, marketplace: convertAlchemySupportMarketplace(_.keys(collection.vendorIds)?.[0] ?? undefined) })
@@ -84,7 +83,7 @@ export default async function searchCollections({ query, blockchain }: Params): 
       }),
     )
 
-    return 
+    return collectionResults
 
   default:
     const err = fault('ERR_UNSUPPORTED_BLOCKCHAIN')
@@ -151,7 +150,6 @@ function useGemXYZ({ query, blockchain }: { query: string; blockchain: Blockchai
       })
     const collections = _.get(collectionData, 'data')
 
-
     return collections.filter((cd: any) => cd.chainId === '1' && _.get(cd, 'addresses[0].address') && cd.name && cd.slug).map((cd: any) => Collection.factory({
       address: _.get(cd, 'addresses[0].address'),
       blockchain,
@@ -159,10 +157,6 @@ function useGemXYZ({ query, blockchain }: { query: string; blockchain: Blockchai
       name: cd.name,
       imageUrl: cd.imageUrl ?? '',
     }))
-  default:
-    const err = fault('ERR_UNSUPPORTED_BLOCKCHAIN')
-    logger.error(`Fetching collection for search text <${query}>... ERR:`, err)
-    throw err
 
   }
 }
