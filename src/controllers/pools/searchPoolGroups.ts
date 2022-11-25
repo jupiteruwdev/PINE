@@ -1,11 +1,9 @@
 import BigNumber from 'bignumber.js'
-import _ from 'lodash'
 import { PipelineStage } from 'mongoose'
 import { PoolModel } from '../../db'
 import { AnyCurrency, Blockchain, Pool, PoolGroup, Value } from '../../entities'
 import logger from '../../utils/logger'
 import { mapPool } from '../adapters'
-import { getEthCollectionFloorPrices } from '../collections'
 import getEthValueUSD from '../utils/getEthValueUSD'
 import getPoolCapacity from './getPoolCapacity'
 import getPoolUtilization from './getPoolUtilization'
@@ -232,17 +230,12 @@ export default async function searchPoolGroups({
       ),
     }))
 
-    const ethGroups = _.filter(poolGroups, group => group.collection.blockchain.network === 'ethereum')
-    const ethFloorPrices = await getEthCollectionFloorPrices({ blockchain: Blockchain.Ethereum(blockchainFilter.ethereum), collectionAddresses: ethGroups.map(group => group.collection.address) })
-
-    const out = poolGroups.map(group => {
-      const ethIdx = ethGroups.findIndex(t => t.collection.address === group.collection.address)
-
-      return {
+    const out = poolGroups.map(group => (
+      {
         ...group,
-        floorPrice: ethFloorPrices[ethIdx] ?? undefined,
+        floorPrice: group.collection.valuation?.value,
       }
-    })
+    ))
 
     logger.info(`Searching pool groups... OK: Found ${out.length} result(s)`)
     logger.debug(JSON.stringify(out, undefined, 2))

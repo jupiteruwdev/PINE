@@ -4,7 +4,6 @@ import { AnyCurrency, Blockchain, Collection, NFT, RolloverTerms, Valuation, Val
 import fault from '../../utils/fault'
 import logger from '../../utils/logger'
 import { getEthNFTMetadata } from '../collaterals'
-import { verifyCollectionWithMatcher } from '../collections'
 import { isLoanExtendable } from '../loans'
 import searchPublishedMultiplePools from '../pools/searchPublishedMultiplePools'
 import { getEthNFTValuation, signValuation } from '../valuations'
