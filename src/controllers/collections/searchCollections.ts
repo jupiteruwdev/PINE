@@ -13,7 +13,6 @@ import getSpamContracts from './getSpamContracts'
 import DataSource from '../utils/DataSource'
 import getRequest from '../utils/getRequest'
 
-
 type Params = {
   query: string
   blockchain: Blockchain
