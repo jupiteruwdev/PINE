@@ -7,11 +7,11 @@ import fault from '../../utils/fault'
 import logger from '../../utils/logger'
 import postRequest from '../utils/postRequest'
 
+import DataSource from '../utils/DataSource'
+import getRequest from '../utils/getRequest'
 import getFloorPrice from './getFloorPrice'
 import getNFTSales from './getNFTSales'
 import getSpamContracts from './getSpamContracts'
-import DataSource from '../utils/DataSource'
-import getRequest from '../utils/getRequest'
 
 type Params = {
   query: string
@@ -39,13 +39,7 @@ export default async function searchCollections({ query, blockchain }: Params): 
       useGemXYZ({ query, blockchain }),
     )
     const spamContracts = await getSpamContracts({ blockchain })
-    const nonSpamCollections = collections.filter((cd: any) => cd.chainId === '1' && _.get(cd, 'addresses[0].address') && cd.name && cd.slug && !spamContracts.includes(_.get(cd, 'addresses[0].address'))).map((cd: any) => Collection.factory({
-      address: _.get(cd, 'addresses[0].address'),
-      blockchain,
-      vendorIds: { opensea: cd.slug },
-      name: cd.name,
-      imageUrl: cd.imageUrl ?? '',
-    }))
+    const nonSpamCollections = collections.filter((c: Collection) => !spamContracts.find(ad => ad.toLowerCase() === c.address.toLowerCase()))
 
     const collectionResults = await Promise.all(
       nonSpamCollections.map(async (collection: Collection) => {
