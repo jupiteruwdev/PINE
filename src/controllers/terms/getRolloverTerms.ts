@@ -8,6 +8,7 @@ import { isLoanExtendable } from '../loans'
 import searchPublishedMultiplePools from '../pools/searchPublishedMultiplePools'
 import { getEthNFTValuation, signValuation } from '../valuations'
 import getFlashLoanSource from './getFlashLoanSource'
+import { verifyCollectionWithMatcher } from '../collections'
 
 type Params = {
   blockchain: Blockchain

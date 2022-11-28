@@ -33,7 +33,7 @@ export default async function searchCollections({ query, blockchain }: Params): 
   logger.info(`Fetching collection by search text <${query}>...`)
   switch (blockchain.networkId) {
   case Blockchain.Ethereum.Network.MAIN:
-    const collections = DataSource.fetch(
+    const collections = await DataSource.fetch(
       useAlchemyContract({ query, blockchain }),
       useAlchemy({ query, blockchain }),
       useGemXYZ({ query, blockchain }),
