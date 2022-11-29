@@ -23,14 +23,14 @@ export default {
   lunarCrushAPIKey: process.env.LUNARCRUSH_API_KEY,
   requestTimeoutMs: Number(process.env.REQUEST_TIMEOUT_MS ?? 30000),
   alchemyAPIUrl: {
-    [Blockchain.Ethereum.Network.RINKEBY]: process.env.ALCHEMY_API_RINKEBY_URL,
-    [Blockchain.Ethereum.Network.MAIN]: process.env.ALCHEMY_API_MAINNET_URL,
-    [Blockchain.Ethereum.Network.GOERLI]: process.env.ALCHEMY_API_GOERLI_URL,
+    [Blockchain.Ethereum.Network.RINKEBY]: 'https://eth-rinkeby.g.alchemy.com/v2/',
+    [Blockchain.Ethereum.Network.MAIN]: 'https://eth-mainnet.g.alchemy.com/v2/',
+    [Blockchain.Ethereum.Network.GOERLI]: 'https://eth-goerli.g.alchemy.com/v2/',
   },
   alchemyNFTAPIUrl: {
-    [Blockchain.Ethereum.Network.RINKEBY]: process.env.ALCHEMY_NFT_API_RINKEBY_URL,
-    [Blockchain.Ethereum.Network.MAIN]: process.env.ALCHEMY_NFT_API_MAINNET_URL,
-    [Blockchain.Ethereum.Network.GOERLI]: process.env.ALCHEMY_NFT_API_GOERLI_URL,
+    [Blockchain.Ethereum.Network.RINKEBY]: 'https://eth-rinkeby.g.alchemy.com/nft/v2/',
+    [Blockchain.Ethereum.Network.MAIN]: 'https://eth-mainnet.g.alchemy.com/nft/v2/',
+    [Blockchain.Ethereum.Network.GOERLI]: 'https://eth-goerli.g.alchemy.com/nft/v2/',
   },
   subgraphAPIUrl: {
     [Blockchain.Ethereum.Network.RINKEBY]: process.env.SUBGRAPH_API_RINKEBY_URL,

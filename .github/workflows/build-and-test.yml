@@ -113,10 +113,6 @@ jobs:
       env:
         NODE_ENV: test
         ALCHEMY_API_KEY: ${{ secrets.ALCHEMY_API_KEY }}
-        ALCHEMY_API_MAINNET_URL: ${{ secrets.ALCHEMY_API_MAINNET_URL }}
-        ALCHEMY_API_RINKEBY_URL: ${{ secrets.ALCHEMY_API_RINKEBY_URL }}
-        ALCHEMY_NFT_API_MAINNET_URL: ${{ secrets.ALCHEMY_NFT_API_MAINNET_URL }}
-        ALCHEMY_NFT_API_RINKEBY_URL: ${{ secrets.ALCHEMY_NFT_API_RINKEBY_URL }}
         ETH_RPC_MAINNET: ${{ secrets.ETH_RPC_MAINNET }}
         ETH_RPC_RINKEBY: ${{ secrets.ETH_RPC_RINKEBY }}
         GEMXYZ_API_KEY: ${{ secrets.GEMXYZ_API_KEY }}
