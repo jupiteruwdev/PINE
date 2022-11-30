@@ -47,10 +47,10 @@ router.get('/pnpl', async (req, res, next) => {
   try {
     const url = getString(req.query, 'url')
     const poolAddress = getString(req.query, 'poolAddress', { optional: true })
-    const parsedURL = new URL(url)
     let pnplTerms
 
     try {
+      const parsedURL = new URL(url)
       pnplTerms = await getPNPLTermsByUrl({ parsedURLs: [parsedURL], poolAddresses: poolAddress ? [poolAddress] : undefined })
     }
     catch (err) {

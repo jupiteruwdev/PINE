@@ -50,10 +50,10 @@ router.get('/pnpl', async (req, res, next) => {
   try {
     const urls = req.query.urls as string[]
     const poolAddresses = req.query.poolAddresses as string[]
-    const parsedURLs = urls.map(url => new URL(url))
     let pnplTerms
 
     try {
+      const parsedURLs = urls.map(url => new URL(url))
       pnplTerms = await getPNPLTermsByUrl({ parsedURLs, poolAddresses })
     }
     catch (err) {
