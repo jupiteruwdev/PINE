@@ -7,7 +7,7 @@ import DataSource from './DataSource'
 import getRequest from './getRequest'
 
 export default async function getEthValueUSD(amountEth: number | string | BigNumber = 1) {
-  return DataSource.fetch(useBinance(amountEth), useCoingecko(amountEth))
+  return DataSource.fetch(useCoingecko(amountEth), useBinance(amountEth))
 }
 
 export function useBinance(amountEth: number | string | BigNumber = 1): DataSource<Value<AnyCurrency>> {
