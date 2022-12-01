@@ -4,7 +4,9 @@ import { PoolModel } from '../../db'
 import { AnyCurrency, Blockchain, Pool, PoolGroup, Value } from '../../entities'
 import logger from '../../utils/logger'
 import { mapPool } from '../adapters'
+import { getEthCollectionFloorPrices } from '../collections'
 import getEthValueUSD from '../utils/getEthValueUSD'
+import { timeOutFetch } from '../utils/timeOutFetch'
 import getPoolCapacity from './getPoolCapacity'
 import getPoolUtilization from './getPoolUtilization'
 import { PoolSortDirection, PoolSortType } from './searchPublishedPools'
@@ -229,13 +231,16 @@ export default async function searchPoolGroups({
           .times(ethValueUSD.amount)
       ),
     }))
-
-    const out = poolGroups.map(group => (
-      {
+    const ethGroups = poolGroups.filter(group => group.collection.blockchain.network === 'ethereum')
+    let ethFloorPrices: Value<'ETH'>[] = []
+    ethFloorPrices = await timeOutFetch(getEthCollectionFloorPrices({ blockchain: Blockchain.Ethereum(blockchainFilter.ethereum), collectionAddresses: ethGroups.map(group => group.collection.address) }))
+    const out = poolGroups.map(group => {
+      const ethIdx = ethGroups.findIndex(t => t.collection.address === group.collection.address)
+      return {
         ...group,
-        floorPrice: group.collection.valuation?.value,
+        floorPrice: group.collection.valuation?.value?.amount && !group.collection.valuation?.value?.amount.isNaN() ? group.collection.valuation.value : ethFloorPrices[ethIdx],
       }
-    ))
+    })
 
     logger.info(`Searching pool groups... OK: Found ${out.length} result(s)`)
     logger.debug(JSON.stringify(out, undefined, 2))
