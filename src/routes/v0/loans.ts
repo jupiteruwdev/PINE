@@ -53,11 +53,13 @@ router.get('/borrower', async (req, res, next) => {
     if (!isAddress(borrowerAddress)) {
       res.status(400).send({ error: (fault('INVALID_WALLET_ADDRESS')) })
     }
+    else {
+      const loans = await getLoansByBorrower({ blockchain, borrowerAddress, populateMetadata: true })
+      const payload = serializeEntityArray(loans, Loan.codingResolver)
 
-    const loans = await getLoansByBorrower({ blockchain, borrowerAddress, populateMetadata: true })
-    const payload = serializeEntityArray(loans, Loan.codingResolver)
+      res.status(200).json(payload)
+    }
 
-    res.status(200).json(payload)
   }
   catch (err) {
     next(fault('ERR_API_FETCH_LOANS_BY_BORROWER', undefined, err))
