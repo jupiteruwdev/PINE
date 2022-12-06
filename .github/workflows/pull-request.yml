@@ -17,6 +17,18 @@ jobs:
     with:
       run_tests: true
   
+  notify:
+    name: Notify
+    needs: build-and-test
+    if: github.event.action != 'unlabeled' && github.event.action != 'closed' && always()
+    runs-on: ubuntu-latest
+    steps:
+      - uses: andrewscwei/slack-action@v1.0.0
+        with:
+          success-prefix: 🌲
+          success: ${{ needs.build-and-test.result == 'success' }}
+          webhook-url: ${{ secrets.SLACK_DEVOPS_WEBHOOK_URL }}
+
   deploy-preview:
     if: |
       (github.event.action == 'labeled' && github.event.label.name == ':rocket: deploy') ||
@@ -58,15 +70,3 @@ jobs:
           step: delete-env
           token: ${{ secrets.GH_ACCESS_TOKEN }}
           env: "pr-${{ github.event.number }}"
-
-  notify:
-    name: Notify
-    needs: build-and-test
-    if: ${{ always() }}
-    runs-on: ubuntu-latest
-    steps:
-      - uses: andrewscwei/slack-action@v1.0.0
-        with:
-          success-prefix: 🌲
-          success: ${{ needs.build-and-test.result == 'success' }}
-          webhook-url: ${{ secrets.SLACK_DEVOPS_WEBHOOK_URL }}
