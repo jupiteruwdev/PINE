@@ -100,7 +100,7 @@ function useAlchemy({ query, blockchain }: { query: string; blockchain: Blockcha
       blockchain,
       vendorIds: { opensea: cd?.contractMetadata?.openSea?.collectionName },
       name: cd?.contractMetadata?.name,
-      imageUrl: cd?.contractMetadata?.imageUrl ?? '',
+      imageUrl: cd?.contractMetadata?.openSea?.imageUrl ?? '',
     }))
   }
 }
