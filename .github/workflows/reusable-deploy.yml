@@ -1,4 +1,4 @@
-name: Deploy development preview
+name: Deploy
 on:
   workflow_call:
     inputs:
@@ -16,7 +16,7 @@ on:
         required: true
         type: string
       environment:
-        description: Github Deployments environment that will track this deployment
+        description: Environment to deploy to
         required: true
         type: string
       preview:
@@ -48,15 +48,23 @@ jobs:
           env: ${{ inputs.environment }}
           ref: ${{ github.event_name == 'pull_request' && github.head_ref || github.ref }}
       
-      - name: Deploy to Cloud Run for a preview environment
+      - name: Deploy to Cloud Run
         id: deploy
         uses: google-github-actions/deploy-cloudrun@v0
         with:
           service: ${{ inputs.cloud_run_service_name }}
           region: us-central1
           image: "${{ inputs.image_name }}:${{ inputs.version }}"
-          tag: ${{ inputs.preview && inputs.version || '' }}
+          tag: ${{ inputs.preview && inputs.version || 'latest' }}
           no_traffic: ${{ inputs.preview }}
+      
+      - name: Update traffic reference for non-preview envs
+        if: ${{ !inputs.preview }}
+        uses: google-github-actions/deploy-cloudrun@v0
+        with:
+          service: ${{ inputs.cloud_run_service_name }}
+          region: us-central1
+          tag_traffic: latest=100
       
       - name: Update the GitHub Deployment status
         uses: bobheadxi/deployments@v1.3.0

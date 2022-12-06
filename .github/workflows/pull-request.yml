@@ -1,4 +1,4 @@
-name: CI
+name: Pull Request
 on:
   pull_request:
     types: [labeled, opened, synchronize, unlabeled, closed]
@@ -11,23 +11,11 @@ permissions:
 jobs:
   build-and-test:
     if: github.event.action != 'unlabeled' && github.event.action != 'closed'
-    name: Build and test
-    uses: ./.github/workflows/build-and-test.yml
+    name: Build and Test
+    uses: ./.github/workflows/reusable-build.yml
     secrets: inherit
     with:
       run_tests: true
-  
-  notify:
-    name: Notify
-    needs: build-and-test
-    if: ${{ always() }}
-    runs-on: ubuntu-latest
-    steps:
-      - uses: andrewscwei/slack-action@v1.0.0
-        with:
-          success-prefix: 🌲
-          success: ${{ needs.build-and-test.result == 'success' }}
-          webhook-url: ${{ secrets.SLACK_DEVOPS_WEBHOOK_URL }}
   
   deploy-preview:
     if: |
@@ -35,10 +23,10 @@ jobs:
       (github.event.action != 'labeled' && contains(github.event.pull_request.labels.*.name, ':rocket: deploy'))
     needs: build-and-test
     name: Deploy Preview environment
-    uses: ./.github/workflows/deploy.yml
+    uses: ./.github/workflows/reusable-deploy.yml
     secrets: inherit
     with:
-      cloud_run_service_name: core-dev
+      cloud_run_service_name: core-service-development
       version: ${{ needs.build-and-test.outputs.version }}
       preview: true
       environment: "pr-${{ github.event.number }}"
@@ -61,11 +49,24 @@ jobs:
           project_id: ${{ secrets.GCP_PROJECT }}
   
       - name: Remove preview service traffic tag
-        run: gcloud run services update-traffic core-dev --region us-central1 --remove-tags pr-${{ github.event.number }}
+        run: gcloud run services update-traffic core-service-development --region us-central1 --remove-tags pr-${{ github.event.number }}
       
       - name: Delete GitHub Deployment environment
+        if: always()
         uses: bobheadxi/deployments@v1.3.0
         with:
           step: delete-env
           token: ${{ secrets.GH_ACCESS_TOKEN }}
           env: "pr-${{ github.event.number }}"
+
+  notify:
+    name: Notify
+    needs: build-and-test
+    if: ${{ always() }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: andrewscwei/slack-action@v1.0.0
+        with:
+          success-prefix: 🌲
+          success: ${{ needs.build-and-test.result == 'success' }}
+          webhook-url: ${{ secrets.SLACK_DEVOPS_WEBHOOK_URL }}
