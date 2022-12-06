@@ -15,7 +15,7 @@ export default async function getSpamContracts({ blockchain }: Params): Promise<
     logger.info(`Fetching spam contracts on network <${blockchain.networkId}>...`)
     switch (blockchain.networkId) {
     case Blockchain.Ethereum.Network.MAIN:
-      const apiHost = _.get(appConf.alchemyNFTAPIUrl, blockchain.networkId) ?? rethrow(`Missing Alchemy API URL for blockchain <${JSON.stringify(blockchain)}>`)
+      const apiHost = _.get(appConf.alchemyAPIUrl, blockchain.networkId) ?? rethrow(`Missing Alchemy API URL for blockchain <${JSON.stringify(blockchain)}>`)
       const apiKey = appConf.alchemyAPIKey ?? rethrow('Missing Alchemy API key')
 
       const res = await getRequest(`${apiHost}${apiKey}/getSpamContracts`, {})
