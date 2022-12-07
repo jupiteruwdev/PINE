@@ -73,13 +73,13 @@ router.get('/nfts', async (req, res, next) => {
     const paginateByCount = getNumber(req.query, 'count', { optional: true })
     const paginateBy = paginateByOffset !== undefined && paginateByCount !== undefined ? { count: paginateByCount, offset: paginateByOffset } : undefined
 
-    const nfts = await getNFTsForCollection({ blockchain, collectionAddress, paginateBy })
+    const { nfts, totalCount } = await getNFTsForCollection({ blockchain, collectionAddress, paginateBy })
 
     const payload = serializeEntityArray(nfts, NFT.codingResolver)
     const nextOffset = (paginateBy?.offset ?? 0) + nfts.length
     const pagination = Pagination.serialize({
       data: payload,
-      totalCount: 0,
+      totalCount,
       nextOffset: nextOffset === paginateBy?.offset ? undefined : nextOffset,
     })
 

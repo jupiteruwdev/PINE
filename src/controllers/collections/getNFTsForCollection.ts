@@ -65,17 +65,21 @@ export default async function getNFTsForCollection({ blockchain, collectionAddre
         }
       )
       const nfts = _.get(nftsData, 'data')
-      return nfts.map((nft: any) => NFT.factory({
-        id: _.get(nft, 'id'),
-        name: _.get(nft, 'name'),
-        imageUrl: _.get(nft, 'imageUrl'),
-        ownerAddress: _.get(nft, 'owner'),
-        collection: Collection.factory({
-          address: collectionAddress,
-          name: _.get(nft, 'collectionName'),
-          blockchain,
-        }),
-      }))
+      const totalCount = _.get(nftsData, 'total')
+      return {
+        nfts: nfts.map((nft: any) => NFT.factory({
+          id: _.get(nft, 'id'),
+          name: _.get(nft, 'name'),
+          imageUrl: _.get(nft, 'imageUrl'),
+          ownerAddress: _.get(nft, 'owner'),
+          collection: Collection.factory({
+            address: collectionAddress,
+            name: _.get(nft, 'collectionName'),
+            blockchain,
+          }),
+        })),
+        totalCount,
+      }
     default:
       const err = fault('ERR_UNSUPPORTED_BLOCKCHAIN')
       logger.error(`Fetching nfts for collection <${collectionAddress}>... ERR:`, err)
