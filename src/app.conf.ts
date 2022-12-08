@@ -27,6 +27,11 @@ export default {
     [Blockchain.Ethereum.Network.MAIN]: 'https://eth-mainnet.g.alchemy.com/v2/',
     [Blockchain.Ethereum.Network.GOERLI]: 'https://eth-goerli.g.alchemy.com/v2/',
   },
+  alchemyNFTAPIUrl: {
+    [Blockchain.Ethereum.Network.RINKEBY]: 'https://eth-rinkeby.g.alchemy.com/nft/v2/',
+    [Blockchain.Ethereum.Network.MAIN]: 'https://eth-mainnet.g.alchemy.com/nft/v2/',
+    [Blockchain.Ethereum.Network.GOERLI]: 'https://eth-goerli.g.alchemy.com/nft/v2/',
+  },
   subgraphAPIUrl: {
     [Blockchain.Ethereum.Network.RINKEBY]: process.env.SUBGRAPH_API_RINKEBY_URL,
     [Blockchain.Ethereum.Network.MAIN]: process.env.SUBGRAPH_API_MAINNET_URL,
