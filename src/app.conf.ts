@@ -20,6 +20,7 @@ export default {
   moralisAPIKey: process.env.MORALIS_API_KEY,
   nftbankAPIKey: process.env.NFTBANK_API_KEY,
   alchemyAPIKey: process.env.ALCHEMY_API_KEY,
+  coinAPIKey: process.env.COIN_API_KEY,
   lunarCrushAPIKey: process.env.LUNARCRUSH_API_KEY,
   requestTimeoutMs: Number(process.env.REQUEST_TIMEOUT_MS ?? 30000),
   alchemyAPIUrl: {
