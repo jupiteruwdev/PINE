@@ -2,6 +2,7 @@ import { Router } from 'express'
 import _ from 'lodash'
 import appConf from '../../app.conf'
 import { countPoolGroups, countPools, countPoolsByTenors, getPool, getPools, publishPool, searchPoolGroups, unpublishPool } from '../../controllers'
+import getPublishedPoolAddresses from '../../controllers/pools/getPublishedPoolAddresses'
 import searchPublishedPools, { PoolSortDirection, PoolSortType } from '../../controllers/pools/searchPublishedPools'
 import scheduleWorker from '../../controllers/utils/scheduleWorker'
 import { Pagination, Pool, PoolGroup, serializeEntityArray } from '../../entities'
@@ -86,6 +87,18 @@ router.get('/tenors/count', async (req, res, next) => {
   }
   catch (err) {
     next(fault('ERR_API_GET_TENORS', undefined, err))
+  }
+})
+
+router.get('/addresses', async (req, res, next) => {
+  try {
+    const blockchain = getBlockchain(req.query)
+    const pools = await getPublishedPoolAddresses({ blockchain })
+
+    res.status(200).json(pools)
+  }
+  catch (err) {
+    next(fault('ERR_API_ADDRESSES', undefined, err))
   }
 })
 
