@@ -96,7 +96,7 @@ export default {
   valuationLimitation: 60 * 30 * 1000,
   ethMaxDecimalPlaces: 6,
   mongoUri: process.env.MONGO_URI ?? '',
-  tenors: [1, 3, 7, 14, 30],
+  tenors: [1, 3, 7, 14, 30, 60, 90],
   tests: {
     walletAddress: process.env.TESTS_WALLET_ADDRESS ?? '',
     privateKey: process.env.TESTS_WALLET_PRIVATE_KEY ?? '',
