@@ -28,9 +28,10 @@ export default async function getLooksRarePNPLTerms({ blockchain, collectionAddr
         const lookrareInstructions = await getRequest('https://northamerica-northeast1-pinedefi.cloudfunctions.net/looksrare-purchase-generator', {
           params: {
             'nft_address': term.collection.address,
-            'token_id': nftIds[index],
+            'token_id': term.nft.id,
             'network_id': blockchain.networkId,
             'account_address': pnplContractAddress,
+            'marketplace': 'looksrare',
           },
         })
         const flashLoanSource = await getFlashLoanSource({ blockchain, poolAddress: term.poolAddress })
