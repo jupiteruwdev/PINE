@@ -77,6 +77,7 @@ export default async function getNFTsForCollection({ blockchain, collectionAddre
             name: _.get(nft, 'collectionName'),
             blockchain,
           }),
+          marketUrl: _.get(nft, 'marketUrl'),
         })),
         totalCount,
       }
