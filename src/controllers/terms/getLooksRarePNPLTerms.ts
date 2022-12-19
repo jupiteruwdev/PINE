@@ -30,6 +30,7 @@ export default async function getLooksRarePNPLTerms({ blockchain, collectionAddr
           'token_id': nftId,
           'network_id': blockchain.networkId,
           'account_address': pnplContractAddress,
+          'marketplace': 'looksrare',
         },
       })
       const flashLoanSource = await getFlashLoanSource({ blockchain, poolAddress: loanTerms.poolAddress })
