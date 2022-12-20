@@ -19,7 +19,10 @@
     "ship:start": "docker-compose -f docker-compose.yml up --build",
     "ship:test": "docker-compose -f docker-compose.test.yml up --build --exit-code-from app",
     "lint": "eslint --ext .ts --ignore-pattern entities --ignore-pattern db src",
-    "lint:fix": "npm run lint -- --fix"
+    "lint:fix": "npm run lint -- --fix",
+    "test:ci": "npm run test:unit:ci ; npm run test:int:ts:ci",
+    "test:unit:ci": "cross-env NODE_ENV=test mocha --config .mocharc --extension spec.js \"build/$npm_config_files\" -R json -O output=test-results/unit-tests.json",
+    "test:int:ts:ci": "cross-env NODE_ENV=test mocha --config .mocharc -r ts-node/register -n loader=ts-node/esm --extension ts \"tests/$npm_config_files\" -R json -O output=test-results/integration-tests.json"
   },
   "license": "NOLICENSE",
   "repository": {
@@ -62,6 +65,7 @@
     "cors": "^2.8.5",
     "dotenv": "^16.0.1",
     "express": "^4.18.1",
+    "google-auth-library": "^8.6.0",
     "graphql": "^16.6.0",
     "graphql-request": "^4.3.0",
     "ip": "^1.1.8",

@@ -2,7 +2,6 @@ import { Router } from 'express'
 import _ from 'lodash'
 import appConf from '../../app.conf'
 import { countPoolGroups, countPools, countPoolsByTenors, getPool, getPools, publishPool, searchPoolGroups, unpublishPool } from '../../controllers'
-import getPublishedPoolAddresses from '../../controllers/pools/getPublishedPoolAddresses'
 import searchPublishedPools, { PoolSortDirection, PoolSortType } from '../../controllers/pools/searchPublishedPools'
 import scheduleWorker from '../../controllers/utils/scheduleWorker'
 import { Pagination, Pool, PoolGroup, serializeEntityArray } from '../../entities'
@@ -38,11 +37,16 @@ router.get('/groups/search', async (req, res, next) => {
     const paginateBy = paginateByOffset !== undefined && paginateByCount !== undefined ? { count: paginateByCount, offset: paginateByOffset } : undefined
     const totalCount = await countPoolGroups({ collectionAddress, blockchainFilter, collectionName, includeRetired: true })
     const poolGroups = await searchPoolGroups({ collectionAddress, collectionName, blockchainFilter, paginateBy, sortBy })
+    const poolCount = await countPools({ collectionAddress, blockchainFilter, collectionName, includeRetired: true })
     const payload = serializeEntityArray(poolGroups, PoolGroup.codingResolver)
     const nextOffset = (paginateBy?.offset ?? 0) + poolGroups.length
     const pagination = Pagination.serialize({ data: payload, totalCount, nextOffset: nextOffset === totalCount - 1 ? undefined : nextOffset })
 
-    res.status(200).json(pagination)
+    res.status(200).json({
+      poolGroups: pagination,
+      poolCount,
+    })
+
   }
   catch (err) {
     next(fault('ERR_API_SEARCH_POOL_GROUPS', undefined, err))
@@ -87,18 +91,6 @@ router.get('/tenors/count', async (req, res, next) => {
   }
   catch (err) {
     next(fault('ERR_API_GET_TENORS', undefined, err))
-  }
-})
-
-router.get('/addresses', async (req, res, next) => {
-  try {
-    const blockchain = getBlockchain(req.query)
-    const pools = await getPublishedPoolAddresses({ blockchain })
-
-    res.status(200).json(pools)
-  }
-  catch (err) {
-    next(fault('ERR_API_ADDRESSES', undefined, err))
   }
 })
 
