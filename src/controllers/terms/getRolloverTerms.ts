@@ -4,11 +4,11 @@ import { AnyCurrency, Blockchain, Collection, NFT, RolloverTerms, Valuation, Val
 import fault from '../../utils/fault'
 import logger from '../../utils/logger'
 import { getEthNFTMetadata } from '../collaterals'
+import { verifyCollectionWithMatcher } from '../collections'
 import { isLoanExtendable } from '../loans'
 import searchPublishedMultiplePools from '../pools/searchPublishedMultiplePools'
 import { getEthNFTValuation, signValuation } from '../valuations'
 import getFlashLoanSource from './getFlashLoanSource'
-import { verifyCollectionWithMatcher } from '../collections'
 
 type Params = {
   blockchain: Blockchain
@@ -62,37 +62,39 @@ export default async function getRolloverTerms({
         }
       })))
       const loanTerms: RolloverTerms[] = []
-      for (let i = 0; i < pools.length; i++) {
-        const index = collectionAddresses.findIndex(collectionAddress => collectionAddress.toLowerCase() === pools[i].collection.address.toLowerCase())
-        const { signature, issuedAtBlock, expiresAtBlock } = await signValuation({ blockchain, nftId: nftIds[index], collectionAddress: collectionAddresses[index], valuation: valuations[i] })
+      for (let i = 0; i < collectionAddresses.length; i++) {
+        const collectionPools = pools.filter(pool => collectionAddresses[i].toLowerCase() === pool.collection.address.toLowerCase())
+        for (let j = 0; j < collectionPools?.length; j++) {
+          const { signature, issuedAtBlock, expiresAtBlock } = await signValuation({ blockchain, nftId: nftIds[i], collectionAddress: collectionAddresses[i], valuation: valuations[j] })
 
-        const loanTerm = RolloverTerms.factory({
-          routerAddress: pools[i].rolloverAddress,
-          flashLoanSourceContractAddress: flashLoanSources?.[i].address,
-          maxFlashLoanValue: flashLoanSources?.[i].capacity,
-          valuation: valuations[i],
-          signature,
-          options: pools[i].loanOptions,
-          nft: nfts[index],
-          issuedAtBlock,
-          expiresAtBlock,
-          poolAddress: pools[i].address,
-          collection: nfts[index].collection,
-        })
+          const loanTerm = RolloverTerms.factory({
+            routerAddress: pools[j].rolloverAddress,
+            flashLoanSourceContractAddress: flashLoanSources?.[j].address,
+            maxFlashLoanValue: flashLoanSources?.[j].capacity,
+            valuation: valuations[j],
+            signature,
+            options: pools[j].loanOptions,
+            nft: nfts[i],
+            issuedAtBlock,
+            expiresAtBlock,
+            poolAddress: pools[j].address,
+            collection: nfts[i].collection,
+          })
 
-        loanTerm.options.map(option => {
-          option.maxBorrow = Value.$ETH(option.maxLTVBPS.div(10_000).times(loanTerm.valuation.value?.amount ?? 0).toFixed(appConf.ethMaxDecimalPlaces, BigNumber.ROUND_DOWN))
-          option.fees = [
-            {
-              type: 'percentage',
-              value: 0.0035,
-            },
-          ]
-        })
+          loanTerm.options.map(option => {
+            option.maxBorrow = Value.$ETH(option.maxLTVBPS.div(10_000).times(loanTerm.valuation.value?.amount ?? 0).toFixed(appConf.ethMaxDecimalPlaces, BigNumber.ROUND_DOWN))
+            option.fees = [
+              {
+                type: 'percentage',
+                value: 0.0035,
+              },
+            ]
+          })
 
-        loanTerms.push(loanTerm)
+          loanTerms.push(loanTerm)
 
-        logger.info(`Fetching rollover terms for NFT ID <${nftIds[i]}> and collection address <${collectionAddresses[i]}> on blockchain <${JSON.stringify(blockchain)}>... OK:`, loanTerms)
+          logger.info(`Fetching rollover terms for NFT ID <${nftIds[i]}> and collection address <${collectionAddresses[i]}> on blockchain <${JSON.stringify(blockchain)}>... OK:`, loanTerms)
+        }
       }
 
       return loanTerms
