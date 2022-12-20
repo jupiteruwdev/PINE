@@ -4,11 +4,11 @@ import { AnyCurrency, Blockchain, Collection, NFT, RolloverTerms, Valuation, Val
 import fault from '../../utils/fault'
 import logger from '../../utils/logger'
 import { getEthNFTMetadata } from '../collaterals'
+import { verifyCollectionWithMatcher } from '../collections'
 import { isLoanExtendable } from '../loans'
 import searchPublishedMultiplePools from '../pools/searchPublishedMultiplePools'
 import { getEthNFTValuation, signValuation } from '../valuations'
 import getFlashLoanSource from './getFlashLoanSource'
-import { verifyCollectionWithMatcher } from '../collections'
 
 type Params = {
   blockchain: Blockchain
@@ -62,22 +62,22 @@ export default async function getRolloverTerms({
         }
       })))
       const loanTerms: RolloverTerms[] = []
-      for (let i = 0; i < pools.length; i++) {
-        const index = collectionAddresses.findIndex(collectionAddress => collectionAddress.toLowerCase() === pools[i].collection.address.toLowerCase())
-        const { signature, issuedAtBlock, expiresAtBlock } = await signValuation({ blockchain, nftId: nftIds[index], collectionAddress: collectionAddresses[index], valuation: valuations[i] })
+      for (let i = 0; i < collectionAddresses.length; i++) {
+        const index = pools.findIndex(pool => collectionAddresses[i].toLowerCase() === pool.collection.address.toLowerCase())
+        const { signature, issuedAtBlock, expiresAtBlock } = await signValuation({ blockchain, nftId: nftIds[i], collectionAddress: collectionAddresses[i], valuation: valuations[index] })
 
         const loanTerm = RolloverTerms.factory({
-          routerAddress: pools[i].rolloverAddress,
-          flashLoanSourceContractAddress: flashLoanSources?.[i].address,
-          maxFlashLoanValue: flashLoanSources?.[i].capacity,
-          valuation: valuations[i],
+          routerAddress: pools[index].rolloverAddress,
+          flashLoanSourceContractAddress: flashLoanSources?.[index].address,
+          maxFlashLoanValue: flashLoanSources?.[index].capacity,
+          valuation: valuations[index],
           signature,
-          options: pools[i].loanOptions,
-          nft: nfts[index],
+          options: pools[index].loanOptions,
+          nft: nfts[i],
           issuedAtBlock,
           expiresAtBlock,
-          poolAddress: pools[i].address,
-          collection: nfts[index].collection,
+          poolAddress: pools[index].address,
+          collection: nfts[i].collection,
         })
 
         loanTerm.options.map(option => {

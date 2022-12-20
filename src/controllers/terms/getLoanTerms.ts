@@ -60,26 +60,26 @@ export default async function getLoanTerms({ blockchain, collectionAddresses, nf
 
       const loanTerms: LoanTerms[] = []
 
-      for (let i = 0; i < pools.length; i++) {
-        const index = collectionAddresses.findIndex(collectionAddress => collectionAddress.toLowerCase() === pools[i].collection.address.toLowerCase())
-        const { signature, issuedAtBlock, expiresAtBlock } = await signValuation({ blockchain, nftId: nftIds[index], collectionAddress: collectionAddresses[index], valuation: valuations[i] })
+      for (let i = 0; i < collectionAddresses.length; i++) {
+        const index = pools.findIndex(pool => collectionAddresses[i].toLowerCase() === pool.collection.address.toLowerCase())
+        const { signature, issuedAtBlock, expiresAtBlock } = await signValuation({ blockchain, nftId: nftIds[i], collectionAddress: collectionAddresses[i], valuation: valuations[index] })
 
         const loanTerm: LoanTerms = {
-          routerAddress: pools[i].routerAddress,
-          valuation: valuations[i],
+          routerAddress: pools[index].routerAddress,
+          valuation: valuations[index],
           signature,
-          options: pools[i].loanOptions,
-          nft: nfts[index],
+          options: pools[index].loanOptions,
+          nft: nfts[i],
           issuedAtBlock,
           expiresAtBlock,
-          poolAddress: pools[i].address,
-          collection: nfts[index].collection,
+          poolAddress: pools[index].address,
+          collection: nfts[i].collection,
         }
         loanTerm.options.map(option => {
           option.maxBorrow = Value.$ETH(option.maxLTVBPS.div(10_000).times(loanTerm.valuation.value?.amount ?? 0).toFixed(appConf.ethMaxDecimalPlaces, BigNumber.ROUND_DOWN))
         })
 
-        if (!(pools[i].ethLimit !== 0 && loanTerm.options.some(option => pools[i].utilization.amount.plus(option.maxBorrow?.amount ?? new BigNumber(0)).gt(new BigNumber(pools[i].ethLimit ?? 0))))) {
+        if (!(pools[index].ethLimit !== 0 && loanTerm.options.some(option => pools[index].utilization.amount.plus(option.maxBorrow?.amount ?? new BigNumber(0)).gt(new BigNumber(pools[index].ethLimit ?? 0))))) {
           loanTerms.push(loanTerm)
         }
 
