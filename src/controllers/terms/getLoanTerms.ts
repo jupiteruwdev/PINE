@@ -27,7 +27,7 @@ export default async function getLoanTerms({ blockchain, collectionAddresses, nf
         ethereum: blockchain.networkId,
       }, includeStats: true })
 
-      if (!pools || !!pools.find(pool => !pool.published)) throw fault('ERR_NO_POOLS_AVAILABLE')
+      if (!pools) throw fault('ERR_NO_POOLS_AVAILABLE')
       if (pools.find(pool => pool.collection.valuation && (pool.collection.valuation?.timestamp || 0) < new Date().getTime() - appConf.valuationLimitation)) {
         throw fault('INVALID_VALUATION_TIMESTAMP')
       }
@@ -61,30 +61,32 @@ export default async function getLoanTerms({ blockchain, collectionAddresses, nf
       const loanTerms: LoanTerms[] = []
 
       for (let i = 0; i < collectionAddresses.length; i++) {
-        const index = pools.findIndex(pool => collectionAddresses[i].toLowerCase() === pool.collection.address.toLowerCase())
-        const { signature, issuedAtBlock, expiresAtBlock } = await signValuation({ blockchain, nftId: nftIds[i], collectionAddress: collectionAddresses[i], valuation: valuations[index] })
+        const collectionPools = pools.filter(pool => collectionAddresses[i].toLowerCase() === pool.collection.address.toLowerCase())
+        for (let j = 0; j < collectionPools?.length; j++) {
+          const { signature, issuedAtBlock, expiresAtBlock } = await signValuation({ blockchain, nftId: nftIds[i], collectionAddress: collectionAddresses[i], valuation: valuations[j] })
 
-        const loanTerm: LoanTerms = {
-          routerAddress: pools[index].routerAddress,
-          valuation: valuations[index],
-          signature,
-          options: pools[index].loanOptions,
-          nft: nfts[i],
-          issuedAtBlock,
-          expiresAtBlock,
-          poolAddress: pools[index].address,
-          collection: nfts[i].collection,
+          const loanTerm: LoanTerms = {
+            routerAddress: pools[j].routerAddress,
+            valuation: valuations[j],
+            signature,
+            options: pools[j].loanOptions,
+            nft: nfts[i],
+            issuedAtBlock,
+            expiresAtBlock,
+            poolAddress: pools[j].address,
+            collection: nfts[i].collection,
+          }
+          loanTerm.options.map(option => {
+            option.maxBorrow = Value.$ETH(option.maxLTVBPS.div(10_000).times(loanTerm.valuation.value?.amount ?? 0).toFixed(appConf.ethMaxDecimalPlaces, BigNumber.ROUND_DOWN))
+          })
+
+          if (!(pools[j].ethLimit !== 0 && loanTerm.options.some(option => pools[j].utilization.amount.plus(option.maxBorrow?.amount ?? new BigNumber(0)).gt(new BigNumber(pools[j].ethLimit ?? 0))))) {
+            loanTerms.push(loanTerm)
+          }
+
+          logger.info(`Fetching loan terms for NFT ID <${nftIds[i]}> and collection address <${collectionAddresses[i]}> on blockchain <${JSON.stringify(blockchain)}>... OK`)
+          logger.debug(JSON.stringify(loanTerms, undefined, 2))
         }
-        loanTerm.options.map(option => {
-          option.maxBorrow = Value.$ETH(option.maxLTVBPS.div(10_000).times(loanTerm.valuation.value?.amount ?? 0).toFixed(appConf.ethMaxDecimalPlaces, BigNumber.ROUND_DOWN))
-        })
-
-        if (!(pools[index].ethLimit !== 0 && loanTerm.options.some(option => pools[index].utilization.amount.plus(option.maxBorrow?.amount ?? new BigNumber(0)).gt(new BigNumber(pools[index].ethLimit ?? 0))))) {
-          loanTerms.push(loanTerm)
-        }
-
-        logger.info(`Fetching loan terms for NFT ID <${nftIds[i]}> and collection address <${collectionAddresses[i]}> on blockchain <${JSON.stringify(blockchain)}>... OK`)
-        logger.debug(JSON.stringify(loanTerms, undefined, 2))
       }
 
       return loanTerms
