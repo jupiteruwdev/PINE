@@ -3,7 +3,7 @@ import _ from 'lodash'
 import { PipelineStage } from 'mongoose'
 import appConf from '../../app.conf'
 import { PoolModel } from '../../db'
-import { Blockchain, Collection, Fee, LoanOption, Pool } from '../../entities'
+import { Blockchain, Collection, Fee, LoanOption, Pool, Value } from '../../entities'
 import { getOnChainPools } from '../../subgraph'
 import fault from '../../utils/fault'
 import { mapPool } from '../adapters'
@@ -97,6 +97,8 @@ async function getPool({
     rolloverAddress: _.get(appConf.rolloverAddress, blockchain.networkId),
     ethLimit: 0,
     published: false,
+    utilization: Value.$ETH(0),
+    valueLocked: Value.$ETH(0),
   })
 }
 
