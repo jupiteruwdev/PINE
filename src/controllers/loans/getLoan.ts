@@ -9,7 +9,7 @@ import logger from '../../utils/logger'
 import { getEthNFTMetadata } from '../collaterals'
 import { getEthCollectionMetadata } from '../collections'
 import { getControlPlaneContract, getPoolContract } from '../contracts'
-import { searchPublishedPools } from '../pools'
+import { getPool, searchPublishedPools } from '../pools'
 import getEthWeb3 from '../utils/getEthWeb3'
 
 type Params = {
@@ -43,13 +43,6 @@ export default async function getLoan({
       ])
       // Special case. If pool is unpublished. We cannot find the pool in the database anymore.
       if (pools.length === 0) {
-        const contract = await getPoolContract({ blockchain, poolAddress: onChainLoan.pool })
-        const loanDetails = await contract.methods._loans(nftId).call()
-        const controlPlaneContract = getControlPlaneContract({ blockchain, address: _.get(appConf.controlPlaneContractAddress, blockchain.networkId) })
-        const outstandingWithInterestWei = new BigNumber(await controlPlaneContract.methods.outstanding(loanDetails, txSpeedBlocks).call())
-
-        if (outstandingWithInterestWei.lte(new BigNumber(0))) return undefined
-
         const nft = {
           collection: Collection.factory({
             address: collectionAddress,
@@ -60,6 +53,13 @@ export default async function getLoan({
           ownerAddress: onChainLoan.pool,
           ...await getEthNFTMetadata({ blockchain, collectionAddress, nftId }),
         }
+        const newPool = await getPool({ collectionAddress, blockchain, includeStats: true, nft: { id: nftId, name: nft.name } })
+        const contract = await getPoolContract({ blockchain, poolAddress: onChainLoan.pool })
+        const loanDetails = await contract.methods._loans(nftId).call()
+        const controlPlaneContract = getControlPlaneContract({ blockchain, address: _.get(appConf.controlPlaneContractAddress, blockchain.networkId) })
+        const outstandingWithInterestWei = new BigNumber(await controlPlaneContract.methods.outstanding(loanDetails, txSpeedBlocks).call())
+
+        if (outstandingWithInterestWei.lte(new BigNumber(0))) return undefined
 
         return Loan.factory({
           routerAddress: '0x1C120cE3853542C0Fe3B75AF8F4c7F223f957d51',
@@ -75,7 +75,7 @@ export default async function getLoan({
           poolAddress: onChainLoan.pool,
           repaidInterest: Value.$WEI(onChainLoan.repaidInterestWei),
           returned: Value.$WEI(onChainLoan.returnedWei),
-          valuation: undefined,
+          valuation: newPool ? newPool.collection?.valuation : undefined,
           updatedAtBlock: blockNumber,
         })
       }

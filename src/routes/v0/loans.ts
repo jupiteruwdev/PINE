@@ -4,6 +4,7 @@ import { countLoans, getLoan, getLoansByBorrower, getLoansByCollection, isLoanEx
 import { LoanSortDirection, LoanSortType } from '../../controllers/loans/searchLoans'
 import { Blockchain, Loan, Pagination, serializeEntityArray } from '../../entities'
 import fault from '../../utils/fault'
+import { isAddress } from '../../utils/web3'
 import { getBlockchain, getBlockchainFilter, getNumber, getString } from '../utils/query'
 
 const router = Router()
@@ -48,10 +49,17 @@ router.get('/borrower', async (req, res, next) => {
   try {
     const borrowerAddress = getString(req.query, 'borrowerAddress')
     const blockchain = getBlockchain(req.query)
-    const loans = await getLoansByBorrower({ blockchain, borrowerAddress, populateMetadata: true })
-    const payload = serializeEntityArray(loans, Loan.codingResolver)
 
-    res.status(200).json(payload)
+    if (!isAddress(borrowerAddress)) {
+      res.status(400).send({ error: (fault('INVALID_WALLET_ADDRESS')) })
+    }
+    else {
+      const loans = await getLoansByBorrower({ blockchain, borrowerAddress, populateMetadata: true })
+      const payload = serializeEntityArray(loans, Loan.codingResolver)
+
+      res.status(200).json(payload)
+    }
+
   }
   catch (err) {
     next(fault('ERR_API_FETCH_LOANS_BY_BORROWER', undefined, err))

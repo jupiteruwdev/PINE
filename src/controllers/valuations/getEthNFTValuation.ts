@@ -29,8 +29,8 @@ export default async function getEthNFTValuation({
     switch (blockchain.networkId) {
     case Blockchain.Ethereum.Network.MAIN:
       const valuation = await DataSource.fetch(
-        useSpicyest({ blockchain, collectionAddress, nftId }),
         useAlchemy({ blockchain, collectionAddress, nftId }),
+        useSpicyest({ blockchain, collectionAddress, nftId }),
         useOpenSea({ blockchain, collectionAddress, nftId }),
         useGemXYZ({ blockchain, collectionAddress, nftId }),
       )
