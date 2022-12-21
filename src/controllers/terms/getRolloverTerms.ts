@@ -65,35 +65,38 @@ export default async function getRolloverTerms({
       for (let i = 0; i < collectionAddresses.length; i++) {
         const collectionPools = pools.filter(pool => collectionAddresses[i].toLowerCase() === pool.collection.address.toLowerCase())
         for (let j = 0; j < collectionPools?.length; j++) {
-          const { signature, issuedAtBlock, expiresAtBlock } = await signValuation({ blockchain, nftId: nftIds[i], collectionAddress: collectionAddresses[i], valuation: valuations[j] })
+          if (!(collectionPools[j].ethLimit !== 0 && collectionPools[j].loanOptions.some(option => collectionPools[j].utilization.amount.plus(option.maxBorrow?.amount ?? new BigNumber(0)).gt(new BigNumber(collectionPools[j].ethLimit ?? 0))))) {
+            const { signature, issuedAtBlock, expiresAtBlock } = await signValuation({ blockchain, nftId: nftIds[i], collectionAddress: collectionAddresses[i], valuation: valuations[j] })
 
-          const loanTerm = RolloverTerms.factory({
-            routerAddress: pools[j].rolloverAddress,
-            flashLoanSourceContractAddress: flashLoanSources?.[j].address,
-            maxFlashLoanValue: flashLoanSources?.[j].capacity,
-            valuation: valuations[j],
-            signature,
-            options: pools[j].loanOptions,
-            nft: nfts[i],
-            issuedAtBlock,
-            expiresAtBlock,
-            poolAddress: pools[j].address,
-            collection: nfts[i].collection,
-          })
+            const loanTerm = RolloverTerms.factory({
+              routerAddress: collectionPools[j].rolloverAddress,
+              flashLoanSourceContractAddress: flashLoanSources?.[j].address,
+              maxFlashLoanValue: flashLoanSources?.[j].capacity,
+              valuation: valuations[j],
+              signature,
+              options: collectionPools[j].loanOptions,
+              nft: nfts[i],
+              issuedAtBlock,
+              expiresAtBlock,
+              poolAddress: collectionPools[j].address,
+              collection: nfts[i].collection,
+            })
 
-          loanTerm.options.map(option => {
-            option.maxBorrow = Value.$ETH(option.maxLTVBPS.div(10_000).times(loanTerm.valuation.value?.amount ?? 0).toFixed(appConf.ethMaxDecimalPlaces, BigNumber.ROUND_DOWN))
-            option.fees = [
-              {
-                type: 'percentage',
-                value: 0.0035,
-              },
-            ]
-          })
+            loanTerm.options.map(option => {
+              option.maxBorrow = Value.$ETH(option.maxLTVBPS.div(10_000).times(loanTerm.valuation.value?.amount ?? 0).toFixed(appConf.ethMaxDecimalPlaces, BigNumber.ROUND_DOWN))
+              option.fees = [
+                {
+                  type: 'percentage',
+                  value: 0.0035,
+                },
+              ]
+            })
 
-          loanTerms.push(loanTerm)
+            loanTerms.push(loanTerm)
+            logger.info(`Fetching rollover terms for NFT ID <${nftIds[i]}> and collection address <${collectionAddresses[i]}> on blockchain <${JSON.stringify(blockchain)}>... OK:`, loanTerms)
 
-          logger.info(`Fetching rollover terms for NFT ID <${nftIds[i]}> and collection address <${collectionAddresses[i]}> on blockchain <${JSON.stringify(blockchain)}>... OK:`, loanTerms)
+            break
+          }
         }
       }
 
