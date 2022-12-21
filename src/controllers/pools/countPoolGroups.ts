@@ -97,8 +97,18 @@ function getPipelineStages({
   {
     $group: {
       _id: '$collection.address',
+      groupValueLocked: {
+        $sum: '$valueLockedEth',
+      },
       pools: {
         $push: '$$ROOT',
+      },
+    },
+  },
+  {
+    $match: {
+      'groupValueLocked': {
+        $gte: 0.01,
       },
     },
   },

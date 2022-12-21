@@ -1,6 +1,6 @@
 import BigNumber from 'bignumber.js'
 import _ from 'lodash'
-import { Fee, LoanOption, Pool } from '../../entities'
+import { Fee, LoanOption, Pool, Value } from '../../entities'
 import fault from '../../utils/fault'
 import mapCollection from './mapCollection'
 
@@ -47,6 +47,8 @@ export default function mapPool(data: Record<string, any>): Pool {
   const published = _.get(data, 'published', true)
   const tokenAddress = _.get(data, 'tokenAddress')
   const fundSource = _.get(data, 'fundSource')
+  const valueLocked = _.get(data, 'valueLockedEth', 0)
+  const utilization = _.get(data, 'utilizationEth', 0)
   const loanOptions = _.get(data, 'loanOptions', []).map((t: any) =>
     mapLoanOption(t, defaultFees)
   )
@@ -75,6 +77,8 @@ export default function mapPool(data: Record<string, any>): Pool {
     ethLimit,
     tokenAddress,
     fundSource,
+    valueLocked: Value.$ETH(valueLocked),
+    utilization: Value.$ETH(utilization),
     published,
     retired,
   })
