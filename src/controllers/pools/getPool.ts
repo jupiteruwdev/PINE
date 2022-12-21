@@ -9,6 +9,8 @@ import fault from '../../utils/fault'
 import { mapPool } from '../adapters'
 import getEthCollectionMetadata from '../collections/getEthCollectionMetadata'
 import getOnChainLoanOptions from './getOnChainLoanOptions'
+import getPoolCapacity from './getPoolCapacity'
+import getPoolUtilization from './getPoolUtilization'
 import verifyPool from './verifyPool'
 
 type Params = {
@@ -72,6 +74,14 @@ async function getPool({
 
   const collectionMetadata = await getEthCollectionMetadata({ blockchain, matchSubcollectionBy: { type: 'poolAddress', value: pool.id }, collectionAddress: pool.collection })
   const loanOptionsDict = await getOnChainLoanOptions({ addresses: [pool.id], networkId: blockchain.networkId })
+  const [
+    { amount: utilizationEth },
+    { amount: capacityEth },
+  ] = await Promise.all([
+    getPoolUtilization({ blockchain, poolAddress: pool.id }),
+    getPoolCapacity({ blockchain, poolAddress: pool.id, tokenAddress: pool.supportedCurrency, fundSource: pool.fundSource }),
+  ])
+  const valueLockedEth = capacityEth.plus(utilizationEth).gt(new BigNumber(pool.ethLimit || Number.POSITIVE_INFINITY)) ? new BigNumber(pool.ethLimit ?? 0) : capacityEth.plus(utilizationEth)
 
   return Pool.factory({
     version: 2,
@@ -97,8 +107,8 @@ async function getPool({
     rolloverAddress: _.get(appConf.rolloverAddress, blockchain.networkId),
     ethLimit: 0,
     published: false,
-    utilization: Value.$ETH(0),
-    valueLocked: Value.$ETH(0),
+    utilization: Value.$ETH(utilizationEth),
+    valueLocked: Value.$ETH(valueLockedEth),
   })
 }
 
