@@ -80,7 +80,7 @@ export default {
     [Blockchain.Ethereum.Network.RINKEBY]: '0xC796d62fB1927a13D7E41eBd0c8eA80fdA5Ef80a',
   },
   poolHelperAddress: {
-    [Blockchain.Ethereum.Network.MAIN]: '0xDbE2ec3ED45fBD5F563585FbeFA1128E890c9942',
+    [Blockchain.Ethereum.Network.MAIN]: '0x0aab1368f6704e8403105162690bdf6ee75305c0',
   },
   defaultFees: [
     {
