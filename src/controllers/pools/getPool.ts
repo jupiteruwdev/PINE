@@ -3,21 +3,18 @@ import _ from 'lodash'
 import { PipelineStage } from 'mongoose'
 import appConf from '../../app.conf'
 import { PoolModel } from '../../db'
-import { Blockchain, Collection, Fee, LoanOption, Pool, Value } from '../../entities'
+import { Blockchain, Collection, Fee, LoanOption, Pool } from '../../entities'
 import { getOnChainPools } from '../../subgraph'
 import fault from '../../utils/fault'
 import { mapPool } from '../adapters'
 import getEthCollectionMetadata from '../collections/getEthCollectionMetadata'
 import getOnChainLoanOptions from './getOnChainLoanOptions'
-import getPoolCapacity from './getPoolCapacity'
-import getPoolUtilization from './getPoolUtilization'
 import verifyPool from './verifyPool'
 
-type Params<IncludeStats> = {
+type Params = {
   blockchain: Blockchain
   collectionAddress?: string
   includeRetired?: boolean
-  includeStats?: IncludeStats
   lenderAddress?: string
   address?: string
   nft?: {
@@ -26,13 +23,11 @@ type Params<IncludeStats> = {
   }
 }
 
-async function getPool<IncludeStats extends boolean = false>(params: Params<IncludeStats>): Promise<IncludeStats extends true ? Required<Pool> : Pool>
-async function getPool<IncludeStats extends boolean = false>({
+async function getPool({
   blockchain,
-  includeStats,
   nft,
   ...params
-}: Params<IncludeStats>): Promise<Pool> {
+}: Params): Promise<Pool> {
   const res = await PoolModel.aggregate(getPipelineStages({
     blockchain,
     ...params,
@@ -54,26 +49,11 @@ async function getPool<IncludeStats extends boolean = false>({
         throw fault('ERR_ZOMBIE_POOL', undefined, err)
       }
 
-      if (includeStats !== true) return pool
-
-      const [
-        { amount: utilizationEth },
-        { amount: capacityEth },
-      ] = await Promise.all([
-        getPoolUtilization({ blockchain, poolAddress: pool.address }),
-        getPoolCapacity({ blockchain, poolAddress: pool.address, tokenAddress: pool.tokenAddress, fundSource: pool.fundSource }),
-      ])
-
-      const valueLockedEth = capacityEth.plus(utilizationEth).gt(new BigNumber(pool.ethLimit || Number.POSITIVE_INFINITY)) ? new BigNumber(pool.ethLimit ?? 0) : capacityEth.plus(utilizationEth)
-      if (!!pool.collection?.valuation?.value?.amount && pool.ethLimit !== 0 && pool.loanOptions.some(option => utilizationEth.plus(pool.collection?.valuation?.value?.amount ?? new BigNumber(0)).gt(new BigNumber(pool.ethLimit ?? 0)))) {
+      if (!!pool.collection?.valuation?.value?.amount && pool.ethLimit !== 0 && pool.loanOptions.some(option => pool.utilization.amount.plus(pool.collection?.valuation?.value?.amount ?? new BigNumber(0)).gt(new BigNumber(pool.ethLimit ?? 0)))) {
         continue
       }
       else {
-        return {
-          ...pool,
-          utilization: Value.$ETH(utilizationEth),
-          valueLocked: Value.$ETH(valueLockedEth),
-        }
+        return pool
       }
     }
   }
@@ -128,7 +108,7 @@ function getPipelineStages({
   collectionAddress,
   includeRetired = false,
   lenderAddress,
-}: Params<never>): PipelineStage[] {
+}: Params): PipelineStage[] {
   const stages: PipelineStage[] = [{
     $match: {
       'networkType': blockchain.network,

@@ -1,14 +1,11 @@
-import BigNumber from 'bignumber.js'
 import _ from 'lodash'
 import appConf from '../../app.conf'
-import { Blockchain, Collection, Fee, LoanOption, Pool, Value } from '../../entities'
+import { Blockchain, Collection, Fee, LoanOption, Pool } from '../../entities'
 import { getOnChainPools } from '../../subgraph'
 import fault from '../../utils/fault'
 import logger from '../../utils/logger'
 import { getEthCollectionMetadata } from '../collections'
 import getOnChainLoanOptions from './getOnChainLoanOptions'
-import getPoolCapacity from './getPoolCapacity'
-import getPoolUtilization from './getPoolUtilization'
 import searchPublishedPools from './searchPublishedPools'
 
 type Params = {
@@ -16,34 +13,19 @@ type Params = {
   lenderAddress?: string
   address?: string
   collectionAddress?: string
-  includeStats?: boolean
 }
 
 type MapPoolParams = {
   blockchain: Blockchain
   pools: any[]
   loanOptionsDict: any
-  includeStats: boolean
 }
 
-async function mapPool({ blockchain, pools, loanOptionsDict, includeStats }: MapPoolParams): Promise<Pool[]> {
+async function mapPool({ blockchain, pools, loanOptionsDict }: MapPoolParams): Promise<Pool[]> {
   const uniqPools = _.uniqWith(pools, (a, b) => (a.id === b.id && a.collection === b.toLowerCase))
 
   const poolsData = await Promise.all(_.map(uniqPools, (async pool => {
     const collectionMetadata = await getEthCollectionMetadata({ blockchain, matchSubcollectionBy: { type: 'poolAddress', value: pool.id }, collectionAddress: pool.collection })
-    const stats: any = {}
-    if (includeStats) {
-      const [
-        { amount: utilizationEth },
-        { amount: capacityEth },
-      ] = await Promise.all([
-        getPoolUtilization({ blockchain, poolAddress: pool.id }),
-        getPoolCapacity({ blockchain, poolAddress: pool.id, tokenAddress: pool.supportedCurrency, fundSource: pool.fundSource }),
-      ])
-      const valueLockedEth = capacityEth.plus(utilizationEth).gt(new BigNumber(pool.ethLimit || Number.POSITIVE_INFINITY)) ? new BigNumber(pool.ethLimit ?? 0) : capacityEth.plus(utilizationEth)
-      stats.utilization = Value.$ETH(utilizationEth)
-      stats.valueLocked = Value.$ETH(valueLockedEth)
-    }
 
     return Pool.factory({
       version: 2,
@@ -69,7 +51,8 @@ async function mapPool({ blockchain, pools, loanOptionsDict, includeStats }: Map
       rolloverAddress: _.get(appConf.rolloverAddress, blockchain.networkId),
       ethLimit: 0,
       published: false,
-      ...stats,
+      utilization: pool.utilization,
+      valueLocked: pool.valueLocked,
     })
   })))
 
@@ -84,7 +67,6 @@ export default async function getPools({
   lenderAddress,
   address,
   collectionAddress,
-  includeStats = false,
 }: Params): Promise<Pool[]> {
   logger.info(`Fetching unpublished pools by lender address <${lenderAddress}>, collection address <${collectionAddress}> and address <${address}> on blockchain ${JSON.stringify(blockchainFilter)}`)
   let poolsData: Pool[] = []
@@ -96,7 +78,6 @@ export default async function getPools({
       lenderAddress,
       address,
       collectionAddress,
-      includeStats,
     })
     const excludeAddresses = publishedPools.map(pool => pool.address.toLowerCase())
 
@@ -108,14 +89,14 @@ export default async function getPools({
 
       poolsData = [
         ...publishedPools,
-        ...await mapPool({ blockchain, pools: poolsMainnet, loanOptionsDict, includeStats }),
+        ...await mapPool({ blockchain, pools: poolsMainnet, loanOptionsDict }),
       ]
       break
     case Blockchain.Ethereum.Network.RINKEBY:
       const { pools: poolsRinkeby } = await getOnChainPools({ lenderAddress, address, excludeAddresses, collectionAddress }, { networkId: blockchain.networkId })
       poolsData = [
         ...publishedPools,
-        ...await mapPool({ blockchain, pools: poolsRinkeby, loanOptionsDict: {}, includeStats }),
+        ...await mapPool({ blockchain, pools: poolsRinkeby, loanOptionsDict: {} }),
       ]
     }
   }

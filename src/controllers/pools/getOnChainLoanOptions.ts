@@ -1,8 +1,8 @@
-import getEthWeb3 from '../utils/getEthWeb3'
+import BigNumber from 'bignumber.js'
+import _ from 'lodash'
 import PoolHelperABI from '../../abis/PoolHelper.json' assert { type: 'json' }
 import appConf from '../../app.conf'
-import _ from 'lodash'
-import BigNumber from 'bignumber.js'
+import getEthWeb3 from '../utils/getEthWeb3'
 
 type Params = {
   addresses: string[]

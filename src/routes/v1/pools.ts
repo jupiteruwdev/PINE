@@ -60,7 +60,7 @@ router.get('/lender', async (req, res, next) => {
     const blockchainFilter = getBlockchainFilter(req.query, true)
     const lenderAddress = getString(req.query, 'lenderAddress')
     const pools = await getPools({
-      blockchainFilter, lenderAddress, includeStats: true,
+      blockchainFilter, lenderAddress,
     })
     const payload = serializeEntityArray(pools, Pool.codingResolver)
 
@@ -102,7 +102,7 @@ router.get('/:poolAddress', async (req, res, next) => {
     const includeRetired = getBoolean(req.query, 'includeRetired', { optional: true })
     const poolAddress = getString(req.params, 'poolAddress')
 
-    const pool = await getPool({ blockchain, address: poolAddress, includeStats: true, includeRetired })
+    const pool = await getPool({ blockchain, address: poolAddress, includeRetired })
     const payload = Pool.serialize(pool)
 
     res.status(200).json(payload)
@@ -135,7 +135,6 @@ router.get('/', async (req, res, next) => {
       nftId,
       paginateBy,
       checkLimit,
-      includeStats: checkLimit,
     })
 
     const payload = serializeEntityArray(pools, Pool.codingResolver)
