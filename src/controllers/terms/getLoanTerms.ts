@@ -63,29 +63,30 @@ export default async function getLoanTerms({ blockchain, collectionAddresses, nf
       for (let i = 0; i < collectionAddresses.length; i++) {
         const collectionPools = pools.filter(pool => collectionAddresses[i].toLowerCase() === pool.collection.address.toLowerCase())
         for (let j = 0; j < collectionPools?.length; j++) {
-          const { signature, issuedAtBlock, expiresAtBlock } = await signValuation({ blockchain, nftId: nftIds[i], collectionAddress: collectionAddresses[i], valuation: valuations[j] })
+          if (!(collectionPools[j].ethLimit !== 0 && collectionPools[j].loanOptions.some(option => collectionPools[j].utilization.amount.plus(option.maxBorrow?.amount ?? new BigNumber(0)).gt(new BigNumber(collectionPools[j].ethLimit ?? 0))))) {
+            const { signature, issuedAtBlock, expiresAtBlock } = await signValuation({ blockchain, nftId: nftIds[i], collectionAddress: collectionAddresses[i], valuation: valuations[j] })
 
-          const loanTerm: LoanTerms = {
-            routerAddress: pools[j].routerAddress,
-            valuation: valuations[j],
-            signature,
-            options: pools[j].loanOptions,
-            nft: nfts[i],
-            issuedAtBlock,
-            expiresAtBlock,
-            poolAddress: pools[j].address,
-            collection: nfts[i].collection,
-          }
-          loanTerm.options.map(option => {
-            option.maxBorrow = Value.$ETH(option.maxLTVBPS.div(10_000).times(loanTerm.valuation.value?.amount ?? 0).toFixed(appConf.ethMaxDecimalPlaces, BigNumber.ROUND_DOWN))
-          })
+            const loanTerm: LoanTerms = {
+              routerAddress: collectionPools[j].routerAddress,
+              valuation: valuations[j],
+              signature,
+              options: collectionPools[j].loanOptions,
+              nft: nfts[i],
+              issuedAtBlock,
+              expiresAtBlock,
+              poolAddress: collectionPools[j].address,
+              collection: nfts[i].collection,
+            }
+            loanTerm.options.map(option => {
+              option.maxBorrow = Value.$ETH(option.maxLTVBPS.div(10_000).times(loanTerm.valuation.value?.amount ?? 0).toFixed(appConf.ethMaxDecimalPlaces, BigNumber.ROUND_DOWN))
+            })
 
-          if (!(pools[j].ethLimit !== 0 && loanTerm.options.some(option => pools[j].utilization.amount.plus(option.maxBorrow?.amount ?? new BigNumber(0)).gt(new BigNumber(pools[j].ethLimit ?? 0))))) {
             loanTerms.push(loanTerm)
-          }
 
-          logger.info(`Fetching loan terms for NFT ID <${nftIds[i]}> and collection address <${collectionAddresses[i]}> on blockchain <${JSON.stringify(blockchain)}>... OK`)
-          logger.debug(JSON.stringify(loanTerms, undefined, 2))
+            logger.info(`Fetching loan terms for NFT ID <${nftIds[i]}> and collection address <${collectionAddresses[i]}> on blockchain <${JSON.stringify(blockchain)}>... OK`)
+            logger.debug(JSON.stringify(loanTerm, undefined, 2))
+            break
+          }
         }
       }
 
