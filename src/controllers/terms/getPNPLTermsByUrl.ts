@@ -3,6 +3,7 @@ import { Blockchain, PNPLTerms } from '../../entities'
 import fault from '../../utils/fault'
 import getLooksRarePNPLTerms from './getLooksRarePNPLTerms'
 import getOpenSeaPNPLTerms from './getOpenSeaPNPLTerms'
+import getX2Y2PNPLTerms from './getX2Y2PNPLTerms'
 
 type Params = {
   parsedURLs: URL[]
@@ -20,6 +21,7 @@ export default async function getPNPLTermsByUrl({ parsedURLs, poolAddresses }: P
   const openseaTestHostnames = parsedURLs.filter(url => url.hostname === 'testnets.opensea.io')
   const looksrareHostnames = parsedURLs.filter(url => url.hostname === 'looksrare.org')
   const looksrareTestHostnames = parsedURLs.filter(url => url.hostname === 'rinkeby.looksrare.org')
+  const x2y2Hotnames = parsedURLs.filter(url => url.hostname === 'x2y2.io')
 
   let terms: PNPLTerms[] = []
 
@@ -87,6 +89,25 @@ export default async function getPNPLTermsByUrl({ parsedURLs, poolAddresses }: P
 
     terms = terms.concat(await getLooksRarePNPLTerms({
       blockchain: Blockchain.Ethereum(Blockchain.Ethereum.Network.RINKEBY),
+      collectionAddresses,
+      nftIds,
+      poolAddresses,
+    }))
+  }
+  if (x2y2Hotnames.length) {
+    // https://x2y2.io/eth/0x23581767a106ae21c074b2276D25e5C3e136a68b/7396
+    const [collectionAddresses, nftIds]: [string[], string[]] = parsedURLs.reduce((pre: [string[], string[]], cur) => {
+      const [, , collectionAddress, nftId] = cur.pathname.split('/')
+      return [
+        [...pre[0], collectionAddress],
+        [...pre[1], nftId],
+      ]
+    }, [[], []])
+    if (collectionAddresses.find(collectionAddress => !Web3.utils.isAddress(collectionAddress))) throw fault('ERR_PNPL_INVALID_URL')
+    if (collectionAddresses.length !== nftIds.length || nftIds.length !== x2y2Hotnames.length) throw fault('ERR_PNPL_INVALID_URL')
+
+    terms = terms.concat(await getX2Y2PNPLTerms({
+      blockchain: Blockchain.Ethereum(Blockchain.Ethereum.Network.MAIN),
       collectionAddresses,
       nftIds,
       poolAddresses,

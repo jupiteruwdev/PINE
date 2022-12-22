@@ -2,13 +2,10 @@ import BigNumber from 'bignumber.js'
 import _ from 'lodash'
 import { PipelineStage } from 'mongoose'
 import { PoolModel } from '../../db'
-import { Blockchain, Pool, Value } from '../../entities'
+import { Blockchain, Pool } from '../../entities'
 import { mapPool } from '../adapters'
 import { getEthNFTMetadata } from '../collaterals'
 import Tenor from '../utils/Tenor'
-import getPoolCapacity from './getPoolCapacity'
-import getPoolUtilization from './getPoolUtilization'
-import fault from '../../utils/fault'
 
 export enum PoolSortType {
   NAME = 'name',
@@ -21,13 +18,12 @@ export enum PoolSortDirection {
   DESC = 'desc',
 }
 
-type Params<IncludeStats> = {
+type Params = {
   blockchainFilter?: Blockchain.Filter
   collectionAddress?: string
   address?: string
   collectionName?: string
   includeRetired?: boolean
-  includeStats?: IncludeStats
   checkLimit?: boolean
   lenderAddress?: string
   tenors?: number[]
@@ -59,13 +55,11 @@ export async function filterByNftId(blockchain: Blockchain, docs: any[], nftId: 
   return docs
 }
 
-async function searchPublishedPools<IncludeStats extends boolean = false>(params?: Params<IncludeStats>): Promise<IncludeStats extends true ? Required<Pool>[] : Pool[]>
-async function searchPublishedPools<IncludeStats extends boolean = false>({
-  includeStats,
+async function searchPublishedPools({
   checkLimit,
   paginateBy,
   ...params
-}: Params<IncludeStats> = {}): Promise<Pool[]> {
+}: Params): Promise<Pool[]> {
   const aggregation = PoolModel.aggregate(getPipelineStages({
     ...params,
   }))
@@ -88,32 +82,10 @@ async function searchPublishedPools<IncludeStats extends boolean = false>({
 
   const pools = docs.map(mapPool)
 
-  if (checkLimit && !includeStats) throw fault('ERR_NO_STATS_TO_CHECK')
-  if (includeStats !== true) return pools
-
-  const poolsWithStats = await Promise.all(pools.map(async pool => {
-    const [{ amount: utilizationEth }, { amount: capacityEth }] =
-      await Promise.all([
-        getPoolUtilization({
-          blockchain: pool.blockchain,
-          poolAddress: pool.address,
-        }),
-        getPoolCapacity({ blockchain: pool.blockchain, poolAddress: pool.address, fundSource: pool.fundSource, tokenAddress: pool.tokenAddress }),
-      ])
-
-    const valueLockedEth = capacityEth.plus(utilizationEth).gt(new BigNumber(pool.ethLimit || Number.POSITIVE_INFINITY)) ? new BigNumber(pool.ethLimit ?? 0) : capacityEth.plus(utilizationEth)
-
-    return Pool.factory({
-      ...pool,
-      utilization: Value.$ETH(utilizationEth),
-      valueLocked: Value.$ETH(valueLockedEth),
-    })
-  }))
-
   if (checkLimit) {
-    return poolsWithStats.filter(pool => !(!!pool.collection?.valuation?.value?.amount && pool.ethLimit !== 0 && pool.loanOptions.some(option => pool.utilization?.amount.plus(pool.collection?.valuation?.value?.amount ?? new BigNumber(0)).gt(new BigNumber(pool.ethLimit ?? 0)))))
+    return pools.filter(pool => !(!!pool.collection?.valuation?.value?.amount && pool.ethLimit !== 0 && pool.loanOptions.some(option => pool.utilization?.amount.plus(pool.collection?.valuation?.value?.amount ?? new BigNumber(0)).gt(new BigNumber(pool.ethLimit ?? 0)))))
   }
-  return poolsWithStats
+  return pools
 }
 
 export default searchPublishedPools
@@ -130,7 +102,7 @@ function getPipelineStages({
   sortBy,
   address,
   tenors,
-}: Params<never> = {}): PipelineStage[] {
+}: Params): PipelineStage[] {
   const blockchain = Blockchain.Ethereum(blockchainFilter.ethereum)
 
   const collectionFilter = [

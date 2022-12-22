@@ -1,12 +1,10 @@
 import BigNumber from 'bignumber.js'
 import { PipelineStage } from 'mongoose'
 import { PoolModel } from '../../db'
-import { AnyCurrency, Blockchain, Pool, PoolGroup, Value } from '../../entities'
+import { Blockchain, Pool, PoolGroup, Value } from '../../entities'
 import logger from '../../utils/logger'
 import { mapPool } from '../adapters'
 import getEthValueUSD from '../utils/getEthValueUSD'
-import getPoolCapacity from './getPoolCapacity'
-import getPoolUtilization from './getPoolUtilization'
 import { PoolSortDirection, PoolSortType } from './searchPublishedPools'
 
 type Params = {
@@ -25,29 +23,6 @@ type Params = {
   }
 }
 
-function constructPools(pools: Pool[]): Promise<Pool<AnyCurrency>[]> {
-  const constructedPools = Promise.all(pools.map(async pool => {
-    const [{ amount: utilizationEth }, { amount: capacityEth }] =
-      await Promise.all([
-        getPoolUtilization({
-          blockchain: pool.blockchain,
-          poolAddress: pool.address,
-        }),
-        getPoolCapacity({ blockchain: pool.blockchain, poolAddress: pool.address, fundSource: pool.fundSource, tokenAddress: pool.tokenAddress }),
-      ])
-
-    const valueLockedEth = capacityEth.plus(utilizationEth).gt(new BigNumber(pool.ethLimit || Number.POSITIVE_INFINITY)) ? new BigNumber(pool.ethLimit ?? 0) : capacityEth.plus(utilizationEth)
-
-    return Pool.factory({
-      ...pool,
-      utilization: Value.$ETH(utilizationEth),
-      valueLocked: Value.$ETH(valueLockedEth),
-    })
-  }))
-
-  return constructedPools
-}
-
 async function searchPublishedPoolGroups({
   paginateBy,
   ...params
@@ -58,11 +33,7 @@ async function searchPublishedPoolGroups({
 
   const docs = paginateBy === undefined ? await aggregation.exec() : await aggregation.skip(paginateBy.offset).limit(paginateBy.count).exec()
 
-  const pools = docs.map(doc => doc.pools.map(mapPool))
-
-  const poolsWithStats = await Promise.all(pools.map(group => constructPools(group)))
-
-  return poolsWithStats
+  return docs.map(doc => doc.pools.map(mapPool))
 }
 
 function getPipelineStages({
@@ -145,8 +116,18 @@ function getPipelineStages({
   {
     $group: {
       _id: '$collection.address',
+      groupValueLocked: {
+        $sum: '$valueLockedEth',
+      },
       pools: {
         $push: '$$ROOT',
+      },
+    },
+  },
+  {
+    $match: {
+      'groupValueLocked': {
+        $gte: 0.01,
       },
     },
   },

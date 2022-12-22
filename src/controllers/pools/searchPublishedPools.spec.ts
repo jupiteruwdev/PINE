@@ -13,7 +13,7 @@ describe('controllers/pools/searchPublishedPools', () => {
   })
 
   it('can search all pools with default params', async () => {
-    const pools = await searchPublishedPools()
+    const pools = await searchPublishedPools({})
 
     assertPoolArray(pools)
   })
