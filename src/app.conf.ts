@@ -59,6 +59,10 @@ export default {
     [Blockchain.Ethereum.Network.RINKEBY]: '0x1AA777972073Ff66DCFDeD85749bDD555C0665dA',
     [Blockchain.Ethereum.Network.MAIN]: '0x59728544B08AB483533076417FbBB2fD0B17CE3a',
   },
+  x2y2ContractAddress: {
+    [Blockchain.Ethereum.Network.GOERLI]: '0x1891EcD5F7b1E751151d857265D6e6D08ae8989e',
+    [Blockchain.Ethereum.Network.MAIN]: '0x74312363e45DCaBA76c59ec49a7Aa8A65a67EeD3',
+  },
   pnplContractAddress: {
     [Blockchain.Ethereum.Network.RINKEBY]: '0x7D33BdDfe5945687382625547aBD8a0115B87490',
     [Blockchain.Ethereum.Network.MAIN]: '0x514183FAf3ab9Db42D76317ecea74C4300E60EEe',
@@ -80,7 +84,7 @@ export default {
     [Blockchain.Ethereum.Network.RINKEBY]: '0xC796d62fB1927a13D7E41eBd0c8eA80fdA5Ef80a',
   },
   poolHelperAddress: {
-    [Blockchain.Ethereum.Network.MAIN]: '0x594040528D2bB2d6872Efa5C945177C0C6096aa2',
+    [Blockchain.Ethereum.Network.MAIN]: '0x0aab1368f6704e8403105162690bdf6ee75305c0',
   },
   defaultFees: [
     {

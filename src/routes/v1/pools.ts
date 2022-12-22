@@ -36,6 +36,7 @@ router.get('/groups/search', async (req, res, next) => {
     const paginateByCount = getNumber(req.query, 'count', { optional: true })
     const paginateBy = paginateByOffset !== undefined && paginateByCount !== undefined ? { count: paginateByCount, offset: paginateByOffset } : undefined
     const totalCount = await countPoolGroups({ collectionAddress, blockchainFilter, collectionName, includeRetired: true })
+    const totalPoolGroupsCount = await countPoolGroups({ collectionAddress, blockchainFilter, includeRetired: true })
     const poolGroups = await searchPoolGroups({ collectionAddress, collectionName, blockchainFilter, paginateBy, sortBy })
     const poolCount = await countPools({ collectionAddress, blockchainFilter, collectionName, includeRetired: true })
     const payload = serializeEntityArray(poolGroups, PoolGroup.codingResolver)
@@ -45,6 +46,7 @@ router.get('/groups/search', async (req, res, next) => {
     res.status(200).json({
       poolGroups: pagination,
       poolCount,
+      totalPoolGroupsCount,
     })
 
   }
@@ -58,7 +60,7 @@ router.get('/lender', async (req, res, next) => {
     const blockchainFilter = getBlockchainFilter(req.query, true)
     const lenderAddress = getString(req.query, 'lenderAddress')
     const pools = await getPools({
-      blockchainFilter, lenderAddress, includeStats: true,
+      blockchainFilter, lenderAddress,
     })
     const payload = serializeEntityArray(pools, Pool.codingResolver)
 
@@ -100,7 +102,7 @@ router.get('/:poolAddress', async (req, res, next) => {
     const includeRetired = getBoolean(req.query, 'includeRetired', { optional: true })
     const poolAddress = getString(req.params, 'poolAddress')
 
-    const pool = await getPool({ blockchain, address: poolAddress, includeStats: true, includeRetired })
+    const pool = await getPool({ blockchain, address: poolAddress, includeRetired })
     const payload = Pool.serialize(pool)
 
     res.status(200).json(payload)
@@ -133,7 +135,6 @@ router.get('/', async (req, res, next) => {
       nftId,
       paginateBy,
       checkLimit,
-      includeStats: checkLimit,
     })
 
     const payload = serializeEntityArray(pools, Pool.codingResolver)

@@ -6,9 +6,9 @@ import { getPoolContract } from '../contracts'
 import { getPool, getPoolCapacity, searchPublishedPools } from '../pools'
 
 export default async function getFlashLoanSource({ poolAddress, blockchain }: { poolAddress: string; blockchain: Blockchain }): Promise<{ address: string; capacity: Value }> {
-  const pool = await getPool({ address: poolAddress, blockchain, includeStats: false })
+  const pool = await getPool({ address: poolAddress, blockchain })
   const fundSource = pool.fundSource
-  const pools = (await searchPublishedPools({ blockchainFilter: { ethereum: blockchain.networkId }, includeStats: true }))
+  const pools = (await searchPublishedPools({ blockchainFilter: { ethereum: blockchain.networkId } }))
     .filter(e => e.version > 1 && e.address !== poolAddress)
   const poolsWithFundSource = pools.filter(e => e.fundSource !== fundSource)
   if (poolsWithFundSource.length > 0) {
