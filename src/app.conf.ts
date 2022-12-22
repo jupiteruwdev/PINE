@@ -59,6 +59,10 @@ export default {
     [Blockchain.Ethereum.Network.RINKEBY]: '0x1AA777972073Ff66DCFDeD85749bDD555C0665dA',
     [Blockchain.Ethereum.Network.MAIN]: '0x59728544B08AB483533076417FbBB2fD0B17CE3a',
   },
+  x2y2ContractAddress: {
+    [Blockchain.Ethereum.Network.GOERLI]: '0x1891EcD5F7b1E751151d857265D6e6D08ae8989e',
+    [Blockchain.Ethereum.Network.MAIN]: '0x74312363e45DCaBA76c59ec49a7Aa8A65a67EeD3',
+  },
   pnplContractAddress: {
     [Blockchain.Ethereum.Network.RINKEBY]: '0x7D33BdDfe5945687382625547aBD8a0115B87490',
     [Blockchain.Ethereum.Network.MAIN]: '0x514183FAf3ab9Db42D76317ecea74C4300E60EEe',
