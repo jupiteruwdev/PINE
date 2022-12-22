@@ -1,10 +1,9 @@
 import { Router } from 'express'
 import _ from 'lodash'
 import { getEthCollectionFloorPrices, getEthNFTValuation, getNFTOTD, searchCollections } from '../../controllers'
-import getNFTsForCollection from '../../controllers/collections/getNFTsForCollection'
-import { Blockchain, Collection, NFT, Pagination, serializeEntityArray, Value } from '../../entities'
+import { Blockchain, Collection, serializeEntityArray, Value } from '../../entities'
 import fault from '../../utils/fault'
-import { getBlockchain, getBlockchainFilter, getNumber, getString } from '../utils/query'
+import { getBlockchain, getBlockchainFilter, getString } from '../utils/query'
 
 const router = Router()
 
@@ -62,31 +61,6 @@ router.get('/valuation', async (req, res, next) => {
   }
   catch (err) {
     next(fault('ERR_API_FETCH_VALUATION', undefined, err))
-  }
-})
-
-router.get('/nfts', async (req, res, next) => {
-  try {
-    const blockchain = getBlockchain(req.query) as Blockchain<'ethereum'>
-    const collectionAddress = getString(req.query, 'collectionAddress')
-    const paginateByOffset = getNumber(req.query, 'offset', { optional: true })
-    const paginateByCount = getNumber(req.query, 'count', { optional: true })
-    const paginateBy = paginateByOffset !== undefined && paginateByCount !== undefined ? { count: paginateByCount, offset: paginateByOffset } : undefined
-
-    const { nfts, totalCount } = await getNFTsForCollection({ blockchain, collectionAddress, paginateBy })
-
-    const payload = serializeEntityArray(nfts, NFT.codingResolver)
-    const nextOffset = (paginateBy?.offset ?? 0) + nfts.length
-    const pagination = Pagination.serialize({
-      data: payload,
-      totalCount,
-      nextOffset: nextOffset === paginateBy?.offset ? undefined : nextOffset,
-    })
-
-    res.status(200).json(pagination)
-  }
-  catch (err) {
-    next(fault('ERR_API_FETCH_COLLECTION_NFTS', undefined, err))
   }
 })
 

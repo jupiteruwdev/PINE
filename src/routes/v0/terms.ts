@@ -12,8 +12,11 @@ router.get('/borrow', async (req, res, next) => {
     const collectionAddress = getString(req.query, 'collectionAddress')
     const poolAddress = getString(req.query, 'poolAddress', { optional: true })
     const blockchain = getBlockchain(req.query)
-    const loanTerms = await getLoanTerms({ blockchain, nftId, collectionAddress, poolAddress })
-    const payload = LoanTerms.serialize(loanTerms)
+    const loanTerms = await getLoanTerms({ blockchain, nftIds: [nftId], collectionAddresses: [collectionAddress], poolAddresses: poolAddress ? [poolAddress] : undefined })
+    if (!loanTerms.length) {
+      next(fault('ERR_NO_POOLS_AVAILABLE'))
+    }
+    const payload = LoanTerms.serialize(loanTerms[0])
     res.status(200).json(payload)
   }
   catch (err) {
@@ -27,8 +30,11 @@ router.get('/rollover', async (req, res, next) => {
     const collectionAddress = getString(req.query, 'collectionAddress')
     const poolAddress = getString(req.query, 'poolAddress', { optional: true })
     const blockchain = getBlockchain(req.query)
-    const rolloverTerms = await getRolloverTerms({ blockchain, nftId, collectionAddress, poolAddress })
-    const payload = RolloverTerms.serialize(rolloverTerms)
+    const rolloverTerms = await getRolloverTerms({ blockchain, nftIds: [nftId], collectionAddresses: [collectionAddress], poolAddresses: poolAddress ? [poolAddress] : undefined })
+    if (!rolloverTerms.length) {
+      next(fault('ERR_NO_POOLS_AVAILABLE'))
+    }
+    const payload = RolloverTerms.serialize(rolloverTerms[0])
 
     res.status(200).json(payload)
   }
@@ -41,17 +47,21 @@ router.get('/pnpl', async (req, res, next) => {
   try {
     const url = getString(req.query, 'url')
     const poolAddress = getString(req.query, 'poolAddress', { optional: true })
-    const parsedURL = new URL(url)
     let pnplTerms
 
     try {
-      pnplTerms = await getPNPLTermsByUrl({ parsedURL, poolAddress })
+      const parsedURL = new URL(url)
+      pnplTerms = await getPNPLTermsByUrl({ parsedURLs: [parsedURL], poolAddresses: poolAddress ? [poolAddress] : undefined })
     }
     catch (err) {
       return next(err)
     }
 
-    const payload = PNPLTerms.serialize(pnplTerms)
+    if (!pnplTerms.length) {
+      next(fault('ERR_NO_POOLS_AVAILABLE'))
+    }
+
+    const payload = PNPLTerms.serialize(pnplTerms[0])
 
     res.status(200).json(payload)
   }

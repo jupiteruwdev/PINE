@@ -20,12 +20,18 @@ export default {
   moralisAPIKey: process.env.MORALIS_API_KEY,
   nftbankAPIKey: process.env.NFTBANK_API_KEY,
   alchemyAPIKey: process.env.ALCHEMY_API_KEY,
+  coinAPIKey: process.env.COIN_API_KEY,
   lunarCrushAPIKey: process.env.LUNARCRUSH_API_KEY,
   requestTimeoutMs: Number(process.env.REQUEST_TIMEOUT_MS ?? 30000),
   alchemyAPIUrl: {
-    [Blockchain.Ethereum.Network.RINKEBY]: process.env.ALCHEMY_API_RINKEBY_URL,
-    [Blockchain.Ethereum.Network.MAIN]: process.env.ALCHEMY_API_MAINNET_URL,
-    [Blockchain.Ethereum.Network.GOERLI]: process.env.ALCHEMY_API_GOERLI_URL,
+    [Blockchain.Ethereum.Network.RINKEBY]: 'https://eth-rinkeby.g.alchemy.com/v2/',
+    [Blockchain.Ethereum.Network.MAIN]: 'https://eth-mainnet.g.alchemy.com/v2/',
+    [Blockchain.Ethereum.Network.GOERLI]: 'https://eth-goerli.g.alchemy.com/v2/',
+  },
+  alchemyNFTAPIUrl: {
+    [Blockchain.Ethereum.Network.RINKEBY]: 'https://eth-rinkeby.g.alchemy.com/nft/v2/',
+    [Blockchain.Ethereum.Network.MAIN]: 'https://eth-mainnet.g.alchemy.com/nft/v2/',
+    [Blockchain.Ethereum.Network.GOERLI]: 'https://eth-goerli.g.alchemy.com/nft/v2/',
   },
   subgraphAPIUrl: {
     [Blockchain.Ethereum.Network.RINKEBY]: process.env.SUBGRAPH_API_RINKEBY_URL,
@@ -90,11 +96,14 @@ export default {
   valuationLimitation: 60 * 30 * 1000,
   ethMaxDecimalPlaces: 6,
   mongoUri: process.env.MONGO_URI ?? '',
-  tenors: [1, 3, 7, 14, 30],
+  tenors: [1, 3, 7, 14, 30, 60, 90],
   tests: {
     walletAddress: process.env.TESTS_WALLET_ADDRESS ?? '',
     privateKey: process.env.TESTS_WALLET_PRIVATE_KEY ?? '',
     whaleWalletAddresses: _.compact((process.env.TESTS_WHALE_WALLET_ADDRESSES ?? '').split(',')),
   },
   workerUrl: process.env.WORKER_URL,
+  // `workerCloudRunUrl` variable is required when deployed inside Cloud Run service
+  // to allow `core-service` to authenticate requests to `worker`
+  workerCloudRunUrl: process.env.WORKER_CLOUD_RUN_URL,
 }

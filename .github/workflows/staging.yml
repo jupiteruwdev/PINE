@@ -1,0 +1,40 @@
+name: staging
+on:
+  push:
+    branches: [staging]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  id-token: write
+  checks: write
+
+jobs:
+  build-and-test:
+    name: Build and Test
+    uses: ./.github/workflows/reusable-build.yml
+    secrets: inherit
+    with:
+      run_tests: true
+  
+  deploy:
+    needs: build-and-test
+    name: Deploy `staging`
+    uses: ./.github/workflows/reusable-deploy.yml
+    secrets: inherit
+    with:
+      cloud_run_service_name: core-service-staging
+      version: ${{ needs.build-and-test.outputs.version }}
+      environment: staging
+
+  notify:
+    name: Notify
+    needs: deploy
+    if: ${{ always() }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: andrewscwei/slack-action@v1.0.0
+        with:
+          success-prefix: 🌲
+          success: ${{ needs.deploy.result == 'success' }}
+          webhook-url: ${{ secrets.SLACK_DEVOPS_WEBHOOK_URL }}

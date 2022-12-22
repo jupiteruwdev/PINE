@@ -1,0 +1,139 @@
+name: Build and Test
+
+on:
+  workflow_call:
+    inputs:
+      image_name:
+        default: 'gcr.io/pinedefi/core-service'
+        description: Specifies the Docker image name
+        required: false
+        type: string
+      use_prod_apis:
+        default: false
+        description: Specifies whether production environment should be used for external APIs and services (i.e. database, subgraph, etc)
+        required: false
+        type: string
+      checkout_ref:
+        default: ''
+        description: The ref argument provided to the checkout action
+        required: false
+        type: string
+      run_tests:
+        default: true
+        description: Specifies if tests should run during the build
+        required: false
+        type: boolean
+    outputs:
+      version:
+        description: The built Docker image
+        value: ${{ jobs.build.outputs.version }}
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+    outputs:
+      version: ${{ steps.meta.outputs.version }}
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v3
+      with:
+        fetch-depth: 0
+        ref: ${{ inputs.checkout_ref }}
+        submodules: recursive
+        token: ${{ secrets.GH_ACCESS_TOKEN }}
+    
+    - name: Set env
+      id: env
+      run: echo "build_number=$(git rev-parse --short HEAD).$(git rev-list --count ${{ github.ref }})" >> $GITHUB_OUTPUT
+    
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v2.2.1
+    
+    - name: Authenticate Google Cloud
+      id: auth
+      uses: google-github-actions/auth@v1
+      with:
+        token_format: access_token
+        workload_identity_provider: ${{ secrets.GCP_WORKLOAD_IDENTITY_PROVIDER }}
+        service_account: ${{ secrets.GCP_SERVICE_ACC }}
+    
+    - name: Login to GCR
+      uses: docker/login-action@v2.1.0
+      with:
+        registry: gcr.io
+        username: oauth2accesstoken
+        password: ${{ steps.auth.outputs.access_token }}
+
+    - name: Set metadata
+      id: meta
+      uses: docker/metadata-action@v4.1.1
+      with:
+        images: ${{ inputs.image_name }}
+    
+    - name: Build and push container
+      uses: docker/build-push-action@v3.2.0
+      id: build
+      with:
+        build-args: BUILD_NUMBER=${{ steps.env.outputs.build_number }}
+        cache-from: type=gha,scope=${{ github.workflow }}
+        cache-to: type=gha,scope=${{ github.workflow }},mode=max
+        context: .
+        push: true
+        labels: ${{ steps.meta.outputs.labels }}
+        tags: ${{ steps.meta.outputs.tags }}
+    
+    - name: Add info to build summary
+      run: |
+        echo "Image name: ${{ inputs.image_name }}:${{ steps.meta.outputs.version }}" >> $GITHUB_STEP_SUMMARY
+  
+  test:
+    if: ${{ inputs.run_tests }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+      checks: write
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v3
+      with:
+        fetch-depth: 0
+        ref: ${{ inputs.checkout_ref }}
+        submodules: recursive
+        token: ${{ secrets.GH_ACCESS_TOKEN }}
+    - uses: actions/setup-node@v3
+      with:
+        node-version: '17'
+        cache: 'npm'
+    - run: npm install && npm run build:test
+    - run: npm run test:ci
+      env:
+        NODE_ENV: test
+        ALCHEMY_API_KEY: ${{ secrets.ALCHEMY_API_KEY }}
+        ETH_RPC_MAINNET: ${{ secrets.ETH_RPC_MAINNET }}
+        ETH_RPC_RINKEBY: ${{ secrets.ETH_RPC_RINKEBY }}
+        GEMXYZ_API_KEY: ${{ secrets.GEMXYZ_API_KEY }}
+        LUNARCRUSH_API_KEY: ${{ secrets.LUNARCRUSH_API_KEY }}
+        LOG_LEVEL: ${{ secrets.LOG_LEVEL }}
+        MONGO_URI: ${{ inputs.use_prod_apis && secrets.MONGO_URI || secrets.MONGO_URI_STAGING }}
+        WORKER_URL: ${{ inputs.use_prod_apis && secrets.WORKER_URL || secrets.WORKER_URL_STAGING }}
+        MORALIS_API_KEY: ${{ secrets.MORALIS_API_KEY }}
+        NFTBANK_API_KEY: ${{ secrets.NFTBANK_API_KEY }}
+        OPENSEA_API_KEY: ${{ secrets.OPENSEA_API_KEY }}
+        COIN_API_KEY: ${{ secrets.COIN_API_KEY }}
+        SUBGRAPH_API_MAINNET_URL: ${{ inputs.use_prod_apis && secrets.SUBGRAPH_API_MAINNET_URL || secrets.SUBGRAPH_API_MAINNET_URL_STAGING }}
+        SUBGRAPH_API_RINKEBY_URL: ${{ inputs.use_prod_apis && secrets.SUBGRAPH_API_RINKEBY_URL || secrets.SUBGRAPH_API_RINKEBY_URL_STAGING }}
+        TESTS_WALLET_ADDRESS: ${{ secrets.TESTS_WALLET_ADDRESS }}
+        TESTS_WHALE_WALLET_ADDRESSES: ${{ secrets.TESTS_WHALE_WALLET_ADDRESSES }}
+        TESTS_WALLET_PRIVATE_KEY: ${{ secrets.TESTS_WALLET_PRIVATE_KEY }}
+    
+    - name: Test Report
+      uses: dorny/test-reporter@v1.6.0
+      if: success() || failure()
+      with:
+        name: Unit and integration tests
+        path: test-results/*.json
+        reporter: mocha-json

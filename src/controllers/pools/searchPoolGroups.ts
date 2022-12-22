@@ -230,12 +230,10 @@ export default async function searchPoolGroups({
       ),
     }))
 
-    const out = poolGroups.map(group => (
-      {
-        ...group,
-        floorPrice: group.collection.valuation?.value,
-      }
-    ))
+    const out = poolGroups.map(group => ({
+      ...group,
+      floorPrice: group.collection.valuation?.value,
+    }))
 
     logger.info(`Searching pool groups... OK: Found ${out.length} result(s)`)
     logger.debug(JSON.stringify(out, undefined, 2))
