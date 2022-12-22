@@ -53,7 +53,7 @@ export default async function getLoan({
           ownerAddress: onChainLoan.pool,
           ...await getEthNFTMetadata({ blockchain, collectionAddress, nftId }),
         }
-        const newPool = await getPool({ collectionAddress, blockchain, includeStats: true, nft: { id: nftId, name: nft.name } })
+        const newPool = await getPool({ collectionAddress, blockchain, nft: { id: nftId, name: nft.name } })
         const contract = await getPoolContract({ blockchain, poolAddress: onChainLoan.pool })
         const loanDetails = await contract.methods._loans(nftId).call()
         const controlPlaneContract = getControlPlaneContract({ blockchain, address: _.get(appConf.controlPlaneContractAddress, blockchain.networkId) })
