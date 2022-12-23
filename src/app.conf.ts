@@ -14,7 +14,7 @@ export default {
   version: `v${_.get(packageConf, 'version', 'local')}${process.env.NODE_ENV === 'production' ? '' : `-${(process.env.NODE_ENV || 'development').substring(0, 3)}`}`,
   build: process.env.BUILD_NUMBER ?? 'local',
   port: process.env.PORT ?? 8080,
-  logLevel: process.env.LOG_LEVEL ?? (process.env.NODE_ENV === 'development' ? 'debug' : undefined),
+  logLevel: process.env.LOG_LEVEL ?? (process.env.NODE_ENV === 'development' ? 'debug' : 'info'),
   openseaAPIKey: process.env.OPENSEA_API_KEY,
   gemxyzAPIKey: process.env.GEMXYZ_API_KEY,
   moralisAPIKey: process.env.MORALIS_API_KEY,

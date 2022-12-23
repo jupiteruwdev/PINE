@@ -10,6 +10,7 @@ import appConf from './app.conf'
 import { initDb } from './db'
 import routes from './routes'
 import fault from './utils/fault'
+import lw from '@google-cloud/logging-winston'
 import logger from './utils/logger'
 
 // Remove depth from console logs
@@ -27,8 +28,15 @@ initDb({
 
 const app = express()
 
+if (appConf.env === 'production') {
+  const mw = await lw.express.makeMiddleware(logger)
+  app.use(mw)
+}
+else {
+  app.use(morgan('dev'))
+}
+
 app.use(cors())
-app.use(morgan('dev'))
 app.use(express.json())
 app.use('/', routes)
 
@@ -44,10 +52,15 @@ app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
   res.setHeader('Content-Type', 'application/json')
 
   if (status === 404) {
-    logger.warn(`Handling 404 error... SKIP: ${err}`)
+    if (appConf.env === 'production') {
+      (req as any).log.info(`Handling 404 error... SKIP: ${err}`)
+    }
+    else {
+      logger.info(`Handling 404 error... SKIP: ${err}`)
+    }
   }
   else if (appConf.env === 'production') {
-    logger.error('Handling 500 error... ERR', err)
+    (req as any).log.error('Handling 500 error... ERR', err)
   }
   else {
     logger.error('Handling 500 error... ERR')
