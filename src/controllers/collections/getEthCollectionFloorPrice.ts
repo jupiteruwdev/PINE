@@ -42,9 +42,12 @@ export function useNFTBank({ blockchain, collectionAddress }: Params): DataSourc
 
     switch (blockchain.networkId) {
     case Blockchain.Ethereum.Network.MAIN:
-      const res = await getRequest(`https://api.nftbank.run/v1/collection/${collectionAddress}/floor?networkId=ethereum`, {
+      const res = await getRequest(`https://api.nftbank.ai/estimates-v2/floor_price/${collectionAddress}`, {
         headers: {
           'X-API-Key': apiKey,
+        },
+        params: {
+          'chain_id': 'ETHEREUM',
         },
       })
 
