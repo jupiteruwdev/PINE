@@ -50,6 +50,7 @@
     "eslint": "^8.22.0",
     "mocha": "^10.0.0",
     "nodemon": "^2.0.19",
+    "pre-commit": "^1.2.2",
     "rimraf": "^3.0.2",
     "supertest": "^6.2.4",
     "ts-node": "^10.9.1",
@@ -77,5 +78,8 @@
     "object-hash": "^3.0.0",
     "web3": "^1.7.5",
     "winston": "^3.8.1"
-  }
+  },
+  "pre-commit": [
+    "lint"
+  ]
 }
