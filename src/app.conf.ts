@@ -80,7 +80,6 @@ export default {
   repayRouterAddress: {
     [Blockchain.Ethereum.Network.MAIN]: '0x1C120cE3853542C0Fe3B75AF8F4c7F223f957d51',
     [Blockchain.Ethereum.Network.RINKEBY]: '0xFC6c6e4727DA5E1bF79aC9C96155B4cD2faC54E6',
-    
   },
   rolloverAddress: {
     [Blockchain.Ethereum.Network.MAIN]: '0x239f1818f21ebac47306ffa690016aa6a8882a59',

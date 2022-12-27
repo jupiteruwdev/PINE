@@ -48,6 +48,7 @@
     "chai": "^4.3.6",
     "cross-env": "^7.0.3",
     "eslint": "^8.22.0",
+    "lint-staged": "^13.1.0",
     "mocha": "^10.0.0",
     "nodemon": "^2.0.19",
     "pre-commit": "^1.2.2",
@@ -80,6 +81,6 @@
     "winston": "^3.8.1"
   },
   "pre-commit": [
-    "lint"
+    "lint-staged"
   ]
 }
