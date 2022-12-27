@@ -40,6 +40,7 @@ export default {
   ethRPC: {
     [Blockchain.Ethereum.Network.RINKEBY]: process.env.ETH_RPC_RINKEBY,
     [Blockchain.Ethereum.Network.MAIN]: process.env.ETH_RPC_MAINNET,
+    [Blockchain.Ethereum.Network.GOERLI]: process.env.ETH_RPC_GOERLI,
   },
   ethValuationExpiryBlocks: 64, // quote expires in 15 mins
   ethValuationSigner: process.env.VALUATION_SIGNER,
