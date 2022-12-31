@@ -6,6 +6,7 @@
   "scripts": {
     "start": "node --no-warnings --experimental-specifier-resolution node build/app",
     "clean": "rimraf build",
+    "lint-staged": "lint-staged",
     "prebuild": "npm run lint",
     "dev": "nodemon --exec \"node --no-warnings --experimental-specifier-resolution node --loader ts-node/esm -r dotenv/config\" --verbose --watch src --ext ts,json src/app",
     "build": "npm run clean && tsc",
@@ -48,8 +49,10 @@
     "chai": "^4.3.6",
     "cross-env": "^7.0.3",
     "eslint": "^8.22.0",
+    "lint-staged": "^13.1.0",
     "mocha": "^10.0.0",
     "nodemon": "^2.0.19",
+    "pre-commit": "^1.2.2",
     "rimraf": "^3.0.2",
     "supertest": "^6.2.4",
     "ts-node": "^10.9.1",
@@ -77,5 +80,11 @@
     "object-hash": "^3.0.0",
     "web3": "^1.7.5",
     "winston": "^3.8.1"
+  },
+  "pre-commit": [
+    "lint-staged"
+  ],
+  "lint-staged": {
+    "*.ts": "npm run lint"
   }
 }
