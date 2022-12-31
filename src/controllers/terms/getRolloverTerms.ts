@@ -5,7 +5,7 @@ import fault from '../../utils/fault'
 import logger from '../../utils/logger'
 import { getEthNFTMetadata } from '../collaterals'
 import { verifyCollectionWithMatcher } from '../collections'
-import { isLoanExtendable } from '../loans'
+import { getLoan, isLoanExtendable } from '../loans'
 import searchPublishedMultiplePools from '../pools/searchPublishedMultiplePools'
 import { getEthNFTValuation, signValuation } from '../valuations'
 import getFlashLoanSource from './getFlashLoanSource'
@@ -40,10 +40,14 @@ export default async function getRolloverTerms({
       if (pools.find(pool => pool.collection.valuation && (pool.collection.valuation?.timestamp || 0) < new Date().getTime() - appConf.valuationLimitation)) {
         throw fault('INVALID_VALUATION_TIMESTAMP')
       }
+      const loans: any[] = []
+      await Promise.all(collectionAddresses.map(async (collectionAddress, index) => {
+        loans.push(await getLoan({ blockchain, collectionAddress, nftId: nftIds[index], populateValuation: false, txSpeedBlocks: 0 }))
+      }))
 
       const flashLoanSources: Record<string, any> = {}
-      await Promise.all(pools.map(async pool => {
-        flashLoanSources[pool.address] = await getFlashLoanSource({ blockchain, poolAddress: pool.address })
+      await Promise.all(pools.map(async (pool, index) => {
+        flashLoanSources[pool.address] = await getFlashLoanSource({ blockchain, poolAddress: pool.address, originalPoolAddress: loans[index]?.poolAddress })
       }))
 
       const nftsMetadata = await Promise.all(collectionAddresses.map((collectionAddress, index) => getEthNFTMetadata({ blockchain, collectionAddress, nftId: nftIds[index] })))
