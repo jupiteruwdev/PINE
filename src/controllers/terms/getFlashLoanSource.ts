@@ -9,7 +9,7 @@ export default async function getFlashLoanSource({ poolAddress, blockchain, orig
   const pool = await getPool({ address: poolAddress, blockchain })
   const fundSource = pool.fundSource
 
-  const originalPool = await getPool({ address: poolAddress, blockchain })
+  const originalPool = await getPool({ address: originalPoolAddress, blockchain })
   const originalFundSource = originalPool.fundSource
 
   const pools = (await searchPublishedPools({ blockchainFilter: { ethereum: blockchain.networkId } }))
