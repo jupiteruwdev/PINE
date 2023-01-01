@@ -21,6 +21,7 @@ LUNARCRUSH_API_KEY # API key for LunarCrush
 
 ETH_RPC_MAINNET # URL to the RPC node for Ethereum Rinkeby
 ETH_RPC_RINKEBY # URL to the RPC node for Ethereum Mainnet
+ETH_RPC_GOERLI
 
 MONGO_URI # URI of MongoDB
 WORKER_URL # URL of the worker
