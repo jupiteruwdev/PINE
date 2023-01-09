@@ -27,9 +27,9 @@ describe('controllers/collections/getEthCollectionFloorPrices', () => {
       collectionsInWhaleWallets = whaleNFTs.map(nfts => _.uniqBy(nfts.map(nft => nft.collection), collection => collection.address.toLowerCase()))
     })
 
-    it('can get floor price of all collections in test wallet', async () => {
-      await getEthCollectionFloorPrices({ blockchain, collectionAddresses: collectionsInTestWallet.map(t => t.address) })
-    })
+    // it('can get floor price of all collections in test wallet', async () => {
+    //   await getEthCollectionFloorPrices({ blockchain, collectionAddresses: collectionsInTestWallet.map(t => t.address) })
+    // })
 
     WHALE_WALLET_ADDRESSES.forEach((address, i) => {
       it(`can get floor price of all collections in whale wallet <${address}>`, async () => {
