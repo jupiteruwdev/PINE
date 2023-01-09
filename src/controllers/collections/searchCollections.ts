@@ -77,7 +77,12 @@ export default async function searchCollections({ query, blockchain }: Params): 
     )
 
     return collectionResults
-
+  case Blockchain.Ethereum.Network.GOERLI:
+    const collectionsGoerli = await DataSource.fetch(
+      useAlchemyContract({ query, blockchain }),
+      useAlchemy({ query, blockchain }),
+    )
+    return collectionsGoerli
   default:
     const err = fault('ERR_UNSUPPORTED_BLOCKCHAIN')
     logger.error(`Fetching collection for search text <${query}>... ERR:`, err)
