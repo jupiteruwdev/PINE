@@ -39,7 +39,7 @@ export default async function getEthCollectionFloorPrices({
 
 export function useOpenSea({ blockchain, collectionAddresses, userAddress }: Params): DataSource<Value<'ETH'>[]> {
   return async () => {
-    logger.info(`...using OpenSea to look up floor prices for collection <${collectionAddresses}>`)
+    logger.info(`...using OpenSea to look up floor prices for collections <${collectionAddresses}>`)
 
     if (blockchain.network !== 'ethereum') rethrow(`Unsupported blockchain <${JSON.stringify(blockchain)}>`)
 
