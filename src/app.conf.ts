@@ -18,7 +18,6 @@ export default {
   openseaAPIKey: process.env.OPENSEA_API_KEY,
   gemxyzAPIKey: process.env.GEMXYZ_API_KEY,
   moralisAPIKey: process.env.MORALIS_API_KEY,
-  nftbankAPIKey: process.env.NFTBANK_API_KEY,
   alchemyAPIKey: process.env.ALCHEMY_API_KEY,
   coinAPIKey: process.env.COIN_API_KEY,
   lunarCrushAPIKey: process.env.LUNARCRUSH_API_KEY,
