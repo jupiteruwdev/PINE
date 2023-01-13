@@ -33,7 +33,7 @@ describe('controllers/collections/getEthCollectionFloorPrices', () => {
 
     WHALE_WALLET_ADDRESSES.forEach((address, i) => {
       it(`can get floor price of all collections in whale wallet <${address}>`, async () => {
-        await getEthCollectionFloorPrices({ blockchain, collectionAddresses: collectionsInWhaleWallets[i].map(t => t.address), userAddress: address })
+        await getEthCollectionFloorPrices({ blockchain, collectionAddresses: collectionsInWhaleWallets[i].map(t => t.address) })
       })
     })
   })
@@ -48,7 +48,7 @@ describe('controllers/collections/getEthCollectionFloorPrices', () => {
     })
 
     it('can get floor price of all supported Ethereum collections on Rinkeby', async () => {
-      await getEthCollectionFloorPrices({ blockchain, collectionAddresses: collectionsInTestWallet.map(t => t.address), userAddress: TEST_WALLET_ADDRESS })
+      await getEthCollectionFloorPrices({ blockchain, collectionAddresses: collectionsInTestWallet.map(t => t.address) })
     })
   })
 })

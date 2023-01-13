@@ -5,18 +5,16 @@ import fault from '../../utils/fault'
 import logger from '../../utils/logger'
 import rethrow from '../../utils/rethrow'
 import DataSource from '../utils/DataSource'
-import getRequest from '../utils/getRequest'
+import postRequest from '../utils/postRequest'
 
 type Params = {
   blockchain: Blockchain
   collectionAddresses: string[]
-  userAddress: string
 }
 
 export default async function getEthCollectionFloorPrices({
   blockchain,
   collectionAddresses,
-  userAddress,
 }: Params): Promise<Value<'ETH'>[]> {
   if (collectionAddresses.length === 0) return []
 
@@ -24,7 +22,7 @@ export default async function getEthCollectionFloorPrices({
 
   try {
     const floorPrices = await DataSource.fetch(
-      useOpenSea({ blockchain, collectionAddresses, userAddress }),
+      useAlchemy({ blockchain, collectionAddresses }),
     )
 
     logger.info(`Fetching floor prices for collections <${collectionAddresses}> on network <${blockchain.networkId}>... OK: ${floorPrices.map(t => t.amount.toFixed())}`)
@@ -37,28 +35,22 @@ export default async function getEthCollectionFloorPrices({
   }
 }
 
-export function useOpenSea({ blockchain, collectionAddresses, userAddress }: Params): DataSource<Value<'ETH'>[]> {
+function useAlchemy({ blockchain, collectionAddresses }: Params): DataSource<Value<'ETH'>[]> {
   return async () => {
-    logger.info(`...using OpenSea to look up floor prices for collections <${collectionAddresses}>`)
+    logger.info(`...using Alchemy to look up floor prices for collections <${collectionAddresses}>`)
 
     if (blockchain.network !== 'ethereum') rethrow(`Unsupported blockchain <${JSON.stringify(blockchain)}>`)
 
-    const apiKey = appConf.openseaAPIKey ?? rethrow('Missing OpenSea API key')
+    const apiKey = appConf.alchemyAPIKey ?? rethrow('Missing OpenSea API key')
 
     switch (blockchain.networkId) {
     case Blockchain.Ethereum.Network.MAIN:
-      const res = await getRequest('https://api.opensea.io/api/v1/collections', {
-        params: {
-          'asset_owner': userAddress,
-        },
-        headers: {
-          'X-API-KEY': apiKey,
-        },
+      const res = await postRequest(`https://eth-mainnet.g.alchemy.com/nft/v2/${apiKey}/getContractMetadataBatch`, {
+        contractAddresses: collectionAddresses,
       })
 
-      return collectionAddresses.map(address => {
-        const entry = _.find(res, t => _.find(_.get(t, 'primary_asset_contracts'), c => _.get(c, 'address').toLowerCase() === address.toLowerCase()))
-        const price = _.get(entry, 'stats.floor_price')
+      return res.map((collection: any) => {
+        const price = _.get(collection, 'contractMetadata.openSea.floorPrice')
 
         return price === undefined ? Value.$ETH(NaN) : Value.$ETH(price)
       })
