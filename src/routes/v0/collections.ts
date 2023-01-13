@@ -29,7 +29,8 @@ router.get('/floors', async (req, res, next) => {
     if (!((c: any): c is string[] => _.every(c, (e: any) => _.isString(e)))(collectionAddresses)) throw fault('ERR_INVALID_COLLECTION_ADDRESSES')
 
     const blockchainFilter = getBlockchainFilter(req.query, false)
-    const prices = await getEthCollectionFloorPrices({ blockchain: Blockchain.Ethereum(blockchainFilter.ethereum), collectionAddresses })
+    const user = getString(req.query, 'user')
+    const prices = await getEthCollectionFloorPrices({ blockchain: Blockchain.Ethereum(blockchainFilter.ethereum), collectionAddresses, userAddress: user })
     const payload = serializeEntityArray(prices, Value.codingResolver)
 
     res.status(200).json(payload)
