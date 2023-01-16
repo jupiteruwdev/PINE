@@ -45,11 +45,20 @@ function useAlchemy({ blockchain, collectionAddresses }: Params): DataSource<Val
 
     switch (blockchain.networkId) {
     case Blockchain.Ethereum.Network.MAIN:
-      const res = await postRequest(`https://eth-mainnet.g.alchemy.com/nft/v2/${apiKey}/getContractMetadataBatch`, {
-        contractAddresses: collectionAddresses,
+      const res: any[] = await Promise.all(_.chunk(collectionAddresses, 100).map(addresses => new Promise((resolve, reject) => {
+        postRequest(`https://eth-mainnet.g.alchemy.com/nft/v2/${apiKey}/getContractMetadataBatch`, {
+          contractAddresses: addresses,
+        })
+          .then(res => resolve(res))
+          .catch(err => reject(err))
+      })))
+
+      let collections: any[] = []
+      res.forEach(item => {
+        collections = [...collections, ...item]
       })
 
-      return res.map((collection: any) => {
+      return collections.map((collection: any) => {
         const price = _.get(collection, 'contractMetadata.openSea.floorPrice')
 
         return price === undefined ? Value.$ETH(NaN) : Value.$ETH(price)
