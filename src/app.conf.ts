@@ -73,15 +73,15 @@ export default {
     [Blockchain.Ethereum.Network.GOERLI]: '0xfce1DFFE2A382f66ebD01F39b4e20d97B8110895',
   },
   routerAddress: {
-    [Blockchain.Ethereum.Network.MAIN]: '0x774badBc759234Bff52B0Be11bF61Bb68c9E9A24',
+    [Blockchain.Ethereum.Network.MAIN]: '0x7a517e8bd374565615c043C32760ba4BD9982219',
     [Blockchain.Ethereum.Network.RINKEBY]: '0xFC6c6e4727DA5E1bF79aC9C96155B4cD2faC54E6',
   },
   repayRouterAddress: {
-    [Blockchain.Ethereum.Network.MAIN]: '0x1C120cE3853542C0Fe3B75AF8F4c7F223f957d51',
+    [Blockchain.Ethereum.Network.MAIN]: '0x2B5DC8223D0aD809607f36a1D8A3A11bf20d595e',
     [Blockchain.Ethereum.Network.RINKEBY]: '0xFC6c6e4727DA5E1bF79aC9C96155B4cD2faC54E6',
   },
   rolloverAddress: {
-    [Blockchain.Ethereum.Network.MAIN]: '0x239f1818f21ebac47306ffa690016aa6a8882a59',
+    [Blockchain.Ethereum.Network.MAIN]: '0x5284d97a1462A767F385aE6Ae89BA9065ecE193c',
     [Blockchain.Ethereum.Network.RINKEBY]: '0xC796d62fB1927a13D7E41eBd0c8eA80fdA5Ef80a',
   },
   poolHelperAddress: {
