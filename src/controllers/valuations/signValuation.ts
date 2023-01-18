@@ -55,8 +55,7 @@ export default async function signValuation({ blockchain, nftId, collectionAddre
 
       let signer = new GcpKmsSigner(kmsCredentials)
       signer = signer.connect(provider)
-      console.log(await signer.getAddress())
-      const signature = await signer.signMessage(messageHash)
+      const signature = await signer.signMessage(ethers.utils.arrayify(messageHash))
 
       return {
         expiresAtBlock,
