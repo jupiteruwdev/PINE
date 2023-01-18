@@ -51,7 +51,8 @@ export default async function signValuation({ blockchain, nftId, collectionAddre
         keyVersion: '1', // the version of the key
       }
 
-      const provider = ethers.providers.getDefaultProvider(blockchain.networkId)
+      const provider = new ethers.providers.AlchemyProvider(Number(blockchain.networkId), appConf.alchemyAPIKey)
+
       let signer = new GcpKmsSigner(kmsCredentials)
       signer = signer.connect(provider)
       const signature = await signer.signMessage(messageHash)
