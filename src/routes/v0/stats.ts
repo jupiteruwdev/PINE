@@ -2,6 +2,7 @@ import { Router } from 'express'
 import { getGlobalStats, getUserMissionStats } from '../../controllers'
 import { GlobalStats } from '../../entities'
 import UserMissionStats from '../../entities/lib/UserMissionStats'
+import { turnstileMiddleware } from '../../middlewares'
 import fault from '../../utils/fault'
 import { getBlockchain, getBlockchainFilter, getNumber, getString } from '../utils/query'
 
@@ -20,7 +21,7 @@ router.get('/global', async (req, res, next) => {
   }
 })
 
-router.get('/user/:address', async (req, res, next) => {
+router.get('/user/:address', turnstileMiddleware, async (req, res, next) => {
   try {
     const blockchain = getBlockchain(req.query)
     const address = getString(req.params, 'address')
