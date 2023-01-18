@@ -124,4 +124,5 @@ export default {
     [Blockchain.Ethereum.Network.MAIN]: '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2',
     [Blockchain.Ethereum.Network.GOERLI]: '0xB4FBF271143F4FBf7B91A5ded31805e42b2208d6',
   },
+  turnstileSecretKey: process.env.TURNSTILE_SECRET_KEY,
 }
