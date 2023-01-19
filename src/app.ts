@@ -11,6 +11,8 @@ import { initDb } from './db'
 import routes from './routes'
 import fault from './utils/fault'
 import lw from '@google-cloud/logging-winston'
+import * as Sentry from '@sentry/node'
+import * as Tracing from '@sentry/tracing'
 import logger from './utils/logger'
 
 // Remove depth from console logs
@@ -27,8 +29,21 @@ initDb({
 })
 
 const app = express()
-
 if (appConf.env === 'production') {
+  // Sentry configs
+  Sentry.init({
+    release: appConf.sentryReleaseName,
+    dsn: appConf.sentryApiDsn,
+    integrations: [
+      new Sentry.Integrations.Http({ tracing: true }),
+      new Tracing.Integrations.Express({ app }),
+    ],
+    tracesSampleRate: 1.0,
+  })
+  app.use(Sentry.Handlers.requestHandler())
+  app.use(Sentry.Handlers.tracingHandler())
+
+  // GCP error reporting configs
   const mw = await lw.express.makeMiddleware(logger)
   app.use(mw)
 }
@@ -45,6 +60,10 @@ app.use('*', (req, res, next) => {
   _.set(error, 'status', 404)
   next(error)
 })
+
+if (appConf.env === 'production') {
+  app.use(Sentry.Handlers.errorHandler())
+}
 
 app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
   const status = (err as any).status ?? 500

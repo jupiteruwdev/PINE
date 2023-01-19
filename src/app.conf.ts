@@ -111,4 +111,17 @@ export default {
   // `workerCloudRunUrl` variable is required when deployed inside Cloud Run service
   // to allow `core-service` to authenticate requests to `worker`
   workerCloudRunUrl: process.env.WORKER_CLOUD_RUN_URL,
+  signer: process.env.SIGNER,
+  moralisStreamId: process.env.MORALIS_STREAM_ID,
+  looksrareAPIUrl: {
+    [Blockchain.Ethereum.Network.MAIN]: process.env.LOOKSRARE_API_URL_MAINNET,
+    [Blockchain.Ethereum.Network.GOERLI]: process.env.LOOKSRARE_API_URL_GOERLI,
+  },
+  wethAddress: {
+    [Blockchain.Ethereum.Network.MAIN]: '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2',
+    [Blockchain.Ethereum.Network.GOERLI]: '0xB4FBF271143F4FBf7B91A5ded31805e42b2208d6',
+  },
+  turnstileSecretKey: process.env.TURNSTILE_SECRET_KEY,
+  sentryApiDsn: process.env.SENTRY_API_DSN,
+  sentryReleaseName: process.env.GIT_SHA,
 }

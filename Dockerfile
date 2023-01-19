@@ -1,9 +1,11 @@
 # Builds the app with dev dependencies included.
-FROM node:17.5.0 AS dev
+FROM node:17.9.1 AS dev
 
 ARG BUILD_NUMBER
+ARG GIT_SHA
 
 ENV BUILD_NUMBER=$BUILD_NUMBER
+ENV GIT_SHA=$GIT_SHA
 
 WORKDIR /var/app
 
@@ -29,12 +31,14 @@ RUN npm prune --production
 
 
 # Final production build.
-FROM node:17.5.0-slim AS release
+FROM node:17.9.1-slim AS release
 
 ARG BUILD_NUMBER
+ARG GIT_SHA
 
 ENV NODE_ENV=production
 ENV BUILD_NUMBER=$BUILD_NUMBER
+ENV GIT_SHA=$GIT_SHA
 
 WORKDIR /var/app
 

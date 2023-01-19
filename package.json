@@ -62,6 +62,8 @@
     "@andrewscwei/super-error": "^2.1.0",
     "@google-cloud/logging-winston": "^5.2.3",
     "@metaplex-foundation/mpl-token-metadata": "^2.2.3",
+    "@sentry/node": "^7.29.0",
+    "@sentry/tracing": "^7.29.0",
     "@solana/web3.js": "^1.53.0",
     "@types/object-hash": "^2.2.1",
     "axios": "^0.27.2",
