@@ -125,4 +125,6 @@ export default {
     [Blockchain.Ethereum.Network.GOERLI]: '0xB4FBF271143F4FBf7B91A5ded31805e42b2208d6',
   },
   turnstileSecretKey: process.env.TURNSTILE_SECRET_KEY,
+  sentryApiDsn: process.env.SENTRY_API_DSN,
+  sentryReleaseName: process.env.GIT_SHA,
 }
