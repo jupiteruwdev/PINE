@@ -69,21 +69,28 @@ jobs:
 
     - name: Set metadata
       id: meta
-      uses: docker/metadata-action@v4.1.1
+      uses: docker/metadata-action@v4.3.0
       with:
         images: ${{ inputs.image_name }}
     
     - name: Build and push container
-      uses: docker/build-push-action@v3.2.0
+      uses: docker/build-push-action@v3.3.0
       id: build
       with:
-        build-args: BUILD_NUMBER=${{ steps.env.outputs.build_number }}
+        build-args: |
+          BUILD_NUMBER=${{ steps.env.outputs.build_number }}
+          GIT_SHA=${{ github.sha }}
         cache-from: type=gha,scope=${{ github.workflow }}
         cache-to: type=gha,scope=${{ github.workflow }},mode=max
         context: .
         push: true
         labels: ${{ steps.meta.outputs.labels }}
         tags: ${{ steps.meta.outputs.tags }}
+
+    - name: Repush image to fix manifests issue
+      run: |
+        docker pull ${{ inputs.image_name }}:${{ steps.meta.outputs.version }}
+        docker push ${{ inputs.image_name }}:${{ steps.meta.outputs.version }}
     
     - name: Add info to build summary
       run: |
