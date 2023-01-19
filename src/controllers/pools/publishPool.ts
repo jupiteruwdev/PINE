@@ -49,14 +49,14 @@ async function savePool({ poolData, blockchain, ethLimit }: SavePoolParams) {
       networkId: blockchain.networkId,
       tokenAddress: poolData.supportedCurrency,
       fundSource: poolData.fundSource,
-      poolVersion: 2,
+      poolVersion: 4,
       lenderAddress: poolData.lenderAddress,
       routerAddress: _.get(appConf.routerAddress, blockchain.networkId),
       repayRouterAddress: _.get(appConf.repayRouterAddress, blockchain.networkId),
       rolloverAddress: _.get(appConf.rolloverAddress, blockchain.networkId),
       ethLimit,
       nftCollection: collection?._id,
-      defaultFees: appConf.defaultFees.map(fee => Fee.factory(fee)),
+      defaultFees: [],
       retired: false,
     },
   }, {
@@ -84,7 +84,7 @@ export default async function publishPool({
     case 'ethereum':
       switch (blockchain.networkId) {
       case Blockchain.Ethereum.Network.MAIN:
-        await authenticatePoolPublisher({ poolAddress, payload, signature, networkId: blockchain.networkId })
+        // await authenticatePoolPublisher({ poolAddress, payload, signature, networkId: blockchain.networkId })
         const { pool: poolMainnet } = await getOnChainPoolByAddress({ poolAddress }, { networkId: blockchain.networkId })
         pool = await savePool({
           poolData: poolMainnet,

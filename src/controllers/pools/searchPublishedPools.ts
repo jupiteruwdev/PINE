@@ -11,6 +11,7 @@ export enum PoolSortType {
   NAME = 'name',
   LTV = 'ltv',
   INTEREST = 'interest',
+  UTILIZATION = 'utilization',
 }
 
 export enum PoolSortDirection {
@@ -210,6 +211,14 @@ function getPipelineStages({
     stages.push({
       $sort: {
         maxLTV: sortBy?.direction === PoolSortDirection.DESC ? -1 : 1,
+        name: 1,
+      },
+    })
+    break
+  case PoolSortType.UTILIZATION:
+    stages.push({
+      $sort: {
+        utilizationEth: sortBy?.direction === PoolSortDirection.DESC ? -1 : 1,
         name: 1,
       },
     })

@@ -22,7 +22,7 @@ export default async function getEthCollectionFloorPrices({
 
   try {
     const floorPrices = await DataSource.fetch(
-      useNFTBank({ blockchain, collectionAddresses }),
+      useAlchemy({ blockchain, collectionAddresses }),
     )
 
     logger.info(`Fetching floor prices for collections <${collectionAddresses}> on network <${blockchain.networkId}>... OK: ${floorPrices.map(t => t.amount.toFixed())}`)
@@ -35,39 +35,35 @@ export default async function getEthCollectionFloorPrices({
   }
 }
 
-export function useNFTBank({ blockchain, collectionAddresses }: Params): DataSource<Value<'ETH'>[]> {
+function useAlchemy({ blockchain, collectionAddresses }: Params): DataSource<Value<'ETH'>[]> {
   return async () => {
-    logger.info(`...using NFTBank to look up floor prices for collections <${collectionAddresses}>`)
+    logger.info(`...using Alchemy to look up floor prices for collections <${collectionAddresses}>`)
 
     if (blockchain.network !== 'ethereum') rethrow(`Unsupported blockchain <${JSON.stringify(blockchain)}>`)
 
-    const apiKey = appConf.nftbankAPIKey ?? rethrow('Missing NFTBank API key')
+    const apiKey = appConf.alchemyAPIKey ?? rethrow('Missing OpenSea API key')
 
     switch (blockchain.networkId) {
     case Blockchain.Ethereum.Network.MAIN:
-      const { data: res } = await postRequest('https://api.nftbank.ai/estimates-v2/floor_price/bulk', {
-        'chain_id': 'ETHEREUM',
-        'asset_contracts': collectionAddresses,
-      }, {
-        headers: {
-          'X-API-Key': apiKey,
-        },
-        timeout: 30000, // TODO: Why so slow
+      const res: any[] = await Promise.all(_.chunk(collectionAddresses, 100).map(addresses => new Promise((resolve, reject) => {
+        postRequest(`https://eth-mainnet.g.alchemy.com/nft/v2/${apiKey}/getContractMetadataBatch`, {
+          contractAddresses: addresses,
+        })
+          .then(res => resolve(res))
+          .catch(err => reject(err))
+      })))
+
+      let collections: any[] = []
+      res.forEach(item => {
+        collections = [...collections, ...item]
       })
 
-      if (!_.isArray(res)) rethrow('Unexpected payload while looking up floor prices from NFTBank')
-
-      // NFTBank result order is not guaranteed
-      const floorPrices = collectionAddresses.map(address => {
-        const entry = _.find(res, t => _.get(t, 'asset_contract')?.toLowerCase() === address.toLocaleLowerCase())
-        const prices = _.get(entry, 'floor_price')
-        const price = _.get(_.find(prices, { 'currency_symbol': 'ETH' }), 'floor_price')
+      return collections.map((collection: any) => {
+        const price = _.get(collection, 'contractMetadata.openSea.floorPrice')
 
         return price === undefined ? Value.$ETH(NaN) : Value.$ETH(price)
       })
-
-      return floorPrices
-    case Blockchain.Ethereum.Network.RINKEBY:
+    case Blockchain.Ethereum.Network.GOERLI:
       return collectionAddresses.map(() => Value.$ETH(1))
     default:
       rethrow(`Unsupported blockchain <${JSON.stringify(blockchain)}>`)

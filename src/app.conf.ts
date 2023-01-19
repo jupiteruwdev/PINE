@@ -18,7 +18,6 @@ export default {
   openseaAPIKey: process.env.OPENSEA_API_KEY,
   gemxyzAPIKey: process.env.GEMXYZ_API_KEY,
   moralisAPIKey: process.env.MORALIS_API_KEY,
-  nftbankAPIKey: process.env.NFTBANK_API_KEY,
   alchemyAPIKey: process.env.ALCHEMY_API_KEY,
   coinAPIKey: process.env.COIN_API_KEY,
   lunarCrushAPIKey: process.env.LUNARCRUSH_API_KEY,
@@ -66,7 +65,7 @@ export default {
   },
   pnplContractAddress: {
     [Blockchain.Ethereum.Network.RINKEBY]: '0x7D33BdDfe5945687382625547aBD8a0115B87490',
-    [Blockchain.Ethereum.Network.MAIN]: '0x514183FAf3ab9Db42D76317ecea74C4300E60EEe',
+    [Blockchain.Ethereum.Network.MAIN]: '0x083EcE0c4078874D111278ba3a030fAe464a5ed8',
   },
   valuationSignerMessageHashAddress: {
     [Blockchain.Ethereum.Network.RINKEBY]: '0x150A1a9015Bfaf54e7199eBb6ae35EBDE755D51D',
@@ -74,15 +73,15 @@ export default {
     [Blockchain.Ethereum.Network.GOERLI]: '0xfce1DFFE2A382f66ebD01F39b4e20d97B8110895',
   },
   routerAddress: {
-    [Blockchain.Ethereum.Network.MAIN]: '0x774badBc759234Bff52B0Be11bF61Bb68c9E9A24',
+    [Blockchain.Ethereum.Network.MAIN]: '0x7a517e8bd374565615c043C32760ba4BD9982219',
     [Blockchain.Ethereum.Network.RINKEBY]: '0xFC6c6e4727DA5E1bF79aC9C96155B4cD2faC54E6',
   },
   repayRouterAddress: {
-    [Blockchain.Ethereum.Network.MAIN]: '0x1C120cE3853542C0Fe3B75AF8F4c7F223f957d51',
+    [Blockchain.Ethereum.Network.MAIN]: '0x2B5DC8223D0aD809607f36a1D8A3A11bf20d595e',
     [Blockchain.Ethereum.Network.RINKEBY]: '0xFC6c6e4727DA5E1bF79aC9C96155B4cD2faC54E6',
   },
   rolloverAddress: {
-    [Blockchain.Ethereum.Network.MAIN]: '0x239f1818f21ebac47306ffa690016aa6a8882a59',
+    [Blockchain.Ethereum.Network.MAIN]: '0x5284d97a1462A767F385aE6Ae89BA9065ecE193c',
     [Blockchain.Ethereum.Network.RINKEBY]: '0xC796d62fB1927a13D7E41eBd0c8eA80fdA5Ef80a',
   },
   poolHelperAddress: {
