@@ -65,7 +65,7 @@ export default {
   },
   pnplContractAddress: {
     [Blockchain.Ethereum.Network.RINKEBY]: '0x7D33BdDfe5945687382625547aBD8a0115B87490',
-    [Blockchain.Ethereum.Network.MAIN]: '0x514183FAf3ab9Db42D76317ecea74C4300E60EEe',
+    [Blockchain.Ethereum.Network.MAIN]: '0x083EcE0c4078874D111278ba3a030fAe464a5ed8',
   },
   valuationSignerMessageHashAddress: {
     [Blockchain.Ethereum.Network.RINKEBY]: '0x150A1a9015Bfaf54e7199eBb6ae35EBDE755D51D',
