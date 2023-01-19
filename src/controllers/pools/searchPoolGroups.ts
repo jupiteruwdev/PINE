@@ -119,8 +119,26 @@ function getPipelineStages({
       groupValueLocked: {
         $sum: '$valueLockedEth',
       },
+      groupUtilization: {
+        $sum: '$utilizationEth',
+      },
       pools: {
         $push: '$$ROOT',
+      },
+    },
+  },
+  {
+    $addFields: {
+      totalUtilization: {
+        $cond: {
+          if: {
+            $ne: ['$groupValueLocked', 0],
+          },
+          then: {
+            $divide: ['$groupUtilization', '$groupValueLocked'],
+          },
+          else: 0,
+        },
       },
     },
   },
@@ -156,6 +174,14 @@ function getPipelineStages({
     stages.push({
       $sort: {
         'pools.maxLTV': sortBy?.direction === PoolSortDirection.DESC ? -1 : 1,
+        'pools.name': 1,
+      },
+    })
+    break
+  case PoolSortType.UTILIZATION:
+    stages.push({
+      $sort: {
+        'totalUtilization': sortBy?.direction === PoolSortDirection.DESC ? -1 : 1,
         'pools.name': 1,
       },
     })
