@@ -114,7 +114,6 @@ export default {
   // to allow `core-service` to authenticate requests to `worker`
   workerCloudRunUrl: process.env.WORKER_CLOUD_RUN_URL,
   signer: process.env.SIGNER,
-  moralisStreamId: process.env.MORALIS_STREAM_ID,
   looksrareAPIUrl: {
     [Blockchain.Ethereum.Network.MAIN]: process.env.LOOKSRARE_API_URL_MAINNET,
     [Blockchain.Ethereum.Network.GOERLI]: process.env.LOOKSRARE_API_URL_GOERLI,
@@ -126,4 +125,9 @@ export default {
   turnstileSecretKey: process.env.TURNSTILE_SECRET_KEY,
   sentryApiDsn: process.env.SENTRY_API_DSN,
   sentryReleaseName: process.env.GIT_SHA,
+  alchemySigningKey: process.env.ALCHEMY_SIGNING_KEY ?? '',
+  bidTreasuryContractAddress: {
+    [Blockchain.Ethereum.Network.MAIN]: '',
+    [Blockchain.Ethereum.Network.GOERLI]: '0x9e70ef3cd5565f4eb78996eb037765d759cc257b',
+  },
 }

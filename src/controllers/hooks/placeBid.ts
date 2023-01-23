@@ -246,21 +246,7 @@ async function x2y2PlaceBid({ blockchain, bidPrice, nftAddress, nftId, attempt, 
 
 export default async function placeBid({ blockchain, body }: Params) {
   try {
-    const confirmed = _.get(body, 'confirmed')
-    const logData = _.get(body, 'logs[0].data')
-    if (!confirmed || !logData) {
-      logger.info(`Plase bid on blockchain <${JSON.stringify(blockchain)}>... SKIP(unconfirmed logs)`)
-      return
-    }
-
-    const decodedData = ethers.utils.defaultAbiCoder.decode(
-      ['string', 'address', 'string', 'uint256'],
-      logData
-    )
-    const marketplace = decodedData[0]
-    const nftAddress = decodedData[1]
-    const nftId = decodedData[2]
-    const bidPrice = decodedData[3].toString()
+    const { marketplace, nftAddress, nftId, bidPrice } = _.get(body, 'returnValues')
 
     switch (marketplace) {
     case 'opensea':
