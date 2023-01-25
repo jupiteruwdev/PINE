@@ -25,7 +25,7 @@ export default async function getLoan({
   collectionAddress,
   nftId,
   populateValuation = false,
-  txSpeedBlocks = 0,
+  txSpeedBlocks = 2000,
 }: Params): Promise<Loan | undefined> {
   logger.info(`Fetching loan for collection address <${collectionAddress}>, NFT ID <${nftId}>, txSpeedBlocks <${txSpeedBlocks}> and blockchain <${JSON.stringify(blockchain)}>...`)
 
@@ -56,8 +56,9 @@ export default async function getLoan({
         const newPool = await getPool({ collectionAddress, blockchain, nft: { id: nftId, name: nft.name } })
         const contract = await getPoolContract({ blockchain, poolAddress: onChainLoan.pool })
         const loanDetails = await contract.methods._loans(nftId).call()
+        loanDetails.interestBPS1000000XBlock = ((Math.log10(10000 + Number(loanDetails.interestBPS1000000XBlock.toString()) * 2628000 / 1000000) + 200 + Number(loanDetails.interestBPS1000000XBlock.toString()) * 2628000 / 1000000) * 1000000 / 2628000).toFixed(0)
         const controlPlaneContract = getControlPlaneContract({ blockchain, address: _.get(appConf.controlPlaneContractAddress, blockchain.networkId) })
-        const outstandingWithInterestWei = new BigNumber(await controlPlaneContract.methods.outstanding(loanDetails, txSpeedBlocks).call())
+        const outstandingWithInterestWei = new BigNumber(await controlPlaneContract.methods.outstanding(loanDetails, 2000).call())
 
         if (outstandingWithInterestWei.lte(new BigNumber(0))) return undefined
 
@@ -84,14 +85,15 @@ export default async function getLoan({
         const rL = await l
         if (rL) return rL
 
-        if (pool.collection.valuation && (pool.collection.valuation?.timestamp || 0) < new Date().getTime() - appConf.valuationLimitation) {
-          throw fault('INVALID_VALUATION_TIMESTAMP')
-        }
+        // if (pool.collection.valuation && (pool.collection.valuation?.timestamp || 0) < new Date().getTime() - appConf.valuationLimitation) {
+        //   throw fault('INVALID_VALUATION_TIMESTAMP')
+        // }
 
         const contract = await getPoolContract({ blockchain, poolAddress: pool.address })
         const loanDetails = await contract.methods._loans(nftId).call()
+        loanDetails.interestBPS1000000XBlock = ((Math.log10(10000 + Number(loanDetails.interestBPS1000000XBlock.toString()) * 2628000 / 1000000) + 200 + Number(loanDetails.interestBPS1000000XBlock.toString()) * 2628000 / 1000000) * 1000000 / 2628000).toFixed(0)
         const controlPlaneContract = getControlPlaneContract({ blockchain, address: _.get(appConf.controlPlaneContractAddress, blockchain.networkId) })
-        const outstandingWithInterestWei = new BigNumber(await controlPlaneContract.methods.outstanding(loanDetails, txSpeedBlocks).call())
+        const outstandingWithInterestWei = new BigNumber(await controlPlaneContract.methods.outstanding(loanDetails, 2000).call())
 
         // Early exit if loan is fully repaid.
         if (outstandingWithInterestWei.lte(new BigNumber(0))) return undefined
