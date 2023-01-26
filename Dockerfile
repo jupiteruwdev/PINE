@@ -1,51 +1,38 @@
 # Builds the app with dev dependencies included.
-FROM node:17.9.1 AS dev
-
-ARG BUILD_NUMBER
-ARG GIT_SHA
-
-ENV BUILD_NUMBER=$BUILD_NUMBER
-ENV GIT_SHA=$GIT_SHA
+FROM node:17.9.1 AS build
 
 WORKDIR /var/app
 
-COPY package*.json ./
+ARG BUILD_NUMBER
+ENV BUILD_NUMBER=$BUILD_NUMBER
 
-RUN npm install
+COPY package.json package-lock.json /var/app/
+
+RUN npm ci
 
 COPY . .
 
-RUN npm run build
+RUN npm run build && npm prune --production
 
+FROM node:17.9.1-slim
 
-# Rebuilds the app with unit tests included.
-FROM dev AS test
+EXPOSE 8080
 
-RUN npm run build:test
-
-
-# Strips dev dependencies from the dev build.
-FROM dev AS prod
-
-RUN npm prune --production
-
-
-# Final production build.
-FROM node:17.9.1-slim AS release
+# Add Tini, according to: https://github.com/nodejs/docker-node/blob/main/docs/BestPractices.md#handling-kernel-signals
+RUN apt-get update && apt-get install -y tini && rm -rf /var/lib/apt/lists/*
+ENTRYPOINT ["/usr/bin/tini", "--"]
 
 ARG BUILD_NUMBER
-ARG GIT_SHA
+ARG SENTRY_RELEASE
 
 ENV NODE_ENV=production
 ENV BUILD_NUMBER=$BUILD_NUMBER
-ENV GIT_SHA=$GIT_SHA
+ENV SENTRY_RELEASE=$SENTRY_RELEASE
 
 WORKDIR /var/app
 
 COPY package*.json ./
-COPY --from=prod /var/app/build ./build
-COPY --from=prod /var/app/node_modules ./node_modules
+COPY --from=build /var/app/build ./build
+COPY --from=build /var/app/node_modules ./node_modules
 
-CMD npm start
-
-EXPOSE 8080
+CMD ["node", "--no-warnings", "--experimental-specifier-resolution", "node", "build/app"]

@@ -218,7 +218,7 @@
     ],
     "max-depth": [
       "warn",
-      6
+      7
     ],
     "max-len": "off",
     "new-parens": "error",
