@@ -13,6 +13,7 @@ import fault from './utils/fault'
 import lw from '@google-cloud/logging-winston'
 import * as Sentry from '@sentry/node'
 import * as Tracing from '@sentry/tracing'
+import { RewriteFrames } from '@sentry/integrations'
 import logger from './utils/logger'
 
 // Remove depth from console logs
@@ -32,15 +33,17 @@ const app = express()
 if (appConf.env === 'production') {
   // Sentry configs
   Sentry.init({
-    release: appConf.sentryReleaseName,
     dsn: appConf.sentryApiDsn,
     integrations: [
       new Sentry.Integrations.Http({ tracing: true }),
       new Tracing.Integrations.Express({ app }),
+      new RewriteFrames({
+        root: '/var/app/build',
+      }),
     ],
     tracesSampleRate: 1.0,
   })
-  app.use(Sentry.Handlers.requestHandler())
+  app.use(Sentry.Handlers.requestHandler() as express.RequestHandler)
   app.use(Sentry.Handlers.tracingHandler())
 
   // GCP error reporting configs
@@ -62,7 +65,7 @@ app.use('*', (req, res, next) => {
 })
 
 if (appConf.env === 'production') {
-  app.use(Sentry.Handlers.errorHandler())
+  app.use(Sentry.Handlers.errorHandler() as express.ErrorRequestHandler)
 }
 
 app.use((err: Error, req: Request, res: Response, next: NextFunction) => {

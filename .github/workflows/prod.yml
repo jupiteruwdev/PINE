@@ -26,6 +26,7 @@ jobs:
       cloud_run_service_name: core-service-prod
       version: ${{ needs.build-and-test.outputs.version }}
       environment: prod
+      environment_url: https://core-service-prod.pine.loans
 
   notify:
     name: Notify
