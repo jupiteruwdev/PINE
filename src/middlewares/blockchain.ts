@@ -1,6 +1,7 @@
 import { NextFunction, Request, Response } from 'express'
 import { Blockchain } from '../entities'
 import { getBlockchainFilter } from '../routes/utils/query'
+import fault from '../utils/fault'
 
 export default function(req: Request, res: Response, next: NextFunction) {
   const blockchainFilter = getBlockchainFilter(req.query, true)
@@ -10,7 +11,7 @@ export default function(req: Request, res: Response, next: NextFunction) {
     && blockchainFilter?.solana !== Blockchain.Solana.Network.DEVNET
   ) {
     return res.status(400).send({
-      message: 'ERR_UNSUPPORTED_BLOCKCHAIN',
+      error: fault('ERR_UNSUPPORTED_BLOCKCHAIN', undefined),
     })
   }
   next()
