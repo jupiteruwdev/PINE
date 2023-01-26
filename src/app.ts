@@ -43,7 +43,7 @@ if (appConf.env === 'production') {
     ],
     tracesSampleRate: 1.0,
   })
-  app.use(Sentry.Handlers.requestHandler())
+  app.use(Sentry.Handlers.requestHandler() as express.RequestHandler)
   app.use(Sentry.Handlers.tracingHandler())
 
   // GCP error reporting configs
@@ -65,7 +65,7 @@ app.use('*', (req, res, next) => {
 })
 
 if (appConf.env === 'production') {
-  app.use(Sentry.Handlers.errorHandler())
+  app.use(Sentry.Handlers.errorHandler() as express.ErrorRequestHandler)
 }
 
 app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
