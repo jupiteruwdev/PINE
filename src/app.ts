@@ -1,4 +1,8 @@
 import SuperError from '@andrewscwei/super-error'
+import lw from '@google-cloud/logging-winston'
+import { RewriteFrames } from '@sentry/integrations'
+import * as Sentry from '@sentry/node'
+import * as Tracing from '@sentry/tracing'
 import cors from 'cors'
 import express, { NextFunction, Request, Response } from 'express'
 import http from 'http'
@@ -8,12 +12,9 @@ import morgan from 'morgan'
 import util from 'util'
 import appConf from './app.conf'
 import { initDb } from './db'
+import { blockchainMiddleware } from './middlewares'
 import routes from './routes'
 import fault from './utils/fault'
-import lw from '@google-cloud/logging-winston'
-import * as Sentry from '@sentry/node'
-import * as Tracing from '@sentry/tracing'
-import { RewriteFrames } from '@sentry/integrations'
 import logger from './utils/logger'
 
 // Remove depth from console logs
@@ -56,7 +57,7 @@ else {
 
 app.use(cors())
 app.use(express.json())
-app.use('/', routes)
+app.use('/', blockchainMiddleware, routes)
 
 app.use('*', (req, res, next) => {
   const error = new Error(`Path <${req.baseUrl}> requested by IP ${req.ip} not found`)
