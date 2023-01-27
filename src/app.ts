@@ -1,5 +1,6 @@
 import SuperError from '@andrewscwei/super-error'
 import lw from '@google-cloud/logging-winston'
+import { RewriteFrames } from '@sentry/integrations'
 import * as Sentry from '@sentry/node'
 import * as Tracing from '@sentry/tracing'
 import cors from 'cors'
@@ -33,15 +34,17 @@ const app = express()
 if (appConf.env === 'production') {
   // Sentry configs
   Sentry.init({
-    release: appConf.sentryReleaseName,
     dsn: appConf.sentryApiDsn,
     integrations: [
       new Sentry.Integrations.Http({ tracing: true }),
       new Tracing.Integrations.Express({ app }),
+      new RewriteFrames({
+        root: '/var/app/build',
+      }),
     ],
     tracesSampleRate: 1.0,
   })
-  app.use(Sentry.Handlers.requestHandler())
+  app.use(Sentry.Handlers.requestHandler() as express.RequestHandler)
   app.use(Sentry.Handlers.tracingHandler())
 
   // GCP error reporting configs
@@ -63,7 +66,7 @@ app.use('*', (req, res, next) => {
 })
 
 if (appConf.env === 'production') {
-  app.use(Sentry.Handlers.errorHandler())
+  app.use(Sentry.Handlers.errorHandler() as express.ErrorRequestHandler)
 }
 
 app.use((err: Error, req: Request, res: Response, next: NextFunction) => {

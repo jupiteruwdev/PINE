@@ -14,7 +14,7 @@
     "module": "esnext",
     "moduleResolution": "node",
     "noImplicitAny": true,
-    "outDir": "./build",
+    "outDir": "build",
     "pretty": true,
     "removeComments": false,
     "resolveJsonModule": true,
@@ -23,15 +23,11 @@
     "sourceRoot": "/",
     "strict": true,
     "strictNullChecks": true,
-    "target": "es2017"
+    "target": "es2017",
+    // https://docs.sentry.io/platforms/node/typescript/#dealing-with-tslib
+    "noEmitHelpers": true,
+    "importHelpers": true
   },
-  "include": [
-    "src/**/*.ts"
-  ],
-  "exclude": [
-    "**/*.spec.ts",
-    "node_modules",
-    "build",
-    "tests"
-  ]
+  "include": ["src/**/*.ts"],
+  "exclude": ["**/*.spec.ts", "node_modules", "build", "tests"]
 }

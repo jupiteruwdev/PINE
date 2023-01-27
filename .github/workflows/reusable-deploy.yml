@@ -24,6 +24,11 @@ on:
         description: Version that corresponds to image tag
         required: false
         type: boolean
+      environment_url:
+        default: ''
+        description: Environment URL to be shown in GitHub Deployment interface
+        required: false
+        type: string
 
 permissions:
   contents: read
@@ -93,9 +98,12 @@ jobs:
           SENTRY_ORG: ${{ secrets.ORG_SENTRY_ORG }}
           SENTRY_PROJECT: core-service
         with:
-          environment: ${{ inputs.environment }}
+          environment: ${{ inputs.preview && 'development' || inputs.environment }}
           version: ${{ github.sha }}
-          sourcemaps: './src ./build'
+          sourcemaps: 'build'
+          ignore_missing: false
+          strip_common_prefix: false
+          url_prefix: '~/'
       
       - name: Update the GitHub Deployment status
         uses: bobheadxi/deployments@v1.3.0
@@ -106,4 +114,4 @@ jobs:
           status: ${{ job.status }}
           env: ${{ steps.deployment.outputs.env }}
           deployment_id: ${{ steps.deployment.outputs.deployment_id }}
-          env_url: ${{ steps.deploy.outputs.url }}
+          env_url: ${{ inputs.preview && steps.deploy.outputs.url || inputs.environment_url }}

@@ -187,6 +187,13 @@ function getPipelineStages({
       },
     },
   },
+  {
+    $match: {
+      'valueLockedEth': {
+        $gte: 0.01,
+      },
+    },
+  },
   ]
 
   switch (sortBy?.type) {

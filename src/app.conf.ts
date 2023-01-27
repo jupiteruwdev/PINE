@@ -124,7 +124,6 @@ export default {
   },
   turnstileSecretKey: process.env.TURNSTILE_SECRET_KEY,
   sentryApiDsn: process.env.SENTRY_API_DSN,
-  sentryReleaseName: process.env.GIT_SHA,
   alchemySigningKey: process.env.ALCHEMY_SIGNING_KEY ?? '',
   bidTreasuryContractAddress: {
     [Blockchain.Ethereum.Network.MAIN]: '',
