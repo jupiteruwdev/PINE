@@ -89,6 +89,9 @@ export default {
   poolHelperAddress: {
     [Blockchain.Ethereum.Network.MAIN]: '0x0aab1368f6704e8403105162690bdf6ee75305c0',
   },
+  pinePieceGenesisAddress: {
+    [Blockchain.Ethereum.Network.MAIN]: '0xacadb3c6290392f59f45dddacca8add2cec24366',
+  },
   defaultFees: [
     {
       type: 'fixed',
