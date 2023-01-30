@@ -54,7 +54,7 @@ describe('/v0/pools', () => {
     })
 
     it('GET /v0/pools/groups/search?offset=*&count=*', async () => {
-      const expectedPoolGroupsLength = await countPoolGroups({ blockchainFilter: { ethereum: Blockchain.Ethereum.Network.MAIN }, includeRetired: true })
+      const expectedPoolGroupsLength = await countPoolGroups({ blockchainFilter: { ethereum: Blockchain.Ethereum.Network.MAIN }, includeRetired: false })
       const { body: res } = await request(app).get('/v0/pools/groups/search')
         .query({
           ethereum: Blockchain.Ethereum.Network.MAIN,
