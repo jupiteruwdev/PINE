@@ -1,11 +1,11 @@
+import { ethers } from 'ethers'
+import { GcpKmsSigner } from 'ethers-gcp-kms-signer'
 import _ from 'lodash'
 import appConf from '../../app.conf'
 import { Blockchain, Valuation } from '../../entities'
 import fault from '../../utils/fault'
 import { getPoolContract } from '../contracts'
 import getEthWeb3 from '../utils/getEthWeb3'
-import { GcpKmsSigner } from 'ethers-gcp-kms-signer'
-import { ethers } from 'ethers'
 
 type Params = {
   blockchain: Blockchain

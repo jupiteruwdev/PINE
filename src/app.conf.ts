@@ -21,6 +21,8 @@ export default {
   alchemyAPIKey: process.env.ALCHEMY_API_KEY,
   coinAPIKey: process.env.COIN_API_KEY,
   lunarCrushAPIKey: process.env.LUNARCRUSH_API_KEY,
+  looksrareAPIKey: process.env.LOOKSRARE_API_KEY,
+  x2y2APIKey: process.env.X2Y2_API_KEY,
   requestTimeoutMs: Number(process.env.REQUEST_TIMEOUT_MS ?? 30000),
   alchemyAPIUrl: {
     [Blockchain.Ethereum.Network.RINKEBY]: 'https://eth-rinkeby.g.alchemy.com/v2/',
@@ -112,7 +114,6 @@ export default {
   // to allow `core-service` to authenticate requests to `worker`
   workerCloudRunUrl: process.env.WORKER_CLOUD_RUN_URL,
   signer: process.env.SIGNER,
-  moralisStreamId: process.env.MORALIS_STREAM_ID,
   looksrareAPIUrl: {
     [Blockchain.Ethereum.Network.MAIN]: process.env.LOOKSRARE_API_URL_MAINNET,
     [Blockchain.Ethereum.Network.GOERLI]: process.env.LOOKSRARE_API_URL_GOERLI,
@@ -123,5 +124,9 @@ export default {
   },
   turnstileSecretKey: process.env.TURNSTILE_SECRET_KEY,
   sentryApiDsn: process.env.SENTRY_API_DSN,
-  sentryReleaseName: process.env.GIT_SHA,
+  alchemySigningKey: process.env.ALCHEMY_SIGNING_KEY ?? '',
+  bidTreasuryContractAddress: {
+    [Blockchain.Ethereum.Network.MAIN]: '',
+    [Blockchain.Ethereum.Network.GOERLI]: '0x9e70ef3cd5565f4eb78996eb037765d759cc257b',
+  },
 }
