@@ -87,7 +87,7 @@ describe('/v0/pools', () => {
 
         if (res.data.length === 1) {
           expect(res.totalCount).to.equal(1)
-          expect(res.nextOffset).to.equal(1)
+          expect(res.nextOffset).to.equal(undefined)
           res.data.every((poolGroup: any) => expect(poolGroup).to.have.keys(...Object.keys(PoolGroup.codingResolver)))
         }
       }))
@@ -108,7 +108,7 @@ describe('/v0/pools', () => {
 
       if (res.data.length === 1) {
         expect(res.totalCount).to.equal(1)
-        expect(res.nextOffset).to.equal(1)
+        expect(res.nextOffset).to.equal(undefined)
         res.data.every((poolGroup: any) => expect(poolGroup).to.have.keys(...Object.keys(PoolGroup.codingResolver)))
       }
     })
