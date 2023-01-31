@@ -40,7 +40,7 @@ router.get('/groups/search', async (req, res, next) => {
     const poolGroups = await searchPoolGroups({ collectionAddress, collectionName, blockchainFilter, paginateBy, sortBy })
     const payload = serializeEntityArray(poolGroups, PoolGroup.codingResolver)
     const nextOffset = (paginateBy?.offset ?? 0) + poolGroups.length
-    const pagination = Pagination.serialize({ data: payload, totalCount, nextOffset: nextOffset === totalCount - 1 ? undefined : nextOffset })
+    const pagination = Pagination.serialize({ data: payload, totalCount, nextOffset: nextOffset === totalCount ? undefined : nextOffset })
 
     res.status(200).json(pagination)
   }
@@ -145,7 +145,7 @@ router.get('/', async (req, res, next) => {
 
     const payload = serializeEntityArray(pools, Pool.codingResolver)
     const nextOffset = (paginateBy?.offset ?? 0) + pools.length
-    const pagination = Pagination.serialize({ data: payload, totalCount, nextOffset: nextOffset === totalCount - 1 ? undefined : nextOffset })
+    const pagination = Pagination.serialize({ data: payload, totalCount, nextOffset: nextOffset === totalCount ? undefined : nextOffset })
 
     res.status(200).json(pagination)
   }
