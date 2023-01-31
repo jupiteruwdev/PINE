@@ -63,7 +63,7 @@ export default async function getUserMissionStats({
 
     const ownedNfts = _.get(res, 'ownedNfts')
     const isPinePieceGenesisHolder = !!ownedNfts.find((nft: any) => _.get(nft, 'contract.address').toLowerCase() === _.get(appConf.pinePieceGenesisAddress, blockchain.networkId).toLowerCase())
-    const isArbitraryNFTHolder = !!ownedNfts.find((nft: any) => arbitraryNFTs.find((arbitraryNFT: string) => arbitraryNFT.toLowerCase() === _.get(nft, 'contract.address')))
+    const isArbitraryNFTHoldings = arbitraryNFTs.filter((arbitraryNFT: string) => !!ownedNfts.find((nft: any) => _.get(nft, 'contract.address').toLowerCase() === arbitraryNFT.toLowerCase()))
     logger.info(`Fetching user mission stats for blokchain <${JSON.stringify(blockchain)}>... OK`)
 
     return UserMissionStats.factory({
@@ -71,8 +71,8 @@ export default async function getUserMissionStats({
       borrow: !!loanHistoriesByBorrower?.length,
       pnpl: !!phplHistoriesByBorrower?.length,
       pinePiece: isPinePieceGenesisHolder,
-      arbitraryNft: isArbitraryNFTHolder,
-      interaction: false,
+      arbitraryNfts: isArbitraryNFTHoldings,
+      interactionAddresses: user.interactionAddresses,
     })
   }
   catch (err) {
