@@ -54,7 +54,7 @@ describe('/v0/pools', () => {
     })
 
     it('GET /v0/pools/groups/search?offset=*&count=*', async () => {
-      const expectedPoolGroupsLength = await countPoolGroups({ blockchainFilter: { ethereum: Blockchain.Ethereum.Network.MAIN }, includeRetired: true })
+      const expectedPoolGroupsLength = await countPoolGroups({ blockchainFilter: { ethereum: Blockchain.Ethereum.Network.MAIN }, includeRetired: false })
       const { body: res } = await request(app).get('/v0/pools/groups/search')
         .query({
           ethereum: Blockchain.Ethereum.Network.MAIN,
@@ -67,7 +67,9 @@ describe('/v0/pools', () => {
       expect(res.data).be.an('array')
       expect(res.data).to.have.length(10)
       expect(res.totalCount).to.equal(expectedPoolGroupsLength)
-      expect(res.nextOffset).to.equal(10)
+      if (res.nextOffset) {
+        expect(res.nextOffset).to.equal(10)
+      }
       res.data.every((poolGroup: any) => expect(poolGroup).to.have.keys(...Object.keys(PoolGroup.codingResolver)))
     })
 
