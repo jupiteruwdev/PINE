@@ -77,6 +77,9 @@ function getPipelineStages({
       'networkId': blockchain.networkId,
       ...lenderAddress === undefined ? {} : { lenderAddress },
       ...includeRetired === true ? {} : { retired: { $ne: true } },
+      'valueLockedEth': {
+        $gte: 0.01,
+      },
     },
   }, {
     $lookup: {

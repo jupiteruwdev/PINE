@@ -32,7 +32,7 @@ export default async function getLoanTerms({ blockchain, collectionAddresses, nf
         throw fault('INVALID_VALUATION_TIMESTAMP')
       }
 
-      const collectionsMetadata = await Promise.all(pools.map((pool, index) => getEthCollectionMetadata({ blockchain, collectionAddress: collectionAddresses[index], matchSubcollectionBy: { type: 'poolAddress', value: pool.address } })))
+      const collectionsMetadata = await Promise.all(collectionAddresses.map((collectionAddress, index) => getEthCollectionMetadata({ blockchain, collectionAddress, matchSubcollectionBy: { type: 'poolAddress', value: pools.find(pool => pool.address === collectionAddress)?.address ?? '' } })))
       const nftsMetadata = await Promise.all(collectionAddresses.map((collectionAddress, index) => getEthNFTMetadata({ blockchain, collectionAddress, nftId: nftIds[index] })))
 
       const nfts: NFT[] = []
