@@ -9,6 +9,9 @@ export default async function getOnChainGlobalStats({ networkId, useCache }: Opt
         id
         historicalLentOut
       }
+      loans (where: {status: "open"}) {
+        id
+      }
     }
   `)
 

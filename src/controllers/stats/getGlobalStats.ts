@@ -27,19 +27,21 @@ export default async function getGlobalStats({
       searchPublishedPools({ blockchainFilter, includeRetired: true }),
     ])
 
-    const totalUtilizationUSD = pools.reduce((p, c) => p.plus(c.utilization.amount), new BigNumber(0)).times(ethValueUSD.amount)
-    const totalValueLockedUSD = pools.reduce((p, c) => p.plus(c.valueLocked.amount), new BigNumber(0)).times(ethValueUSD.amount)
+    const totalUtilizationETH = pools.reduce((p, c) => p.plus(c.utilization.amount), new BigNumber(0))
+    const totalUtilizationUSD = totalUtilizationETH.times(ethValueUSD.amount)
+    const totalValueLockedUSD = pools.reduce((p, c) => p.plus(c.valueLocked.amount).plus(c.utilization.amount), new BigNumber(0)).times(ethValueUSD.amount)
     const totalCapacityUSD = totalValueLockedUSD.minus(totalUtilizationUSD)
 
-    const { globalStat } = await getOnChainGlobalStats()
+    const { globalStat, loans } = await getOnChainGlobalStats()
     const totalLentETH = Web3.utils.fromWei(globalStat.historicalLentOut)
 
     const globalStats: GlobalStats = {
       capacity: Value.$USD(totalCapacityUSD),
       totalValueLentHistorical: Value.$ETH(totalLentETH),
-      totalValueLocked: Value.$USD(totalValueLockedUSD),
-      utilization: Value.$USD(totalUtilizationUSD),
+      totalValueLocked: Value.$USD(totalValueLockedUSD.minus(totalUtilizationUSD)),
+      utilization: Value.$ETH(totalUtilizationETH),
       utilizationRatio: totalUtilizationUSD.div(totalValueLockedUSD),
+      noOfLoans: loans.length,
     }
 
     logger.info(`Fetching global stats for blockchain filter <${JSON.stringify(blockchainFilter)}>... OK:`, globalStats)

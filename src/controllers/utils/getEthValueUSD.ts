@@ -1,6 +1,7 @@
 import BigNumber from 'bignumber.js'
 import _ from 'lodash'
 import appConf from '../../app.conf'
+import { PriceModel } from '../../db'
 import { AnyCurrency, Value } from '../../entities'
 import fault from '../../utils/fault'
 import logger from '../../utils/logger'
@@ -8,6 +9,17 @@ import DataSource from './DataSource'
 import getRequest from './getRequest'
 
 export default async function getEthValueUSD(amountEth: number | string | BigNumber = 1) {
+  const lastestPrice = await PriceModel.findOne({ name: 'eth' }).lean()
+  const updatedAt = new Date(_.get(lastestPrice, 'updatedAt'))
+  const now = Date.now()
+
+  if (updatedAt.getTime() >= now - 60 * 5 * 1000) {
+    return Value.factory({
+      amount: lastestPrice?.value?.amount,
+      currency: lastestPrice?.value?.currency,
+    })
+  }
+
   return DataSource.fetch(useCoingecko(amountEth), useBinance(amountEth), useCoinAPI(amountEth))
 }
 
