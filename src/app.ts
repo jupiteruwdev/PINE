@@ -83,12 +83,14 @@ app.use((err: SuperError, req: Request, res: Response, next: NextFunction) => {
       logger.info(`Handling 404 error... SKIP: ${err}`)
     }
   }
-  else if (appConf.env === 'production') {
-    (req as any).log.error('Handling 500 error... ERR', err)
-  }
-  else {
-    logger.error('Handling 500 error... ERR')
-    if (logger.isErrorEnabled() && !logger.silent) console.error(err)
+  else if (status >= 500) {
+    if (appConf.env === 'production') {
+      (req as any).log.error('Handling 500 error... ERR', err)
+    }
+    else {
+      logger.error('Handling 500 error... ERR')
+      if (logger.isErrorEnabled() && !logger.silent) console.error(err)
+    }
   }
 
   res.status(status).json({
