@@ -10,9 +10,9 @@ export default function(req: Request, res: Response, next: NextFunction) {
     || blockchainFilter?.solana !== Blockchain.Solana.Network.MAINNET
     && blockchainFilter?.solana !== Blockchain.Solana.Network.DEVNET
   ) {
-    return res.status(400).send({
-      error: fault('ERR_UNSUPPORTED_BLOCKCHAIN', undefined),
-    })
+    next(fault('ERR_UNSUPPORTED_BLOCKCHAIN', undefined))
   }
-  next()
+  else {
+    next()
+  }
 }

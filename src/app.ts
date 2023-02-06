@@ -14,6 +14,7 @@ import appConf from './app.conf'
 import { initDb } from './db'
 import { blockchainMiddleware } from './middlewares'
 import routes from './routes'
+import rootCause from './utils/error'
 import fault from './utils/fault'
 import logger from './utils/logger'
 
@@ -69,8 +70,8 @@ if (appConf.env === 'production') {
   app.use(Sentry.Handlers.errorHandler() as express.ErrorRequestHandler)
 }
 
-app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
-  const status = (err as any).status ?? 500
+app.use((err: SuperError, req: Request, res: Response, next: NextFunction) => {
+  const status = rootCause(err)
 
   res.setHeader('Content-Type', 'application/json')
 
