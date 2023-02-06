@@ -12,7 +12,7 @@ import morgan from 'morgan'
 import util from 'util'
 import appConf from './app.conf'
 import { initDb } from './db'
-import { blockchainMiddleware } from './middlewares'
+import { blockchainMiddleware, rateLimitMiddleware } from './middlewares'
 import routes from './routes'
 import fault from './utils/fault'
 import logger from './utils/logger'
@@ -57,7 +57,7 @@ else {
 
 app.use(cors())
 app.use(express.json())
-app.use('/', blockchainMiddleware, routes)
+app.use('/', [rateLimitMiddleware, blockchainMiddleware], routes)
 
 app.use('*', (req, res, next) => {
   const error = new Error(`Path <${req.baseUrl}> requested by IP ${req.ip} not found`)
