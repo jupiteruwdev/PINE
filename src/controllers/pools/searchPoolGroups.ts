@@ -224,6 +224,7 @@ export default async function searchPoolGroups({
       pools: group.map(pool => ({
         ...pool,
         valueLocked: Value.$USD(pool.valueLocked.amount.times(ethValueUSD.amount)),
+        utilization: Value.$USD(pool.utilization.amount.times(ethValueUSD.amount)),
       })),
       totalValueLent: Value.$USD(
         group
