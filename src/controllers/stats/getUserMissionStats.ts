@@ -72,7 +72,7 @@ export default async function getUserMissionStats({
       pnpl: !!phplHistoriesByBorrower?.length,
       pinePiece: isPinePieceGenesisHolder,
       arbitraryNfts: isArbitraryNFTHoldings,
-      interactionAddresses: user.interactionAddresses,
+      interactionAddresses: user.interactionAddresses ?? [],
     })
   }
   catch (err) {
