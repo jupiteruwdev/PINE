@@ -42,6 +42,7 @@ router.get('/groups/search', async (req, res, next) => {
     const nextOffset = (paginateBy?.offset ?? 0) + poolGroups.length
     const pagination = Pagination.serialize({ data: payload, totalCount, nextOffset: nextOffset === totalCount ? undefined : nextOffset })
 
+    res.setHeader('Cache-Control', 'public, max-age=60, stale-while-revalidate=30')
     res.status(200).json(pagination)
   }
   catch (err) {
