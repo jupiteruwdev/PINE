@@ -101,10 +101,6 @@ export default async function getRolloverTerms({
                 loanTerm.options.map(option => {
                   option.maxBorrow = Value.$ETH(option.maxLTVBPS.div(10_000).times(loanTerm.valuation.value?.amount ?? 0).toFixed(appConf.ethMaxDecimalPlaces, BigNumber.ROUND_DOWN))
                   option.fees = [
-                    {
-                      type: 'percentage',
-                      value: 0.0035,
-                    },
                   ]
                 })
 
