@@ -5,7 +5,7 @@ import { Blockchain, Collection, NFT } from '../../entities'
 import fault from '../../utils/fault'
 import logger from '../../utils/logger'
 import rethrow from '../../utils/rethrow'
-import { getCollections, populateEthCollectionMetadataForNFTs } from '../collections'
+import { populateEthCollectionMetadataForNFTs } from '../collections'
 import populatePoolAvailabilityForNFTs from '../pools/populatePoolAvailabilityForNFTs'
 import DataSource from '../utils/DataSource'
 import getRequest from '../utils/getRequest'
@@ -16,23 +16,20 @@ type Params = {
   blockchain: Blockchain
   ownerAddress: string
   populateMetadata: boolean
+  collectionAddress?: string
 }
 
 type AlchemyParams = Params & {
-  collectionAddresses: string[]
+  collectionAddresses?: string[]
 }
 
-export default async function getEthNFTsByOwner({ blockchain, ownerAddress, populateMetadata }: Params): Promise<NFT[]> {
+export default async function getEthNFTsByOwner({ blockchain, ownerAddress, populateMetadata, collectionAddress }: Params): Promise<NFT[]> {
   if (blockchain.network !== 'ethereum') rethrow(`Unsupported blockchain <${JSON.stringify(blockchain)}>`)
 
   logger.info(`Fetching Ethereum NFTs by owner <${ownerAddress}> on network <${blockchain.networkId}>...`)
 
-  const supportedCollections = await getCollections({ blockchainFilter: {
-    ethereum: blockchain.networkId,
-  } })
-
   let nfts = await DataSource.fetch(
-    useAlchemy({ blockchain, ownerAddress, populateMetadata, collectionAddresses: supportedCollections.map(collection => collection.address) }),
+    useAlchemy({ blockchain, ownerAddress, populateMetadata, collectionAddresses: collectionAddress ? [collectionAddress] : undefined }),
     // useMoralis({ blockchain, ownerAddress, populateMetadata }),
   )
 
@@ -60,29 +57,24 @@ export function useAlchemy({ blockchain, ownerAddress, populateMetadata, collect
     const apiKey = appConf.alchemyAPIKey ?? rethrow('Missing Alchemy API key')
     const res = []
 
-    let currPageKey; let chunkKey = 0
+    let currPageKey
 
-    while (1) {
-      const chunk = collectionAddresses.slice(chunkKey, chunkKey + 40)
-      currPageKey = undefined
-      while (true) {
-        const { ownedNfts: partialRes, pageKey }: any = await getRequest(`${apiHost}${apiKey}/getNFTs`, {
-          params: {
-            owner: ownerAddress,
-            withMetadata: populateMetadata,
-            pageKey: currPageKey,
-            contractAddresses: chunk,
-          },
-        }).catch(err => rethrow(`Failed to fetch NFTs for owner <${ownerAddress}> using Alchemy: ${err}`))
+    currPageKey = undefined
+    while (true) {
+      const { ownedNfts: partialRes, pageKey }: any = await getRequest(`${apiHost}${apiKey}/getNFTs`, {
+        params: {
+          owner: ownerAddress,
+          withMetadata: populateMetadata,
+          pageKey: currPageKey,
+          contractAddresses: collectionAddresses ? collectionAddresses : undefined,
+        },
+      }).catch(err => rethrow(`Failed to fetch NFTs for owner <${ownerAddress}> using Alchemy: ${err}`))
 
-        if (!_.isArray(partialRes)) rethrow('Bad request or unrecognized payload when fetching NFTs from Alchemy API')
-        res.push(...partialRes)
+      if (!_.isArray(partialRes)) rethrow('Bad request or unrecognized payload when fetching NFTs from Alchemy API')
+      res.push(...partialRes)
 
-        if (_.isNil(pageKey)) break
-        currPageKey = pageKey
-      }
-      chunkKey += chunk.length
-      if (chunkKey >= collectionAddresses.length) break
+      if (_.isNil(pageKey)) break
+      currPageKey = pageKey
     }
 
     const unsanitizedNFTs = await Promise.all(res.map(async entry => {
