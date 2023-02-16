@@ -4,6 +4,7 @@ import appConf from '../../app.conf'
 import { Blockchain, Collection, NFT } from '../../entities'
 import fault from '../../utils/fault'
 import logger from '../../utils/logger'
+import { retryPromise } from '../../utils/repeatAsync'
 import rethrow from '../../utils/rethrow'
 import { populateEthCollectionMetadataForNFTs } from '../collections'
 import populatePoolAvailabilityForNFTs from '../pools/populatePoolAvailabilityForNFTs'
@@ -57,18 +58,18 @@ export function useAlchemy({ blockchain, ownerAddress, populateMetadata, collect
     const apiKey = appConf.alchemyAPIKey ?? rethrow('Missing Alchemy API key')
     const res = []
 
-    let currPageKey
+    let currPageKey: string | undefined
 
     currPageKey = undefined
     while (true) {
-      const { ownedNfts: partialRes, pageKey }: any = await getRequest(`${apiHost}${apiKey}/getNFTs`, {
+      const { ownedNfts: partialRes, pageKey }: any = await retryPromise(() => getRequest(`${apiHost}${apiKey}/getNFTs`, {
         params: {
           owner: ownerAddress,
           withMetadata: populateMetadata,
           pageKey: currPageKey,
           contractAddresses: collectionAddresses ? collectionAddresses : undefined,
         },
-      }).catch(err => rethrow(`Failed to fetch NFTs for owner <${ownerAddress}> using Alchemy: ${err}`))
+      })).catch(err => rethrow(`Failed to fetch NFTs for owner <${ownerAddress}> using Alchemy: ${err}`))
 
       if (!_.isArray(partialRes)) rethrow('Bad request or unrecognized payload when fetching NFTs from Alchemy API')
       res.push(...partialRes)

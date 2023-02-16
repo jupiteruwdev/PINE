@@ -220,7 +220,7 @@ export default async function searchPoolGroups({
       }),
     ])
 
-    let nfts: NFT[]
+    let nfts: NFT[] = []
 
     if (ownerAddress) {
       nfts = await getNFTsByOwner({
