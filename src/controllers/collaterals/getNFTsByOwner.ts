@@ -31,6 +31,7 @@ type Params = {
 export default async function getNFTsByOwner({ blockchain, ownerAddress, populateMetadata = false }: Params): Promise<NFT[]> {
   switch (blockchain.network) {
   case 'ethereum':
+  case 'polygon':
     return getEthNFTsByOwner({ blockchain, ownerAddress, populateMetadata })
   case 'solana':
     return getSolNFTsByOwner({ blockchain, ownerAddress, populateMetadata })

@@ -14,16 +14,18 @@ export default async function getGlobalStats({
   blockchainFilter = {
     ethereum: Blockchain.Ethereum.Network.MAIN,
     solana: Blockchain.Solana.Network.MAINNET,
+    polygon: Blockchain.Polygon.Network.MAIN,
   },
 }: Params = {}): Promise<GlobalStats> {
   try {
     logger.info(`Fetching global stats for blockchain filter <${JSON.stringify(blockchainFilter)}>...`)
 
+    const blockchain = Blockchain.parseBlockchain(blockchainFilter)
     const [
       ethValueUSD,
       pools,
     ] = await Promise.all([
-      getEthValueUSD(),
+      getEthValueUSD(blockchain),
       searchPublishedPools({ blockchainFilter, includeRetired: true }),
     ])
 
@@ -32,7 +34,7 @@ export default async function getGlobalStats({
     const totalValueLockedUSD = pools.reduce((p, c) => p.plus(c.valueLocked.amount).plus(c.utilization.amount), new BigNumber(0)).times(ethValueUSD.amount)
     const totalCapacityUSD = totalValueLockedUSD.minus(totalUtilizationUSD)
 
-    const { globalStat, loans } = await getOnChainGlobalStats()
+    const { globalStat, loans } = await getOnChainGlobalStats({ networkId: blockchain?.networkId })
     const totalLentETH = Web3.utils.fromWei(globalStat.historicalLentOut)
 
     const globalStats: GlobalStats = {

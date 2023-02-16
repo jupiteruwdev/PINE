@@ -68,10 +68,8 @@ async function searchPublishedPools({
   let docs
   if (params.nftId !== undefined) {
     docs = await aggregation.exec()
-    docs = await filterByNftId(Blockchain.factory({
-      network: 'ethereum',
-      networkId: params.blockchainFilter?.ethereum,
-    }), docs, params.nftId)
+    const blockchain = Blockchain.parseBlockchain(params.blockchainFilter ?? {})
+    docs = await filterByNftId(blockchain, docs, params.nftId)
 
     if (paginateBy !== undefined) {
       docs = docs.slice(paginateBy.offset, paginateBy.offset + paginateBy.count - 1)
@@ -95,6 +93,7 @@ function getPipelineStages({
   blockchainFilter = {
     ethereum: Blockchain.Ethereum.Network.MAIN,
     solana: Blockchain.Solana.Network.MAINNET,
+    polygon: Blockchain.Polygon.Network.MAIN,
   },
   collectionAddress,
   collectionName,
@@ -104,7 +103,7 @@ function getPipelineStages({
   address,
   tenors,
 }: Params): PipelineStage[] {
-  const blockchain = Blockchain.Ethereum(blockchainFilter.ethereum)
+  const blockchains = Blockchain.fromFilter(blockchainFilter)
 
   const collectionFilter = [
     ...collectionAddress === undefined ? [] : [{
@@ -136,8 +135,12 @@ function getPipelineStages({
 
   const stages: PipelineStage[] = [{
     $match: {
-      'networkType': blockchain.network,
-      'networkId': blockchain.networkId,
+      $or: blockchains.map(blockchain => ({
+        $and: [
+          { 'networkType': blockchain.network },
+          { 'networkId': blockchain.networkId },
+        ],
+      })),
       ...lenderAddress === undefined ? {} : { lenderAddress },
       ...includeRetired === true ? {} : { retired: { $ne: true } },
     },

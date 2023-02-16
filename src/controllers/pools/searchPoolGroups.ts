@@ -40,12 +40,13 @@ function getPipelineStages({
   blockchainFilter = {
     ethereum: Blockchain.Ethereum.Network.MAIN,
     solana: Blockchain.Solana.Network.MAINNET,
+    polygon: Blockchain.Polygon.Network.MAIN,
   },
   collectionAddress,
   collectionName,
   sortBy,
 }: Params = {}): PipelineStage[] {
-  const blockchain = Blockchain.Ethereum(blockchainFilter.ethereum)
+  const blockchains = Blockchain.fromFilter(blockchainFilter)
 
   const collectionFilter = [
     ...collectionAddress === undefined ? [] : [{
@@ -65,8 +66,12 @@ function getPipelineStages({
   const stages: PipelineStage[] = [{
     $match: {
       'retired': { $ne: true },
-      'networkType': blockchain.network,
-      'networkId': blockchain.networkId,
+      '$or': blockchains.map(blockchain => ({
+        $and: [
+          { 'networkType': blockchain.network },
+          { 'networkId': blockchain.networkId },
+        ],
+      })),
     },
   }, {
     $lookup: {
@@ -197,6 +202,7 @@ export default async function searchPoolGroups({
   blockchainFilter = {
     ethereum: Blockchain.Ethereum.Network.MAIN,
     solana: Blockchain.Solana.Network.MAINNET,
+    polygon: Blockchain.Polygon.Network.MAIN,
   },
   collectionAddress,
   collectionName,
@@ -207,7 +213,7 @@ export default async function searchPoolGroups({
 
   try {
     const [ethValueUSD, groups] = await Promise.all([
-      getEthValueUSD(),
+      getEthValueUSD(Blockchain.parseBlockchain(blockchainFilter)),
       searchPublishedPoolGroups({
         blockchainFilter,
         collectionAddress,

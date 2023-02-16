@@ -16,7 +16,8 @@ type VersionedContract = Contract & { poolVersion?: number }
 
 export default async function getPoolContract({ blockchain, poolAddress }: Params): Promise<VersionedContract> {
   switch (blockchain.network) {
-  case 'ethereum': {
+  case 'ethereum':
+  case 'polygon': {
     if (ethPoolContracts[poolAddress] && (ethPoolContracts[poolAddress].poolVersion ?? 0) > 0) {
       return ethPoolContracts[poolAddress]
     }

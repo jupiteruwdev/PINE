@@ -22,26 +22,35 @@ export default {
   coinAPIKey: process.env.COIN_API_KEY,
   lunarCrushAPIKey: process.env.LUNARCRUSH_API_KEY,
   looksrareAPIKey: process.env.LOOKSRARE_API_KEY,
+  spicyestAPIKey: process.env.SPICYEST_API_KEY,
   x2y2APIKey: process.env.X2Y2_API_KEY,
   requestTimeoutMs: Number(process.env.REQUEST_TIMEOUT_MS ?? 30000),
   alchemyAPIUrl: {
     [Blockchain.Ethereum.Network.RINKEBY]: 'https://eth-rinkeby.g.alchemy.com/v2/',
     [Blockchain.Ethereum.Network.MAIN]: 'https://eth-mainnet.g.alchemy.com/v2/',
     [Blockchain.Ethereum.Network.GOERLI]: 'https://eth-goerli.g.alchemy.com/v2/',
+    [Blockchain.Polygon.Network.MAIN]: 'https://polygon-mainnet.g.alchemy.com/v2/',
+    [Blockchain.Polygon.Network.MUMBAI]: 'https://polygon-mumbai.g.alchemy.com/v2/',
   },
   alchemyNFTAPIUrl: {
     [Blockchain.Ethereum.Network.RINKEBY]: 'https://eth-rinkeby.g.alchemy.com/nft/v2/',
     [Blockchain.Ethereum.Network.MAIN]: 'https://eth-mainnet.g.alchemy.com/nft/v2/',
     [Blockchain.Ethereum.Network.GOERLI]: 'https://eth-goerli.g.alchemy.com/nft/v2/',
+    [Blockchain.Polygon.Network.MAIN]: 'https://polygon-mainnet.g.alchemy.com/nft/v2/',
+    [Blockchain.Polygon.Network.MUMBAI]: 'https://polygon-mumbai.g.alchemy.com/nft/v2/',
   },
   subgraphAPIUrl: {
     [Blockchain.Ethereum.Network.RINKEBY]: process.env.SUBGRAPH_API_RINKEBY_URL,
     [Blockchain.Ethereum.Network.MAIN]: process.env.SUBGRAPH_API_MAINNET_URL,
+    [Blockchain.Polygon.Network.MUMBAI]: process.env.SUBGRAPH_API_POLYGON_MUMBAI_URL,
+    [Blockchain.Polygon.Network.MAIN]: process.env.SUBGRAPH_API_POLYGON_MAINNET_URL,
   },
   ethRPC: {
     [Blockchain.Ethereum.Network.RINKEBY]: process.env.ETH_RPC_RINKEBY,
     [Blockchain.Ethereum.Network.MAIN]: process.env.ETH_RPC_MAINNET,
     [Blockchain.Ethereum.Network.GOERLI]: process.env.ETH_RPC_GOERLI,
+    [Blockchain.Polygon.Network.MAIN]: process.env.POLYGON_RPC_MAINNET,
+    [Blockchain.Polygon.Network.MUMBAI]: process.env.POLYGON_RPC_MUMBAI,
   },
   ethValuationExpiryBlocks: 64, // quote expires in 15 mins
   ethValuationSigner: process.env.VALUATION_SIGNER,
@@ -88,6 +97,7 @@ export default {
   },
   poolHelperAddress: {
     [Blockchain.Ethereum.Network.MAIN]: '0x0aab1368f6704e8403105162690bdf6ee75305c0',
+    [Blockchain.Polygon.Network.MAIN]: '0x0aab1368f6704e8403105162690bdf6ee75305c0',
   },
   pinePieceGenesisAddress: {
     [Blockchain.Ethereum.Network.MAIN]: '0xacadb3c6290392f59f45dddacca8add2cec24366',

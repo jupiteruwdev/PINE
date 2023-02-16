@@ -3,7 +3,9 @@ import { PipelineStage } from 'mongoose'
 import appConf from '../../app.conf'
 import { NFTCollectionModel, PoolModel } from '../../db'
 import { Blockchain, CollectionMetadata } from '../../entities'
+import fault from '../../utils/fault'
 import logger from '../../utils/logger'
+import { convertToMoralisChain } from '../../utils/moralis'
 import rethrow from '../../utils/rethrow'
 import { getEthNFTMetadata } from '../collaterals'
 import DataSource from '../utils/DataSource'
@@ -25,12 +27,27 @@ export default async function getEthCollectionMetadata({
   try {
     logger.info(`Fetching metadata for collection using params <${JSON.stringify(params)}> on blockchain <${JSON.stringify(blockchain)}>...`)
 
-    const metadata = await DataSource.fetch(
-      useDb({ blockchain, ...params }),
-      useOpenSea({ blockchain, ...params }),
-      useAlchemy({ blockchain, ...params }),
-      useMoralis({ blockchain, ...params }),
-    )
+    let metadata
+
+    switch (blockchain.network) {
+    case 'ethereum':
+      metadata = await DataSource.fetch(
+        useDb({ blockchain, ...params }),
+        useOpenSea({ blockchain, ...params }),
+        useAlchemy({ blockchain, ...params }),
+        useMoralis({ blockchain, ...params }),
+      )
+      break
+    case 'polygon':
+      metadata = await DataSource.fetch(
+        useDb({ blockchain, ...params }),
+        useAlchemy({ blockchain, ...params }),
+        useMoralis({ blockchain, ...params }),
+      )
+      break
+    default:
+      throw fault('ERR_UNSUPPORTED_BLOCKCHAIN')
+    }
 
     logger.info(`Fetching metadata for collection using params <${JSON.stringify(params)}> on blockchain <${JSON.stringify(blockchain)}>... OK`)
     logger.debug(JSON.stringify(metadata, undefined, 2))
@@ -49,7 +66,7 @@ export function useDb({ blockchain, collectionAddress, matchSubcollectionBy }: P
   return async () => {
     logger.info('...using db to look up metadata for collection')
 
-    if (blockchain?.network !== 'ethereum') rethrow(`Unsupported blockchain <${JSON.stringify(blockchain)}>`)
+    if (blockchain?.network !== 'ethereum' && blockchain.network !== 'polygon') rethrow(`Unsupported blockchain <${JSON.stringify(blockchain)}>`)
 
     let docs
 
@@ -198,7 +215,7 @@ export function useAlchemy({ blockchain, collectionAddress }: Params): DataSourc
     logger.info(`...using Alchemy to look up metadata for collection <${collectionAddress}>`)
 
     if (collectionAddress === undefined) rethrow('Collection address must be provided')
-    if (blockchain?.network !== 'ethereum') rethrow(`Unsupported blockchain <${JSON.stringify(blockchain)}>`)
+    if (blockchain?.network !== 'ethereum' && blockchain?.network !== 'polygon') rethrow(`Unsupported blockchain <${JSON.stringify(blockchain)}>`)
 
     const apiHost = _.get(appConf.alchemyAPIUrl, blockchain.networkId) ?? rethrow(`Missing Alchemy API URL for blockchain <${JSON.stringify(blockchain)}>`)
     const apiKey = appConf.alchemyAPIKey ?? rethrow('Missing Alchemy API key')
@@ -224,7 +241,7 @@ export function useMoralis({ blockchain, collectionAddress }: Params): DataSourc
     logger.info(`...using Moralis to look up metadata for collection <${collectionAddress}>`)
 
     if (collectionAddress === undefined) rethrow('Collection address must be provided')
-    if (blockchain?.network !== 'ethereum') rethrow(`Unsupported blockchain <${JSON.stringify(blockchain)}>`)
+    if (blockchain?.network !== 'ethereum' && blockchain?.network !== 'polygon') rethrow(`Unsupported blockchain <${JSON.stringify(blockchain)}>`)
 
     const apiKey = appConf.moralisAPIKey ?? rethrow('Missing Moralis API key')
 
@@ -233,7 +250,7 @@ export function useMoralis({ blockchain, collectionAddress }: Params): DataSourc
         'X-API-Key': apiKey,
       },
       params: {
-        chain: 'eth',
+        chain: convertToMoralisChain(blockchain.networkId),
       },
     }).catch(err => rethrow(`Failed to fetch metadata from Moralis for collection <${collectionAddress}>: ${err}`))
 

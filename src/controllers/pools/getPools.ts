@@ -87,6 +87,7 @@ export default async function getPools({
   blockchainFilter = {
     ethereum: Blockchain.Ethereum.Network.MAIN,
     solana: Blockchain.Solana.Network.MAINNET,
+    polygon: Blockchain.Polygon.Network.MAIN,
   },
   lenderAddress,
   address,
@@ -95,8 +96,8 @@ export default async function getPools({
   logger.info(`Fetching unpublished pools by lender address <${lenderAddress}>, collection address <${collectionAddress}> and address <${address}> on blockchain ${JSON.stringify(blockchainFilter)}`)
   let poolsData: Pool[] = []
 
-  if (blockchainFilter.ethereum !== undefined) {
-    const blockchain = Blockchain.Ethereum(blockchainFilter.ethereum)
+  if (blockchainFilter.ethereum !== undefined || blockchainFilter.polygon !== undefined) {
+    const blockchain = Blockchain.parseBlockchain(blockchainFilter)
     const publishedPools = await searchPublishedPools({
       blockchainFilter,
       lenderAddress,
@@ -107,6 +108,7 @@ export default async function getPools({
 
     switch (blockchain.networkId) {
     case Blockchain.Ethereum.Network.MAIN:
+    case Blockchain.Polygon.Network.MAIN:
       const { pools: poolsMainnet } = await getOnChainPools({ lenderAddress, address, excludeAddresses, collectionAddress }, { networkId: blockchain.networkId })
 
       const loanOptionsDict = await getOnChainLoanOptions({ addresses: poolsMainnet.map((p: any) => p.id), networkId: blockchain.networkId })
@@ -116,7 +118,8 @@ export default async function getPools({
         ...await mapPool({ blockchain, pools: poolsMainnet, loanOptionsDict }),
       ]
       break
-    case Blockchain.Ethereum.Network.RINKEBY:
+    case Blockchain.Ethereum.Network.GOERLI:
+    case Blockchain.Polygon.Network.MUMBAI:
       const { pools: poolsRinkeby } = await getOnChainPools({ lenderAddress, address, excludeAddresses, collectionAddress }, { networkId: blockchain.networkId })
       poolsData = [
         ...publishedPools,
