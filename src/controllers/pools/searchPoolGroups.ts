@@ -1,15 +1,17 @@
 import BigNumber from 'bignumber.js'
 import { PipelineStage } from 'mongoose'
 import { PoolModel } from '../../db'
-import { Blockchain, Pool, PoolGroup, Value } from '../../entities'
+import { Blockchain, NFT, Pool, PoolGroup, Value } from '../../entities'
 import logger from '../../utils/logger'
 import { mapPool } from '../adapters'
+import { getNFTsByOwner } from '../collaterals'
 import getEthValueUSD from '../utils/getEthValueUSD'
 import { PoolSortDirection, PoolSortType } from './searchPublishedPools'
 
 type Params = {
   blockchainFilter?: Blockchain.Filter
   collectionAddress?: string
+  ownerAddress?: string
   offset?: number
   count?: number
   collectionName?: string
@@ -198,6 +200,7 @@ export default async function searchPoolGroups({
     ethereum: Blockchain.Ethereum.Network.MAIN,
     solana: Blockchain.Solana.Network.MAINNET,
   },
+  ownerAddress,
   collectionAddress,
   collectionName,
   paginateBy,
@@ -216,6 +219,20 @@ export default async function searchPoolGroups({
         sortBy,
       }),
     ])
+
+    let nfts: NFT[] = []
+
+    if (ownerAddress) {
+      nfts = await getNFTsByOwner({
+        blockchain: {
+          network: 'ethereum',
+          networkId: blockchainFilter.ethereum ?? '',
+        },
+        ownerAddress,
+        collectionAddress,
+        populateMetadata: true,
+      })
+    }
 
     const pools = groups as Required<Pool>[][]
 
@@ -236,6 +253,7 @@ export default async function searchPoolGroups({
           .reduce((sum, pool: Pool) => sum.plus(pool.valueLocked?.amount || 0), new BigNumber(0))
           .times(ethValueUSD.amount)
       ),
+      nfts,
     }))
 
     const out = poolGroups.map(group => ({
