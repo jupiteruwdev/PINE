@@ -4,7 +4,7 @@ import { Blockchain, GlobalStats, Pool, Value } from '../../entities'
 import { getOnChainGlobalStats } from '../../subgraph'
 import logger from '../../utils/logger'
 import { searchPublishedPools } from '../pools'
-import getEthValueUSD from '../utils/getEthValueUSD'
+import getTokenUSDPrice from '../utils/getTokenUSDPrice'
 
 type Params = {
   blockchainFilter?: Blockchain.Filter
@@ -23,7 +23,7 @@ export default async function getGlobalStats({
       ethValueUSD,
       pools,
     ] = await Promise.all([
-      getEthValueUSD(),
+      getTokenUSDPrice(),
       searchPublishedPools({ blockchainFilter, includeRetired: true }),
     ])
 
