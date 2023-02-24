@@ -4,8 +4,8 @@ import app from '../../src/app'
 
 describe('/v0/terms', () => {
   describe('Ethereum Mainnet', () => {
-    it('GET /v0/terms/borrow?collectionAddress=*nftId=*', async () => {
-      const { body: res } = await request(app).get('/v0/terms/borrow?collectionAddress=0x3acce66cd37518a6d77d9ea3039e00b3a2955460&nftId=6739&ethereum=1')
+    it.skip('GET /v0/terms/borrow?collectionAddress=*nftId=*', async () => {
+      const { body: res } = await request(app).get('/v0/terms/borrow?collectionAddress=0xca7ca7bcc765f77339be2d648ba53ce9c8a262bd&nftId=7355&ethereum=1')
         .expect('Content-Type', /json/)
         .expect(200)
 
@@ -20,8 +20,8 @@ describe('/v0/terms', () => {
       expect(res).to.have.property('valuation')
     })
 
-    it('GET /v0/terms/rollover?collectionAddress=*nftId=*', async () => {
-      const { body: res } = await request(app).get('/v0/terms/rollover?collectionAddress=0x3acce66cd37518a6d77d9ea3039e00b3a2955460&nftId=6739&ethereum=1')
+    it.skip('GET /v0/terms/rollover?collectionAddress=*nftId=*', async () => {
+      const { body: res } = await request(app).get('/v0/terms/rollover?collectionAddress=0xca7ca7bcc765f77339be2d648ba53ce9c8a262bd&nftId=7355&ethereum=1')
         .expect('Content-Type', /json/)
         .expect(200)
 

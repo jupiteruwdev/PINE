@@ -1,5 +1,6 @@
 import { Router } from 'express'
-import { getGlobalStats, getUserMissionStats } from '../../controllers'
+import { getGlobalStats, getUserMissionStats, getUserUsageStats } from '../../controllers'
+import getTokenUSDPrice, { AvailableToken } from '../../controllers/utils/getTokenUSDPrice'
 import { GlobalStats } from '../../entities'
 import UserMissionStats from '../../entities/lib/UserMissionStats'
 import { turnstileMiddleware } from '../../middlewares'
@@ -19,6 +20,30 @@ router.get('/global', async (req, res, next) => {
   }
   catch (err) {
     next(fault('ERR_API_FETCH_GLOBAL_STATS', undefined, err))
+  }
+})
+
+router.get('/price', async (req, res, next) => {
+  try {
+    const token = getString(req.query, 'token', { optional: true }) as AvailableToken
+    const price = await getTokenUSDPrice(token)
+
+    res.status(200).json(price)
+  }
+  catch (err) {
+    next(fault('ERR_API_FETCH_PRICE', undefined, err))
+  }
+})
+
+router.get('/user/usage/:address', async (req, res, next) => {
+  try {
+    const address = getString(req.params, 'address')
+    const stats = await getUserUsageStats({ address })
+
+    res.status(200).json(stats)
+  }
+  catch (err) {
+    next(fault('ERR_API_FETCH_USER_USAGE', undefined, err))
   }
 })
 

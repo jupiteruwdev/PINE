@@ -5,7 +5,7 @@ import { Blockchain, NFT, Pool, PoolGroup, Value } from '../../entities'
 import logger from '../../utils/logger'
 import { mapPool } from '../adapters'
 import { getNFTsByOwner } from '../collaterals'
-import getEthValueUSD from '../utils/getEthValueUSD'
+import getTokenUSDPrice from '../utils/getTokenUSDPrice'
 import { PoolSortDirection, PoolSortType } from './searchPublishedPools'
 
 type Params = {
@@ -210,7 +210,7 @@ export default async function searchPoolGroups({
 
   try {
     const [ethValueUSD, groups] = await Promise.all([
-      getEthValueUSD(),
+      getTokenUSDPrice(),
       searchPublishedPoolGroups({
         blockchainFilter,
         collectionAddress,
