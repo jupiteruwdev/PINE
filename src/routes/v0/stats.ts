@@ -1,5 +1,5 @@
 import { Router } from 'express'
-import { getGlobalStats, getUserMissionStats, getUserUsageStats } from '../../controllers'
+import { getGlobalStats, getRewards, getUserMissionStats, getUserUsageStats } from '../../controllers'
 import getTokenUSDPrice, { AvailableToken } from '../../controllers/utils/getTokenUSDPrice'
 import { GlobalStats } from '../../entities'
 import UserMissionStats from '../../entities/lib/UserMissionStats'
@@ -44,6 +44,18 @@ router.get('/user/usage/:address', async (req, res, next) => {
   }
   catch (err) {
     next(fault('ERR_API_FETCH_USER_USAGE', undefined, err))
+  }
+})
+
+router.get('/user/rewards/:address', async (req, res, next) => {
+  try {
+    const address = getString(req.params, 'address')
+    const reward = await getRewards({ address })
+
+    res.status(200).json(reward)
+  }
+  catch (err) {
+    next(fault('ERR_API_FETCH_USER_REWARDS', undefined, err))
   }
 })
 
