@@ -108,7 +108,7 @@ export default {
   valuationLimitation: 60 * 30 * 1000,
   ethMaxDecimalPlaces: 6,
   snapshotPeriod: 39000,
-  rewardPINE: 41666,
+  rewardPINE: 5952,
   mongoUri: process.env.MONGO_URI ?? '',
   tenors: [1, 3, 7, 14, 30, 60, 90],
   tests: {
