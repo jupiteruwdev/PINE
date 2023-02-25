@@ -23,6 +23,11 @@ type Params = {
    * metadata is not fetched.
    */
   populateMetadata?: boolean
+
+  /**
+   * The address of collection for the NFTs to look up
+   */
+  collectionAddress?: string
 }
 
 async function getNFTDataFromMoralis(id: string, mintAddress: string, networkId: string): Promise<[NFT, string]> {
@@ -73,6 +78,7 @@ export default async function getSolNFTsByOwner({
   blockchain,
   ownerAddress,
   populateMetadata = false,
+  collectionAddress,
 }: Params): Promise<NFT[]> {
   if (blockchain.network !== 'solana') throw fault('ERR_UNSUPPORTED_BLOCKCHAIN')
 
@@ -80,6 +86,9 @@ export default async function getSolNFTsByOwner({
   if (!apiKey) throw fault('ERR_MISSING_API_KEY', 'Missing Moralis API key')
 
   const result = await getRequest(`https://solana-gateway.moralis.io/account/${blockchain.networkId}/${ownerAddress}/nft`, {
+    params: {
+      'token_addresses': collectionAddress ? [collectionAddress] : undefined,
+    },
     headers: {
       'accept': 'application/json',
       'X-API-Key': apiKey,

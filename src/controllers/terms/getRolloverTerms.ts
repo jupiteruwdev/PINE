@@ -80,7 +80,7 @@ export default async function getRolloverTerms({
         for (let j = 0; j < collectionPools?.length; j++) {
           if (!(collectionPools[j].ethLimit !== 0 && collectionPools[j].loanOptions.some(option => collectionPools[j].utilization.amount.plus(option.maxBorrow?.amount ?? new BigNumber(0)).gt(new BigNumber(collectionPools[j].ethLimit ?? 0))))) {
             const valuation = collectionPools[j].collection.valuation
-            if (valuation) {
+            if (valuation?.value?.amount.isPositive()) {
               try {
                 const { signature, issuedAtBlock, expiresAtBlock } = await signValuation({ blockchain, nftId: nftIds[i], collectionAddress: collectionAddresses[i], valuation, poolVersion: collectionPools[j].version })
 

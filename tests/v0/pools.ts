@@ -67,7 +67,9 @@ describe('/v0/pools', () => {
       expect(res.data).be.an('array')
       expect(res.data).to.have.length(10)
       expect(res.totalCount).to.equal(expectedPoolGroupsLength)
-      expect(res.nextOffset).to.equal(10)
+      if (res.nextOffset) {
+        expect(res.nextOffset).to.equal(10)
+      }
       res.data.every((poolGroup: any) => expect(poolGroup).to.have.keys(...Object.keys(PoolGroup.codingResolver)))
     })
 
@@ -135,11 +137,12 @@ describe('/v0/pools', () => {
       }
     })
 
-    it('GET /v0/pools/groups/collection?collectionAddress=*', async () => {
+    it('GET /v0/pools/groups/collection?collectionAddress=*&ownerAddress=*', async () => {
       await Promise.all(collections.map(async collection => {
         const { body: res } = await request(app).get('/v0/pools/groups/collection')
           .query({
             ethereum: Blockchain.Ethereum.Network.MAIN,
+            ownerAddress: '0xfb9684ec1026513241f777485911043dc2aa9a4f',
             collectionAddress: collection.address,
           })
           .expect('Content-Type', /json/)

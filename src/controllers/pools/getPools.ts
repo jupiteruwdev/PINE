@@ -1,11 +1,14 @@
 import BigNumber from 'bignumber.js'
+import { ethers } from 'ethers'
 import _ from 'lodash'
+import ERC721LendingV2 from '../../abis/ERC721LendingV2.json' assert { type: 'json' }
 import appConf from '../../app.conf'
 import { Blockchain, Collection, Fee, LoanOption, Pool, Value } from '../../entities'
 import { getOnChainPools } from '../../subgraph'
 import fault from '../../utils/fault'
 import logger from '../../utils/logger'
 import { getEthCollectionMetadata } from '../collections'
+import getEthWeb3 from '../utils/getEthWeb3'
 import getOnChainLoanOptions from './getOnChainLoanOptions'
 import getPoolCapacity from './getPoolCapacity'
 import getPoolUtilization from './getPoolUtilization'
@@ -37,7 +40,15 @@ async function mapPool({ blockchain, pools, loanOptionsDict }: MapPoolParams): P
       getPoolUtilization({ blockchain, poolAddress: pool.id }),
       getPoolCapacity({ blockchain, poolAddress: pool.id, tokenAddress: pool.supportedCurrency, fundSource: pool.fundSource }),
     ])
-    const valueLockedEth = capacityEth.plus(utilizationEth).gt(new BigNumber(pool.ethLimit || Number.POSITIVE_INFINITY)) ? new BigNumber(pool.ethLimit ?? 0) : capacityEth.plus(utilizationEth)
+    const web3 = getEthWeb3(blockchain.networkId)
+    const poolContract = new web3.eth.Contract(ERC721LendingV2 as any, pool.id)
+    let ethLimit
+    try {
+      ethLimit = await poolContract.methods._maxLoanLimit().call()
+      ethLimit = _.toNumber(ethers.utils.formatEther(ethLimit))
+    }
+    catch (err) { ethLimit = 0 }
+    const valueLockedEth = capacityEth.plus(utilizationEth).gt(new BigNumber(ethLimit || Number.POSITIVE_INFINITY)) ? new BigNumber(ethLimit ?? 0) : capacityEth.plus(utilizationEth)
     stats.utilization = Value.$ETH(utilizationEth)
     stats.valueLocked = Value.$ETH(valueLockedEth)
 
@@ -63,7 +74,7 @@ async function mapPool({ blockchain, pools, loanOptionsDict }: MapPoolParams): P
       routerAddress: _.get(appConf.routerAddress, blockchain.networkId),
       repayRouterAddress: _.get(appConf.repayRouterAddress, blockchain.networkId),
       rolloverAddress: _.get(appConf.rolloverAddress, blockchain.networkId),
-      ethLimit: 0,
+      ethLimit,
       published: false,
       ...stats,
     })

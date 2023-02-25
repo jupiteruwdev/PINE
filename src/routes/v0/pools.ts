@@ -15,7 +15,8 @@ router.get('/groups/collection', async (req, res, next) => {
   try {
     const blockchainFilter = getBlockchainFilter(req.query, true)
     const collectionAddress = getString(req.query, 'collectionAddress')
-    const poolGroups = await searchPoolGroups({ blockchainFilter, collectionAddress })
+    const ownerAddress = getString(req.query, 'ownerAddress', { optional: true })
+    const poolGroups = await searchPoolGroups({ blockchainFilter, collectionAddress, ownerAddress })
     const payload = serializeEntityArray(poolGroups, PoolGroup.codingResolver)
 
     res.status(200).json(payload)
@@ -42,6 +43,7 @@ router.get('/groups/search', async (req, res, next) => {
     const nextOffset = (paginateBy?.offset ?? 0) + poolGroups.length
     const pagination = Pagination.serialize({ data: payload, totalCount, nextOffset: nextOffset === totalCount ? undefined : nextOffset })
 
+    res.setHeader('Cache-Control', 'public, max-age=60, stale-while-revalidate=30')
     res.status(200).json(pagination)
   }
   catch (err) {

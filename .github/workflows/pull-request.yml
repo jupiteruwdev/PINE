@@ -1,8 +1,7 @@
-name: Pull Request to development
+name: Pull Request
 on:
   pull_request:
     types: [labeled, opened, synchronize, unlabeled, closed]
-    branches: ['development']
 
 permissions:
   contents: read

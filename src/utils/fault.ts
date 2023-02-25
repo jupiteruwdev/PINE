@@ -12,6 +12,6 @@ import SuperError from '@andrewscwei/super-error'
  * @returns The generated error.
  */
 export default function fault(code: string, message?: string, cause?: unknown): SuperError {
-  const error = new SuperError(message ?? code, code, undefined, SuperError.deserialize(cause))
+  const error = new SuperError(message ?? code, code, undefined, cause ? SuperError.deserialize(cause) : undefined)
   return error
 }

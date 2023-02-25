@@ -42,6 +42,7 @@ export default {
     [Blockchain.Ethereum.Network.RINKEBY]: process.env.ETH_RPC_RINKEBY,
     [Blockchain.Ethereum.Network.MAIN]: process.env.ETH_RPC_MAINNET,
     [Blockchain.Ethereum.Network.GOERLI]: process.env.ETH_RPC_GOERLI,
+    ['137']: 'https://polygon-mainnet.g.alchemy.com/v2/oJXcBlm6sLD8M_JZrm87XSsAnRG6Hdb8',
   },
   ethValuationExpiryBlocks: 64, // quote expires in 15 mins
   ethValuationSigner: process.env.VALUATION_SIGNER,
@@ -89,6 +90,10 @@ export default {
   poolHelperAddress: {
     [Blockchain.Ethereum.Network.MAIN]: '0x0aab1368f6704e8403105162690bdf6ee75305c0',
   },
+  pinePieceGenesisAddress: {
+    [Blockchain.Ethereum.Network.MAIN]: '0xacadb3c6290392f59f45dddacca8add2cec24366',
+  },
+  vePINEAddress: '0x90dFb72736481BBacc7938d2D3673590B92647AE',
   defaultFees: [
     {
       type: 'fixed',
@@ -102,6 +107,8 @@ export default {
   blocksPerSecond: 14,
   valuationLimitation: 60 * 30 * 1000,
   ethMaxDecimalPlaces: 6,
+  snapshotPeriod: 39000,
+  rewardPINE: 41666,
   mongoUri: process.env.MONGO_URI ?? '',
   tenors: [1, 3, 7, 14, 30, 60, 90],
   tests: {
