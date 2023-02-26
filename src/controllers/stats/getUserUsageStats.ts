@@ -30,7 +30,7 @@ export default async function getUserUsageStats({
 
     return {
       usageEth: Value.$ETH(ethers.utils.formatEther(usageEth.toString()).toString()),
-      usagePercent: usageEth.div(totalAmount).multipliedBy(100).toFixed(2),
+      usagePercent: usageEth.div(totalAmount),
     }
   }
   catch (err) {
