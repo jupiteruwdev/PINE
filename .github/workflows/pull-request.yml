@@ -45,7 +45,7 @@ jobs:
     if: |
       (github.event.action == 'labeled' && github.event.label.name == ':rocket: deploy') ||
       (github.event.action != 'labeled' && contains(github.event.pull_request.labels.*.name, ':rocket: deploy'))
-    needs: build-and-test
+    needs: [build-and-test,terraform-check]
     name: Deploy Preview environment
     uses: ./.github/workflows/reusable-deploy.yml
     secrets: inherit
