@@ -17,6 +17,17 @@ jobs:
     with:
       run_tests: true
   
+  terraform-check:
+    name: Validate Terraform code
+    if: github.event.action != 'unlabeled' && github.event.action != 'closed'
+    uses: ./.github/workflows/reusable-terraform-check.yml
+    secrets: inherit
+    strategy:
+      matrix:
+        path: ["ops/jobs/development", "ops/jobs/staging", "ops/jobs/prod"]
+    with:
+      path: ${{ matrix.path }}
+  
   notify:
     name: Notify
     needs: build-and-test
