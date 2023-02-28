@@ -51,6 +51,7 @@ jobs:
       
       - name: Terraform plan
         if: steps.changed.outputs.changed == 'true'
+        id: plan
         working-directory: ${{ inputs.path }}
         run: terraform plan -no-color
       
