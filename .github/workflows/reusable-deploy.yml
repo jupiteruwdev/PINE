@@ -96,10 +96,8 @@ jobs:
           tag_traffic: latest=100
       
       - name: Deploy Cloud Scheduler jobs with Terraform
-        # if: ${{ !inputs.preview }}
-        if: ${{ inputs.preview }}
-        working-directory: ops/jobs/staging
-        # working-directory: ops/jobs/${{ inputs.environment }}
+        if: ${{ !inputs.preview }}
+        working-directory: ops/jobs/${{ inputs.environment }}
         run: |
           terraform init
           terraform apply -auto-approve
