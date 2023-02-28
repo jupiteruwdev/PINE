@@ -98,7 +98,7 @@ jobs:
       - name: Deploy Cloud Scheduler jobs with Terraform
         # if: ${{ !inputs.preview }}
         if: ${{ inputs.preview }}
-        working-directory: ops/jobs/development
+        working-directory: ops/jobs/staging
         # working-directory: ops/jobs/${{ inputs.environment }}
         run: |
           terraform init
