@@ -11,6 +11,9 @@ export default async function getOnChainGlobalStats({ networkId, useCache }: Opt
       }
       loans (where: {status: "open"}) {
         id
+        erc721
+        pool
+        
       }
     }
   `)
