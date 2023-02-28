@@ -4,6 +4,7 @@ import { Blockchain, GlobalStats, Pool, Value } from '../../entities'
 import { getOnChainGlobalStats } from '../../subgraph'
 import logger from '../../utils/logger'
 import { searchPublishedPools } from '../pools'
+import searchPublishedMultiplePools from '../pools/searchPublishedMultiplePools'
 import getTokenUSDPrice from '../utils/getTokenUSDPrice'
 
 type Params = {
@@ -41,6 +42,30 @@ export default async function getGlobalStats({
     const totalCapacityUSD = totalValueLockedUSD.minus(totalUtilizationUSD)
 
     const { globalStat, loans } = await getOnChainGlobalStats()
+    const poolAddresses = loans.map((loan: any) => loan.pool)
+    const collectionAddresses = loans.map((loan: any) => loan.erc721)
+    const nftIds = loans.map((loan: any) => loan.id.split('/')[1])
+    const poolsUtilized = await searchPublishedMultiplePools({ addresses: poolAddresses, nftIds, collectionAddresses, includeRetired: true, blockchainFilter: {
+      ethereum: blockchainFilter.ethereum,
+    } })
+    const poolsUtilizedTransformed = poolsUtilized.reduce((r, p) => {
+      r[p.address] = {
+        addr: p.address,
+        val: p.collection.valuation?.value?.amount.toString(),
+        col: p.collection.name,
+      }
+      return r
+    }
+    , {} as Record<string, any>)
+
+    const tvlNFTETH = loans.map((loan: any) => ({
+      pa: loan.pool,
+      ca: loan.erc721,
+      id: loan.id.split('/')[1],
+      valuation: poolsUtilizedTransformed[loan.pool]?.val,
+    })).reduce((p: any, r: any) => p + (Number(r.valuation || 0) || 0), 0)
+    console.log(tvlNFTETH)
+
     const totalLentETH = Web3.utils.fromWei(globalStat.historicalLentOut)
 
     const globalStats: GlobalStats = {
@@ -50,6 +75,7 @@ export default async function getGlobalStats({
       utilization: Value.$ETH(totalUtilizationETH),
       utilizationRatio: totalUtilizationUSD.div(totalValueLockedUSD),
       noOfLoans: loans.length,
+      tvlNft: Value.$ETH(new BigNumber(tvlNFTETH).plus(totalUtilizationETH)),
     }
 
     logger.info(`Fetching global stats for blockchain filter <${JSON.stringify(blockchainFilter)}>... OK:`, globalStats)
