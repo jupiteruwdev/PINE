@@ -27,11 +27,11 @@ export default async function getRewards({ address }: Params): Promise<Rewards> 
 
   if (dayOfWeek !== 5 || (dayOfWeek === 5 && prevFriday.getUTCHours() <= 7)) {
     prevFriday.setDate(today.getDate() - dayOfWeek - 2)
-    prevFriday.setUTCHours(8)
-    prevFriday.setUTCMinutes(0)
-    prevFriday.setUTCSeconds(0)
-    prevFriday.setUTCMilliseconds(0)
   }
+  prevFriday.setUTCHours(8)
+  prevFriday.setUTCMinutes(0)
+  prevFriday.setUTCSeconds(0)
+  prevFriday.setUTCMilliseconds(0)
 
   const dater = new EthDater(web3)
   const { block: startBlock } = await dater.getDate(prevFriday)
