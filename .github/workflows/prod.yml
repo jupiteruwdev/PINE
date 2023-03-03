@@ -8,6 +8,7 @@ permissions:
   contents: read
   id-token: write
   checks: write
+  pull-requests: write
 
 jobs:
   build-and-test:
@@ -17,8 +18,18 @@ jobs:
     with:
       run_tests: true
   
+  terraform-check:
+    name: Validate Terraform code
+    uses: ./.github/workflows/reusable-terraform-check.yml
+    secrets: inherit
+    strategy:
+      matrix:
+        path: ["ops/jobs/development", "ops/jobs/staging", "ops/jobs/prod"]
+    with:
+      path: ${{ matrix.path }}
+  
   deploy:
-    needs: build-and-test
+    needs: [build-and-test,terraform-check]
     name: Deploy `prod`
     uses: ./.github/workflows/reusable-deploy.yml
     secrets: inherit
