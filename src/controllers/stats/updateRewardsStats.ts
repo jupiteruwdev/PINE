@@ -13,7 +13,7 @@ type Params = {
 export default async function updateRewardsStats({ address }: Params) {
   try {
     logger.info(`Updating rewards stats for address ${address}...`)
-    const merkleTrees = await MerkleTreeModel.find({ address: address.toLowerCase(), claimed: false }).sort({ updatedAt: -1 })
+    const merkleTrees = await MerkleTreeModel.find({ address: address.toLowerCase(), claimed: false }).sort({ blockNumber: -1 })
     if (merkleTrees.length) {
       const web3 = getEthWeb3('137')
       const contract = new web3.eth.Contract(MERKLE_ABI as any[], appConf.merkleAddress)
