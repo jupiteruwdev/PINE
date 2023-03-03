@@ -45,6 +45,10 @@ jobs:
           ref: ${{ inputs.checkout_ref }}
           submodules: recursive
           token: ${{ secrets.GH_ACCESS_TOKEN }}
+      
+      - uses: hashicorp/setup-terraform@v2
+        with:
+          terraform_version: 1.3.9
 
       - name: Authenticate Google Cloud
         id: auth
@@ -91,6 +95,13 @@ jobs:
           region: us-central1
           tag_traffic: latest=100
       
+      - name: Deploy Cloud Scheduler jobs with Terraform
+        if: ${{ !inputs.preview }}
+        working-directory: ops/jobs/${{ inputs.environment }}
+        run: |
+          terraform init
+          terraform apply -auto-approve
+
       - name: Create Sentry release
         uses: getsentry/action-release@v1.2.1
         env:

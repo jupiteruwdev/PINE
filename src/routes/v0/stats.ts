@@ -1,7 +1,8 @@
 import { Router } from 'express'
-import { getGlobalStats, getRewards, getUserMissionStats, getUserUsageStats } from '../../controllers'
+import { getGlobalStats, getRewards, getUserMissionStats, getUserUsageStats, updateRewardsStats } from '../../controllers'
 import getTokenUSDPrice, { AvailableToken } from '../../controllers/utils/getTokenUSDPrice'
 import { GlobalStats } from '../../entities'
+import Rewards from '../../entities/lib/Rewards'
 import UserMissionStats from '../../entities/lib/UserMissionStats'
 import { turnstileMiddleware } from '../../middlewares'
 import fault from '../../utils/fault'
@@ -50,12 +51,27 @@ router.get('/user/usage/:address', async (req, res, next) => {
 router.get('/user/rewards/:address', async (req, res, next) => {
   try {
     const address = getString(req.params, 'address')
-    const reward = await getRewards({ address })
+    const rewards = await getRewards({ address })
 
-    res.status(200).json(reward)
+    const payload = Rewards.serialize(rewards)
+
+    res.status(200).json(payload)
   }
   catch (err) {
     next(fault('ERR_API_FETCH_USER_REWARDS', undefined, err))
+  }
+})
+
+router.post('/user/rewards/:address', async (req, res, next) => {
+  try {
+    const address = getString(req.params, 'address')
+
+    await updateRewardsStats({ address })
+
+    res.status(200).send()
+  }
+  catch (err) {
+    next(fault('ERR_API_UPDATE_USER_REWARDS', undefined, err))
   }
 })
 
