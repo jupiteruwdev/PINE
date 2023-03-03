@@ -1,5 +1,6 @@
 import BigNumber from 'bignumber.js'
 import EthDater from 'ethereum-block-by-date'
+import { ethers } from 'ethers'
 import VEPINE_ABI from '../../abis/VePine.json' assert { type: 'json' }
 import appConf from '../../app.conf'
 import { MerkleTreeModel } from '../../db'
@@ -52,7 +53,8 @@ export default async function getRewards({ address }: Params): Promise<Rewards> 
       root: ur.root ?? '',
       leaf: ur.leaf ?? '',
       proof: ur.proof ?? [],
-      amount: Value.$PINE(ur.amount ?? 0),
+      amount: Value.$PINE(ethers.utils.formatEther(ur.amount ?? 0)),
+      index: ur.index ?? 0,
     })),
   })
 }
