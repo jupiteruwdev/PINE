@@ -23,16 +23,18 @@ export default async function getRewards({ address }: Params): Promise<Rewards> 
   const currentBlock = await web3.eth.getBlockNumber()
   const today = new Date()
   const dayOfWeek = today.getDay()
-  const prevSaturday = new Date(today)
+  const prevFriday = new Date(today)
 
-  prevSaturday.setDate(today.getDate() - dayOfWeek - 1)
-  prevSaturday.setUTCHours(8)
-  prevSaturday.setUTCMinutes(0)
-  prevSaturday.setUTCSeconds(0)
-  prevSaturday.setUTCMilliseconds(0)
+  if (dayOfWeek !== 5 || (dayOfWeek === 5 && prevFriday.getUTCHours() <= 7)) {
+    prevFriday.setDate(today.getDate() - dayOfWeek - 2)
+    prevFriday.setUTCHours(8)
+    prevFriday.setUTCMinutes(0)
+    prevFriday.setUTCSeconds(0)
+    prevFriday.setUTCMilliseconds(0)
+  }
 
   const dater = new EthDater(web3)
-  const { block: startBlock } = await dater.getDate(prevSaturday)
+  const { block: startBlock } = await dater.getDate(prevFriday)
 
   let totalReward = new BigNumber(0)
 
