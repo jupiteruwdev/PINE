@@ -94,6 +94,7 @@ export default {
     [Blockchain.Ethereum.Network.MAIN]: '0xacadb3c6290392f59f45dddacca8add2cec24366',
   },
   vePINEAddress: '0x90dFb72736481BBacc7938d2D3673590B92647AE',
+  merkleAddress: '0xA5A19273bBf8f144e3F25d1468359f62f9Ba2CCB',
   defaultFees: [
     {
       type: 'fixed',
