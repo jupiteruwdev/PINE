@@ -22,11 +22,14 @@ export default async function getRewards({ address }: Params): Promise<Rewards> 
   const contract = new web3.eth.Contract(VEPINE_ABI as any[], appConf.vePINEAddress)
   const currentBlock = await web3.eth.getBlockNumber()
   const today = new Date()
-  const dayOfWeek = today.getDay()
+  const dayOfWeek = today.getUTCDay()
   const prevFriday = new Date(today)
 
-  if (dayOfWeek !== 5 || (dayOfWeek === 5 && prevFriday.getUTCHours() <= 7)) {
+  if (dayOfWeek < 5 || (dayOfWeek === 5 && prevFriday.getUTCHours() <= 7)) {
     prevFriday.setDate(today.getDate() - dayOfWeek - 2)
+  }
+  else if (dayOfWeek >= 5) {
+    prevFriday.setDate(today.getDate() - 7 + dayOfWeek)
   }
   prevFriday.setUTCHours(8)
   prevFriday.setUTCMinutes(0)
