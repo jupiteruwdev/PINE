@@ -41,7 +41,7 @@ export default async function getRewards({ address }: Params): Promise<Rewards> 
 
   let totalReward = new BigNumber(0)
 
-  for (let block = startBlock; block <= currentBlock; block += appConf.snapshotPeriod) {
+  for (let block = startBlock + appConf.snapshotPeriod; block <= currentBlock; block += appConf.snapshotPeriod) {
     const [userVeSb, totalVeSb] = await Promise.all([
       contract.methods.userVeSb(address).call(undefined, block),
       contract.methods.totalVeSb().call(undefined, block),
