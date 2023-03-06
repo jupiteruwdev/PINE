@@ -29,7 +29,7 @@ export default async function getRewards({ address }: Params): Promise<Rewards> 
     prevFriday.setDate(today.getDate() - dayOfWeek - 2)
   }
   else if (dayOfWeek >= 5) {
-    prevFriday.setDate(today.getDate() - 7 + dayOfWeek)
+    prevFriday.setDate(today.getDate() - dayOfWeek + 5)
   }
   prevFriday.setUTCHours(8)
   prevFriday.setUTCMinutes(0)
