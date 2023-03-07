@@ -188,6 +188,14 @@ function getPipelineStages({
       },
     })
     break
+  case PoolSortType.TVL:
+    stages.push({
+      $sort: {
+        'groupValueLocked': sortBy?.direction === PoolSortDirection.DESC ? -1 : 1,
+        'pools.name': 1,
+      },
+    })
+    break
   }
 
   return [
