@@ -77,6 +77,9 @@ function getPipelineStages({
       'networkId': blockchain.networkId,
       ...lenderAddress === undefined ? {} : { lenderAddress },
       ...includeRetired === true ? {} : { retired: { $ne: true } },
+      'valueLockedEth': {
+        $gte: 0.01,
+      },
     },
   }, {
     $lookup: {
@@ -97,18 +100,8 @@ function getPipelineStages({
   {
     $group: {
       _id: '$collection.address',
-      groupValueLocked: {
-        $sum: '$valueLockedEth',
-      },
       pools: {
         $push: '$$ROOT',
-      },
-    },
-  },
-  {
-    $match: {
-      'groupValueLocked': {
-        $gte: 0.01,
       },
     },
   },
