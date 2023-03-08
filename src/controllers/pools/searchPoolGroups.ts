@@ -69,6 +69,9 @@ function getPipelineStages({
       'retired': { $ne: true },
       'networkType': blockchain.network,
       'networkId': blockchain.networkId,
+      'valueLockedEth': {
+        $gte: 0.01,
+      },
     },
   }, {
     $lookup: {
@@ -141,13 +144,6 @@ function getPipelineStages({
           },
           else: 0,
         },
-      },
-    },
-  },
-  {
-    $match: {
-      'groupValueLocked': {
-        $gte: 0.01,
       },
     },
   },
