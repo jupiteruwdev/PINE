@@ -13,7 +13,7 @@ resource "google_cloud_scheduler_job" "job" {
 }
 
 resource "google_cloud_scheduler_job" "syncPools" {
-  name             = "core-service-version-${local.env}"
+  name             = "core-service-sync-pools-${local.env}"
   description      = "Sync pool trigger"
   schedule         = "*/5 * * * *"
   attempt_deadline = "300s"
@@ -27,7 +27,7 @@ resource "google_cloud_scheduler_job" "syncPools" {
 }
 
 resource "google_cloud_scheduler_job" "syncBidOrders" {
-  name             = "core-service-version-${local.env}"
+  name             = "core-service-sync-bid-orders-${local.env}"
   description      = "Sync bidOrders trigger"
   schedule         = "*/5 * * * *"
   attempt_deadline = "300s"
@@ -41,7 +41,7 @@ resource "google_cloud_scheduler_job" "syncBidOrders" {
 }
 
 resource "google_cloud_scheduler_job" "syncUsers" {
-  name             = "core-service-version-${local.env}"
+  name             = "core-service-sync-users-${local.env}"
   description      = "Sync users trigger"
   schedule         = "*/30 * * * *"
   attempt_deadline = "1800s"
@@ -55,7 +55,7 @@ resource "google_cloud_scheduler_job" "syncUsers" {
 }
 
 resource "google_cloud_scheduler_job" "syncEthValueUSD" {
-  name             = "core-service-version-${local.env}"
+  name             = "core-service-sync-eth-valud-usd-${local.env}"
   description      = "Sync eth usd price trigger"
   schedule         = "* * * * *"
   attempt_deadline = "30s"
@@ -69,7 +69,7 @@ resource "google_cloud_scheduler_job" "syncEthValueUSD" {
 }
 
 resource "google_cloud_scheduler_job" "syncPineValueUSD" {
-  name             = "core-service-version-${local.env}"
+  name             = "core-service-sync-pine-value-usd-${local.env}"
   description      = "Sync pine usd price trigger"
   schedule         = "* * * * *"
   attempt_deadline = "30s"
@@ -83,7 +83,7 @@ resource "google_cloud_scheduler_job" "syncPineValueUSD" {
 }
 
 resource "google_cloud_scheduler_job" "syncCollectionValuation" {
-  name             = "core-service-version-${local.env}"
+  name             = "core-service-sync-collection-valuation-${local.env}"
   description      = "Sync collection valuation trigger"
   schedule         = "*/15 * * * *"
   attempt_deadline = "900s"
@@ -97,7 +97,7 @@ resource "google_cloud_scheduler_job" "syncCollectionValuation" {
 }
 
 resource "google_cloud_scheduler_job" "syncSnapshots" {
-  name             = "core-service-version-${local.env}"
+  name             = "core-service-sync-snapshots-${local.env}"
   description      = "Sync snapshots trigger"
   schedule         = "0 * * * *"
   attempt_deadline = "1800s"
