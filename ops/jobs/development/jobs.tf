@@ -15,13 +15,97 @@ resource "google_cloud_scheduler_job" "job" {
 resource "google_cloud_scheduler_job" "syncPools" {
   name             = "core-service-version-${local.env}"
   description      = "Sync pool trigger"
-  schedule         = "* * * * *"
-  attempt_deadline = "320s"
+  schedule         = "*/5 * * * *"
+  attempt_deadline = "300s"
 
   retry_config { retry_count = 1 }
 
   http_target {
     http_method = "GET"
-    uri         = "https://core-service-${local.env}.pine.loans/version"
+    uri         = "https://core-service-${local.env}.pine.loans/jobs/sync-pools"
+  }
+}
+
+resource "google_cloud_scheduler_job" "syncBidOrders" {
+  name             = "core-service-version-${local.env}"
+  description      = "Sync bidOrders trigger"
+  schedule         = "*/5 * * * *"
+  attempt_deadline = "300s"
+
+  retry_config { retry_count = 1 }
+
+  http_target {
+    http_method = "GET"
+    uri         = "https://core-service-${local.env}.pine.loans/jobs/sync-bid-orders"
+  }
+}
+
+resource "google_cloud_scheduler_job" "syncUsers" {
+  name             = "core-service-version-${local.env}"
+  description      = "Sync users trigger"
+  schedule         = "*/30 * * * *"
+  attempt_deadline = "1800s"
+
+  retry_config { retry_count = 1 }
+
+  http_target {
+    http_method = "GET"
+    uri         = "https://core-service-${local.env}.pine.loans/jobs/sync-users"
+  }
+}
+
+resource "google_cloud_scheduler_job" "syncEthValueUSD" {
+  name             = "core-service-version-${local.env}"
+  description      = "Sync eth usd price trigger"
+  schedule         = "* * * * *"
+  attempt_deadline = "30s"
+
+  retry_config { retry_count = 1 }
+
+  http_target {
+    http_method = "GET"
+    uri         = "https://core-service-${local.env}.pine.loans/jobs/sync-eth-value-usd"
+  }
+}
+
+resource "google_cloud_scheduler_job" "syncPineValueUSD" {
+  name             = "core-service-version-${local.env}"
+  description      = "Sync pine usd price trigger"
+  schedule         = "* * * * *"
+  attempt_deadline = "30s"
+
+  retry_config { retry_count = 1 }
+
+  http_target {
+    http_method = "GET"
+    uri         = "https://core-service-${local.env}.pine.loans/jobs/sync-pine-value-usd"
+  }
+}
+
+resource "google_cloud_scheduler_job" "syncCollectionValuation" {
+  name             = "core-service-version-${local.env}"
+  description      = "Sync collection valuation trigger"
+  schedule         = "*/15 * * * *"
+  attempt_deadline = "900s"
+
+  retry_config { retry_count = 1 }
+
+  http_target {
+    http_method = "GET"
+    uri         = "https://core-service-${local.env}.pine.loans/jobs/sync-collection-valuation"
+  }
+}
+
+resource "google_cloud_scheduler_job" "syncSnapshots" {
+  name             = "core-service-version-${local.env}"
+  description      = "Sync snapshots trigger"
+  schedule         = "0 * * * *"
+  attempt_deadline = "1800s"
+
+  retry_config { retry_count = 1 }
+
+  http_target {
+    http_method = "GET"
+    uri         = "https://core-service-${local.env}.pine.loans/jobs/sync-snapshots"
   }
 }
