@@ -12,6 +12,7 @@ export enum PoolSortType {
   LTV = 'ltv',
   INTEREST = 'interest',
   UTILIZATION = 'utilization',
+  TVL = 'tvl',
 }
 
 export enum PoolSortDirection {
