@@ -69,6 +69,9 @@ function getPipelineStages({
       'retired': { $ne: true },
       'networkType': blockchain.network,
       'networkId': blockchain.networkId,
+      'valueLockedEth': {
+        $gte: 0.01,
+      },
     },
   }, {
     $lookup: {
@@ -145,13 +148,6 @@ function getPipelineStages({
     },
   },
   {
-    $match: {
-      'groupValueLocked': {
-        $gte: 0.01,
-      },
-    },
-  },
-  {
     $unset: '_id',
   },
   ]
@@ -184,6 +180,14 @@ function getPipelineStages({
     stages.push({
       $sort: {
         'totalUtilization': sortBy?.direction === PoolSortDirection.DESC ? -1 : 1,
+        'pools.name': 1,
+      },
+    })
+    break
+  case PoolSortType.TVL:
+    stages.push({
+      $sort: {
+        'groupValueLocked': sortBy?.direction === PoolSortDirection.DESC ? -1 : 1,
         'pools.name': 1,
       },
     })

@@ -2,6 +2,7 @@ import { Router } from 'express'
 import { getGlobalStats, getRewards, getUserMissionStats, getUserUsageStats, updateRewardsStats } from '../../controllers'
 import getTokenUSDPrice, { AvailableToken } from '../../controllers/utils/getTokenUSDPrice'
 import { GlobalStats } from '../../entities'
+import ProtocolUsage from '../../entities/lib/ProtocolUsage'
 import Rewards from '../../entities/lib/Rewards'
 import UserMissionStats from '../../entities/lib/UserMissionStats'
 import { turnstileMiddleware } from '../../middlewares'
@@ -41,7 +42,8 @@ router.get('/user/usage/:address', async (req, res, next) => {
     const address = getString(req.params, 'address')
     const stats = await getUserUsageStats({ address })
 
-    res.status(200).json(stats)
+    const payload = ProtocolUsage.serialize(stats)
+    res.status(200).json(payload)
   }
   catch (err) {
     next(fault('ERR_API_FETCH_USER_USAGE', undefined, err))

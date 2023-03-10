@@ -24,6 +24,7 @@ export default {
   looksrareAPIKey: process.env.LOOKSRARE_API_KEY,
   x2y2APIKey: process.env.X2Y2_API_KEY,
   requestTimeoutMs: Number(process.env.REQUEST_TIMEOUT_MS ?? 30000),
+  ethBlocksPerSecond: 14,
   alchemyAPIUrl: {
     [Blockchain.Ethereum.Network.RINKEBY]: 'https://eth-rinkeby.g.alchemy.com/v2/',
     [Blockchain.Ethereum.Network.MAIN]: 'https://eth-mainnet.g.alchemy.com/v2/',
@@ -92,6 +93,10 @@ export default {
   },
   pinePieceGenesisAddress: {
     [Blockchain.Ethereum.Network.MAIN]: '0xacadb3c6290392f59f45dddacca8add2cec24366',
+  },
+  nftIds: {
+    ['0x57f1887a8bf19b14fc0df6fd9b2acc9af147ea85']: '53058332222413349876246999554393122531581216651837749203253759491527730476185',
+    ['0x059edd72cd353df5106d2b9cc5ab83a52287ac3a']: '9472',
   },
   vePINEAddress: '0x90dFb72736481BBacc7938d2D3673590B92647AE',
   merkleAddress: '0xA5A19273bBf8f144e3F25d1468359f62f9Ba2CCB',
