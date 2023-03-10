@@ -30,11 +30,6 @@ type UpdateBidOrderParams = {
   status: string
 }
 
-type SearchPoolGroupParams = {
-  blockchain: Blockchain
-  collectionAddress: string
-}
-
 type BidOrder = {
   networkId: string
   networkType: string
@@ -91,92 +86,6 @@ async function updateBidOrder({ blockchain, listingTime, nftId, marketplace, ord
     },
   })
 }
-
-// async function searchPoolGroup({ blockchain, collectionAddress }: SearchPoolGroupParams): Promise<Pool[]> {
-//   const docs = await PoolModel.aggregate([
-//     {
-//       $match: {
-//         'retired': { $ne: true },
-//         'networkType': blockchain.network,
-//         'networkId': blockchain.networkId,
-//       },
-//     }, {
-//       $lookup: {
-//         from: 'nftCollections',
-//         localField: 'nftCollection',
-//         foreignField: '_id',
-//         as: 'collection',
-//       },
-//     }, {
-//       $unwind: '$collection',
-//     }, {
-//       $match: {
-//         'collection.address': {
-//           $regex: collectionAddress,
-//           $options: 'i',
-//         },
-//       },
-//     }, {
-//       $addFields: {
-//         name: {
-//           $toLower: {
-//             $trim: {
-//               input: '$collection.displayName',
-//               chars: '"',
-//             },
-//           },
-//         },
-//         interest: {
-//           $min: '$loanOptions.interestBpsBlock',
-//         },
-//         interestOverride: {
-//           $min: '$loanOptions.interestBpsBlockOverride',
-//         },
-//         maxLTV: {
-//           $max: '$loanOptions.maxLtvBps',
-//         },
-//       },
-//     }, {
-//       $addFields: {
-//         lowestAPR: {
-//           $cond: {
-//             if: {
-//               $ne: ['$interestOverride', null],
-//             },
-//             then: '$interestOverride',
-//             else: '$interest',
-//           },
-//         },
-//       },
-//     },
-//     {
-//       $group: {
-//         _id: '$collection.address',
-//         groupValueLocked: {
-//           $sum: '$valueLockedEth',
-//         },
-//         pools: {
-//           $push: '$$ROOT',
-//         },
-//       },
-//     },
-//     // {
-//     //   $match: {
-//     //     'groupValueLocked': {
-//     //       $gte: 0.01,
-//     //     },
-//     //   },
-//     // },
-//     {
-//       $unset: '_id',
-//     },
-//   ]).exec()
-
-//   if (docs.length) {
-//     return docs[0].pools.map(mapPool)
-//   }
-//   return []
-// }
 
 async function getAllBidOrders(): Promise<BidOrder[]> {
   const bidOrders = await BidOrderModel.aggregate([
@@ -336,6 +245,6 @@ export default async function syncBidOrders(req: Request, res: Response, next: N
   }
   catch (err) {
     logger.error('JOB_SYNC_BID_ORDERS Handling runtime error... ERR:', err)
-    throw err
+    next(err)
   }
 }

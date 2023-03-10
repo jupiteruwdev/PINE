@@ -77,6 +77,6 @@ export default async function syncSnapshots(req: Request, res: Response, next: N
   }
   catch (err) {
     logger.error('JOB_SYNC_SNAPSHOTS Handling runtime error... ERR:', err)
-    throw err
+    next(err)
   }
 }

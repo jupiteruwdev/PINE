@@ -109,3 +109,17 @@ resource "google_cloud_scheduler_job" "syncSnapshots" {
     uri         = "https://core-service-${local.env}.pine.loans/jobs/sync-snapshots"
   }
 }
+
+resource "google_cloud_scheduler_job" "syncMerkleTree" {
+  name             = "core-service-sync-merkle-tree-${local.env}"
+  description      = "Sync merkle tree trigger"
+  schedule         = "0 8 * * 5"
+  attempt_deadline = "1800s"
+
+  retry_config { retry_count = 1 }
+
+  http_target {
+    http_method = "GET"
+    uri         = "https://core-service-${local.env}.pine.loans/jobs/sync-merkle-tree"
+  }
+}
