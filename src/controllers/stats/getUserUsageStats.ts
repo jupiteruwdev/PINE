@@ -71,7 +71,7 @@ export default async function getUserUsageStats({
         .div(100).toFixed(0)
     )
 
-    const usagePercent = new BigNumber(protocolUsage).multipliedBy(100).div(totalProtocolUsage).toFixed(4)
+    const usagePercent = new BigNumber(protocolUsage).div(totalProtocolUsage).toFixed(4)
 
     logger.info(`Fetching user protocol usage stats for address ${address}... OK`)
 
