@@ -84,7 +84,7 @@ async function openSeaPlaceBid({ blockchain, bidPrice, nftAddress, nftId, attemp
           providerOrUrl: rpcUrl,
         })
 
-        const seaport = new OpenSeaPort(provider, {
+        const seaport = new OpenSeaPort(provider as any, {
           networkName: blockchain.networkId === Blockchain.Ethereum.Network.GOERLI ? Network.Goerli : Network.Main,
         })
 

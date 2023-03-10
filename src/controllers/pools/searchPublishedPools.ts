@@ -30,6 +30,7 @@ type Params = {
   lenderAddress?: string
   tenors?: number[]
   nftId?: string
+  poolVersion?: number
   paginateBy?: {
     count: number
     offset: number
@@ -104,6 +105,7 @@ function getPipelineStages({
   sortBy,
   address,
   tenors,
+  poolVersion,
 }: Params): PipelineStage[] {
   const blockchain = Blockchain.Ethereum(blockchainFilter.ethereum)
 
@@ -132,6 +134,9 @@ function getPipelineStages({
       'loanOptions.loanDurationSecond': {
         $in: Tenor.convertTenors(tenors),
       },
+    }],
+    ...poolVersion === undefined ? [] : [{
+      poolVersion,
     }],
   ]
 
