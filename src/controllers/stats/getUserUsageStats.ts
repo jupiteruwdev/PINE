@@ -81,6 +81,7 @@ export default async function getUserUsageStats({
       totalBorrowedEth: Value.$ETH(ethers.utils.formatEther(totalAmount.toString()).toString()),
       totalLendedEth: Value.$ETH(ethers.utils.formatEther(totalAmount.toString()).toString()),
       totalEthCapacity: Value.$ETH(ethPermissionedAll.toString()),
+      estimateRewards: Value.$PINE(usagePercent.multipliedBy(1240).div(100)),
     })
   }
   catch (err) {
