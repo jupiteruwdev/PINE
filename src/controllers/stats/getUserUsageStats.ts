@@ -63,15 +63,10 @@ export default async function getUserUsageStats({
         .div(100).toFixed(0)
     )
 
-    const totalProtocolUsage = ethers.utils.formatEther(
-      totalAmount.multipliedBy(42)
-        .plus(totalAmount.multipliedBy(28))
-        .plus(collateralPriceSumAll.multipliedBy(18))
-        .plus(ethPermissionedAll.multipliedBy(12))
-        .div(100).toFixed(0)
-    )
-
-    const usagePercent = new BigNumber(protocolUsage).div(totalProtocolUsage).toFixed(4)
+    const usagePercent = borrowedEth.div(totalAmount).multipliedBy(42)
+      .plus(collateralPriceSumForUser.div(collateralPriceSumAll).multipliedBy(18))
+      .plus(ethPermissioned.div(ethPermissionedAll).multipliedBy(12))
+      .plus(lendedEth.div(totalAmount).multipliedBy(28))
 
     logger.info(`Fetching user protocol usage stats for address ${address}... OK`)
 
@@ -82,6 +77,10 @@ export default async function getUserUsageStats({
       lendedEth: Value.$ETH(ethers.utils.formatEther(lendedEth.toString()).toString()),
       ethCapacity: Value.$ETH(ethPermissioned.toString()),
       collateralPrice: Value.$ETH(collateralPriceSumForUser.toString()),
+      totalCollateralPrice: Value.$ETH(collateralPriceSumAll.toString()),
+      totalBorrowedEth: Value.$ETH(ethers.utils.formatEther(totalAmount.toString()).toString()),
+      totalLendedEth: Value.$ETH(ethers.utils.formatEther(totalAmount.toString()).toString()),
+      totalEthCapacity: Value.$ETH(ethPermissionedAll.toString()),
     })
   }
   catch (err) {
