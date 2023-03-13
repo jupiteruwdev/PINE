@@ -67,6 +67,7 @@ export default async function getUserUsageStats({
       .plus(collateralPriceSumForUser.div(collateralPriceSumAll).multipliedBy(18))
       .plus(ethPermissioned.div(ethPermissionedAll).multipliedBy(12))
       .plus(lendedEth.div(totalAmount).multipliedBy(28))
+      .div(100)
 
     logger.info(`Fetching user protocol usage stats for address ${address}... OK`)
 
