@@ -1,4 +1,5 @@
 import BigNumber from 'bignumber.js'
+import EthDater from 'ethereum-block-by-date'
 import { ethers } from 'ethers'
 import _ from 'lodash'
 import appConf from '../../app.conf'
@@ -7,6 +8,7 @@ import { Value } from '../../entities'
 import { Blockchain, ProtocolUsage } from '../../entities/lib'
 import logger from '../../utils/logger'
 import { getTokenContract } from '../contracts'
+import getEthWeb3 from '../utils/getEthWeb3'
 
 type Params = {
   address: string
@@ -70,6 +72,10 @@ export default async function getUserUsageStats({
 
     logger.info(`Fetching user protocol usage stats for address ${address}... OK`)
 
+    const web3 = getEthWeb3()
+    const dater = new EthDater(web3)
+    const { block } = await dater.getDate(new Date(_.get(allLendingSnapshots[0], 'createdAt')))
+
     return ProtocolUsage.factory({
       usage: new BigNumber(protocolUsage).toFixed(4),
       usagePercent: usagePercent.div(100),
@@ -83,6 +89,7 @@ export default async function getUserUsageStats({
       totalEthCapacity: Value.$ETH(ethPermissionedAll.toString()),
       estimateRewards: Value.$PINE(usagePercent.multipliedBy(1240).multipliedBy(24).div(100)),
       nextSnapshot: Value.$PINE(usagePercent.multipliedBy(1240).div(100)),
+      nextSnapshotBlock: block,
     })
   }
   catch (err) {
