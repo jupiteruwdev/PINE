@@ -89,7 +89,7 @@ export default async function getUserUsageStats({
       totalEthCapacity: Value.$ETH(ethPermissionedAll.toString()),
       estimateRewards: Value.$PINE(usagePercent.multipliedBy(1240).multipliedBy(24).div(100)),
       nextSnapshot: Value.$PINE(usagePercent.multipliedBy(1240).div(100)),
-      nextSnapshotBlock: block,
+      nextSnapshotBlock: block + 296,
     })
   }
   catch (err) {
