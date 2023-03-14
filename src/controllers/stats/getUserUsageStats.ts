@@ -68,6 +68,8 @@ export default async function getUserUsageStats({
     const dater = new EthDater(web3)
     const { block } = await dater.getDate(new Date(_.get(allLendingSnapshots[0], 'createdAt')))
 
+    const protocolIncentivePerHour = appConf.incentiveRewards / 12 / 24 / 7
+
     return ProtocolUsage.factory({
       usagePercent: usagePercent.div(100),
       borrowedEth: Value.$ETH(ethers.utils.formatEther(borrowedEth.toString()).toString()),
@@ -78,7 +80,8 @@ export default async function getUserUsageStats({
       totalBorrowedEth: Value.$ETH(ethers.utils.formatEther(totalAmount.toString()).toString()),
       totalLendedEth: Value.$ETH(ethers.utils.formatEther(totalAmount.toString()).toString()),
       totalEthCapacity: Value.$ETH(ethPermissionedAll.toString()),
-      estimateRewards: Value.$PINE(usagePercent.multipliedBy(1240).multipliedBy(24).div(100)),
+      estimateRewards: Value.$PINE(usagePercent.multipliedBy(protocolIncentivePerHour).multipliedBy(24).div(100)),
+      incentiveReward: appConf.incentiveRewards,
       nextSnapshotBlock: block + 296,
     })
   }
