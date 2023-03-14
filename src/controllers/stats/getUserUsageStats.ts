@@ -57,14 +57,6 @@ export default async function getUserUsageStats({
     const collateralPriceSumForUser = _.reduce(borrowedSnapshots, (pre, cur) => pre.plus(new BigNumber(cur.collateralPrice?.amount ?? '0')), new BigNumber(0))
     const collateralPriceSumAll = _.reduce(allBorrowingSnapshots, (pre, cur) => pre.plus(new BigNumber(cur.collateralPrice?.amount ?? '0')), new BigNumber(0))
 
-    const protocolUsage = ethers.utils.formatEther(
-      borrowedEth.multipliedBy(42)
-        .plus(collateralPriceSumForUser.multipliedBy(18))
-        .plus(lendedEth.multipliedBy(28))
-        .plus(ethPermissioned.multipliedBy(12))
-        .div(100).toFixed(0)
-    )
-
     const usagePercent = borrowedEth.div(totalAmount).multipliedBy(42)
       .plus(collateralPriceSumForUser.div(collateralPriceSumAll).multipliedBy(18))
       .plus(ethPermissioned.div(ethPermissionedAll).multipliedBy(12))
@@ -77,7 +69,6 @@ export default async function getUserUsageStats({
     const { block } = await dater.getDate(new Date(_.get(allLendingSnapshots[0], 'createdAt')))
 
     return ProtocolUsage.factory({
-      usage: new BigNumber(protocolUsage).toFixed(4),
       usagePercent: usagePercent.div(100),
       borrowedEth: Value.$ETH(ethers.utils.formatEther(borrowedEth.toString()).toString()),
       lendedEth: Value.$ETH(ethers.utils.formatEther(lendedEth.toString()).toString()),
@@ -88,7 +79,6 @@ export default async function getUserUsageStats({
       totalLendedEth: Value.$ETH(ethers.utils.formatEther(totalAmount.toString()).toString()),
       totalEthCapacity: Value.$ETH(ethPermissionedAll.toString()),
       estimateRewards: Value.$PINE(usagePercent.multipliedBy(1240).multipliedBy(24).div(100)),
-      nextSnapshot: Value.$PINE(usagePercent.multipliedBy(1240).div(100)),
       nextSnapshotBlock: block + 296,
     })
   }
