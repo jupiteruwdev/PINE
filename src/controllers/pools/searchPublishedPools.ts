@@ -12,6 +12,7 @@ export enum PoolSortType {
   LTV = 'ltv',
   INTEREST = 'interest',
   UTILIZATION = 'utilization',
+  TVL = 'tvl',
 }
 
 export enum PoolSortDirection {
@@ -29,6 +30,7 @@ type Params = {
   lenderAddress?: string
   tenors?: number[]
   nftId?: string
+  poolVersion?: number
   paginateBy?: {
     count: number
     offset: number
@@ -102,6 +104,7 @@ function getPipelineStages({
   sortBy,
   address,
   tenors,
+  poolVersion,
 }: Params): PipelineStage[] {
   const blockchains = Blockchain.fromFilter(blockchainFilter)
 
@@ -130,6 +133,9 @@ function getPipelineStages({
       'loanOptions.loanDurationSecond': {
         $in: Tenor.convertTenors(tenors),
       },
+    }],
+    ...poolVersion === undefined ? [] : [{
+      poolVersion,
     }],
   ]
 

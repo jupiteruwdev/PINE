@@ -1,15 +1,17 @@
 import BigNumber from 'bignumber.js'
 import { PipelineStage } from 'mongoose'
 import { PoolModel } from '../../db'
-import { Blockchain, Pool, PoolGroup, Value } from '../../entities'
+import { Blockchain, NFT, Pool, PoolGroup, Value } from '../../entities'
 import logger from '../../utils/logger'
 import { mapPool } from '../adapters'
-import getEthValueUSD from '../utils/getEthValueUSD'
+import { getNFTsByOwner } from '../collaterals'
+import getTokenUSDPrice from '../utils/getTokenUSDPrice'
 import { PoolSortDirection, PoolSortType } from './searchPublishedPools'
 
 type Params = {
   blockchainFilter?: Blockchain.Filter
   collectionAddress?: string
+  ownerAddress?: string
   offset?: number
   count?: number
   collectionName?: string
@@ -72,6 +74,9 @@ function getPipelineStages({
           { 'networkId': blockchain.networkId },
         ],
       })),
+      'valueLockedEth': {
+        $gte: 0.01,
+      },
     },
   }, {
     $lookup: {
@@ -148,13 +153,6 @@ function getPipelineStages({
     },
   },
   {
-    $match: {
-      'groupValueLocked': {
-        $gte: 0.01,
-      },
-    },
-  },
-  {
     $unset: '_id',
   },
   ]
@@ -191,6 +189,14 @@ function getPipelineStages({
       },
     })
     break
+  case PoolSortType.TVL:
+    stages.push({
+      $sort: {
+        'groupValueLocked': sortBy?.direction === PoolSortDirection.DESC ? -1 : 1,
+        'pools.name': 1,
+      },
+    })
+    break
   }
 
   return [
@@ -204,6 +210,7 @@ export default async function searchPoolGroups({
     solana: Blockchain.Solana.Network.MAINNET,
     polygon: Blockchain.Polygon.Network.MAIN,
   },
+  ownerAddress,
   collectionAddress,
   collectionName,
   paginateBy,
@@ -213,7 +220,7 @@ export default async function searchPoolGroups({
 
   try {
     const [ethValueUSD, groups] = await Promise.all([
-      getEthValueUSD(Blockchain.parseBlockchain(blockchainFilter)),
+      getTokenUSDPrice(),
       searchPublishedPoolGroups({
         blockchainFilter,
         collectionAddress,
@@ -222,6 +229,20 @@ export default async function searchPoolGroups({
         sortBy,
       }),
     ])
+
+    let nfts: NFT[] = []
+
+    if (ownerAddress) {
+      nfts = await getNFTsByOwner({
+        blockchain: {
+          network: 'ethereum',
+          networkId: blockchainFilter.ethereum ?? '',
+        },
+        ownerAddress,
+        collectionAddress,
+        populateMetadata: true,
+      })
+    }
 
     const pools = groups as Required<Pool>[][]
 
@@ -242,6 +263,7 @@ export default async function searchPoolGroups({
           .reduce((sum, pool: Pool) => sum.plus(pool.valueLocked?.amount || 0), new BigNumber(0))
           .times(ethValueUSD.amount)
       ),
+      nfts,
     }))
 
     const out = poolGroups.map(group => ({

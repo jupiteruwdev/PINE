@@ -1,6 +1,9 @@
 import { Router } from 'express'
-import { getGlobalStats, getUserMissionStats } from '../../controllers'
+import { getGlobalStats, getRewards, getUserMissionStats, getUserUsageStats, updateRewardsStats } from '../../controllers'
+import getTokenUSDPrice, { AvailableToken } from '../../controllers/utils/getTokenUSDPrice'
 import { GlobalStats } from '../../entities'
+import ProtocolUsage from '../../entities/lib/ProtocolUsage'
+import Rewards from '../../entities/lib/Rewards'
 import UserMissionStats from '../../entities/lib/UserMissionStats'
 import { turnstileMiddleware } from '../../middlewares'
 import fault from '../../utils/fault'
@@ -19,6 +22,58 @@ router.get('/global', async (req, res, next) => {
   }
   catch (err) {
     next(fault('ERR_API_FETCH_GLOBAL_STATS', undefined, err))
+  }
+})
+
+router.get('/price', async (req, res, next) => {
+  try {
+    const token = getString(req.query, 'token', { optional: true }) as AvailableToken
+    const price = await getTokenUSDPrice(token)
+
+    res.status(200).json(price)
+  }
+  catch (err) {
+    next(fault('ERR_API_FETCH_PRICE', undefined, err))
+  }
+})
+
+router.get('/user/usage/:address', async (req, res, next) => {
+  try {
+    const address = getString(req.params, 'address')
+    const stats = await getUserUsageStats({ address })
+
+    const payload = ProtocolUsage.serialize(stats)
+    res.status(200).json(payload)
+  }
+  catch (err) {
+    next(fault('ERR_API_FETCH_USER_USAGE', undefined, err))
+  }
+})
+
+router.get('/user/rewards/:address', async (req, res, next) => {
+  try {
+    const address = getString(req.params, 'address')
+    const rewards = await getRewards({ address })
+
+    const payload = Rewards.serialize(rewards)
+
+    res.status(200).json(payload)
+  }
+  catch (err) {
+    next(fault('ERR_API_FETCH_USER_REWARDS', undefined, err))
+  }
+})
+
+router.post('/user/rewards/:address', async (req, res, next) => {
+  try {
+    const address = getString(req.params, 'address')
+
+    await updateRewardsStats({ address })
+
+    res.status(200).send()
+  }
+  catch (err) {
+    next(fault('ERR_API_UPDATE_USER_REWARDS', undefined, err))
   }
 })
 

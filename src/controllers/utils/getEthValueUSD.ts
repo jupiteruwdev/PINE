@@ -8,7 +8,7 @@ import logger from '../../utils/logger'
 import DataSource from './DataSource'
 import getRequest from './getRequest'
 
-export default async function getEthValueUSD(blockchain: Blockchain, amountEth: number | string | BigNumber = 1) {
+export default async function getEthValueUSD(blockchain: Blockchain, amountEth: number | string | BigNumber = 1): Promise<Value<AnyCurrency>> {
   const symbol = blockchain.network === 'ethereum' ? 'eth' : blockchain.network === 'polygon' ? 'matic' : ''
   const lastestPrice = await PriceModel.findOne({ name: symbol }).lean()
   const updatedAt = new Date(_.get(lastestPrice, 'updatedAt'))

@@ -74,7 +74,7 @@ function getPipelineStages({
 
   const stages: PipelineStage[] = [{
     $match: {
-      $or: blockchains.map(blockchain => ({
+      '$or': blockchains.map(blockchain => ({
         $and: [
           { 'networkType': blockchain.network },
           { 'networkId': blockchain.networkId },
@@ -82,6 +82,9 @@ function getPipelineStages({
       })),
       ...lenderAddress === undefined ? {} : { lenderAddress },
       ...includeRetired === true ? {} : { retired: { $ne: true } },
+      'valueLockedEth': {
+        $gte: 0.01,
+      },
     },
   }, {
     $lookup: {
@@ -102,18 +105,8 @@ function getPipelineStages({
   {
     $group: {
       _id: '$collection.address',
-      groupValueLocked: {
-        $sum: '$valueLockedEth',
-      },
       pools: {
         $push: '$$ROOT',
-      },
-    },
-  },
-  {
-    $match: {
-      'groupValueLocked': {
-        $gte: 0.01,
       },
     },
   },

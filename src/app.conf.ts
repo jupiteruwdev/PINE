@@ -25,6 +25,7 @@ export default {
   spicyestAPIKey: process.env.SPICYEST_API_KEY,
   x2y2APIKey: process.env.X2Y2_API_KEY,
   requestTimeoutMs: Number(process.env.REQUEST_TIMEOUT_MS ?? 30000),
+  ethBlocksPerSecond: 14,
   alchemyAPIUrl: {
     [Blockchain.Ethereum.Network.RINKEBY]: 'https://eth-rinkeby.g.alchemy.com/v2/',
     [Blockchain.Ethereum.Network.MAIN]: 'https://eth-mainnet.g.alchemy.com/v2/',
@@ -102,6 +103,12 @@ export default {
   pinePieceGenesisAddress: {
     [Blockchain.Ethereum.Network.MAIN]: '0xacadb3c6290392f59f45dddacca8add2cec24366',
   },
+  nftIds: {
+    ['0x57f1887a8bf19b14fc0df6fd9b2acc9af147ea85']: '53058332222413349876246999554393122531581216651837749203253759491527730476185',
+    ['0x059edd72cd353df5106d2b9cc5ab83a52287ac3a']: '9472',
+  },
+  vePINEAddress: '0x90dFb72736481BBacc7938d2D3673590B92647AE',
+  merkleAddress: '0xA5A19273bBf8f144e3F25d1468359f62f9Ba2CCB',
   defaultFees: [
     {
       type: 'fixed',
@@ -115,6 +122,8 @@ export default {
   blocksPerSecond: 14,
   valuationLimitation: 60 * 30 * 1000,
   ethMaxDecimalPlaces: 6,
+  snapshotPeriod: 39000,
+  rewardPINE: 5952,
   mongoUri: process.env.MONGO_URI ?? '',
   tenors: [1, 3, 7, 14, 30, 60, 90],
   tests: {
@@ -138,6 +147,7 @@ export default {
   turnstileSecretKey: process.env.TURNSTILE_SECRET_KEY,
   sentryApiDsn: process.env.SENTRY_API_DSN,
   alchemySigningKey: process.env.ALCHEMY_SIGNING_KEY ?? '',
+  incentiveRewards: 2500000,
   bidTreasuryContractAddress: {
     [Blockchain.Ethereum.Network.MAIN]: '',
     [Blockchain.Ethereum.Network.GOERLI]: '0x9e70ef3cd5565f4eb78996eb037765d759cc257b',
