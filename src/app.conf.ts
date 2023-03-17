@@ -62,6 +62,7 @@ export default {
   controlPlaneContractAddress: {
     [Blockchain.Ethereum.Network.RINKEBY]: '0x5E282F68a7CD593609C05AbCA32482395968d885',
     [Blockchain.Ethereum.Network.MAIN]: '0x9C2780F9e427E29Ba77EDC34C3F42e0865C3FBDF',
+    [Blockchain.Polygon.Network.MAIN]: '0x85B609F4724860feAd57e16175e66CF1F51bF72D',
   },
   openseaContractAddress: {
     [Blockchain.Ethereum.Network.RINKEBY]: '0xdD54D660178B28f6033a953b0E55073cFA7e3744',
@@ -87,6 +88,7 @@ export default {
   routerAddress: {
     [Blockchain.Ethereum.Network.MAIN]: '0x7a517e8bd374565615c043C32760ba4BD9982219',
     [Blockchain.Ethereum.Network.RINKEBY]: '0xFC6c6e4727DA5E1bF79aC9C96155B4cD2faC54E6',
+    [Blockchain.Polygon.Network.MAIN]: '0x125488d05fe1D48A8B9053b7C1B021aEF08f1c02',
   },
   repayRouterAddress: {
     [Blockchain.Ethereum.Network.MAIN]: '0x2B5DC8223D0aD809607f36a1D8A3A11bf20d595e',
@@ -95,6 +97,7 @@ export default {
   rolloverAddress: {
     [Blockchain.Ethereum.Network.MAIN]: '0x5284d97a1462A767F385aE6Ae89BA9065ecE193c',
     [Blockchain.Ethereum.Network.RINKEBY]: '0xC796d62fB1927a13D7E41eBd0c8eA80fdA5Ef80a',
+    [Blockchain.Polygon.Network.MAIN]: '0x03542e5D86e39304FE347c779De78F3157ca3e6f',
   },
   poolHelperAddress: {
     [Blockchain.Ethereum.Network.MAIN]: '0x0aab1368f6704e8403105162690bdf6ee75305c0',

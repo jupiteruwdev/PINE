@@ -88,7 +88,7 @@ export default async function searchCollections({ query, blockchain }: Params): 
       useGemXYZ({ query, blockchain }),
     )
 
-    return aggregateCollectionResults(collectionsPolygon, blockchain)
+    return collectionsPolygon
   case Blockchain.Ethereum.Network.GOERLI:
   case Blockchain.Polygon.Network.MUMBAI:
     const collectionsGoerli = await DataSource.fetch(

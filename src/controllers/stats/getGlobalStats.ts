@@ -1,11 +1,12 @@
 import BigNumber from 'bignumber.js'
+import _ from 'lodash'
 import Web3 from 'web3'
 import { Blockchain, GlobalStats, Pool, Value } from '../../entities'
 import { getOnChainGlobalStats } from '../../subgraph'
 import logger from '../../utils/logger'
 import { searchPublishedPools } from '../pools'
 import searchPublishedMultiplePools from '../pools/searchPublishedMultiplePools'
-import getTokenUSDPrice from '../utils/getTokenUSDPrice'
+import getTokenUSDPrice, { AvailableToken } from '../utils/getTokenUSDPrice'
 
 type Params = {
   blockchainFilter?: Blockchain.Filter
@@ -26,7 +27,7 @@ export default async function getGlobalStats({
       ethValueUSD,
       pools,
     ] = await Promise.all([
-      getTokenUSDPrice(),
+      getTokenUSDPrice(Blockchain.parseNativeToken(blockchain) as AvailableToken),
       searchPublishedPools({ blockchainFilter, includeRetired: true }),
     ])
 
@@ -47,9 +48,7 @@ export default async function getGlobalStats({
     const poolAddresses = loans.map((loan: any) => loan.pool)
     const collectionAddresses = loans.map((loan: any) => loan.erc721)
     const nftIds = loans.map((loan: any) => loan.id.split('/')[1])
-    const poolsUtilized = await searchPublishedMultiplePools({ addresses: poolAddresses, nftIds, collectionAddresses, includeRetired: true, blockchainFilter: {
-      ethereum: blockchainFilter.ethereum,
-    } })
+    const poolsUtilized = await searchPublishedMultiplePools({ addresses: poolAddresses, nftIds, collectionAddresses, includeRetired: true, blockchainFilter })
     const poolsUtilizedTransformed = poolsUtilized.reduce((r, p) => {
       r[p.address] = {
         addr: p.address,
@@ -66,9 +65,8 @@ export default async function getGlobalStats({
       id: loan.id.split('/')[1],
       valuation: poolsUtilizedTransformed[loan.pool]?.val,
     })).reduce((p: any, r: any) => p + (Number(r.valuation || 0) || 0), 0)
-    console.log(tvlNFTETH)
 
-    const totalLentETH = Web3.utils.fromWei(globalStat.historicalLentOut)
+    const totalLentETH = Web3.utils.fromWei(_.get(globalStat, 'historicalLentOut', '0'))
 
     const globalStats: GlobalStats = {
       capacity: Value.$USD(totalCapacityUSD),

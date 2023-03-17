@@ -5,7 +5,7 @@ import { Blockchain, NFT, Pool, PoolGroup, Value } from '../../entities'
 import logger from '../../utils/logger'
 import { mapPool } from '../adapters'
 import { getNFTsByOwner } from '../collaterals'
-import getTokenUSDPrice from '../utils/getTokenUSDPrice'
+import getTokenUSDPrice, { AvailableToken } from '../utils/getTokenUSDPrice'
 import { PoolSortDirection, PoolSortType } from './searchPublishedPools'
 
 type Params = {
@@ -219,8 +219,9 @@ export default async function searchPoolGroups({
   logger.info('Searching pool groups...')
 
   try {
+    const blockchain = Blockchain.parseBlockchain(blockchainFilter)
     const [ethValueUSD, groups] = await Promise.all([
-      getTokenUSDPrice(),
+      getTokenUSDPrice(Blockchain.parseNativeToken(blockchain) as AvailableToken),
       searchPublishedPoolGroups({
         blockchainFilter,
         collectionAddress,
@@ -234,10 +235,7 @@ export default async function searchPoolGroups({
 
     if (ownerAddress) {
       nfts = await getNFTsByOwner({
-        blockchain: {
-          network: 'ethereum',
-          networkId: blockchainFilter.ethereum ?? '',
-        },
+        blockchain,
         ownerAddress,
         collectionAddress,
         populateMetadata: true,

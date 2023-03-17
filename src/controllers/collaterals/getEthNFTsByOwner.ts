@@ -26,7 +26,7 @@ type AlchemyParams = Params & {
 }
 
 export default async function getEthNFTsByOwner({ blockchain, ownerAddress, populateMetadata, collectionAddress }: Params): Promise<NFT[]> {
-  if (blockchain.network !== 'ethereum') rethrow(`Unsupported blockchain <${JSON.stringify(blockchain)}>`)
+  if (blockchain.network !== 'ethereum' && blockchain.network !== 'polygon') rethrow(`Unsupported blockchain <${JSON.stringify(blockchain)}>`)
 
   logger.info(`Fetching Ethereum NFTs by owner <${ownerAddress}> on network <${blockchain.networkId}>...`)
 

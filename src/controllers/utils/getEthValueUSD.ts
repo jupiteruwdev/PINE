@@ -2,14 +2,14 @@ import BigNumber from 'bignumber.js'
 import _ from 'lodash'
 import appConf from '../../app.conf'
 import { PriceModel } from '../../db'
-import { AnyCurrency, Blockchain, Value } from '../../entities'
+import { AnyCurrency, Value } from '../../entities'
 import fault from '../../utils/fault'
 import logger from '../../utils/logger'
 import DataSource from './DataSource'
 import getRequest from './getRequest'
+import { AvailableToken } from './getTokenUSDPrice'
 
-export default async function getEthValueUSD(blockchain: Blockchain, amountEth: number | string | BigNumber = 1): Promise<Value<AnyCurrency>> {
-  const symbol = blockchain.network === 'ethereum' ? 'eth' : blockchain.network === 'polygon' ? 'matic' : ''
+export default async function getEthValueUSD(amountEth: number | string | BigNumber = 1, symbol: AvailableToken = AvailableToken.ETH): Promise<Value<AnyCurrency>> {
   const lastestPrice = await PriceModel.findOne({ name: symbol }).lean()
   const updatedAt = new Date(_.get(lastestPrice, 'updatedAt'))
   const now = Date.now()

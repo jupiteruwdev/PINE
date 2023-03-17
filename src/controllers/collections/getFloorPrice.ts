@@ -16,6 +16,7 @@ export default async function getFloorPrice({ contractAddress, blockchain }: Par
     logger.info(`Fetching floor price for contract <${contractAddress}> on network <${blockchain.networkId}>...`)
     switch (blockchain.networkId) {
     case Blockchain.Ethereum.Network.MAIN:
+    case Blockchain.Polygon.Network.MAIN:
       const apiHost = _.get(appConf.alchemyNFTAPIUrl, blockchain.networkId) ?? rethrow(`Missing Alchemy API URL for blockchain <${JSON.stringify(blockchain)}>`)
       const apiKey = appConf.alchemyAPIKey ?? rethrow('Missing Alchemy API key')
 
