@@ -1,11 +1,11 @@
 import { NextFunction, Request, Response } from 'express'
 import _ from 'lodash'
-import appConf from '../../app.conf'
-import { getEthNFTValuation } from '../../controllers'
-import { NFTCollectionModel } from '../../db'
-import { Blockchain, Valuation } from '../../entities'
-import logger from '../../utils/logger'
-import sleep from '../../utils/sleep'
+import appConf from '../app.conf'
+import { getEthNFTValuation } from '../controllers'
+import { NFTCollectionModel } from '../db'
+import { Blockchain, Valuation } from '../entities'
+import logger from '../utils/logger'
+import sleep from '../utils/sleep'
 
 async function getAllCollections() {
   const collections = await NFTCollectionModel.find()
