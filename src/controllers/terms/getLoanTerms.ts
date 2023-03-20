@@ -20,7 +20,8 @@ export default async function getLoanTerms({ blockchain, collectionAddresses, nf
 
   try {
     switch (blockchain.network) {
-    case 'ethereum': {
+    case 'ethereum':
+    case 'polygon': {
       // verify collection is valid one with matcher
       await verifyCollectionWithMatcher({ blockchain, collectionAddresses, matchSubcollectionBy: { type: 'nftId', values: nftIds } })
       const pools = await searchPublishedMultiplePools({ addresses: poolAddresses, nftIds, collectionAddresses, blockchainFilter: {

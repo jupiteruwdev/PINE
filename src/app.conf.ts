@@ -93,6 +93,7 @@ export default {
   repayRouterAddress: {
     [Blockchain.Ethereum.Network.MAIN]: '0x2B5DC8223D0aD809607f36a1D8A3A11bf20d595e',
     [Blockchain.Ethereum.Network.RINKEBY]: '0xFC6c6e4727DA5E1bF79aC9C96155B4cD2faC54E6',
+    [Blockchain.Polygon.Network.MAIN]: '0x125488d05fe1D48A8B9053b7C1B021aEF08f1c02',
   },
   rolloverAddress: {
     [Blockchain.Ethereum.Network.MAIN]: '0x5284d97a1462A767F385aE6Ae89BA9065ecE193c',
@@ -101,7 +102,7 @@ export default {
   },
   poolHelperAddress: {
     [Blockchain.Ethereum.Network.MAIN]: '0x0aab1368f6704e8403105162690bdf6ee75305c0',
-    [Blockchain.Polygon.Network.MAIN]: '0x0aab1368f6704e8403105162690bdf6ee75305c0',
+    [Blockchain.Polygon.Network.MAIN]: '0xd8785Fa74dc7D94558c62D0ba9e6452437aC967B',
   },
   pinePieceGenesisAddress: {
     [Blockchain.Ethereum.Network.MAIN]: '0xacadb3c6290392f59f45dddacca8add2cec24366',

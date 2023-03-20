@@ -111,8 +111,6 @@ export default async function getPools({
     case Blockchain.Polygon.Network.MAIN:
       const { pools: poolsMainnet } = await getOnChainPools({ lenderAddress, address, excludeAddresses, collectionAddress }, { networkId: blockchain.networkId })
 
-      console.log({ poolsMainnet })
-
       const loanOptionsDict = await getOnChainLoanOptions({ addresses: poolsMainnet.map((p: any) => p.id), networkId: blockchain.networkId })
 
       poolsData = [
