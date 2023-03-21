@@ -85,6 +85,7 @@ export default {
     [Blockchain.Ethereum.Network.RINKEBY]: '0x150A1a9015Bfaf54e7199eBb6ae35EBDE755D51D',
     [Blockchain.Ethereum.Network.MAIN]: '0x90dFb72736481BBacc7938d2D3673590B92647AE',
     [Blockchain.Ethereum.Network.GOERLI]: '0xfce1DFFE2A382f66ebD01F39b4e20d97B8110895',
+    [Blockchain.Polygon.Network.MAIN]: '0xc8A5181f1E4A83e631aa88E3e3d7b860b4A1C314',
   },
   routerAddress: {
     [Blockchain.Ethereum.Network.MAIN]: '0x7a517e8bd374565615c043C32760ba4BD9982219',
