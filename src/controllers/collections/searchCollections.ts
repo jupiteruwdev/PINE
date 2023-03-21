@@ -1,4 +1,3 @@
-import BigNumber from 'bignumber.js'
 import _ from 'lodash'
 import appConf from '../../app.conf'
 import { Blockchain, Collection, Value } from '../../entities'
@@ -36,21 +35,13 @@ async function aggregateCollectionResults(collections: Collection[], blockchain:
   const collectionResults = await Promise.all(
     nonSpamCollections.map(async (collection: Collection) => {
       const sales = await getNFTSales({ blockchain, contractAddress: collection.address, marketplace: convertAlchemySupportMarketplace(_.keys(collection.vendorIds)?.[0] ?? undefined) })
-      const floorPrice = await getFloorPrice({ blockchain, contractAddress: collection.address })
-
-      let floorPrices: Record<string, Value> = {}
-
-      _.keys(floorPrice).forEach((key: string) => {
-        if (!_.get(floorPrice[key], 'error')) {
-          floorPrices = {
-            ...floorPrices,
-            [key]: Value.factory({
-              amount: new BigNumber(_.get(floorPrice[key], 'floorPrice', 0)),
-              currency: _.get(floorPrice[key], 'priceCurrency', 'ETH'),
-            }),
-          }
-        }
-      })
+      let floorPrice
+      try {
+        floorPrice = await getFloorPrice({ blockchain, contractAddress: collection.address })
+      }
+      catch (err) {
+        floorPrice = Value.$ETH(0)
+      }
 
       return {
         ...collection,
@@ -63,7 +54,7 @@ async function aggregateCollectionResults(collections: Collection[], blockchain:
           transactionHash: _.get(sale, 'transactionHash'),
           quantity: _.get(sale, 'quantity'),
         })),
-        floorPrice: floorPrices,
+        floorPrice,
       }
     }),
   )
@@ -88,7 +79,7 @@ export default async function searchCollections({ query, blockchain }: Params): 
       useGemXYZ({ query, blockchain }),
     )
 
-    return collectionsPolygon
+    return aggregateCollectionResults(collectionsPolygon, blockchain)
   case Blockchain.Ethereum.Network.GOERLI:
   case Blockchain.Polygon.Network.MUMBAI:
     const collectionsGoerli = await DataSource.fetch(

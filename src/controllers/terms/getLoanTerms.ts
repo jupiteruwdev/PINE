@@ -24,9 +24,7 @@ export default async function getLoanTerms({ blockchain, collectionAddresses, nf
     case 'polygon': {
       // verify collection is valid one with matcher
       await verifyCollectionWithMatcher({ blockchain, collectionAddresses, matchSubcollectionBy: { type: 'nftId', values: nftIds } })
-      const pools = await searchPublishedMultiplePools({ addresses: poolAddresses, nftIds, collectionAddresses, blockchainFilter: {
-        ethereum: blockchain.networkId,
-      } })
+      const pools = await searchPublishedMultiplePools({ addresses: poolAddresses, nftIds, collectionAddresses, blockchainFilter: Blockchain.parseFilter(blockchain) })
 
       if (!pools) throw fault('ERR_NO_POOLS_AVAILABLE')
       if (pools.find(pool => pool.collection.valuation && (pool.collection.valuation?.timestamp || 0) < new Date().getTime() - appConf.valuationLimitation)) {

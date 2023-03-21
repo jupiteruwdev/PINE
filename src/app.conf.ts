@@ -25,6 +25,7 @@ export default {
   spicyestAPIKey: process.env.SPICYEST_API_KEY,
   x2y2APIKey: process.env.X2Y2_API_KEY,
   requestTimeoutMs: Number(process.env.REQUEST_TIMEOUT_MS ?? 30000),
+  metaquantsAPIKey: process.env.METAQUANTS_API_KEY,
   ethBlocksPerSecond: 14,
   alchemyAPIUrl: {
     [Blockchain.Ethereum.Network.RINKEBY]: 'https://eth-rinkeby.g.alchemy.com/v2/',

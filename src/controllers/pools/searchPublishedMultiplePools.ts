@@ -100,8 +100,6 @@ function getPipelineStages({
 }: Params): PipelineStage[] {
   const blockchains = Blockchain.fromFilter(blockchainFilter)
 
-  console.log({ blockchains })
-
   const collectionFilter = [
     ...collectionAddresses === undefined ? [] : [{
       'collection.address': {
