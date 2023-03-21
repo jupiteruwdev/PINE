@@ -124,16 +124,16 @@ resource "google_cloud_scheduler_job" "job" {
 #   }
 # }
 
-resource "google_cloud_scheduler_job" "syncMerkleTreeState" {
-  name             = "core-service-sync-merkle-tree-${local.env}"
-  description      = "Sync merkle tree state trigger"
-  schedule         = "*/5 * * * *"
-  attempt_deadline = "1800s"
+# resource "google_cloud_scheduler_job" "syncMerkleTreeState" {
+#   name             = "core-service-sync-merkle-tree-${local.env}"
+#   description      = "Sync merkle tree state trigger"
+#   schedule         = "*/5 * * * *"
+#   attempt_deadline = "1800s"
 
-  retry_config { retry_count = 1 }
+#   retry_config { retry_count = 1 }
 
-  http_target {
-    http_method = "GET"
-    uri         = "https://core-service-${local.env}.pine.loans/jobs/sync-merkle-tree-state"
-  }
-}
+#   http_target {
+#     http_method = "GET"
+#     uri         = "https://core-service-${local.env}.pine.loans/jobs/sync-merkle-tree-state"
+#   }
+# }
