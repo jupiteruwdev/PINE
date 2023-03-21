@@ -20,10 +20,7 @@ export default async function countPoolGroups(params: Params = {}): Promise<numb
   let docs = await aggregation.exec()
 
   if (params.nftId !== undefined) {
-    docs = await filterByNftId(Blockchain.factory({
-      network: 'ethereum',
-      networkId: params.blockchainFilter?.ethereum,
-    }), docs, params.nftId)
+    docs = await filterByNftId(Blockchain.parseBlockchain(params.blockchainFilter ?? {}), docs, params.nftId)
   }
 
   return docs.length
