@@ -53,7 +53,7 @@ router.get('/nftoftheday', async (req, res, next) => {
 
 router.get('/valuation', async (req, res, next) => {
   try {
-    const blockchain = getBlockchain(req.query) as Blockchain<'ethereum'>
+    const blockchain = getBlockchain(req.query)
     const collectionAddress = getString(req.query, 'collectionAddress')
     const nftId = getString(req.query, 'nftId')
 

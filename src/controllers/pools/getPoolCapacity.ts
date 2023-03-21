@@ -12,7 +12,8 @@ type Params = {
 
 export default async function getPoolCapacity({ blockchain, poolAddress, tokenAddress, fundSource }: Params): Promise<Value> {
   switch (blockchain.network) {
-  case 'ethereum': {
+  case 'ethereum':
+  case 'polygon': {
     const web3 = getEthWeb3(blockchain.networkId)
     // TODO: remove this one so that no need to call twice
     const contract = await getPoolContract({ blockchain, poolAddress })

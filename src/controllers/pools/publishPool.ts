@@ -1,7 +1,7 @@
 import _ from 'lodash'
 import appConf from '../../app.conf'
 import { NFTCollectionModel, PoolModel } from '../../db'
-import { Blockchain, Fee, Pool } from '../../entities'
+import { Blockchain, Pool } from '../../entities'
 import { getOnChainPoolByAddress } from '../../subgraph'
 import fault from '../../utils/fault'
 import logger from '../../utils/logger'
@@ -82,8 +82,10 @@ export default async function publishPool({
   try {
     switch (blockchain.network) {
     case 'ethereum':
+    case 'polygon':
       switch (blockchain.networkId) {
       case Blockchain.Ethereum.Network.MAIN:
+      case Blockchain.Polygon.Network.MAIN:
         // await authenticatePoolPublisher({ poolAddress, payload, signature, networkId: blockchain.networkId })
         const { pool: poolMainnet } = await getOnChainPoolByAddress({ poolAddress }, { networkId: blockchain.networkId })
         pool = await savePool({
@@ -92,7 +94,8 @@ export default async function publishPool({
           ethLimit,
         })
         break
-      case Blockchain.Ethereum.Network.RINKEBY:
+      case Blockchain.Ethereum.Network.GOERLI:
+      case Blockchain.Polygon.Network.MUMBAI:
         await authenticatePoolPublisher({ poolAddress, payload, signature, networkId: blockchain.networkId })
         const { pool: poolRinkeby } = await getOnChainPoolByAddress({ poolAddress }, { networkId: blockchain.networkId })
         pool = await savePool({

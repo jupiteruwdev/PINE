@@ -5,7 +5,7 @@ import app from '../../src/app'
 
 describe('/v0/stats', () => {
   it('GET /v0/stats/global', async () => {
-    const { body: res } = await request(app).get('/v0/stats/global')
+    const { body: res } = await request(app).get('/v0/stats/global?ethereum=1')
       .expect('Content-Type', /json/)
       .expect(200)
 

@@ -31,7 +31,7 @@ export default async function countLoans({
     lenderAddresses,
     collectionAddresses: allCollectionAddresses,
   }, {
-    networkId: blockchainFilter.ethereum,
+    networkId: Blockchain.parseBlockchain(blockchainFilter).networkId,
   })
 
   return onChainLoans?.length || 0

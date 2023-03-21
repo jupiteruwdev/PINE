@@ -8,7 +8,8 @@ import getPineValueUSD from './getPineValueUSD'
 
 export enum AvailableToken {
   ETH = 'eth',
-  PINE = 'pine'
+  PINE = 'pine',
+  MATIC = 'matic'
 }
 
 async function fetchTokenPrice(token: AvailableToken = AvailableToken.ETH): Promise<Value<AnyCurrency>> {
@@ -16,7 +17,8 @@ async function fetchTokenPrice(token: AvailableToken = AvailableToken.ETH): Prom
 
   switch (token) {
   case AvailableToken.ETH:
-    return getEthValueUSD()
+  case AvailableToken.MATIC:
+    return getEthValueUSD(undefined, token)
   case AvailableToken.PINE:
     return getPineValueUSD()
   }
