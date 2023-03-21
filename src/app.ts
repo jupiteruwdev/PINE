@@ -71,7 +71,7 @@ if (appConf.env === 'production') {
 }
 
 app.use((err: SuperError, req: Request, res: Response, next: NextFunction) => {
-  const status = rootCause(err)
+  const status = (err as any).status ?? rootCause(err)
 
   res.setHeader('Content-Type', 'application/json')
 

@@ -11,7 +11,7 @@ import getRequest from '../utils/getRequest'
 import postRequest from '../utils/postRequest'
 
 type Params = {
-  blockchain: Blockchain<'ethereum'>
+  blockchain: Blockchain
   collectionAddress: string
   nftId: string
 }
@@ -24,7 +24,7 @@ export default async function getEthNFTValuation({
   try {
     logger.info(`Fetching valuation for Ethereum NFT <${collectionAddress}/${nftId}>...`)
 
-    if (blockchain.network !== 'ethereum') rethrow(`Unsupported blockchain <${JSON.stringify(blockchain)}>`)
+    if (blockchain.network !== 'ethereum' && blockchain.network !== 'polygon') rethrow(`Unsupported blockchain <${JSON.stringify(blockchain)}>`)
 
     switch (blockchain.networkId) {
     case Blockchain.Ethereum.Network.MAIN:
@@ -36,7 +36,14 @@ export default async function getEthNFTValuation({
       )
 
       return valuation
+    case Blockchain.Polygon.Network.MAIN:
+      const valuationPolygon = await DataSource.fetch(
+        useAlchemy({ blockchain, collectionAddress, nftId }),
+      )
+
+      return valuationPolygon
     case Blockchain.Ethereum.Network.RINKEBY:
+    case Blockchain.Polygon.Network.MUMBAI:
       return Valuation.factory({
         value: Value.$ETH(0.1),
         value24Hr: Value.$ETH(0.1),
@@ -59,7 +66,7 @@ export function useSpicyest({ blockchain, collectionAddress, nftId }: Params): D
 
     if (blockchain.networkId !== Blockchain.Ethereum.Network.MAIN) rethrow(`Unsupported Ethereum network <${blockchain.networkId}>`)
 
-    const apiKey = 'iJiIsICJ9eyJhbGcnR5cCIUzI1NI6IkpXViO' ?? rethrow('Missing Spicyest API key')
+    const apiKey = appConf.spicyestAPIKey ?? rethrow('Missing Spicyest API key')
 
     const res = await getRequest(`https://api.spicyest.com/floor?address=${collectionAddress}`, {
       headers: {
@@ -83,11 +90,12 @@ export function useAlchemy({ blockchain, collectionAddress, nftId }: Params): Da
   return async () => {
     logger.info(`...using Alchemy to determine valuation for Ethereum NFT <${collectionAddress}/${nftId}>`)
 
-    if (blockchain.networkId !== Blockchain.Ethereum.Network.MAIN) rethrow(`Unsupported Ethereum network <${blockchain.networkId}>`)
+    if (blockchain.networkId !== Blockchain.Ethereum.Network.MAIN && blockchain.networkId !== Blockchain.Polygon.Network.MAIN) rethrow(`Unsupported Ethereum network <${blockchain.networkId}>`)
 
+    const apiUrl = _.get(appConf.alchemyNFTAPIUrl, blockchain.networkId) ?? rethrow(`Missing Alchemy API Url for blockchain <${JSON.stringify(blockchain)}>`)
     const apiKey = appConf.alchemyAPIKey ?? rethrow('Missing Alchemy API key')
 
-    const res = await getRequest(`https://eth-mainnet.g.alchemy.com/nft/v2/${apiKey}/getFloorPrice?contractAddress=${collectionAddress}`, {
+    const res = await getRequest(`${apiUrl}${apiKey}/getFloorPrice?contractAddress=${collectionAddress}`, {
       headers: {
         'X-API-KEY': apiKey,
       },

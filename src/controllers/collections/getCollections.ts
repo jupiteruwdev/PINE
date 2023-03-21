@@ -35,13 +35,13 @@ export function useDb({
   blockchainFilter = {
     ethereum: Blockchain.Ethereum.Network.MAIN,
     solana: Blockchain.Solana.Network.MAINNET,
+    polygon: Blockchain.Polygon.Network.MAIN,
   },
   collectionAddresses,
   collectionNames,
 }: Params): DataSource<Collection[]> {
   return async () => {
-    const networkTypes = Object.keys(blockchainFilter) as (keyof Blockchain.Filter)[]
-    const blockchains = networkTypes.map(networkType => Blockchain.factory({ network: networkType, networkId: blockchainFilter[networkType] }))
+    const blockchains = Blockchain.fromFilter(blockchainFilter)
 
     const res = await Promise.all(blockchains.map(async blockchain => {
       const filter = {

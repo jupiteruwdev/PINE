@@ -31,7 +31,8 @@ export default async function getLoan({
 
   try {
     switch (blockchain.network) {
-    case 'ethereum': {
+    case 'ethereum':
+    case 'polygon': {
       const loanId = `${collectionAddress}/${nftId}`
       const onChainLoan = await getOnChainLoanById({ loanId }, { networkId: blockchain.networkId })
 
@@ -39,7 +40,7 @@ export default async function getLoan({
 
       const [blockNumber, pools] = await Promise.all([
         web3.eth.getBlockNumber(),
-        searchPublishedPools({ address: onChainLoan.pool, blockchainFilter: { ethereum: blockchain.networkId }, includeRetired: true }),
+        searchPublishedPools({ address: onChainLoan.pool, blockchainFilter: Blockchain.parseFilter(blockchain), includeRetired: true }),
       ])
       // Special case. If pool is unpublished. We cannot find the pool in the database anymore.
       if (pools.length === 0) {

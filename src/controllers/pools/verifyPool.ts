@@ -16,6 +16,7 @@ export default async function verifyPool({ blockchain, address, collectionAddres
   try {
     switch (blockchain.network) {
     case 'ethereum':
+    case 'polygon':
       const web3 = getEthWeb3(blockchain.networkId)
       const contract = new web3.eth.Contract(ERC721LendingAPI as any, address)
       const onChainCollectionAddress = await contract.methods._supportedCollection().call()

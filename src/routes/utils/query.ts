@@ -100,9 +100,14 @@ export function getBlockchainFilter<T extends boolean>(query: Query, autofillDef
     ? autofillDefaults ? Blockchain.Solana() : undefined
     : Blockchain.Solana(query.solana?.toString())
 
+  const polyBlockchain = _.get(query, 'polygon', _.get(query, 'poly')) === undefined
+    ? autofillDefaults ? Blockchain.Polygon() : undefined
+    : Blockchain.Polygon(parseEthNetworkId(query.polygon))
+
   return {
     ethereum: ethBlockchain?.networkId,
     solana: solBlockchain?.networkId,
+    polygon: polyBlockchain?.networkId,
   }
 }
 

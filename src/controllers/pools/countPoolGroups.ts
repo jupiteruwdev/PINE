@@ -20,10 +20,7 @@ export default async function countPoolGroups(params: Params = {}): Promise<numb
   let docs = await aggregation.exec()
 
   if (params.nftId !== undefined) {
-    docs = await filterByNftId(Blockchain.factory({
-      network: 'ethereum',
-      networkId: params.blockchainFilter?.ethereum,
-    }), docs, params.nftId)
+    docs = await filterByNftId(Blockchain.parseBlockchain(params.blockchainFilter ?? {}), docs, params.nftId)
   }
 
   return docs.length
@@ -33,6 +30,7 @@ function getPipelineStages({
   blockchainFilter = {
     ethereum: Blockchain.Ethereum.Network.MAIN,
     solana: Blockchain.Solana.Network.MAINNET,
+    polygon: Blockchain.Polygon.Network.MAIN,
   },
   collectionAddress,
   collectionName,
@@ -41,7 +39,7 @@ function getPipelineStages({
   lenderAddress,
   tenors,
 }: Params): PipelineStage[] {
-  const blockchain = Blockchain.Ethereum(blockchainFilter.ethereum)
+  const blockchains = Blockchain.fromFilter(blockchainFilter)
 
   const collectionFilter = [
     ...collectionAddress === undefined ? [] : [{
@@ -73,8 +71,12 @@ function getPipelineStages({
 
   const stages: PipelineStage[] = [{
     $match: {
-      'networkType': blockchain.network,
-      'networkId': blockchain.networkId,
+      '$or': blockchains.map(blockchain => ({
+        $and: [
+          { 'networkType': blockchain.network },
+          { 'networkId': blockchain.networkId },
+        ],
+      })),
       ...lenderAddress === undefined ? {} : { lenderAddress },
       ...includeRetired === true ? {} : { retired: { $ne: true } },
       'valueLockedEth': {

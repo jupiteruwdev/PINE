@@ -23,7 +23,8 @@ type Output = {
 
 export default async function signValuation({ blockchain, nftId, collectionAddress, valuation, poolVersion }: Params): Promise<Output> {
   switch (blockchain.network) {
-  case 'ethereum': {
+  case 'ethereum':
+  case 'polygon': {
     const web3 = getEthWeb3(blockchain.networkId)
     const blockNumber = await web3.eth.getBlockNumber()
     const expiresAtBlock = blockNumber + appConf.ethValuationExpiryBlocks

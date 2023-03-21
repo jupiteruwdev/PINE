@@ -29,7 +29,6 @@ export default async function getUserMissionStats({
     logger.info(`Fetching user mission stats for blockchain <${JSON.stringify(blockchain)}>...`)
     const apiHost = _.get(appConf.alchemyAPIUrl, blockchain.networkId) ?? rethrow(`Missing Alchemy API URL for blockchain <${JSON.stringify(blockchain)}>`)
     const apiKey = appConf.alchemyAPIKey ?? rethrow('Missing Alchemy API key')
-
     let user = await UserModel.findOne({
       address: {
         '$regex': address,
@@ -51,29 +50,50 @@ export default async function getUserMissionStats({
     const poolsByLender = await getOnChainPoolsByLenderAddress({ lenderAddress: address, timestamp }, { networkId: blockchain.networkId })
     const phplHistoriesByBorrower = await getPNPLHistoriesByBorrowerAddress({ borrowerAddress: address, timestamp }, { networkId: blockchain.networkId })
 
-    const res = await getRequest(`${apiHost}${apiKey}/getNFTs`, {
-      params: {
-        owner: address,
-        contractAddresses: [
-          _.get(appConf.pinePieceGenesisAddress, blockchain.networkId),
-          ...arbitraryNFTs,
-        ],
-      },
-    })
+    switch (blockchain.network) {
+    case 'ethereum':
+      const res = await getRequest(`${apiHost}${apiKey}/getNFTs`, {
+        params: {
+          owner: address,
+          contractAddresses: [
+            _.get(appConf.pinePieceGenesisAddress, blockchain.networkId),
+            ...arbitraryNFTs,
+          ],
+        },
+      })
 
-    const ownedNfts = _.get(res, 'ownedNfts')
-    const isPinePieceGenesisHolder = !!ownedNfts.find((nft: any) => _.get(nft, 'contract.address').toLowerCase() === _.get(appConf.pinePieceGenesisAddress, blockchain.networkId).toLowerCase())
-    const isArbitraryNFTHoldings = arbitraryNFTs.filter((arbitraryNFT: string) => !!ownedNfts.find((nft: any) => _.get(nft, 'contract.address').toLowerCase() === arbitraryNFT.toLowerCase()))
-    logger.info(`Fetching user mission stats for blokchain <${JSON.stringify(blockchain)}>... OK`)
+      const ownedNfts = _.get(res, 'ownedNfts')
+      const isPinePieceGenesisHolder = !!ownedNfts.find((nft: any) => _.get(nft, 'contract.address').toLowerCase() === _.get(appConf.pinePieceGenesisAddress, blockchain.networkId).toLowerCase())
+      const isArbitraryNFTHoldings = arbitraryNFTs.filter((arbitraryNFT: string) => !!ownedNfts.find((nft: any) => _.get(nft, 'contract.address').toLowerCase() === arbitraryNFT.toLowerCase()))
+      logger.info(`Fetching user mission stats for blokchain <${JSON.stringify(blockchain)}>... OK`)
 
-    return UserMissionStats.factory({
-      lend: !!poolsByLender?.length,
-      borrow: !!loanHistoriesByBorrower?.length,
-      pnpl: !!phplHistoriesByBorrower?.length,
-      pinePiece: isPinePieceGenesisHolder,
-      arbitraryNfts: isArbitraryNFTHoldings,
-      interactionAddresses: user.interactionAddresses ?? [],
-    })
+      return UserMissionStats.factory({
+        lend: !!poolsByLender?.length,
+        borrow: !!loanHistoriesByBorrower?.length,
+        pnpl: !!phplHistoriesByBorrower?.length,
+        pinePiece: isPinePieceGenesisHolder,
+        arbitraryNfts: isArbitraryNFTHoldings,
+        interactionAddresses: user.interactionAddresses ?? [],
+      })
+    case 'polygon':
+      return UserMissionStats.factory({
+        lend: !!poolsByLender?.length,
+        borrow: !!loanHistoriesByBorrower?.length,
+        pnpl: !!phplHistoriesByBorrower?.length,
+        pinePiece: false,
+        arbitraryNfts: [],
+        interactionAddresses: user.interactionAddresses ?? [],
+      })
+    default:
+      return UserMissionStats.factory({
+        lend: !!poolsByLender?.length,
+        borrow: !!loanHistoriesByBorrower?.length,
+        pnpl: !!phplHistoriesByBorrower?.length,
+        pinePiece: false,
+        arbitraryNfts: [],
+        interactionAddresses: user.interactionAddresses ?? [],
+      })
+    }
   }
   catch (err) {
     logger.error(`Fetching user mission stats for blockchain <${JSON.stringify(blockchain)}>... ERR:`, err)

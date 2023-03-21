@@ -8,7 +8,7 @@ const router = Router()
 
 router.get('/global', async (req, res, next) => {
   try {
-    const blockchainFilter = getBlockchainFilter(req.query, true)
+    const blockchainFilter = getBlockchainFilter(req.query, false)
     const stats = await getGlobalStats({ blockchainFilter })
     const payload = GlobalStats.serialize(stats)
 

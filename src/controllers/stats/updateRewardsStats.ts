@@ -2,6 +2,7 @@ import { ethers } from 'ethers'
 import MERKLE_ABI from '../../abis/Merkle.json' assert { type: 'json' }
 import appConf from '../../app.conf'
 import { MerkleTreeModel } from '../../db'
+import { Blockchain } from '../../entities'
 import fault from '../../utils/fault'
 import logger from '../../utils/logger'
 import getEthWeb3 from '../utils/getEthWeb3'
@@ -15,7 +16,7 @@ export default async function updateRewardsStats({ address }: Params) {
     logger.info(`Updating rewards stats for address ${address}...`)
     const merkleTrees = await MerkleTreeModel.find({ address: address.toLowerCase(), claimed: false }).sort({ blockNumber: -1 })
     if (merkleTrees.length) {
-      const web3 = getEthWeb3('137')
+      const web3 = getEthWeb3(Blockchain.Polygon.Network.MAIN)
       const contract = new web3.eth.Contract(MERKLE_ABI as any[], appConf.merkleAddress)
       const claimed = await contract.methods.root_leaf_index_hash_claimed(ethers.utils.solidityKeccak256([
         'bytes32', 'bytes32', 'uint256',

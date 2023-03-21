@@ -22,28 +22,37 @@ export default {
   coinAPIKey: process.env.COIN_API_KEY,
   lunarCrushAPIKey: process.env.LUNARCRUSH_API_KEY,
   looksrareAPIKey: process.env.LOOKSRARE_API_KEY,
+  spicyestAPIKey: process.env.SPICYEST_API_KEY,
   x2y2APIKey: process.env.X2Y2_API_KEY,
   requestTimeoutMs: Number(process.env.REQUEST_TIMEOUT_MS ?? 30000),
+  metaquantsAPIKey: process.env.METAQUANTS_API_KEY,
   ethBlocksPerSecond: 14,
   alchemyAPIUrl: {
     [Blockchain.Ethereum.Network.RINKEBY]: 'https://eth-rinkeby.g.alchemy.com/v2/',
     [Blockchain.Ethereum.Network.MAIN]: 'https://eth-mainnet.g.alchemy.com/v2/',
     [Blockchain.Ethereum.Network.GOERLI]: 'https://eth-goerli.g.alchemy.com/v2/',
+    [Blockchain.Polygon.Network.MAIN]: 'https://polygon-mainnet.g.alchemy.com/v2/',
+    [Blockchain.Polygon.Network.MUMBAI]: 'https://polygon-mumbai.g.alchemy.com/v2/',
   },
   alchemyNFTAPIUrl: {
     [Blockchain.Ethereum.Network.RINKEBY]: 'https://eth-rinkeby.g.alchemy.com/nft/v2/',
     [Blockchain.Ethereum.Network.MAIN]: 'https://eth-mainnet.g.alchemy.com/nft/v2/',
     [Blockchain.Ethereum.Network.GOERLI]: 'https://eth-goerli.g.alchemy.com/nft/v2/',
+    [Blockchain.Polygon.Network.MAIN]: 'https://polygon-mainnet.g.alchemy.com/nft/v2/',
+    [Blockchain.Polygon.Network.MUMBAI]: 'https://polygon-mumbai.g.alchemy.com/nft/v2/',
   },
   subgraphAPIUrl: {
     [Blockchain.Ethereum.Network.RINKEBY]: process.env.SUBGRAPH_API_RINKEBY_URL,
     [Blockchain.Ethereum.Network.MAIN]: process.env.SUBGRAPH_API_MAINNET_URL,
+    [Blockchain.Polygon.Network.MUMBAI]: process.env.SUBGRAPH_API_POLYGON_MUMBAI_URL,
+    [Blockchain.Polygon.Network.MAIN]: process.env.SUBGRAPH_API_POLYGON_MAINNET_URL,
   },
   ethRPC: {
     [Blockchain.Ethereum.Network.RINKEBY]: process.env.ETH_RPC_RINKEBY,
     [Blockchain.Ethereum.Network.MAIN]: process.env.ETH_RPC_MAINNET,
     [Blockchain.Ethereum.Network.GOERLI]: process.env.ETH_RPC_GOERLI,
-    ['137']: 'https://polygon-mainnet.g.alchemy.com/v2/oJXcBlm6sLD8M_JZrm87XSsAnRG6Hdb8',
+    [Blockchain.Polygon.Network.MAIN]: process.env.POLYGON_RPC_MAINNET,
+    [Blockchain.Polygon.Network.MUMBAI]: process.env.POLYGON_RPC_MUMBAI,
   },
   ethValuationExpiryBlocks: 64, // quote expires in 15 mins
   ethValuationSigner: process.env.VALUATION_SIGNER,
@@ -54,6 +63,7 @@ export default {
   controlPlaneContractAddress: {
     [Blockchain.Ethereum.Network.RINKEBY]: '0x5E282F68a7CD593609C05AbCA32482395968d885',
     [Blockchain.Ethereum.Network.MAIN]: '0x9C2780F9e427E29Ba77EDC34C3F42e0865C3FBDF',
+    [Blockchain.Polygon.Network.MAIN]: '0x85B609F4724860feAd57e16175e66CF1F51bF72D',
   },
   openseaContractAddress: {
     [Blockchain.Ethereum.Network.RINKEBY]: '0xdD54D660178B28f6033a953b0E55073cFA7e3744',
@@ -75,21 +85,26 @@ export default {
     [Blockchain.Ethereum.Network.RINKEBY]: '0x150A1a9015Bfaf54e7199eBb6ae35EBDE755D51D',
     [Blockchain.Ethereum.Network.MAIN]: '0x90dFb72736481BBacc7938d2D3673590B92647AE',
     [Blockchain.Ethereum.Network.GOERLI]: '0xfce1DFFE2A382f66ebD01F39b4e20d97B8110895',
+    [Blockchain.Polygon.Network.MAIN]: '0xc8A5181f1E4A83e631aa88E3e3d7b860b4A1C314',
   },
   routerAddress: {
     [Blockchain.Ethereum.Network.MAIN]: '0x7a517e8bd374565615c043C32760ba4BD9982219',
     [Blockchain.Ethereum.Network.RINKEBY]: '0xFC6c6e4727DA5E1bF79aC9C96155B4cD2faC54E6',
+    [Blockchain.Polygon.Network.MAIN]: '0x125488d05fe1D48A8B9053b7C1B021aEF08f1c02',
   },
   repayRouterAddress: {
     [Blockchain.Ethereum.Network.MAIN]: '0x2B5DC8223D0aD809607f36a1D8A3A11bf20d595e',
     [Blockchain.Ethereum.Network.RINKEBY]: '0xFC6c6e4727DA5E1bF79aC9C96155B4cD2faC54E6',
+    [Blockchain.Polygon.Network.MAIN]: '0x125488d05fe1D48A8B9053b7C1B021aEF08f1c02',
   },
   rolloverAddress: {
     [Blockchain.Ethereum.Network.MAIN]: '0x5284d97a1462A767F385aE6Ae89BA9065ecE193c',
     [Blockchain.Ethereum.Network.RINKEBY]: '0xC796d62fB1927a13D7E41eBd0c8eA80fdA5Ef80a',
+    [Blockchain.Polygon.Network.MAIN]: '0x03542e5D86e39304FE347c779De78F3157ca3e6f',
   },
   poolHelperAddress: {
     [Blockchain.Ethereum.Network.MAIN]: '0x0aab1368f6704e8403105162690bdf6ee75305c0',
+    [Blockchain.Polygon.Network.MAIN]: '0xd8785Fa74dc7D94558c62D0ba9e6452437aC967B',
   },
   pinePieceGenesisAddress: {
     [Blockchain.Ethereum.Network.MAIN]: '0xacadb3c6290392f59f45dddacca8add2cec24366',
