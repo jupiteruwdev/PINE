@@ -1,7 +1,7 @@
 import { NextFunction, Request, Response } from 'express'
-import getEthValueUSD from '../../controllers/utils/getEthValueUSD'
-import { PriceModel } from '../../db'
-import logger from '../../utils/logger'
+import getEthValueUSD from '../controllers/utils/getEthValueUSD'
+import { PriceModel } from '../db'
+import logger from '../utils/logger'
 
 export default async function syncEthValueUSD(req: Request, res: Response, next: NextFunction) {
   try {

@@ -1,10 +1,10 @@
 import { NextFunction, Request, Response } from 'express'
 import _ from 'lodash'
-import { getEthNFTValuation } from '../../controllers'
-import { BorrowSnapshotModel, LendingSnapshotModel, PoolModel } from '../../db'
-import { Blockchain } from '../../entities'
-import { getOnChainLoans, getOnChainPools } from '../../subgraph'
-import logger from '../../utils/logger'
+import { getEthNFTValuation } from '../controllers'
+import { BorrowSnapshotModel, LendingSnapshotModel, PoolModel } from '../db'
+import { Blockchain } from '../entities'
+import { getOnChainLoans, getOnChainPools } from '../subgraph'
+import logger from '../utils/logger'
 
 async function syncBorrowSnapshot(networkId: string) {
   try {

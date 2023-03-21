@@ -1,10 +1,10 @@
 import { NextFunction, Request, Response } from 'express'
 import _ from 'lodash'
-import appConf from '../../app.conf'
-import getRequest from '../../controllers/utils/getRequest'
-import { UserModel } from '../../db'
-import logger from '../../utils/logger'
-import sleep from '../../utils/sleep'
+import appConf from '../app.conf'
+import getRequest from '../controllers/utils/getRequest'
+import { UserModel } from '../db'
+import logger from '../utils/logger'
+import sleep from '../utils/sleep'
 
 async function getAllUsers() {
   const users = await UserModel.find({
