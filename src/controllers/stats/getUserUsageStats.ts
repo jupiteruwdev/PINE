@@ -1,4 +1,5 @@
 import BigNumber from 'bignumber.js'
+import EthDater from 'ethereum-block-by-date'
 import { ethers } from 'ethers'
 import _ from 'lodash'
 import appConf from '../../app.conf'
@@ -7,6 +8,7 @@ import { Value } from '../../entities'
 import { Blockchain, ProtocolUsage } from '../../entities/lib'
 import logger from '../../utils/logger'
 import { getTokenContract } from '../contracts'
+import getEthWeb3 from '../utils/getEthWeb3'
 
 type Params = {
   address: string
@@ -55,33 +57,32 @@ export default async function getUserUsageStats({
     const collateralPriceSumForUser = _.reduce(borrowedSnapshots, (pre, cur) => pre.plus(new BigNumber(cur.collateralPrice?.amount ?? '0')), new BigNumber(0))
     const collateralPriceSumAll = _.reduce(allBorrowingSnapshots, (pre, cur) => pre.plus(new BigNumber(cur.collateralPrice?.amount ?? '0')), new BigNumber(0))
 
-    const protocolUsage = ethers.utils.formatEther(
-      borrowedEth.multipliedBy(42)
-        .plus(collateralPriceSumForUser.multipliedBy(18))
-        .plus(lendedEth.multipliedBy(28))
-        .plus(ethPermissioned.multipliedBy(12))
-        .div(100).toFixed(0)
-    )
-
-    const totalProtocolUsage = ethers.utils.formatEther(
-      totalAmount.multipliedBy(42)
-        .plus(totalAmount.multipliedBy(28))
-        .plus(collateralPriceSumAll.multipliedBy(18))
-        .plus(ethPermissionedAll.multipliedBy(12))
-        .div(100).toFixed(0)
-    )
-
-    const usagePercent = new BigNumber(protocolUsage).div(totalProtocolUsage).toFixed(4)
+    const usagePercent = borrowedEth.div(totalAmount).multipliedBy(42)
+      .plus(collateralPriceSumForUser.div(collateralPriceSumAll).multipliedBy(18))
+      .plus(ethPermissioned.div(ethPermissionedAll).multipliedBy(12))
+      .plus(lendedEth.div(totalAmount).multipliedBy(28))
 
     logger.info(`Fetching user protocol usage stats for address ${address}... OK`)
 
+    const web3 = getEthWeb3()
+    const dater = new EthDater(web3)
+    const { block } = await dater.getDate(new Date(_.get(allLendingSnapshots[0], 'createdAt')))
+
+    const protocolIncentivePerHour = appConf.incentiveRewards / 12 / 24 / 7
+
     return ProtocolUsage.factory({
-      usage: new BigNumber(protocolUsage).toFixed(4),
-      usagePercent,
+      usagePercent: usagePercent.div(100),
       borrowedEth: Value.$ETH(ethers.utils.formatEther(borrowedEth.toString()).toString()),
       lendedEth: Value.$ETH(ethers.utils.formatEther(lendedEth.toString()).toString()),
       ethCapacity: Value.$ETH(ethPermissioned.toString()),
       collateralPrice: Value.$ETH(collateralPriceSumForUser.toString()),
+      totalCollateralPrice: Value.$ETH(collateralPriceSumAll.toString()),
+      totalBorrowedEth: Value.$ETH(ethers.utils.formatEther(totalAmount.toString()).toString()),
+      totalLendedEth: Value.$ETH(ethers.utils.formatEther(totalAmount.toString()).toString()),
+      totalEthCapacity: Value.$ETH(ethPermissionedAll.toString()),
+      estimateRewards: Value.$PINE(usagePercent.multipliedBy(protocolIncentivePerHour).multipliedBy(24).div(100)),
+      incentiveReward: appConf.incentiveRewards,
+      nextSnapshotBlock: block + 296,
     })
   }
   catch (err) {
