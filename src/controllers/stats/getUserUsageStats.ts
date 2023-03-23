@@ -48,11 +48,11 @@ export default async function getUserUsageStats({
 
     const wethBalances = await Promise.all(_.uniqBy(lendingSnapshots, 'fundSource').map(snapshot => wethContract.methods.balanceOf(snapshot.fundSource).call()))
     const wethBalance = _.reduce(wethBalances, (pre, cur) => pre.plus(new BigNumber(cur)), new BigNumber(0))
-    const ethPermissioned = _.min([ethCapacity, new BigNumber(ethers.utils.formatEther(wethBalance.toString()))]) ?? new BigNumber(0)
+    const ethPermissioned = BigNumber.min(ethCapacity, new BigNumber(ethers.utils.formatEther(wethBalance.toString())))
 
     const allWethBalances = await Promise.all(_.uniqBy(allLendingSnapshots, 'fundSource').map(snapshot => wethContract.methods.balanceOf(snapshot.fundSource).call()))
     const wethBalanceAll = _.reduce(allWethBalances, (pre, cur) => pre.plus(new BigNumber(cur)), new BigNumber(0))
-    const ethPermissionedAll = _.min([ethCapacityAll, new BigNumber(ethers.utils.formatEther(wethBalanceAll.toString()))]) ?? new BigNumber(0)
+    const ethPermissionedAll = BigNumber.min(ethCapacityAll, new BigNumber(ethers.utils.formatEther(wethBalanceAll.toString())))
 
     const collateralPriceSumForUser = _.reduce(borrowedSnapshots, (pre, cur) => pre.plus(new BigNumber(cur.collateralPrice?.amount ?? '0')), new BigNumber(0))
     const collateralPriceSumAll = _.reduce(allBorrowingSnapshots, (pre, cur) => pre.plus(new BigNumber(cur.collateralPrice?.amount ?? '0')), new BigNumber(0))
