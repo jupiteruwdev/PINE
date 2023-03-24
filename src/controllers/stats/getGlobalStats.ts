@@ -1,8 +1,12 @@
 import BigNumber from 'bignumber.js'
+import { ethers } from 'ethers'
+import _ from 'lodash'
 import Web3 from 'web3'
+import appConf from '../../app.conf'
 import { Blockchain, GlobalStats, Pool, Value } from '../../entities'
-import { getOnChainGlobalStats } from '../../subgraph'
+import { getOnChainGlobalStats, getOnChainPools } from '../../subgraph'
 import logger from '../../utils/logger'
+import { getTokenContract } from '../contracts'
 import { searchPublishedPools } from '../pools'
 import searchPublishedMultiplePools from '../pools/searchPublishedMultiplePools'
 import getTokenUSDPrice from '../utils/getTokenUSDPrice'
@@ -20,13 +24,23 @@ export default async function getGlobalStats({
   try {
     logger.info(`Fetching global stats for blockchain filter <${JSON.stringify(blockchainFilter)}>...`)
 
+    const blockchain = Blockchain.parseBlockchain(blockchainFilter)
     const [
       ethValueUSD,
       pools,
+      { pools: allPools },
     ] = await Promise.all([
       getTokenUSDPrice(),
       searchPublishedPools({ blockchainFilter, includeRetired: true }),
+      getOnChainPools({}, { networkId: blockchain.networkId }),
     ])
+
+    const wethContract = getTokenContract({ blockchain, address: _.get(appConf.wethAddress, blockchain.networkId) })
+
+    const uniqFundSources = _.uniqBy(allPools, 'lenderAddress').map(pool => _.get(pool, 'lenderAddress')).filter(pool => !!pool)
+
+    const wethPermissions = await Promise.all(uniqFundSources.map(fundSource => wethContract.methods.balanceOf(fundSource).call()))
+    const wethPermissioned = wethPermissions.reduce((pre, cur) => pre.plus(new BigNumber(ethers.utils.formatEther(cur) ?? '0')), new BigNumber(0))
 
     const totalUtilizationETH = pools.reduce((p, c) => p.plus(c.utilization.amount), new BigNumber(0))
     const totalUtilizationUSD = totalUtilizationETH.times(ethValueUSD.amount)
@@ -64,7 +78,6 @@ export default async function getGlobalStats({
       id: loan.id.split('/')[1],
       valuation: poolsUtilizedTransformed[loan.pool]?.val,
     })).reduce((p: any, r: any) => p + (Number(r.valuation || 0) || 0), 0)
-    console.log(tvlNFTETH)
 
     const totalLentETH = Web3.utils.fromWei(globalStat.historicalLentOut)
 
@@ -76,6 +89,7 @@ export default async function getGlobalStats({
       utilizationRatio: totalUtilizationUSD.div(totalValueLockedUSD),
       noOfLoans: loans.length,
       tvlNft: Value.$ETH(new BigNumber(tvlNFTETH).plus(totalUtilizationETH)),
+      tal: Value.$ETH(wethPermissioned),
     }
 
     logger.info(`Fetching global stats for blockchain filter <${JSON.stringify(blockchainFilter)}>... OK:`, globalStats)
