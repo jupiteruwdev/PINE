@@ -26,72 +26,89 @@ export default async function getGlobalStats({
     logger.info(`Fetching global stats for blockchain filter <${JSON.stringify(blockchainFilter)}>...`)
 
     const blockchain = Blockchain.parseBlockchain(blockchainFilter)
-    const [
-      ethValueUSD,
-      pools,
-      { pools: allPools },
-    ] = await Promise.all([
-      getTokenUSDPrice(Blockchain.parseNativeToken(blockchain) as AvailableToken),
-      searchPublishedPools({ blockchainFilter, includeRetired: true }),
-      getOnChainPools({}, { networkId: blockchain.networkId }),
-    ])
+    const blockchains = Blockchain.fromFilter(blockchainFilter)
+    const evmBlockchains = blockchains.filter(blockchain => blockchain.network !== 'solana')
+    let globalStats: GlobalStats = GlobalStats.factory({
+      capacity: Value.$USD(0),
+      totalValueLentHistorical: Value.$ETH(0),
+      totalValueLocked: Value.$USD(0),
+      utilization: Value.$ETH(0),
+      utilizationRatio: 0,
+      noOfLoans: 0,
+      tvlNft: 0,
+      tal: 0,
+    })
 
-    const wethContract = getTokenContract({ blockchain, address: _.get(appConf.wethAddress, blockchain.networkId) })
+    for (const blockchain of evmBlockchains) {
+      const filter = Blockchain.parseFilter(blockchain)
+      const [
+        ethValueUSD,
+        pools,
+        { pools: allPools },
+      ] = await Promise.all([
+        getTokenUSDPrice(Blockchain.parseNativeToken(blockchain) as AvailableToken),
+        searchPublishedPools({ blockchainFilter: filter, includeRetired: true }),
+        getOnChainPools({}, { networkId: blockchain.networkId }),
+      ])
 
-    const uniqFundSources = _.uniqBy(allPools, 'lenderAddress').map(pool => _.get(pool, 'lenderAddress')).filter(pool => !!pool)
+      const wethContract = getTokenContract({ blockchain, address: _.get(appConf.wethAddress, blockchain.networkId) })
 
-    const wethPermissions = await Promise.all(uniqFundSources.map(fundSource => wethContract.methods.balanceOf(fundSource).call()))
-    const wethPermissioned = wethPermissions.reduce((pre, cur) => pre.plus(new BigNumber(ethers.utils.formatEther(cur) ?? '0')), new BigNumber(0))
+      const uniqFundSources = _.uniqBy(allPools, 'lenderAddress').map(pool => _.get(pool, 'lenderAddress')).filter(pool => !!pool)
 
-    const totalUtilizationETH = pools.reduce((p, c) => p.plus(c.utilization.amount), new BigNumber(0))
-    const totalUtilizationUSD = totalUtilizationETH.times(ethValueUSD.amount)
-    const totalFundSourceUtilization = new BigNumber(0)
-    const fundSourceUtilizations: Record<string, BigNumber> = pools.reduce((p: Record<string, BigNumber>, c: Pool): Record<string, BigNumber> => {
-      const fundSource = c?.fundSource || ''
-      if (!p[fundSource]) p[fundSource] = c.utilization.amount
-      else p[fundSource] = p[fundSource].plus(c.utilization.amount)
-      totalFundSourceUtilization.plus(c.utilization.amount)
-      return p
-    }, {})
-    const totalValueLockedUSD = pools.reduce((p, c) => p.plus(c.valueLocked.amount).plus(fundSourceUtilizations[c.fundSource || '']), new BigNumber(0)).times(ethValueUSD.amount)
-    const totalCapacityUSD = totalValueLockedUSD.minus(totalUtilizationUSD)
+      const wethPermissions = await Promise.all(uniqFundSources.map(fundSource => wethContract.methods.balanceOf(fundSource).call()))
+      const wethPermissioned = wethPermissions.reduce((pre, cur) => pre.plus(new BigNumber(ethers.utils.formatEther(cur) ?? '0')), new BigNumber(0))
 
-    const { globalStat, loans } = await getOnChainGlobalStats({ networkId: blockchain?.networkId })
-    const poolAddresses = loans.map((loan: any) => loan.pool)
-    const collectionAddresses = loans.map((loan: any) => loan.erc721)
-    const nftIds = loans.map((loan: any) => loan.id.split('/')[1])
-    const poolsUtilized = await searchPublishedMultiplePools({ addresses: poolAddresses, nftIds, collectionAddresses, includeRetired: true, blockchainFilter })
-    const poolsUtilizedTransformed = poolsUtilized.reduce((r, p) => {
-      r[p.address] = {
-        addr: p.address,
-        val: p.collection.valuation?.value?.amount.toString(),
-        col: p.collection.name,
+      const totalUtilizationETH = pools.reduce((p, c) => p.plus(c.utilization.amount), new BigNumber(0))
+      const totalUtilizationUSD = totalUtilizationETH.times(ethValueUSD.amount)
+      const totalFundSourceUtilization = new BigNumber(0)
+      const fundSourceUtilizations: Record<string, BigNumber> = pools.reduce((p: Record<string, BigNumber>, c: Pool): Record<string, BigNumber> => {
+        const fundSource = c?.fundSource || ''
+        if (!p[fundSource]) p[fundSource] = c.utilization.amount
+        else p[fundSource] = p[fundSource].plus(c.utilization.amount)
+        totalFundSourceUtilization.plus(c.utilization.amount)
+        return p
+      }, {})
+      const totalValueLockedUSD = pools.reduce((p, c) => p.plus(c.valueLocked.amount).plus(fundSourceUtilizations[c.fundSource || '']), new BigNumber(0)).times(ethValueUSD.amount)
+      const totalCapacityUSD = totalValueLockedUSD.minus(totalUtilizationUSD)
+
+      const { globalStat, loans } = await getOnChainGlobalStats({ networkId: blockchain?.networkId })
+      const poolAddresses = loans.map((loan: any) => loan.pool)
+      const collectionAddresses = loans.map((loan: any) => loan.erc721)
+      const nftIds = loans.map((loan: any) => loan.id.split('/')[1])
+      const poolsUtilized = await searchPublishedMultiplePools({ addresses: poolAddresses, nftIds, collectionAddresses, includeRetired: true, blockchainFilter })
+      const poolsUtilizedTransformed = poolsUtilized.reduce((r, p) => {
+        r[p.address] = {
+          addr: p.address,
+          val: p.collection.valuation?.value?.amount.toString(),
+          col: p.collection.name,
+        }
+        return r
       }
-      return r
+      , {} as Record<string, any>)
+
+      const tvlNFTETH = loans.map((loan: any) => ({
+        pa: loan.pool,
+        ca: loan.erc721,
+        id: loan.id.split('/')[1],
+        valuation: poolsUtilizedTransformed[loan.pool]?.val,
+      })).reduce((p: any, r: any) => p + (Number(r.valuation || 0) || 0), 0)
+
+      const totalLentETH = Web3.utils.fromWei(_.get(globalStat, 'historicalLentOut', '0'))
+
+      globalStats = GlobalStats.factory({
+        capacity: Value.$USD(totalCapacityUSD.plus(globalStats.capacity.amount)),
+        totalValueLentHistorical: Value.$USD(globalStats.totalValueLentHistorical.amount.plus(new BigNumber(totalLentETH).multipliedBy(ethValueUSD.amount))),
+        totalValueLocked: Value.$USD(globalStats.totalValueLocked.amount.plus(totalValueLockedUSD.minus(totalFundSourceUtilization.times(ethValueUSD.amount)))),
+        utilization: Value.$USD(totalUtilizationETH),
+        utilizationRatio: totalUtilizationUSD.div(totalValueLockedUSD),
+        noOfLoans: globalStats.noOfLoans + loans.length,
+        tvlNft: Value.$USD(globalStats.tvlNft.amount.plus(new BigNumber(tvlNFTETH).plus(totalUtilizationETH).multipliedBy(ethValueUSD.amount))),
+        tal: Value.$USD(globalStats.tal.amount.plus(wethPermissioned)),
+      })
+
+      logger.info(`Fetching global stats for blockchain filter <${JSON.stringify(blockchainFilter)}>... OK:`, globalStats)
+
     }
-    , {} as Record<string, any>)
-
-    const tvlNFTETH = loans.map((loan: any) => ({
-      pa: loan.pool,
-      ca: loan.erc721,
-      id: loan.id.split('/')[1],
-      valuation: poolsUtilizedTransformed[loan.pool]?.val,
-    })).reduce((p: any, r: any) => p + (Number(r.valuation || 0) || 0), 0)
-
-    const totalLentETH = Web3.utils.fromWei(_.get(globalStat, 'historicalLentOut', '0'))
-
-    const globalStats: GlobalStats = {
-      capacity: Value.$USD(totalCapacityUSD),
-      totalValueLentHistorical: Value.$ETH(totalLentETH),
-      totalValueLocked: Value.$USD(totalValueLockedUSD.minus(totalFundSourceUtilization.times(ethValueUSD.amount))),
-      utilization: Value.$ETH(totalUtilizationETH),
-      utilizationRatio: totalUtilizationUSD.div(totalValueLockedUSD),
-      noOfLoans: loans.length,
-      tvlNft: Value.$ETH(new BigNumber(tvlNFTETH).plus(totalUtilizationETH)),
-      tal: Value.$ETH(wethPermissioned),
-    }
-
-    logger.info(`Fetching global stats for blockchain filter <${JSON.stringify(blockchainFilter)}>... OK:`, globalStats)
 
     return globalStats
   }
