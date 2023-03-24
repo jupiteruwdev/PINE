@@ -24,6 +24,7 @@ export default async function getGlobalStats({
   try {
     logger.info(`Fetching global stats for blockchain filter <${JSON.stringify(blockchainFilter)}>...`)
 
+    const blockchain = Blockchain.parseBlockchain(blockchainFilter)
     const [
       ethValueUSD,
       pools,
@@ -77,7 +78,6 @@ export default async function getGlobalStats({
       id: loan.id.split('/')[1],
       valuation: poolsUtilizedTransformed[loan.pool]?.val,
     })).reduce((p: any, r: any) => p + (Number(r.valuation || 0) || 0), 0)
-    console.log(tvlNFTETH)
 
     const totalLentETH = Web3.utils.fromWei(globalStat.historicalLentOut)
 
