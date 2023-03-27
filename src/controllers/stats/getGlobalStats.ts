@@ -25,19 +25,20 @@ export default async function getGlobalStats({
   try {
     logger.info(`Fetching global stats for blockchain filter <${JSON.stringify(blockchainFilter)}>...`)
 
-    const blockchain = Blockchain.parseBlockchain(blockchainFilter)
     const blockchains = Blockchain.fromFilter(blockchainFilter)
     const evmBlockchains = blockchains.filter(blockchain => blockchain.network !== 'solana')
     let globalStats: GlobalStats = GlobalStats.factory({
       capacity: Value.$USD(0),
-      totalValueLentHistorical: Value.$ETH(0),
+      totalValueLentHistorical: Value.$USD(0),
       totalValueLocked: Value.$USD(0),
-      utilization: Value.$ETH(0),
+      utilization: Value.$USD(0),
       utilizationRatio: 0,
       noOfLoans: 0,
-      tvlNft: 0,
-      tal: 0,
+      tvlNft: Value.$USD(0),
+      tal: Value.$USD(0),
     })
+    let totalUtilizationUSDSum = new BigNumber(0)
+    let totalValueLockedUSDSum = new BigNumber(0)
 
     for (const blockchain of evmBlockchains) {
       const filter = Blockchain.parseFilter(blockchain)
@@ -94,20 +95,21 @@ export default async function getGlobalStats({
       })).reduce((p: any, r: any) => p + (Number(r.valuation || 0) || 0), 0)
 
       const totalLentETH = Web3.utils.fromWei(_.get(globalStat, 'historicalLentOut', '0'))
+      totalUtilizationUSDSum = totalUtilizationUSDSum.plus(totalUtilizationUSD)
+      totalValueLockedUSDSum = totalValueLockedUSDSum.plus(totalValueLockedUSD)
 
       globalStats = GlobalStats.factory({
         capacity: Value.$USD(totalCapacityUSD.plus(globalStats.capacity.amount)),
-        totalValueLentHistorical: Value.$USD(globalStats.totalValueLentHistorical.amount.plus(new BigNumber(totalLentETH).multipliedBy(ethValueUSD.amount))),
+        totalValueLentHistorical: Value.$USD(globalStats.totalValueLentHistorical.amount.plus(new BigNumber(totalLentETH).times(ethValueUSD.amount))),
         totalValueLocked: Value.$USD(globalStats.totalValueLocked.amount.plus(totalValueLockedUSD.minus(totalFundSourceUtilization.times(ethValueUSD.amount)))),
-        utilization: Value.$USD(totalUtilizationETH),
-        utilizationRatio: totalUtilizationUSD.div(totalValueLockedUSD),
+        utilization: Value.$USD(globalStats.utilization.amount.plus(totalUtilizationETH.times(ethValueUSD.amount))),
+        utilizationRatio: totalUtilizationUSDSum.div(totalValueLockedUSDSum),
         noOfLoans: globalStats.noOfLoans + loans.length,
-        tvlNft: Value.$USD(globalStats.tvlNft.amount.plus(new BigNumber(tvlNFTETH).plus(totalUtilizationETH).multipliedBy(ethValueUSD.amount))),
-        tal: Value.$USD(globalStats.tal.amount.plus(wethPermissioned)),
+        tvlNft: Value.$USD(globalStats.tvlNft.amount.plus(new BigNumber(tvlNFTETH).plus(totalUtilizationETH).times(ethValueUSD.amount))),
+        tal: Value.$USD(globalStats.tal.amount.plus(wethPermissioned.times(ethValueUSD.amount))),
       })
 
       logger.info(`Fetching global stats for blockchain filter <${JSON.stringify(blockchainFilter)}>... OK:`, globalStats)
-
     }
 
     return globalStats
