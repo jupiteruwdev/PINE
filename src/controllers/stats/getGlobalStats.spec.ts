@@ -12,7 +12,6 @@ describe('controllers/stats/getGlobalStats', () => {
     const stats = await getGlobalStats({
       blockchainFilter: {
         ethereum: Blockchain.Ethereum.Network.MAIN,
-        polygon: Blockchain.Polygon.Network.MAIN,
       },
     })
     const codingResolver = GlobalStats.codingResolver
