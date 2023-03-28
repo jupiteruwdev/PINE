@@ -72,7 +72,7 @@ function useMetaquants({ contractAddress, blockchain }: Params): DataSource<Valu
       },
       useCache: false,
     })
-    if (res?.body?.floor_price > 100) rethrow('Wrong currency')
+
     const floorPrice = new BigNumber(res?.body?.floor_price ?? '0')
 
     return Value.$ETH(floorPrice)
