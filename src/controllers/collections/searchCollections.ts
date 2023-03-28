@@ -29,7 +29,7 @@ const convertAlchemySupportMarketplace = (vendor?: string): string | undefined =
 }
 
 async function aggregateCollectionResults(collections: Collection[], blockchain: Blockchain): Promise<Collection[]> {
-  const spamContracts = await getSpamContracts({ blockchain })
+  const spamContracts = blockchain.network === 'ethereum' ? await getSpamContracts({ blockchain }) : []
   const nonSpamCollections = collections.filter((c: Collection) => !spamContracts.find(ad => ad.toLowerCase() === c.address.toLowerCase()))
 
   const collectionResults = await Promise.all(
