@@ -37,6 +37,9 @@ export default async function populatePoolAvailabilityForNFTs({
       'collection.address': {
         $in: addresses.map(addr => new RegExp(addr, 'i')),
       },
+      'valueLockedEth': {
+        $gte: 0.01,
+      },
     },
   },
   ]
