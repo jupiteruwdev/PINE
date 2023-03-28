@@ -10,6 +10,7 @@ import getEthWeb3 from '../utils/getEthWeb3'
 
 type Params = {
   address: string
+  epochStartBlock?: number
 }
 
 /**
@@ -17,7 +18,7 @@ type Params = {
  * TODO: update after polygon support merge
  */
 
-export default async function getRewards({ address }: Params): Promise<Rewards> {
+export default async function getRewards({ address, epochStartBlock }: Params): Promise<Rewards> {
   const web3 = getEthWeb3('137')
   const contract = new web3.eth.Contract(VEPINE_ABI as any[], appConf.vePINEAddress)
   const currentBlock = await web3.eth.getBlockNumber()
@@ -36,12 +37,15 @@ export default async function getRewards({ address }: Params): Promise<Rewards> 
   prevFriday.setUTCSeconds(0)
   prevFriday.setUTCMilliseconds(0)
 
-  const dater = new EthDater(web3)
-  const { block: startBlock } = await dater.getDate(prevFriday)
+  if (!epochStartBlock) {
+    const dater = new EthDater(web3)
+    const { block: startBlock } = await dater.getDate(prevFriday)
+    epochStartBlock = startBlock
+  }
 
   let totalReward = new BigNumber(0)
 
-  for (let block = startBlock + appConf.snapshotPeriod; block <= currentBlock; block += appConf.snapshotPeriod) {
+  for (let block = epochStartBlock + appConf.snapshotPeriod; block <= currentBlock; block += appConf.snapshotPeriod) {
     const [userVeSb, totalVeSb] = await Promise.all([
       contract.methods.userVeSb(address).call(undefined, block),
       contract.methods.totalVeSb().call(undefined, block),
