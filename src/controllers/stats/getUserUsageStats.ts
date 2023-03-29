@@ -1,17 +1,108 @@
 import BigNumber from 'bignumber.js'
-import EthDater from 'ethereum-block-by-date'
 import { ethers } from 'ethers'
 import _ from 'lodash'
 import appConf from '../../app.conf'
 import { BorrowSnapshotModel, LendingSnapshotModel } from '../../db'
 import { Value } from '../../entities'
-import { Blockchain, ProtocolUsage } from '../../entities/lib'
+import { ProtocolUsage } from '../../entities/lib'
 import logger from '../../utils/logger'
-import { getTokenContract } from '../contracts'
-import getEthWeb3 from '../utils/getEthWeb3'
+import { getRewards } from '../contracts'
 
 type Params = {
   address: string
+}
+
+type GetUsageValuesParams = {
+  lendingSnapshots: any[]
+  borrowingSnapshots: any[]
+  address: string
+}
+
+async function getUsageValues({ lendingSnapshots, borrowingSnapshots, address }: GetUsageValuesParams) {
+  const borrowedSnapshots = borrowingSnapshots.filter(snapshot => _.get(snapshot, 'borrowerAddress')?.toLowerCase() === address.toLowerCase())
+  const lendedSnapshots = borrowingSnapshots.filter(snapsoht => _.get(snapsoht, 'lenderAddress')?.toLowerCase() === address.toLowerCase())
+
+  const lendingSnapshotsForAdddress = lendingSnapshots.filter(snapshot => _.get(snapshot, 'lenderAddress')?.toLowerCase() === address.toLowerCase())
+
+  const totalAmount = _.reduce(borrowingSnapshots, (pre, cur) => pre.plus(new BigNumber(cur.borrowAmount ?? '0')), new BigNumber(0))
+
+  const borrowedEth = _.reduce(borrowedSnapshots, (pre, cur) => pre.plus(cur.borrowAmount ?? '0'), new BigNumber(0))
+  const lendedEth = _.reduce(lendedSnapshots, (pre, cur) => pre.plus(cur.borrowAmount ?? '0'), new BigNumber(0))
+
+  const ethPermissioned = _.reduce(_.values(_.groupBy(lendingSnapshotsForAdddress, 'fundSource')), (pre, cur) => pre.plus(BigNumber.max(...cur.map(snapshot => new BigNumber(snapshot.capacity ?? '0')))), new BigNumber(0))
+
+  const ethPermissionedAll = _.reduce(_.values(_.groupBy(lendingSnapshots, 'fundSource')), (pre, cur) => pre.plus(BigNumber.max(...cur.map(snapshot => new BigNumber(snapshot.capacity ?? '0')))), new BigNumber(0))
+
+  const collateralPriceSumForUser = _.reduce(borrowedSnapshots, (pre, cur) => pre.plus(new BigNumber(cur.collateralPrice?.amount ?? '0')), new BigNumber(0))
+  const collateralPriceSumAll = _.reduce(borrowingSnapshots, (pre, cur) => pre.plus(new BigNumber(cur.collateralPrice?.amount ?? '0')), new BigNumber(0))
+
+  const usagePercent = (totalAmount.gt(0) ? borrowedEth.div(totalAmount).multipliedBy(42) : new BigNumber(0))
+    .plus(collateralPriceSumAll.gt(0) ? collateralPriceSumForUser.div(collateralPriceSumAll).multipliedBy(18) : new BigNumber(0))
+    .plus(ethPermissionedAll.gt(0) ? ethPermissioned.div(ethPermissionedAll).multipliedBy(12) : new BigNumber(0))
+    .plus(totalAmount.gt(0) ? lendedEth.div(totalAmount).multipliedBy(28) : new BigNumber(0))
+
+  return {
+    usagePercent,
+    borrowedEth,
+    lendedEth,
+    ethPermissioned,
+    collateralPriceSumForUser,
+    collateralPriceSumAll,
+    totalAmount,
+    ethPermissionedAll,
+  }
+}
+
+async function getIncentiveRewards({ address }: Params): Promise<{
+  incentiveRewards: BigNumber
+  epochStartBlock?: number
+}> {
+  try {
+    const today = new Date()
+    const dayOfWeek = today.getUTCDay()
+    const prevFriday = new Date(today)
+    const now = new Date()
+
+    if (dayOfWeek < 5 || (dayOfWeek === 5 && prevFriday.getUTCHours() <= 7)) {
+      prevFriday.setDate(today.getDate() - dayOfWeek - 2)
+    }
+    else if (dayOfWeek >= 5) {
+      prevFriday.setDate(today.getDate() - dayOfWeek + 5)
+    }
+    prevFriday.setUTCHours(8)
+    prevFriday.setUTCMinutes(0)
+    prevFriday.setUTCSeconds(0)
+    prevFriday.setUTCMilliseconds(0)
+
+    const allBorrowingSnapshots = await BorrowSnapshotModel.find({ updatedAt: {
+      $gt: prevFriday,
+    } }).sort({ createdAt: 1 }).lean()
+    const allLendingSnapshots = await LendingSnapshotModel.find({ updatedAt: {
+      $gt: prevFriday,
+    } }).sort({ createdAt: 1 }).lean()
+    let incentiveRewards = new BigNumber(0)
+
+    while (1) {
+      const currentSnapshotTime = prevFriday.getTime()
+      prevFriday.setUTCHours(prevFriday.getUTCHours() + 1)
+      const currentBorrowingSnapshots = allBorrowingSnapshots.filter(snapshot => new Date(_.get(snapshot, 'createdAt')).getTime() > currentSnapshotTime && new Date(_.get(snapshot, 'createdAt')).getTime() < prevFriday.getTime())
+      const currentLendingSnapshots = allLendingSnapshots.filter(snapshot => new Date(_.get(snapshot, 'createdAt')).getTime() > currentSnapshotTime && new Date(_.get(snapshot, 'createdAt')).getTime() < prevFriday.getTime())
+
+      const { usagePercent } = await getUsageValues({ address, lendingSnapshots: currentLendingSnapshots, borrowingSnapshots: currentBorrowingSnapshots })
+      const protocolIncentivePerHour = appConf.incentiveRewards / 12 / 24 / 7
+
+      incentiveRewards = incentiveRewards.plus(usagePercent.times(protocolIncentivePerHour).div(100))
+      if (prevFriday.getTime() > now.getTime()) break
+    }
+
+    return {
+      incentiveRewards,
+      epochStartBlock: allBorrowingSnapshots[0].blockNumber,
+    }
+  }
+  catch (err) {
+    throw err
+  }
 }
 
 export default async function getUserUsageStats({
@@ -28,47 +119,34 @@ export default async function getUserUsageStats({
       $gt: now,
     } }).lean()
 
-    const wethContract = getTokenContract({ blockchain: {
-      network: 'ethereum',
-      networkId: Blockchain.Ethereum.Network.MAIN,
-    }, address: _.get(appConf.wethAddress, Blockchain.Ethereum.Network.MAIN) })
-
-    const borrowedSnapshots = allBorrowingSnapshots.filter(snapshot => _.get(snapshot, 'borrowerAddress')?.toLowerCase() === address.toLowerCase())
-    const lendedSnapshots = allBorrowingSnapshots.filter(snapsoht => _.get(snapsoht, 'lenderAddress')?.toLowerCase() === address.toLowerCase())
-
-    const lendingSnapshots = allLendingSnapshots.filter(snapshot => _.get(snapshot, 'lenderAddress')?.toLowerCase() === address.toLowerCase())
-
-    const totalAmount = _.reduce(allBorrowingSnapshots, (pre, cur) => pre.plus(new BigNumber(_.get(cur, 'borrowAmount', 0))), new BigNumber(0))
-
-    const borrowedEth = _.reduce(borrowedSnapshots, (pre, cur) => pre.plus(cur.borrowAmount ?? '0'), new BigNumber(0))
-    const lendedEth = _.reduce(lendedSnapshots, (pre, cur) => pre.plus(cur.borrowAmount ?? '0'), new BigNumber(0))
-
-    const ethCapacity = _.reduce(lendingSnapshots, (pre, cur) => pre.plus(cur.capacity ?? '0'), new BigNumber(0))
-    const ethCapacityAll = _.reduce(allLendingSnapshots, (pre, cur) => pre.plus(cur.capacity ?? '0'), new BigNumber(0))
-
-    const wethBalances = await Promise.all(_.uniqBy(lendingSnapshots, 'fundSource').map(snapshot => wethContract.methods.balanceOf(snapshot.fundSource).call()))
-    const wethBalance = _.reduce(wethBalances, (pre, cur) => pre.plus(new BigNumber(cur)), new BigNumber(0))
-    const ethPermissioned = _.min([ethCapacity, new BigNumber(ethers.utils.formatEther(wethBalance.toString()))]) ?? new BigNumber(0)
-
-    const allWethBalances = await Promise.all(_.uniqBy(allLendingSnapshots, 'fundSource').map(snapshot => wethContract.methods.balanceOf(snapshot.fundSource).call()))
-    const wethBalanceAll = _.reduce(allWethBalances, (pre, cur) => pre.plus(new BigNumber(cur)), new BigNumber(0))
-    const ethPermissionedAll = _.min([ethCapacityAll, new BigNumber(ethers.utils.formatEther(wethBalanceAll.toString()))]) ?? new BigNumber(0)
-
-    const collateralPriceSumForUser = _.reduce(borrowedSnapshots, (pre, cur) => pre.plus(new BigNumber(cur.collateralPrice?.amount ?? '0')), new BigNumber(0))
-    const collateralPriceSumAll = _.reduce(allBorrowingSnapshots, (pre, cur) => pre.plus(new BigNumber(cur.collateralPrice?.amount ?? '0')), new BigNumber(0))
-
-    const usagePercent = borrowedEth.div(totalAmount).multipliedBy(42)
-      .plus(collateralPriceSumForUser.div(collateralPriceSumAll).multipliedBy(18))
-      .plus(ethPermissioned.div(ethPermissionedAll).multipliedBy(12))
-      .plus(lendedEth.div(totalAmount).multipliedBy(28))
+    const {
+      usagePercent,
+      borrowedEth,
+      lendedEth,
+      ethPermissioned,
+      collateralPriceSumForUser,
+      collateralPriceSumAll,
+      totalAmount,
+      ethPermissionedAll,
+    } = await getUsageValues({
+      address,
+      lendingSnapshots: allLendingSnapshots,
+      borrowingSnapshots: allBorrowingSnapshots,
+    })
+    const { incentiveRewards: protocolIncentiveRewards, epochStartBlock } = await getIncentiveRewards({ address })
 
     logger.info(`Fetching user protocol usage stats for address ${address}... OK`)
 
-    const web3 = getEthWeb3()
-    const dater = new EthDater(web3)
-    const { block } = await dater.getDate(new Date(_.get(allLendingSnapshots[0], 'createdAt')))
+    now.setHours(now.getHours() + 2)
+    now.setMinutes(0)
+    now.setSeconds(0)
+    now.setMilliseconds(0)
+
+    const rewards = await getRewards({ address, epochStartBlock })
 
     const protocolIncentivePerHour = appConf.incentiveRewards / 12 / 24 / 7
+
+    rewards.liveRewards.amount = rewards.liveRewards.amount.plus(protocolIncentiveRewards)
 
     return ProtocolUsage.factory({
       usagePercent: usagePercent.div(100),
@@ -82,7 +160,8 @@ export default async function getUserUsageStats({
       totalEthCapacity: Value.$ETH(ethPermissionedAll.toString()),
       estimateRewards: Value.$PINE(usagePercent.multipliedBy(protocolIncentivePerHour).multipliedBy(24).div(100)),
       incentiveReward: appConf.incentiveRewards,
-      nextSnapshotBlock: block + 296,
+      nextSnapshot: now,
+      rewards,
     })
   }
   catch (err) {
