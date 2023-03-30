@@ -154,7 +154,7 @@ export default {
   turnstileSecretKey: process.env.TURNSTILE_SECRET_KEY,
   sentryApiDsn: process.env.SENTRY_API_DSN,
   alchemySigningKey: process.env.ALCHEMY_SIGNING_KEY ?? '',
-  incentiveRewards: 41666,
+  incentiveRewards: 2500000,
   bidTreasuryContractAddress: {
     [Blockchain.Ethereum.Network.MAIN]: '',
     [Blockchain.Ethereum.Network.GOERLI]: '0x9e70ef3cd5565f4eb78996eb037765d759cc257b',
