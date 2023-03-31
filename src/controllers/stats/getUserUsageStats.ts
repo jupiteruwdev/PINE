@@ -4,9 +4,10 @@ import _ from 'lodash'
 import appConf from '../../app.conf'
 import { BorrowSnapshotModel, LendingSnapshotModel } from '../../db'
 import { Value } from '../../entities'
-import { ProtocolUsage } from '../../entities/lib'
+import { Blockchain, ProtocolUsage } from '../../entities/lib'
 import logger from '../../utils/logger'
 import { getRewards } from '../contracts'
+import getTokenUSDPrice, { AvailableToken } from '../utils/getTokenUSDPrice'
 
 type Params = {
   address: string
@@ -18,38 +19,63 @@ type GetUsageValuesParams = {
   address: string
 }
 
+const tokenUSDPrice: Record<string, Value | null> = {
+  [Blockchain.Ethereum.Network.MAIN]: null,
+  [Blockchain.Polygon.Network.MAIN]: null,
+}
+
+function convertNativeToUSD(snapshot: any, key: string, parse = true): BigNumber {
+  const blockchain = Blockchain.factory({
+    network: _.get(snapshot, 'networkType', 'ethereum'),
+    networkId: _.get(snapshot, 'networkId', '1'),
+  })
+
+  const value = parse ? ethers.utils.formatEther(`${_.get(snapshot, key) ?? 0}`) : _.get(snapshot, key)
+
+  return new BigNumber(value).times(tokenUSDPrice[blockchain.networkId]?.amount ?? '0')
+}
+
 async function getUsageValues({ lendingSnapshots, borrowingSnapshots, address }: GetUsageValuesParams) {
+  const allEVMChains = Blockchain.allChains().filter(blockchain => blockchain.network !== 'solana')
   const borrowedSnapshots = borrowingSnapshots.filter(snapshot => _.get(snapshot, 'borrowerAddress')?.toLowerCase() === address.toLowerCase())
   const lendedSnapshots = borrowingSnapshots.filter(snapsoht => _.get(snapsoht, 'lenderAddress')?.toLowerCase() === address.toLowerCase())
 
   const lendingSnapshotsForAdddress = lendingSnapshots.filter(snapshot => _.get(snapshot, 'lenderAddress')?.toLowerCase() === address.toLowerCase())
 
-  const totalAmount = _.reduce(borrowingSnapshots, (pre, cur) => pre.plus(new BigNumber(cur.borrowAmount ?? '0')), new BigNumber(0))
+  const totalAmountUSD = _.reduce(borrowingSnapshots, (pre, cur) => pre.plus(convertNativeToUSD(cur, 'borrowAmount')), new BigNumber(0))
 
-  const borrowedEth = _.reduce(borrowedSnapshots, (pre, cur) => pre.plus(cur.borrowAmount ?? '0'), new BigNumber(0))
-  const lendedEth = _.reduce(lendedSnapshots, (pre, cur) => pre.plus(cur.borrowAmount ?? '0'), new BigNumber(0))
+  const borrowedUSD = _.reduce(borrowedSnapshots, (pre, cur) => pre.plus(convertNativeToUSD(cur, 'borrowAmount')), new BigNumber(0))
+  const lendedUSD = _.reduce(lendedSnapshots, (pre, cur) => pre.plus(convertNativeToUSD(cur, 'borrowAmount')), new BigNumber(0))
 
-  const ethPermissioned = _.reduce(_.values(_.groupBy(lendingSnapshotsForAdddress, 'fundSource')), (pre, cur) => pre.plus(BigNumber.max(...cur.map(snapshot => new BigNumber(snapshot.capacity ?? '0')))), new BigNumber(0))
+  const usdPermissioned = _.reduce(
+    allEVMChains.map(blockchain => _.reduce(_.values(_.groupBy(lendingSnapshotsForAdddress.filter(snapshot => snapshot.networkId === blockchain.networkId), 'fundSource')), (pre, cur) => pre.plus(BigNumber.max(...cur.map(snapshot => convertNativeToUSD(snapshot, 'capacity', false)))), new BigNumber(0))),
+    (pre, cur) => pre.plus(cur),
+    new BigNumber(0)
+  )
 
-  const ethPermissionedAll = _.reduce(_.values(_.groupBy(lendingSnapshots, 'fundSource')), (pre, cur) => pre.plus(BigNumber.max(...cur.map(snapshot => new BigNumber(snapshot.capacity ?? '0')))), new BigNumber(0))
+  const usdPermissionedAll = _.reduce(
+    allEVMChains.map(blockchain => _.reduce(_.values(_.groupBy(lendingSnapshots.filter(snapshot => snapshot.networkId === blockchain.networkId), 'fundSource')), (pre, cur) => pre.plus(BigNumber.max(...cur.map(snapshot => convertNativeToUSD(snapshot, 'capacity', false)))), new BigNumber(0))),
+    (pre, cur) => pre.plus(cur),
+    new BigNumber(0)
+  )
 
-  const collateralPriceSumForUser = _.reduce(borrowedSnapshots, (pre, cur) => pre.plus(new BigNumber(cur.collateralPrice?.amount ?? '0')), new BigNumber(0))
-  const collateralPriceSumAll = _.reduce(borrowingSnapshots, (pre, cur) => pre.plus(new BigNumber(cur.collateralPrice?.amount ?? '0')), new BigNumber(0))
+  const collateralPriceSumForUser = _.reduce(borrowedSnapshots, (pre, cur) => pre.plus(convertNativeToUSD(cur, 'collateralPrice.amount', false)), new BigNumber(0))
+  const collateralPriceSumAll = _.reduce(borrowingSnapshots, (pre, cur) => pre.plus(convertNativeToUSD(cur, 'collateralPrice.amount', false)), new BigNumber(0))
 
-  const usagePercent = (totalAmount.gt(0) ? borrowedEth.div(totalAmount).multipliedBy(42) : new BigNumber(0))
+  const usagePercent = (totalAmountUSD.gt(0) ? borrowedUSD.div(totalAmountUSD).multipliedBy(42) : new BigNumber(0))
     .plus(collateralPriceSumAll.gt(0) ? collateralPriceSumForUser.div(collateralPriceSumAll).multipliedBy(18) : new BigNumber(0))
-    .plus(ethPermissionedAll.gt(0) ? ethPermissioned.div(ethPermissionedAll).multipliedBy(12) : new BigNumber(0))
-    .plus(totalAmount.gt(0) ? lendedEth.div(totalAmount).multipliedBy(28) : new BigNumber(0))
+    .plus(usdPermissionedAll.gt(0) ? usdPermissioned.div(usdPermissionedAll).multipliedBy(12) : new BigNumber(0))
+    .plus(totalAmountUSD.gt(0) ? lendedUSD.div(totalAmountUSD).multipliedBy(28) : new BigNumber(0))
 
   return {
     usagePercent,
-    borrowedEth,
-    lendedEth,
-    ethPermissioned,
+    borrowedUSD,
+    lendedUSD,
+    usdPermissioned,
     collateralPriceSumForUser,
     collateralPriceSumAll,
-    totalAmount,
-    ethPermissionedAll,
+    totalAmountUSD,
+    usdPermissionedAll,
   }
 }
 
@@ -112,6 +138,10 @@ export default async function getUserUsageStats({
     logger.info(`Fetching user protocol usage stats for address ${address}...`)
     const now = new Date()
     now.setHours(now.getHours() - 1)
+    const evmBlockchains = Blockchain.allChains().filter(blockchain => blockchain.network !== 'solana')
+    const nativeTokenPrices = await Promise.all(evmBlockchains.map(blockchain => getTokenUSDPrice(Blockchain.parseNativeToken(blockchain) as AvailableToken)))
+    evmBlockchains.forEach((blockchain, i) => tokenUSDPrice[blockchain.networkId] = nativeTokenPrices[i])
+
     const allBorrowingSnapshots = await BorrowSnapshotModel.find({ updatedAt: {
       $gt: now,
     } }).lean()
@@ -121,21 +151,20 @@ export default async function getUserUsageStats({
 
     const {
       usagePercent,
-      borrowedEth,
-      lendedEth,
-      ethPermissioned,
+      borrowedUSD,
+      lendedUSD,
+      usdPermissioned,
       collateralPriceSumForUser,
       collateralPriceSumAll,
-      totalAmount,
-      ethPermissionedAll,
+      totalAmountUSD,
+      usdPermissionedAll,
     } = await getUsageValues({
       address,
       lendingSnapshots: allLendingSnapshots,
       borrowingSnapshots: allBorrowingSnapshots,
     })
-    const { incentiveRewards: protocolIncentiveRewards, epochStartBlock } = await getIncentiveRewards({ address })
 
-    logger.info(`Fetching user protocol usage stats for address ${address}... OK`)
+    const { incentiveRewards: protocolIncentiveRewards, epochStartBlock } = await getIncentiveRewards({ address })
 
     now.setHours(now.getHours() + 2)
     now.setMinutes(0)
@@ -150,14 +179,14 @@ export default async function getUserUsageStats({
 
     return ProtocolUsage.factory({
       usagePercent: usagePercent.div(100),
-      borrowedEth: Value.$ETH(ethers.utils.formatEther(borrowedEth.toString()).toString()),
-      lendedEth: Value.$ETH(ethers.utils.formatEther(lendedEth.toString()).toString()),
-      ethCapacity: Value.$ETH(ethPermissioned.toString()),
-      collateralPrice: Value.$ETH(collateralPriceSumForUser.toString()),
-      totalCollateralPrice: Value.$ETH(collateralPriceSumAll.toString()),
-      totalBorrowedEth: Value.$ETH(ethers.utils.formatEther(totalAmount.toString()).toString()),
-      totalLendedEth: Value.$ETH(ethers.utils.formatEther(totalAmount.toString()).toString()),
-      totalEthCapacity: Value.$ETH(ethPermissionedAll.toString()),
+      borrowedUSD: Value.$USD(borrowedUSD.toString()),
+      lendedUSD: Value.$USD(lendedUSD.toString()),
+      usdCapacity: Value.$USD(usdPermissioned.toString()),
+      collateralPrice: Value.$USD(collateralPriceSumForUser.toString()),
+      totalCollateralPrice: Value.$USD(collateralPriceSumAll.toString()),
+      totalBorrowedUSD: Value.$USD(totalAmountUSD.toString()),
+      totalLendedUSD: Value.$USD(totalAmountUSD.toString()),
+      totalUSDCapacity: Value.$USD(usdPermissionedAll.toString()),
       estimateRewards: Value.$PINE(usagePercent.multipliedBy(protocolIncentivePerHour).multipliedBy(24).div(100)),
       incentiveReward: appConf.incentiveRewards,
       nextSnapshot: now,
