@@ -11,6 +11,20 @@ const packageConf = JSON.parse(fs.readFileSync(path.join(__dirname, '../package.
 
 export default {
   env: process.env.NODE_ENV ?? 'development',
+  devKmsCredentials: {
+    projectId: 'pinedefi', // your project id in gcp
+    locationId: 'northamerica-northeast2', // the location where your key ring was created
+    keyRingId: 'testvaulation', // the id of the key ring
+    keyId: 'sd', // the name/id of your key in the key ring
+    keyVersion: '1', // the version of the key
+  },
+  prodKmsCredenials: {
+    projectId: 'pinedefi', // your project id in gcp
+    locationId: 'eur6', // the location where your key ring was created
+    keyRingId: 'VSHSM', // the id of the key ring
+    keyId: 'vss', // the name/id of your key in the key ring
+    keyVersion: '1', // the version of the key
+  },
   version: `v${_.get(packageConf, 'version', 'local')}${process.env.NODE_ENV === 'production' ? '' : `-${(process.env.NODE_ENV || 'development').substring(0, 3)}`}`,
   build: process.env.BUILD_NUMBER ?? 'local',
   port: process.env.PORT ?? 8080,

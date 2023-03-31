@@ -42,15 +42,8 @@ export default async function signValuation({ blockchain, nftId, collectionAddre
       expiresAtBlock,
     ]
     const messageHash = await contract.methods[contractFunc].apply(undefined, contractParams).call()
-
     if (poolVersion > 3) {
-      const kmsCredentials = {
-        projectId: 'pinedefi', // your project id in gcp
-        locationId: 'eur6', // the location where your key ring was created
-        keyRingId: 'VSHSM', // the id of the key ring
-        keyId: 'vss', // the name/id of your key in the key ring
-        keyVersion: '1', // the version of the key
-      }
+      const kmsCredentials = appConf.env === 'development' ? appConf.devKmsCredentials : appConf.prodKmsCredenials
 
       const provider = new ethers.providers.AlchemyProvider(Number(blockchain.networkId), appConf.alchemyAPIKey)
 
