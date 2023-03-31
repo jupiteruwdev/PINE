@@ -81,7 +81,7 @@ router.get('/tenors', async (req, res, next) => {
 router.get('/tenors/count', async (req, res, next) => {
   try {
     const nftId = getString(req.query, 'nftId', { optional: true })
-    const blockchainFilter = getBlockchainFilter(req.query, false)
+    const blockchainFilter = getBlockchainFilter(req.query, true)
     const collectionAddress = getString(req.query, 'collectionAddress', { optional: true })
     const count = await countPoolsByTenors({ blockchainFilter, collectionAddress, nftId })
 
