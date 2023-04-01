@@ -24,6 +24,14 @@ const tokenUSDPrice: Record<string, Value | null> = {
   [Blockchain.Polygon.Network.MAIN]: null,
 }
 
+const blockedCollections = [
+  '0x04c003461abc646a5c22353edf8e8edc16837492',
+  '0x5a7869db28eb513945167293638d59a336a89190',
+  '0x87e738a3d5e5345d6212d8982205a564289e6324',
+  '0xdb0373feaa9e2af8515fd2827ef7c4243bdcba07',
+  '0xde494e809e28e70d5e2a26fb402e263030089214',
+]
+
 function convertNativeToUSD(snapshot: any, key: string, parse = true): BigNumber {
   const blockchain = Blockchain.factory({
     network: _.get(snapshot, 'networkType', 'ethereum'),
@@ -102,9 +110,17 @@ async function getIncentiveRewards({ address }: Params): Promise<{
 
     const allBorrowingSnapshots = await BorrowSnapshotModel.find({ updatedAt: {
       $gt: prevFriday,
+    }, collectionAddress: {
+      $not: {
+        $in: blockedCollections,
+      },
     } }).sort({ createdAt: 1 }).lean()
     const allLendingSnapshots = await LendingSnapshotModel.find({ updatedAt: {
       $gt: prevFriday,
+    }, collectionAddress: {
+      $not: {
+        $in: blockedCollections,
+      },
     } }).sort({ createdAt: 1 }).lean()
     let incentiveRewards = new BigNumber(0)
 
@@ -144,9 +160,17 @@ export default async function getUserUsageStats({
 
     const allBorrowingSnapshots = await BorrowSnapshotModel.find({ updatedAt: {
       $gt: now,
+    }, collectionAddress: {
+      $not: {
+        $in: blockedCollections,
+      },
     } }).lean()
     const allLendingSnapshots = await LendingSnapshotModel.find({ updatedAt: {
       $gt: now,
+    }, collectionAddress: {
+      $not: {
+        $in: blockedCollections,
+      },
     } }).lean()
 
     const {
