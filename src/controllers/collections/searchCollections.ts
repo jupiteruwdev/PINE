@@ -8,6 +8,7 @@ import postRequest from '../utils/postRequest'
 
 import DataSource from '../utils/DataSource'
 import getRequest from '../utils/getRequest'
+import getCollections from './getCollections'
 import getFloorPrice from './getFloorPrice'
 import getNFTSales from './getNFTSales'
 import getSpamContracts from './getSpamContracts'
@@ -78,8 +79,11 @@ export default async function searchCollections({ query, blockchain }: Params): 
       useAlchemy({ query, blockchain }),
       useGemXYZ({ query, blockchain }),
     )
+    const polygonContracts = await getCollections({ blockchainFilter: {
+      polygon: blockchain.networkId,
+    } })
 
-    return aggregateCollectionResults(collectionsPolygon, blockchain)
+    return aggregateCollectionResults(collectionsPolygon.filter(collection => polygonContracts.find(con => con.toLowerCase() === collection.address.toLowerCase())), blockchain)
   case Blockchain.Ethereum.Network.GOERLI:
   case Blockchain.Polygon.Network.MUMBAI:
     const collectionsGoerli = await DataSource.fetch(
