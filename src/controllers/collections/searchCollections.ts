@@ -83,7 +83,7 @@ export default async function searchCollections({ query, blockchain }: Params): 
       polygon: blockchain.networkId,
     } })
 
-    return aggregateCollectionResults(collectionsPolygon.filter(collection => polygonContracts.find(con => con.toLowerCase() === collection.address.toLowerCase())), blockchain)
+    return aggregateCollectionResults(collectionsPolygon.filter(collection => polygonContracts.find(con => con.address.toLowerCase() === collection.address.toLowerCase())), blockchain)
   case Blockchain.Ethereum.Network.GOERLI:
   case Blockchain.Polygon.Network.MUMBAI:
     const collectionsGoerli = await DataSource.fetch(
