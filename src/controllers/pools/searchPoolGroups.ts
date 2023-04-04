@@ -209,8 +209,11 @@ export default async function searchPoolGroups({
   logger.info('Searching pool groups...')
 
   try {
-    const [ethValueUSD, groups] = await Promise.all([
-      getTokenUSDPrice(),
+    const blockchain = Blockchain.parseBlockchain(blockchainFilter)
+    const polygon = Blockchain.parseBlockchain({ polygon: '137' })
+    const [ethOneValueUSD, ethTwoValueUSD, groups] = await Promise.all([
+      getTokenUSDPrice(Blockchain.parseNativeToken(blockchain) as AvailableToken),
+      getTokenUSDPrice(Blockchain.parseNativeToken(polygon) as AvailableToken),
       searchPublishedPoolGroups({
         blockchainFilter,
         collectionAddress,
@@ -236,25 +239,30 @@ export default async function searchPoolGroups({
 
     const pools = groups as Required<Pool>[][]
 
-    const poolGroups = pools.map((group: Required<Pool>[]) => PoolGroup.factory({
-      collection: group[0].collection,
-      pools: group.map(pool => ({
-        ...pool,
-        valueLocked: Value.$USD(pool.valueLocked.amount.times(ethValueUSD.amount)),
-        utilization: Value.$USD(pool.utilization.amount.times(ethValueUSD.amount)),
-      })),
-      totalValueLent: Value.$USD(
-        group
-          .reduce((sum, pool: Pool) => sum.plus(pool.utilization?.amount || 0), new BigNumber(0))
-          .times(ethValueUSD.amount)
-      ),
-      totalValueLocked: Value.$USD(
-        group
-          .reduce((sum, pool: Pool) => sum.plus(pool.valueLocked?.amount || 0), new BigNumber(0))
-          .times(ethValueUSD.amount)
-      ),
-      nfts,
-    }))
+    const poolGroups = pools.map((group: Required<Pool>[]) => {
+      let ethValueUSD: Value
+      if (group[0].blockchain.network === 'polygon') ethValueUSD = ethTwoValueUSD
+      else ethValueUSD = ethOneValueUSD
+      return PoolGroup.factory({
+        collection: group[0].collection,
+        pools: group.map(pool => ({
+          ...pool,
+          valueLocked: Value.$USD(pool.valueLocked.amount.times(ethValueUSD.amount)),
+          utilization: Value.$USD(pool.utilization.amount.times(ethValueUSD.amount)),
+        })),
+        totalValueLent: Value.$USD(
+          group
+            .reduce((sum, pool: Pool) => sum.plus(pool.utilization?.amount || 0), new BigNumber(0))
+            .times(ethValueUSD.amount)
+        ),
+        totalValueLocked: Value.$USD(
+          group
+            .reduce((sum, pool: Pool) => sum.plus(pool.valueLocked?.amount || 0), new BigNumber(0))
+            .times(ethValueUSD.amount)
+        ),
+        nfts,
+      })
+    })
 
     const out = poolGroups.map(group => ({
       ...group,
