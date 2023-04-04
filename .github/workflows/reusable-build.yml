@@ -132,6 +132,7 @@ jobs:
         OPENSEA_API_KEY: ${{ secrets.OPENSEA_API_KEY }}
         COIN_API_KEY: ${{ secrets.COIN_API_KEY }}
         SUBGRAPH_API_MAINNET_URL: ${{ inputs.use_prod_apis && secrets.SUBGRAPH_API_MAINNET_URL || secrets.SUBGRAPH_API_MAINNET_URL_STAGING }}
+        SUBGRAPH_API_POLYGON_MAINNET_URL: ${{ inputs.use_prod_apis && secrets.SUBGRAPH_API_POLYGON_MAINNET_URL }}
         SUBGRAPH_API_RINKEBY_URL: ${{ inputs.use_prod_apis && secrets.SUBGRAPH_API_RINKEBY_URL || secrets.SUBGRAPH_API_RINKEBY_URL_STAGING }}
         TESTS_WALLET_ADDRESS: ${{ secrets.TESTS_WALLET_ADDRESS }}
         TESTS_WHALE_WALLET_ADDRESSES: ${{ secrets.TESTS_WHALE_WALLET_ADDRESSES }}

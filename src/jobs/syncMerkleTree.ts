@@ -4,11 +4,11 @@ import { NextFunction, Request, Response } from 'express'
 import keccak from 'keccak'
 import { MerkleTree } from 'merkletreejs'
 import Web3 from 'web3'
-import VEPINE_ABI from '../../abis/VePine.json' assert { type: 'json' }
-import appConf from '../../app.conf'
-import getEthWeb3 from '../../controllers/utils/getEthWeb3'
-import { MerkleTreeModel } from '../../db'
-import logger from '../../utils/logger'
+import VEPINE_ABI from '../abis/VePine.json' assert { type: 'json' }
+import appConf from '../app.conf'
+import getEthWeb3 from '../controllers/utils/getEthWeb3'
+import { MerkleTreeModel } from '../db'
+import logger from '../utils/logger'
 
 const kk = (x: any) => keccak('keccak256').update(x).digest().toString('hex')
 

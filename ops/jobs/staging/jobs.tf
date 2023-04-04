@@ -1,16 +1,16 @@
-resource "google_cloud_scheduler_job" "job" {
-  name             = "core-service-version-${local.env}"
-  description      = "Test HTTP version trigger"
-  schedule         = "* * * * *"
-  attempt_deadline = "320s"
+# resource "google_cloud_scheduler_job" "job" {
+#   name             = "core-service-version-${local.env}"
+#   description      = "Test HTTP version trigger"
+#   schedule         = "* * * * *"
+#   attempt_deadline = "320s"
 
-  retry_config { retry_count = 1 }
+#   retry_config { retry_count = 1 }
 
-  http_target {
-    http_method = "GET"
-    uri         = "https://core-service-${local.env}.pine.loans/version"
-  }
-}
+#   http_target {
+#     http_method = "GET"
+#     uri         = "https://core-service-${local.env}.pine.loans/version"
+#   }
+# }
 
 # resource "google_cloud_scheduler_job" "syncPools" {
 #   name             = "core-service-sync-pools-${local.env}"
@@ -121,5 +121,19 @@ resource "google_cloud_scheduler_job" "job" {
 #   http_target {
 #     http_method = "GET"
 #     uri         = "https://core-service-${local.env}.pine.loans/jobs/sync-merkle-tree"
+#   }
+# }
+
+# resource "google_cloud_scheduler_job" "syncMerkleTreeState" {
+#   name             = "core-service-sync-merkle-tree-state-${local.env}"
+#   description      = "Sync merkle tree state trigger"
+#   schedule         = "*/5 * * * *"
+#   attempt_deadline = "300s"
+
+#   retry_config { retry_count = 1 }
+
+#   http_target {
+#     http_method = "GET"
+#     uri         = "https://core-service-${local.env}.pine.loans/jobs/sync-merkle-tree-state"
 #   }
 # }

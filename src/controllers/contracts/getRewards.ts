@@ -4,7 +4,7 @@ import { ethers } from 'ethers'
 import VEPINE_ABI from '../../abis/VePine.json' assert { type: 'json' }
 import appConf from '../../app.conf'
 import { MerkleTreeModel } from '../../db'
-import { Value } from '../../entities'
+import { Blockchain, Value } from '../../entities'
 import Rewards from '../../entities/lib/Rewards'
 import getEthWeb3 from '../utils/getEthWeb3'
 
@@ -19,7 +19,7 @@ type Params = {
  */
 
 export default async function getRewards({ address, epochStartBlock }: Params): Promise<Rewards> {
-  const web3 = getEthWeb3('137')
+  const web3 = getEthWeb3(Blockchain.Polygon.Network.MAIN)
   const contract = new web3.eth.Contract(VEPINE_ABI as any[], appConf.vePINEAddress)
   const currentBlock = await web3.eth.getBlockNumber()
   const today = new Date()

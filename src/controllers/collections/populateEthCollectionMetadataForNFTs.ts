@@ -14,10 +14,10 @@ export default async function populateEthCollectionMetadataForNFTs({
   blockchain,
   nfts,
 }: Params): Promise<NFT[]> {
-  if (blockchain.network !== 'ethereum') rethrow(`Unsupported blockchain <${JSON.stringify(blockchain)}>`)
+  if (blockchain.network !== 'ethereum' && blockchain.network !== 'polygon') rethrow(`Unsupported blockchain <${JSON.stringify(blockchain)}>`)
 
   const uniqAddrs = _.uniq(nfts.map(t => t.collection.address.toLowerCase()))
-  const addresInDb = (await getCollections({ blockchainFilter: { ethereum: blockchain.networkId }, collectionAddresses: uniqAddrs })).map(t => t.address.toLowerCase())
+  const addresInDb = (await getCollections({ blockchainFilter: Blockchain.parseFilter(blockchain), collectionAddresses: uniqAddrs })).map(t => t.address.toLowerCase())
 
   const genericMetadataArray = await Promise.all(uniqAddrs.map(async addr => ({ [addr]: await getEthCollectionMetadata({ blockchain, collectionAddress: addr }) })))
   const genericMetadataDict = genericMetadataArray.reduce((prev, curr) => ({ ...prev, ...curr }), {})

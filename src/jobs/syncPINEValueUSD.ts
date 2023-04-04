@@ -1,7 +1,7 @@
 import { NextFunction, Request, Response } from 'express'
-import getPineValueUSD from '../../controllers/utils/getPineValueUSD'
-import { PriceModel } from '../../db'
-import logger from '../../utils/logger'
+import getPineValueUSD from '../controllers/utils/getPineValueUSD'
+import { PriceModel } from '../db'
+import logger from '../utils/logger'
 
 export default async function syncPINEValueUSD(req: Request, res: Response, next: NextFunction) {
   try {

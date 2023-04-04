@@ -1,4 +1,3 @@
-import BigNumber from 'bignumber.js'
 import _ from 'lodash'
 import appConf from '../../app.conf'
 import { Blockchain, Collection, Value } from '../../entities'
@@ -29,6 +28,40 @@ const convertAlchemySupportMarketplace = (vendor?: string): string | undefined =
   }
 }
 
+async function aggregateCollectionResults(collections: Collection[], blockchain: Blockchain): Promise<Collection[]> {
+  const spamContracts = blockchain.network === 'ethereum' ? await getSpamContracts({ blockchain }) : []
+  const nonSpamCollections = collections.filter((c: Collection) => !spamContracts.find(ad => ad.toLowerCase() === c.address.toLowerCase()))
+
+  const collectionResults = await Promise.all(
+    nonSpamCollections.map(async (collection: Collection) => {
+      const sales = await getNFTSales({ blockchain, contractAddress: collection.address, marketplace: convertAlchemySupportMarketplace(_.keys(collection.vendorIds)?.[0] ?? undefined) })
+      let floorPrice
+      try {
+        floorPrice = await getFloorPrice({ blockchain, contractAddress: collection.address })
+      }
+      catch (err) {
+        floorPrice = Value.$ETH(0)
+      }
+
+      return {
+        ...collection,
+        sales: sales.map((sale: any) => NFTSale.factory({
+          marketplace: _.get(sale, 'marketplace'),
+          collectionAddress: _.get(sale, 'contractAddress'),
+          buyerAddress: _.get(sale, 'buyerAddress'),
+          sellerAddress: _.get(sale, 'sellerAddress'),
+          nftId: _.get(sale, 'tokenId'),
+          transactionHash: _.get(sale, 'transactionHash'),
+          quantity: _.get(sale, 'quantity'),
+        })),
+        floorPrice,
+      }
+    }),
+  )
+
+  return collectionResults
+}
+
 export default async function searchCollections({ query, blockchain }: Params): Promise<Collection[]> {
   logger.info(`Fetching collection by search text <${query}>...`)
   switch (blockchain.networkId) {
@@ -38,46 +71,17 @@ export default async function searchCollections({ query, blockchain }: Params): 
       useAlchemy({ query, blockchain }),
       useGemXYZ({ query, blockchain }),
     )
-    const spamContracts = await getSpamContracts({ blockchain })
-    const nonSpamCollections = collections.filter((c: Collection) => !spamContracts.find(ad => ad.toLowerCase() === c.address.toLowerCase()))
-
-    const collectionResults = await Promise.all(
-      nonSpamCollections.map(async (collection: Collection) => {
-        const sales = await getNFTSales({ blockchain, contractAddress: collection.address, marketplace: convertAlchemySupportMarketplace(_.keys(collection.vendorIds)?.[0] ?? undefined) })
-        const floorPrice = await getFloorPrice({ blockchain, contractAddress: collection.address })
-
-        let floorPrices: Record<string, Value> = {}
-
-        _.keys(floorPrice).forEach((key: string) => {
-          if (!_.get(floorPrice[key], 'error')) {
-            floorPrices = {
-              ...floorPrices,
-              [key]: Value.factory({
-                amount: new BigNumber(_.get(floorPrice[key], 'floorPrice', 0)),
-                currency: _.get(floorPrice[key], 'priceCurrency', 'ETH'),
-              }),
-            }
-          }
-        })
-
-        return {
-          ...collection,
-          sales: sales.map((sale: any) => NFTSale.factory({
-            marketplace: _.get(sale, 'marketplace'),
-            collectionAddress: _.get(sale, 'contractAddress'),
-            buyerAddress: _.get(sale, 'buyerAddress'),
-            sellerAddress: _.get(sale, 'sellerAddress'),
-            nftId: _.get(sale, 'tokenId'),
-            transactionHash: _.get(sale, 'transactionHash'),
-            quantity: _.get(sale, 'quantity'),
-          })),
-          floorPrice: floorPrices,
-        }
-      }),
+    return aggregateCollectionResults(collections, blockchain)
+  case Blockchain.Polygon.Network.MAIN:
+    const collectionsPolygon = await DataSource.fetch(
+      useAlchemyContract({ query, blockchain }),
+      useAlchemy({ query, blockchain }),
+      useGemXYZ({ query, blockchain }),
     )
 
-    return collectionResults
+    return aggregateCollectionResults(collectionsPolygon, blockchain)
   case Blockchain.Ethereum.Network.GOERLI:
+  case Blockchain.Polygon.Network.MUMBAI:
     const collectionsGoerli = await DataSource.fetch(
       useAlchemyContract({ query, blockchain }),
       useAlchemy({ query, blockchain }),
@@ -93,7 +97,7 @@ export default async function searchCollections({ query, blockchain }: Params): 
 function useAlchemy({ query, blockchain }: { query: string; blockchain: Blockchain }): DataSource<Collection[]> {
   return async () => {
     const apiKey = appConf.alchemyAPIKey
-    const collectionData = await getRequest(_.get(appConf.alchemyAPIUrl, blockchain.networkId).slice(0, -3) + 'nft/v2/' + apiKey + '/searchContractMetadata',
+    const collectionData = await getRequest(_.get(appConf.alchemyNFTAPIUrl, blockchain.networkId) + apiKey + '/searchContractMetadata',
       {
         params: {
           query,
@@ -113,7 +117,7 @@ function useAlchemy({ query, blockchain }: { query: string; blockchain: Blockcha
 function useAlchemyContract({ query, blockchain }: { query: string; blockchain: Blockchain }): DataSource<Collection[]> {
   return async () => {
     const apiKey = appConf.alchemyAPIKey
-    const cd = await getRequest(_.get(appConf.alchemyAPIUrl, blockchain.networkId).slice(0, -3) + 'nft/v2/' + apiKey + '/getContractMetadata',
+    const cd = await getRequest(_.get(appConf.alchemyNFTAPIUrl, blockchain.networkId) + apiKey + '/getContractMetadata',
       {
         params: {
           contractAddress: query,

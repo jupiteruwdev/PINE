@@ -11,6 +11,7 @@ type Params = {
 export default async function getPoolEthLimit({ blockchain, poolAddress }: Params) {
   switch (blockchain.network) {
   case 'ethereum':
+  case 'polygon':
     const web3 = getEthWeb3(blockchain.networkId)
     const contract = new web3.eth.Contract(ERC721LendingV2 as any, poolAddress)
 

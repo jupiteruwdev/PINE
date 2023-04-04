@@ -39,13 +39,14 @@ type Params = {
 
 function useGraph({ blockchainFilter, lenderAddresses, collectionAddresses, sortBy, paginateBy }: Params): DataSource<Loan[]> {
   return async () => {
+    const blockchain = Blockchain.parseBlockchain(blockchainFilter)
     const onChainLoans = await getOnChainLoans({
       lenderAddresses,
       collectionAddresses,
       sortBy,
       paginateBy,
     }, {
-      networkId: blockchainFilter.ethereum,
+      networkId: blockchain.networkId,
     })
 
     const loans = onChainLoans.map(loan => {
@@ -62,7 +63,7 @@ function useGraph({ blockchainFilter, lenderAddresses, collectionAddresses, sort
         nft: NFT.factory({
           collection: Collection.factory({
             address: loan.erc721,
-            blockchain: Blockchain.Ethereum(blockchainFilter),
+            blockchain,
           }),
           id: nftId,
         }),
@@ -85,9 +86,10 @@ export default async function searchLoans({
   paginateBy,
 }: Params): Promise<Loan[]> {
   logger.info(`Searching loans for collection addresses <${collectionAddresses?.join(',')}>, lender addresses<${lenderAddresses?.join(',')}>, collection names <${collectionNames?.join(',')} and blockchain <${JSON.stringify(blockchainFilter)}>...`)
+  const blockchain = Blockchain.parseBlockchain(blockchainFilter)
 
   try {
-    if (blockchainFilter.ethereum !== undefined) {
+    if (blockchainFilter.ethereum !== undefined || blockchainFilter.polygon !== undefined) {
       let allCollectionAddresses: string[] = []
       if (collectionNames !== undefined) {
         const collectionsByNames = await getCollections({ blockchainFilter, collectionNames })
@@ -105,10 +107,10 @@ export default async function searchLoans({
 
       const [allCollectionMetadata, allNFTMetadata] = await Promise.all([
         Promise.all(uniqCollectionAddresses.map(async address => ({
-          [address]: await getEthCollectionMetadata({ blockchain: Blockchain.Ethereum(blockchainFilter), collectionAddress: address }),
+          [address]: await getEthCollectionMetadata({ blockchain, collectionAddress: address }),
         }))),
         Promise.all(loans.map(loan => getEthNFTMetadata({
-          blockchain: Blockchain.Ethereum(blockchainFilter),
+          blockchain,
           collectionAddress: loan.nft.collection.address,
           nftId: loan.nft.id,
         }))),
