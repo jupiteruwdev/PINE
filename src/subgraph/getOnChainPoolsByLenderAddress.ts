@@ -10,7 +10,7 @@ type Params = {
 export default async function getOnChainPoolsByLenderAddress({ lenderAddress, timestamp }: Params, { networkId, useCache }: Options = {}) {
   const request = getRequest(gql`
     query pools($lenderAddress: String!${timestamp ? ', $timestamp: Int' : ''}) {
-      pools(where: { lenderAddress: $lenderAddress${timestamp ? ', createAt_gte: $timestamp' : ''} }) {
+      pools(first: 1000, where: { lenderAddress: $lenderAddress${timestamp ? ', createAt_gte: $timestamp' : ''} }) {
         id
         totalUtilization
         collection

@@ -10,7 +10,7 @@ type Params = {
 export default async function getPNPLHistoriesByBorrowerAddress({ borrowerAddress, timestamp }: Params, { networkId, useCache }: Options = {}): Promise<any> {
   const request = getRequest(gql`
     query pnplhistories($borrowerAddress: String!${timestamp ? ', $timestamp: Int' : ''}) {
-      pnplhistories(where: { borrower: $borrowerAddress${timestamp ? ', createAt_gte: $timestamp' : ''} }) {
+      pnplhistories(first: 1000, where: { borrower: $borrowerAddress${timestamp ? ', createAt_gte: $timestamp' : ''} }) {
         id
         borrowAmount
         borrower
