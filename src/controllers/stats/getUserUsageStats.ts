@@ -38,7 +38,7 @@ function convertNativeToUSD(snapshot: any, key: string, parse = true): BigNumber
     networkId: _.get(snapshot, 'networkId', '1'),
   })
 
-  const value = parse ? ethers.utils.formatEther(`${_.get(snapshot, key) ?? 0}`) : _.get(snapshot, key)
+  const value = parse ? ethers.utils.formatEther(new BigNumber(_.get(snapshot, key) ?? '0').toFixed()) : _.get(snapshot, key)
 
   return new BigNumber(value).times(tokenUSDPrice[blockchain.networkId]?.amount ?? '0')
 }
