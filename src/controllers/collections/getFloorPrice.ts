@@ -1,6 +1,7 @@
 import BigNumber from 'bignumber.js'
 import _ from 'lodash'
 import appConf from '../../app.conf'
+import { NFTCollectionModel } from '../../db'
 import { Blockchain, Value } from '../../entities'
 import fault from '../../utils/fault'
 import logger from '../../utils/logger'
@@ -22,7 +23,7 @@ export default async function getFloorPrice({ contractAddress, blockchain }: Par
       return floorPrice
     }
     case Blockchain.Polygon.Network.MAIN: {
-      const floorPrice = await DataSource.fetch(useMetaquants({ contractAddress, blockchain }))
+      const floorPrice = await DataSource.fetch(useDb({ contractAddress, blockchain }), useMetaquants({ contractAddress, blockchain }))
       return floorPrice
     }
     default:
@@ -34,6 +35,19 @@ export default async function getFloorPrice({ contractAddress, blockchain }: Par
   catch (err) {
     logger.info(`Fetching floor price for contract <${contractAddress}> on network <${blockchain.networkId}>... ERR`)
     throw fault('ERR_FETCHING_CONTRACT_FLOOR_PRICE', undefined, err)
+  }
+}
+
+function useDb({ contractAddress, blockchain }: Params): DataSource<Value> {
+  return async () => {
+    logger.info(`...using db for floor price for collection <${contractAddress}> on network <${blockchain.networkId}>`)
+
+    const res = await NFTCollectionModel.find({ address: {
+      $regex: contractAddress,
+      $options: 'i',
+    }, networkId: blockchain.networkId, networkType: blockchain.network }).lean()
+
+    return Value.$ETH(_.get(res, 'valuation.value.amount', 0))
   }
 }
 
