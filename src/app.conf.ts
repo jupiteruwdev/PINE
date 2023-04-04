@@ -112,7 +112,7 @@ export default {
     [Blockchain.Polygon.Network.MAIN]: '0x125488d05fe1D48A8B9053b7C1B021aEF08f1c02',
   },
   rolloverAddress: {
-    [Blockchain.Ethereum.Network.MAIN]: '0x5284d97a1462A767F385aE6Ae89BA9065ecE193c',
+    [Blockchain.Ethereum.Network.MAIN]: '0xA5835dB17E67c8D55c472Bb1B1711ccf4D91Bcd6',
     [Blockchain.Ethereum.Network.RINKEBY]: '0xC796d62fB1927a13D7E41eBd0c8eA80fdA5Ef80a',
     [Blockchain.Polygon.Network.MAIN]: '0x03542e5D86e39304FE347c779De78F3157ca3e6f',
   },
