@@ -10,7 +10,7 @@ type Params = {
 export default async function getOnChainLoanHistoriesByBorrowerAddress({ borrowerAddress, timestamp }: Params, { networkId, useCache }: Options = {}): Promise<any> {
   const request = getRequest(gql`
     query loanHistories($borrowerAddress: String!${timestamp ? ', $timestamp: Int' : ''}) {
-      loanHistories(where: { borrower: $borrowerAddress${timestamp ? ', createAt_gte: $timestamp' : ''} }) {
+      loanHistories(first: 1000, where: { borrower: $borrowerAddress${timestamp ? ', createAt_gte: $timestamp' : ''} }) {
         accuredInterestWei
         borrowedWei
         borrower
