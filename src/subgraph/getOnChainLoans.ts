@@ -35,6 +35,7 @@ export default async function getOnChainLoans({
       loans(
         ${orderBy}
         ${pagination}
+        first: 1000,
         where: {
           status: "open"
           ${lenderAddresses?.length ? ',lenderAddress_in: $lenders' : ''}
