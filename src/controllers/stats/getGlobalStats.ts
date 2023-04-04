@@ -59,8 +59,7 @@ export default async function getGlobalStats({
       const wethPermissions = await Promise.all(uniqFundSources.map(fundSource => wethContract.methods.balanceOf(fundSource).call()))
       const wethPermissioned = wethPermissions.reduce((pre, cur) => pre.plus(new BigNumber(ethers.utils.formatEther(cur) ?? '0')), new BigNumber(0))
 
-      const totalUtilizationETH = pools.reduce((p, c) => p.plus(c.utilization.amount), new BigNumber(0))
-      const totalUtilizationUSD = totalUtilizationETH.times(ethValueUSD.amount)
+      const totalUtilizationUSD = pools.reduce((p, c) => p.plus(c.utilization.amount), new BigNumber(0))
       const totalFundSourceUtilization = new BigNumber(0)
       const fundSourceUtilizations: Record<string, BigNumber> = pools.reduce((p: Record<string, BigNumber>, c: Pool): Record<string, BigNumber> => {
         const fundSource = c?.fundSource || ''
@@ -69,7 +68,7 @@ export default async function getGlobalStats({
         totalFundSourceUtilization.plus(c.utilization.amount)
         return p
       }, {})
-      const totalValueLockedUSD = pools.reduce((p, c) => p.plus(c.valueLocked.amount).plus(fundSourceUtilizations[c.fundSource || '']), new BigNumber(0)).times(ethValueUSD.amount)
+      const totalValueLockedUSD = pools.reduce((p, c) => p.plus(c.valueLocked.amount).plus(fundSourceUtilizations[c.fundSource || '']), new BigNumber(0))
       const totalCapacityUSD = totalValueLockedUSD.minus(totalUtilizationUSD)
 
       const { globalStat, loans } = await getOnChainGlobalStats({ networkId: blockchain?.networkId })
@@ -101,11 +100,11 @@ export default async function getGlobalStats({
       globalStats = GlobalStats.factory({
         capacity: Value.$USD(totalCapacityUSD.plus(globalStats.capacity.amount)),
         totalValueLentHistorical: Value.$USD(globalStats.totalValueLentHistorical.amount.plus(new BigNumber(totalLentETH).times(ethValueUSD.amount))),
-        totalValueLocked: Value.$USD(globalStats.totalValueLocked.amount.plus(totalValueLockedUSD.minus(totalFundSourceUtilization.times(ethValueUSD.amount)))),
-        utilization: Value.$USD(globalStats.utilization.amount.plus(totalUtilizationETH.times(ethValueUSD.amount))),
+        totalValueLocked: Value.$USD(globalStats.totalValueLocked.amount.plus(totalValueLockedUSD.minus(totalFundSourceUtilization))),
+        utilization: Value.$USD(globalStats.utilization.amount.plus(totalUtilizationUSD)),
         utilizationRatio: totalUtilizationUSDSum.div(totalValueLockedUSDSum),
         noOfLoans: globalStats.noOfLoans + loans.length,
-        tvlNft: Value.$USD(globalStats.tvlNft.amount.plus(new BigNumber(tvlNFTETH).plus(totalUtilizationETH).times(ethValueUSD.amount))),
+        tvlNft: Value.$USD(globalStats.tvlNft.amount.plus(new BigNumber(tvlNFTETH).times(ethValueUSD.amount).plus(totalUtilizationUSD))),
         tal: Value.$USD(globalStats.tal.amount.plus(wethPermissioned.times(ethValueUSD.amount))),
       })
 
