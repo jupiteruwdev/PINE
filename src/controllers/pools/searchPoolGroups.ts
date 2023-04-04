@@ -5,7 +5,7 @@ import { Blockchain, NFT, Pool, PoolGroup, Value } from '../../entities'
 import logger from '../../utils/logger'
 import { mapPool } from '../adapters'
 import { getNFTsByOwner } from '../collaterals'
-import getTokenUSDPrice from '../utils/getTokenUSDPrice'
+import getTokenUSDPrice, { AvailableToken } from '../utils/getTokenUSDPrice'
 import { PoolSortDirection, PoolSortType } from './searchPublishedPools'
 
 type Params = {
@@ -42,12 +42,13 @@ function getPipelineStages({
   blockchainFilter = {
     ethereum: Blockchain.Ethereum.Network.MAIN,
     solana: Blockchain.Solana.Network.MAINNET,
+    polygon: Blockchain.Polygon.Network.MAIN,
   },
   collectionAddress,
   collectionName,
   sortBy,
 }: Params = {}): PipelineStage[] {
-  const blockchain = Blockchain.Ethereum(blockchainFilter.ethereum)
+  const blockchains = Blockchain.fromFilter(blockchainFilter)
 
   const collectionFilter = [
     ...collectionAddress === undefined ? [] : [{
@@ -67,8 +68,15 @@ function getPipelineStages({
   const stages: PipelineStage[] = [{
     $match: {
       'retired': { $ne: true },
-      'networkType': blockchain.network,
-      'networkId': blockchain.networkId,
+      '$or': blockchains.map(blockchain => ({
+        $and: [
+          { 'networkType': blockchain.network },
+          { 'networkId': blockchain.networkId },
+        ],
+      })),
+      'valueLockedEth': {
+        $gte: 0.01,
+      },
     },
   }, {
     $lookup: {
@@ -145,13 +153,6 @@ function getPipelineStages({
     },
   },
   {
-    $match: {
-      'groupValueLocked': {
-        $gte: 0.01,
-      },
-    },
-  },
-  {
     $unset: '_id',
   },
   ]
@@ -188,6 +189,14 @@ function getPipelineStages({
       },
     })
     break
+  case PoolSortType.TVL:
+    stages.push({
+      $sort: {
+        'groupValueLocked': sortBy?.direction === PoolSortDirection.DESC ? -1 : 1,
+        'pools.name': 1,
+      },
+    })
+    break
   }
 
   return [
@@ -199,6 +208,7 @@ export default async function searchPoolGroups({
   blockchainFilter = {
     ethereum: Blockchain.Ethereum.Network.MAIN,
     solana: Blockchain.Solana.Network.MAINNET,
+    polygon: Blockchain.Polygon.Network.MAIN,
   },
   ownerAddress,
   collectionAddress,
@@ -227,10 +237,7 @@ export default async function searchPoolGroups({
 
     if (ownerAddress) {
       nfts = await getNFTsByOwner({
-        blockchain: {
-          network: 'ethereum',
-          networkId: blockchainFilter.ethereum ?? '',
-        },
+        blockchain,
         ownerAddress,
         collectionAddress,
         populateMetadata: true,

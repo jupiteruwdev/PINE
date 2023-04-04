@@ -12,6 +12,8 @@ export default function rootCause(error: SuperError): number {
   case 'NO_SUCH_CONTRACT':
   case 'ERR_UNKNOWN_POOL':
   case 'ERR_VERIFING_POOL':
+  case 'ERR_AMBIGUOUS_BLOCKCHAIN':
+  case 'ERR_NO_BLOCKCHAIN':
     return 400
   default:
     return 500

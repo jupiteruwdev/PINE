@@ -24,6 +24,7 @@ export default async function unpublishPool({
   try {
     switch (blockchain.network) {
     case 'ethereum':
+    case 'polygon':
       await authenticatePoolPublisher({ poolAddress, payload, signature, networkId: blockchain.networkId })
 
       const res = await PoolModel.findOneAndDelete({
@@ -41,8 +42,6 @@ export default async function unpublishPool({
         ...res.toObject(),
         collection: collection?.toObject(),
       })
-
-      break
     default:
       throw fault('ERR_UNSUPPORTED_BLOCKCHAIN')
     }

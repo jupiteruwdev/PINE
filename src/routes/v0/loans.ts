@@ -81,7 +81,7 @@ router.get('/collection', async (req, res, next) => {
 
 router.get('/search', async (req, res, next) => {
   try {
-    const blockchainFilter = getBlockchainFilter(req.query, true)
+    const blockchainFilter = getBlockchainFilter(req.query, false)
     const collectionAddresses = getString(req.query, 'collectionAddresses', { optional: true })?.split(',')
     const lenderAddresses = getString(req.query, 'lenderAddresses', { optional: true })?.split(',')
     const collectionNames = getString(req.query, 'collectionNames', { optional: true })?.split(',')

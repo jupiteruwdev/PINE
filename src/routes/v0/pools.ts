@@ -13,7 +13,7 @@ const router = Router()
 
 router.get('/groups/collection', async (req, res, next) => {
   try {
-    const blockchainFilter = getBlockchainFilter(req.query, true)
+    const blockchainFilter = getBlockchainFilter(req.query, false)
     const collectionAddress = getString(req.query, 'collectionAddress')
     const ownerAddress = getString(req.query, 'ownerAddress', { optional: true })
     const poolGroups = await searchPoolGroups({ blockchainFilter, collectionAddress, ownerAddress })
@@ -28,7 +28,7 @@ router.get('/groups/collection', async (req, res, next) => {
 
 router.get('/groups/search', async (req, res, next) => {
   try {
-    const blockchainFilter = getBlockchainFilter(req.query, true)
+    const blockchainFilter = getBlockchainFilter(req.query, false)
     const collectionAddress = getString(req.query, 'collectionAddress', { optional: true })
     const collectionName = getString(req.query, 'query', { optional: true })
     const sortByType = getString(req.query, 'sort', { optional: true }) as PoolSortType
@@ -53,7 +53,7 @@ router.get('/groups/search', async (req, res, next) => {
 
 router.get('/lender', async (req, res, next) => {
   try {
-    const blockchainFilter = getBlockchainFilter(req.query, true)
+    const blockchainFilter = getBlockchainFilter(req.query, false)
     const lenderAddress = getString(req.query, 'lenderAddress')
     const pools = await getPools({
       blockchainFilter, lenderAddress,
@@ -122,7 +122,7 @@ router.get('/:poolAddress', async (req, res, next) => {
 
 router.get('/', async (req, res, next) => {
   try {
-    const blockchainFilter = getBlockchainFilter(req.query, true)
+    const blockchainFilter = getBlockchainFilter(req.query, false)
     const tenors = (req.query.tenors as string[])?.map(tenor => _.toNumber(tenor))
     const nftId = getString(req.query, 'nftId', { optional: true })
     const collectionAddress = getString(req.query, 'collectionAddress', { optional: true })

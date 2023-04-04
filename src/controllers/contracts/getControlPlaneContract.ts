@@ -10,7 +10,8 @@ type Params = {
 
 export default function getControlPlaneContract({ blockchain, address }: Params) {
   switch (blockchain.network) {
-  case 'ethereum': {
+  case 'ethereum':
+  case 'polygon': {
     const web3 = getEthWeb3(blockchain.networkId)
     const contract = new web3.eth.Contract(ControlPlaneABI as any, address)
     return contract

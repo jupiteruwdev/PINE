@@ -4,9 +4,10 @@ import appConf from '../../app.conf'
 import { Blockchain, Collection, NFT } from '../../entities'
 import fault from '../../utils/fault'
 import logger from '../../utils/logger'
+import { convertToMoralisChain } from '../../utils/moralis'
 import { retryPromise } from '../../utils/repeatAsync'
 import rethrow from '../../utils/rethrow'
-import { populateEthCollectionMetadataForNFTs } from '../collections'
+import { getCollections, populateEthCollectionMetadataForNFTs } from '../collections'
 import populatePoolAvailabilityForNFTs from '../pools/populatePoolAvailabilityForNFTs'
 import DataSource from '../utils/DataSource'
 import getRequest from '../utils/getRequest'
@@ -25,9 +26,11 @@ type AlchemyParams = Params & {
 }
 
 export default async function getEthNFTsByOwner({ blockchain, ownerAddress, populateMetadata, collectionAddress }: Params): Promise<NFT[]> {
-  if (blockchain.network !== 'ethereum') rethrow(`Unsupported blockchain <${JSON.stringify(blockchain)}>`)
+  if (blockchain.network !== 'ethereum' && blockchain.network !== 'polygon') rethrow(`Unsupported blockchain <${JSON.stringify(blockchain)}>`)
 
   logger.info(`Fetching Ethereum NFTs by owner <${ownerAddress}> on network <${blockchain.networkId}>...`)
+
+  const supportedCollections = await getCollections({ blockchainFilter: Blockchain.parseFilter(blockchain) })
 
   let nfts = await DataSource.fetch(
     useAlchemy({ blockchain, ownerAddress, populateMetadata, collectionAddresses: collectionAddress ? [collectionAddress] : undefined }),
@@ -52,7 +55,7 @@ export function useAlchemy({ blockchain, ownerAddress, populateMetadata, collect
   return async () => {
     logger.info(`...using Alchemy to look up NFTs for owner <${ownerAddress}>`)
 
-    if (blockchain.network !== 'ethereum') rethrow(`Unsupported blockchain <${JSON.stringify(blockchain)}>`)
+    if (blockchain.network !== 'ethereum' && blockchain.network !== 'polygon') rethrow(`Unsupported blockchain <${JSON.stringify(blockchain)}>`)
 
     const apiHost = _.get(appConf.alchemyAPIUrl, blockchain.networkId) ?? rethrow(`Missing Alchemy API URL for blockchain ${JSON.stringify(blockchain)}`)
     const apiKey = appConf.alchemyAPIKey ?? rethrow('Missing Alchemy API key')
@@ -143,7 +146,7 @@ export function useAlchemy({ blockchain, ownerAddress, populateMetadata, collect
 export function useMoralis({ blockchain, ownerAddress, populateMetadata }: Params): DataSource<NFT[]> {
   return async () => {
     logger.info(`...using Moralis to look up NFTs for owner <${ownerAddress}>`)
-    if (blockchain.network !== 'ethereum') throw fault('ERR_UNSUPPORTED_BLOCKCHAIN')
+    if (blockchain.network !== 'ethereum' && blockchain.network !== 'polygon') throw fault('ERR_UNSUPPORTED_BLOCKCHAIN')
 
     const apiKey = appConf.moralisAPIKey ?? rethrow('Missing Moralis API key')
     const res = []
@@ -156,7 +159,7 @@ export function useMoralis({ blockchain, ownerAddress, populateMetadata }: Param
           'X-API-Key': apiKey,
         },
         params: {
-          chain: 'eth',
+          chain: convertToMoralisChain(blockchain.networkId),
           format: 'decimal',
           cursor: currCursor,
         },

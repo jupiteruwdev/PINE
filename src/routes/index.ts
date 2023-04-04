@@ -28,6 +28,7 @@ router.get('/version', async (req, res) => {
 router.use('/v0', v0Router)
 router.use('/v1', v1Router)
 router.use('/hook', hookRouter)
+// router.use('/jobs', jobsRouter)
 router.use('/', v0Router)
 
 export default router

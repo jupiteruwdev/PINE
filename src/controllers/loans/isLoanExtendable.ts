@@ -15,14 +15,15 @@ export default async function isLoanExtendable({
   nftId,
 }: Params): Promise<boolean> {
   switch (blockchain.network) {
-  case 'ethereum': {
+  case 'ethereum':
+  case 'polygon': {
     const loan = await getLoan({ blockchain, nftId, collectionAddress })
     if (loan === undefined) return false
 
     const isRepaid = loan.returned.amount.gte(loan.borrowed.amount)
     if (isRepaid) return false
 
-    const numPools = await countPools({ blockchainFilter: { [blockchain.network]: blockchain.networkId }, collectionAddress })
+    const numPools = await countPools({ blockchainFilter: Blockchain.parseFilter(blockchain), collectionAddress })
     if (numPools <= 0) return false
 
     return true
