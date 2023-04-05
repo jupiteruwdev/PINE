@@ -34,9 +34,7 @@ export default async function getRolloverTerms({
       const canRollover = await Promise.all(collectionAddresses.map((collectionAddress, index) => isLoanExtendable({ blockchain, collectionAddress, nftId: nftIds[index] })))
       if (canRollover.find(cR => !cR)) throw fault('ERR_INVALID_ROLLOVER')
 
-      const pools = await searchPublishedMultiplePools({ addresses: poolAddresses, collectionAddresses, blockchainFilter: {
-        ethereum: blockchain.networkId,
-      } })
+      const pools = await searchPublishedMultiplePools({ addresses: poolAddresses, collectionAddresses, blockchainFilter: Blockchain.parseFilter(blockchain) })
       if (!pools) throw fault('ERR_NO_POOLS_AVAILABLE')
       if (pools.find(pool => pool.collection.valuation && (pool.collection.valuation?.timestamp || 0) < new Date().getTime() - appConf.valuationLimitation)) {
         throw fault('INVALID_VALUATION_TIMESTAMP')
