@@ -38,7 +38,7 @@ export default async function signValuation({ blockchain, nftId, collectionAddre
     const contractParams = [
       collectionAddress,
       nftId,
-      web3.utils.toWei(valuationEth.toFixed()),
+      web3.utils.toWei(valuationEth.toFixed(18)),
       expiresAtBlock,
     ]
     const messageHash = await contract.methods[contractFunc].apply(undefined, contractParams).call()
