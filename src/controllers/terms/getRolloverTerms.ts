@@ -33,8 +33,8 @@ export default async function getRolloverTerms({
       await verifyCollectionWithMatcher({ blockchain, collectionAddresses, matchSubcollectionBy: { type: 'nftId', values: nftIds } })
       const canRollover = await Promise.all(collectionAddresses.map((collectionAddress, index) => isLoanExtendable({ blockchain, collectionAddress, nftId: nftIds[index] })))
       if (canRollover.find(cR => !cR)) throw fault('ERR_INVALID_ROLLOVER')
-
-      const pools = await searchPublishedMultiplePools({ addresses: poolAddresses, collectionAddresses, blockchainFilter: Blockchain.parseFilter(blockchain) })
+      const blockchainFilter = Blockchain.parseFilter(blockchain)
+      const pools = await searchPublishedMultiplePools({ addresses: poolAddresses, collectionAddresses, blockchainFilter })
       if (!pools) throw fault('ERR_NO_POOLS_AVAILABLE')
       if (pools.find(pool => pool.collection.valuation && (pool.collection.valuation?.timestamp || 0) < new Date().getTime() - appConf.valuationLimitation)) {
         throw fault('INVALID_VALUATION_TIMESTAMP')
@@ -63,7 +63,7 @@ export default async function getRolloverTerms({
       const associatedPools = await Promise.all(pools.map((pool, index) => new Promise<Pool>(async (resolve, reject) => {
         if (pool.collection.valuation) resolve(pool)
         else {
-          const valuation = await getEthNFTValuation({ blockchain: blockchain as Blockchain<'ethereum'>, collectionAddress: collectionAddresses[index], nftId: nftIds[index] })
+          const valuation = await getEthNFTValuation({ blockchain: blockchain as Blockchain, collectionAddress: collectionAddresses[index], nftId: nftIds[index] })
           resolve({
             ...pool,
             collection: {
