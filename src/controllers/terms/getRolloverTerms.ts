@@ -27,6 +27,7 @@ export default async function getRolloverTerms({
 
   try {
     switch (blockchain.network) {
+    case 'polygon':
     case 'ethereum': {
       // verify collection is valid one with matcher
       await verifyCollectionWithMatcher({ blockchain, collectionAddresses, matchSubcollectionBy: { type: 'nftId', values: nftIds } })
