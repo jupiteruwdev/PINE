@@ -73,6 +73,7 @@ export default {
   flashLoanSourceContractAddress: {
     [Blockchain.Ethereum.Network.RINKEBY]: '0x1Bf5d5051eA8025B41e69C139E5fE5d6499A9077',
     [Blockchain.Ethereum.Network.MAIN]: '0x63ca18f8cb75e28f94cf81901caf1e39657ea256',
+    [Blockchain.Polygon.Network.MAIN]: '0xb93bc157771e701452f0e4521a580c4552b55abc',
   },
   controlPlaneContractAddress: {
     [Blockchain.Ethereum.Network.RINKEBY]: '0x5E282F68a7CD593609C05AbCA32482395968d885',
