@@ -31,7 +31,8 @@ export default async function getLoan({
 
   try {
     switch (blockchain.network) {
-    case 'ethereum': {
+    case 'ethereum':
+    case 'polygon': {
       const loanId = `${collectionAddress}/${nftId}`
       const onChainLoan = await getOnChainLoanById({ loanId }, { networkId: blockchain.networkId })
 
@@ -39,7 +40,7 @@ export default async function getLoan({
 
       const [blockNumber, pools] = await Promise.all([
         web3.eth.getBlockNumber(),
-        searchPublishedPools({ address: onChainLoan.pool, blockchainFilter: { ethereum: blockchain.networkId }, includeRetired: true }),
+        searchPublishedPools({ address: onChainLoan.pool, blockchainFilter: Blockchain.parseFilter(blockchain), includeRetired: true }),
       ])
       // Special case. If pool is unpublished. We cannot find the pool in the database anymore.
       if (pools.length === 0) {
@@ -58,7 +59,7 @@ export default async function getLoan({
         const loanDetails = await contract.methods._loans(nftId).call()
         loanDetails.interestBPS1000000XBlock = ((Math.log10(10000 + Number(loanDetails.interestBPS1000000XBlock.toString()) * 2628000 / 1000000) + 200 + Number(loanDetails.interestBPS1000000XBlock.toString()) * 2628000 / 1000000) * 1000000 / 2628000).toFixed(0)
         const controlPlaneContract = getControlPlaneContract({ blockchain, address: _.get(appConf.controlPlaneContractAddress, blockchain.networkId) })
-        const outstandingWithInterestWei = new BigNumber(await controlPlaneContract.methods.outstanding(loanDetails, 2000).call())
+        const outstandingWithInterestWei = new BigNumber(await controlPlaneContract.methods.outstanding(loanDetails, 2000).call()).plus('10000000000000000')
 
         if (outstandingWithInterestWei.lte(new BigNumber(0))) return undefined
 
@@ -93,7 +94,7 @@ export default async function getLoan({
         const loanDetails = await contract.methods._loans(nftId).call()
         loanDetails.interestBPS1000000XBlock = ((Math.log10(10000 + Number(loanDetails.interestBPS1000000XBlock.toString()) * 2628000 / 1000000) + 200 + Number(loanDetails.interestBPS1000000XBlock.toString()) * 2628000 / 1000000) * 1000000 / 2628000).toFixed(0)
         const controlPlaneContract = getControlPlaneContract({ blockchain, address: _.get(appConf.controlPlaneContractAddress, blockchain.networkId) })
-        const outstandingWithInterestWei = new BigNumber(await controlPlaneContract.methods.outstanding(loanDetails, 2000).call())
+        const outstandingWithInterestWei = new BigNumber(await controlPlaneContract.methods.outstanding(loanDetails, 2000).call()).multipliedBy('1.005')
 
         // Early exit if loan is fully repaid.
         if (outstandingWithInterestWei.lte(new BigNumber(0))) return undefined

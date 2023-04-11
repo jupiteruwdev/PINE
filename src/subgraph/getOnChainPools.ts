@@ -11,7 +11,7 @@ type Params = {
 
 export default async function getOnChainPools({ lenderAddress, address, excludeAddresses, collectionAddress }: Params, { networkId, useCache }: Options = {}) {
   const values = lenderAddress || address || excludeAddresses || collectionAddress ? `(${lenderAddress !== undefined ? '$lenderAddress: String' : ''}${address !== undefined ? ', $address: String' : ''}${excludeAddresses?.length ? ', $excludeAddresses: [String]' : ''}${collectionAddress?.length ? ', $collectionAddress: String' : ''})` : ''
-  const filters = lenderAddress || address || excludeAddresses || collectionAddress ? `(where: {${lenderAddress !== undefined ? 'lenderAddress: $lenderAddress' : ''}${address !== undefined ? ', id: $address' : ''}${excludeAddresses?.length ? ', id_not_in: $excludeAddresses' : ''}${collectionAddress?.length ? ', collection: $collectionAddress' : ''}})` : ''
+  const filters = lenderAddress || address || excludeAddresses || collectionAddress ? `(first: 1000, where: {${lenderAddress !== undefined ? 'lenderAddress: $lenderAddress' : ''}${address !== undefined ? ', id: $address' : ''}${excludeAddresses?.length ? ', id_not_in: $excludeAddresses' : ''}${collectionAddress?.length ? ', collection: $collectionAddress' : ''}})` : '(first: 1000)'
 
   const request = getRequest(gql`
     query pools${values} {

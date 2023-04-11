@@ -20,19 +20,18 @@ export default async function getLoanTerms({ blockchain, collectionAddresses, nf
 
   try {
     switch (blockchain.network) {
-    case 'ethereum': {
+    case 'ethereum':
+    case 'polygon': {
       // verify collection is valid one with matcher
       await verifyCollectionWithMatcher({ blockchain, collectionAddresses, matchSubcollectionBy: { type: 'nftId', values: nftIds } })
-      const pools = await searchPublishedMultiplePools({ addresses: poolAddresses, nftIds, collectionAddresses, blockchainFilter: {
-        ethereum: blockchain.networkId,
-      } })
+      const pools = await searchPublishedMultiplePools({ addresses: poolAddresses, nftIds, collectionAddresses, blockchainFilter: Blockchain.parseFilter(blockchain) })
 
       if (!pools) throw fault('ERR_NO_POOLS_AVAILABLE')
       if (pools.find(pool => pool.collection.valuation && (pool.collection.valuation?.timestamp || 0) < new Date().getTime() - appConf.valuationLimitation)) {
         throw fault('INVALID_VALUATION_TIMESTAMP')
       }
 
-      const collectionsMetadata = await Promise.all(pools.map((pool, index) => getEthCollectionMetadata({ blockchain, collectionAddress: collectionAddresses[index], matchSubcollectionBy: { type: 'poolAddress', value: pool.address } })))
+      const collectionsMetadata = await Promise.all(collectionAddresses.map((collectionAddress, index) => getEthCollectionMetadata({ blockchain, collectionAddress, matchSubcollectionBy: { type: 'poolAddress', value: pools.find(pool => pool.address === collectionAddress)?.address ?? '' } })))
       const nftsMetadata = await Promise.all(collectionAddresses.map((collectionAddress, index) => getEthNFTMetadata({ blockchain, collectionAddress, nftId: nftIds[index] })))
 
       const nfts: NFT[] = []
@@ -71,7 +70,7 @@ export default async function getLoanTerms({ blockchain, collectionAddresses, nf
         for (let j = 0; j < collectionPools?.length; j++) {
           if (!(collectionPools[j].ethLimit !== 0 && collectionPools[j].loanOptions.some(option => collectionPools[j].utilization.amount.plus(option.maxBorrow?.amount ?? new BigNumber(0)).gt(new BigNumber(collectionPools[j].ethLimit ?? 0))))) {
             const valuation = collectionPools[j].collection.valuation
-            if (valuation) {
+            if (valuation?.value?.amount.isPositive()) {
               try {
                 const { signature, issuedAtBlock, expiresAtBlock } = await signValuation({ blockchain, nftId: nftIds[i], collectionAddress: collectionAddresses[i], valuation, poolVersion: collectionPools[j].version })
                 const loanTerm: LoanTerms = {

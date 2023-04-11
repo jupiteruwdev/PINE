@@ -1,15 +1,17 @@
 import BigNumber from 'bignumber.js'
 import { PipelineStage } from 'mongoose'
 import { PoolModel } from '../../db'
-import { Blockchain, Pool, PoolGroup, Value } from '../../entities'
+import { Blockchain, NFT, Pool, PoolGroup, Value } from '../../entities'
 import logger from '../../utils/logger'
 import { mapPool } from '../adapters'
-import getEthValueUSD from '../utils/getEthValueUSD'
+import { getNFTsByOwner } from '../collaterals'
+import getTokenUSDPrice, { AvailableToken } from '../utils/getTokenUSDPrice'
 import { PoolSortDirection, PoolSortType } from './searchPublishedPools'
 
 type Params = {
   blockchainFilter?: Blockchain.Filter
   collectionAddress?: string
+  ownerAddress?: string
   offset?: number
   count?: number
   collectionName?: string
@@ -40,12 +42,13 @@ function getPipelineStages({
   blockchainFilter = {
     ethereum: Blockchain.Ethereum.Network.MAIN,
     solana: Blockchain.Solana.Network.MAINNET,
+    polygon: Blockchain.Polygon.Network.MAIN,
   },
   collectionAddress,
   collectionName,
   sortBy,
 }: Params = {}): PipelineStage[] {
-  const blockchain = Blockchain.Ethereum(blockchainFilter.ethereum)
+  const blockchains = Blockchain.fromFilter(blockchainFilter)
 
   const collectionFilter = [
     ...collectionAddress === undefined ? [] : [{
@@ -65,8 +68,15 @@ function getPipelineStages({
   const stages: PipelineStage[] = [{
     $match: {
       'retired': { $ne: true },
-      'networkType': blockchain.network,
-      'networkId': blockchain.networkId,
+      '$or': blockchains.map(blockchain => ({
+        $and: [
+          { 'networkType': blockchain.network },
+          { 'networkId': blockchain.networkId },
+        ],
+      })),
+      'valueLockedEth': {
+        $gte: 0.01,
+      },
     },
   }, {
     $lookup: {
@@ -143,13 +153,6 @@ function getPipelineStages({
     },
   },
   {
-    $match: {
-      'groupValueLocked': {
-        $gte: 0.01,
-      },
-    },
-  },
-  {
     $unset: '_id',
   },
   ]
@@ -186,6 +189,14 @@ function getPipelineStages({
       },
     })
     break
+  case PoolSortType.TVL:
+    stages.push({
+      $sort: {
+        'groupValueLocked': sortBy?.direction === PoolSortDirection.DESC ? -1 : 1,
+        'pools.name': 1,
+      },
+    })
+    break
   }
 
   return [
@@ -197,7 +208,9 @@ export default async function searchPoolGroups({
   blockchainFilter = {
     ethereum: Blockchain.Ethereum.Network.MAIN,
     solana: Blockchain.Solana.Network.MAINNET,
+    polygon: Blockchain.Polygon.Network.MAIN,
   },
+  ownerAddress,
   collectionAddress,
   collectionName,
   paginateBy,
@@ -206,8 +219,9 @@ export default async function searchPoolGroups({
   logger.info('Searching pool groups...')
 
   try {
+    const blockchain = Blockchain.parseBlockchain(blockchainFilter)
     const [ethValueUSD, groups] = await Promise.all([
-      getEthValueUSD(),
+      getTokenUSDPrice(Blockchain.parseNativeToken(blockchain) as AvailableToken),
       searchPublishedPoolGroups({
         blockchainFilter,
         collectionAddress,
@@ -217,6 +231,17 @@ export default async function searchPoolGroups({
       }),
     ])
 
+    let nfts: NFT[] = []
+
+    if (ownerAddress) {
+      nfts = await getNFTsByOwner({
+        blockchain,
+        ownerAddress,
+        collectionAddress,
+        populateMetadata: true,
+      })
+    }
+
     const pools = groups as Required<Pool>[][]
 
     const poolGroups = pools.map((group: Required<Pool>[]) => PoolGroup.factory({
@@ -224,6 +249,7 @@ export default async function searchPoolGroups({
       pools: group.map(pool => ({
         ...pool,
         valueLocked: Value.$USD(pool.valueLocked.amount.times(ethValueUSD.amount)),
+        utilization: Value.$USD(pool.utilization.amount.times(ethValueUSD.amount)),
       })),
       totalValueLent: Value.$USD(
         group
@@ -235,6 +261,7 @@ export default async function searchPoolGroups({
           .reduce((sum, pool: Pool) => sum.plus(pool.valueLocked?.amount || 0), new BigNumber(0))
           .times(ethValueUSD.amount)
       ),
+      nfts,
     }))
 
     const out = poolGroups.map(group => ({

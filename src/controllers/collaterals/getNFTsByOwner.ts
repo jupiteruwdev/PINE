@@ -19,6 +19,11 @@ type Params = {
    * metadata is not fetched.
    */
   populateMetadata?: boolean
+
+  /**
+   * The address of the collection for NFTs to look up
+   */
+  collectionAddress?: string
 }
 
 /**
@@ -28,12 +33,13 @@ type Params = {
  *
  * @returns An array of {@link NFT}.
  */
-export default async function getNFTsByOwner({ blockchain, ownerAddress, populateMetadata = false }: Params): Promise<NFT[]> {
+export default async function getNFTsByOwner({ blockchain, ownerAddress, populateMetadata = false, collectionAddress }: Params): Promise<NFT[]> {
   switch (blockchain.network) {
   case 'ethereum':
-    return getEthNFTsByOwner({ blockchain, ownerAddress, populateMetadata })
+  case 'polygon':
+    return getEthNFTsByOwner({ blockchain, ownerAddress, populateMetadata, collectionAddress })
   case 'solana':
-    return getSolNFTsByOwner({ blockchain, ownerAddress, populateMetadata })
+    return getSolNFTsByOwner({ blockchain, ownerAddress, populateMetadata, collectionAddress })
   default:
     throw fault('ERR_UNSUPPORTED_BLOCKCHAIN')
   }

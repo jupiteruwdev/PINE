@@ -10,6 +10,8 @@ const web3s: Record<string, Web3 | undefined> = {
   [Blockchain.Ethereum.Network.RINKEBY]: undefined,
   [Blockchain.Ethereum.Network.GOERLI]: undefined,
   [Blockchain.Ethereum.Network.KOVAN]: undefined,
+  [Blockchain.Polygon.Network.MAIN]: undefined,
+  [Blockchain.Polygon.Network.MUMBAI]: undefined,
 }
 
 export default function getEthWeb3(networkId: string = Blockchain.Ethereum.Network.MAIN) {

@@ -1,4 +1,8 @@
 import SuperError from '@andrewscwei/super-error'
+import lw from '@google-cloud/logging-winston'
+import { RewriteFrames } from '@sentry/integrations'
+import * as Sentry from '@sentry/node'
+import * as Tracing from '@sentry/tracing'
 import cors from 'cors'
 import express, { NextFunction, Request, Response } from 'express'
 import http from 'http'
@@ -8,12 +12,10 @@ import morgan from 'morgan'
 import util from 'util'
 import appConf from './app.conf'
 import { initDb } from './db'
+import { blockchainMiddleware, rateLimitMiddleware } from './middlewares'
 import routes from './routes'
+import rootCause from './utils/error'
 import fault from './utils/fault'
-import lw from '@google-cloud/logging-winston'
-import * as Sentry from '@sentry/node'
-import * as Tracing from '@sentry/tracing'
-import { RewriteFrames } from '@sentry/integrations'
 import logger from './utils/logger'
 
 // Remove depth from console logs
@@ -56,7 +58,7 @@ else {
 
 app.use(cors())
 app.use(express.json())
-app.use('/', routes)
+app.use('/', [rateLimitMiddleware, blockchainMiddleware], routes)
 
 app.use('*', (req, res, next) => {
   const error = new Error(`Path <${req.baseUrl}> requested by IP ${req.ip} not found`)
@@ -68,8 +70,8 @@ if (appConf.env === 'production') {
   app.use(Sentry.Handlers.errorHandler() as express.ErrorRequestHandler)
 }
 
-app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
-  const status = (err as any).status ?? 500
+app.use((err: SuperError, req: Request, res: Response, next: NextFunction) => {
+  const status = (err as any).status ?? rootCause(err)
 
   res.setHeader('Content-Type', 'application/json')
 
@@ -81,12 +83,14 @@ app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
       logger.info(`Handling 404 error... SKIP: ${err}`)
     }
   }
-  else if (appConf.env === 'production') {
-    (req as any).log.error('Handling 500 error... ERR', err)
-  }
-  else {
-    logger.error('Handling 500 error... ERR')
-    if (logger.isErrorEnabled() && !logger.silent) console.error(err)
+  else if (status >= 500) {
+    if (appConf.env === 'production') {
+      (req as any).log.error('Handling 500 error... ERR', err)
+    }
+    else {
+      logger.error('Handling 500 error... ERR')
+      if (logger.isErrorEnabled() && !logger.silent) console.error(err)
+    }
   }
 
   res.status(status).json({

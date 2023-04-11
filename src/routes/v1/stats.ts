@@ -8,10 +8,11 @@ const router = Router()
 
 router.get('/global', async (req, res, next) => {
   try {
-    const blockchainFilter = getBlockchainFilter(req.query, true)
+    const blockchainFilter = getBlockchainFilter(req.query, false)
     const stats = await getGlobalStats({ blockchainFilter })
     const payload = GlobalStats.serialize(stats)
 
+    res.setHeader('Cache-Control', 'public, max-age=60, stale-while-revalidate=30')
     res.status(200).json(payload)
   }
   catch (err) {

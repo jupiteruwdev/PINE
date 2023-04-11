@@ -1,13 +1,13 @@
-name: Pull Request to development
+name: Pull Request
 on:
   pull_request:
     types: [labeled, opened, synchronize, unlabeled, closed]
-    branches: ['development']
 
 permissions:
   contents: read
   id-token: write
   checks: write
+  pull-requests: write
 
 jobs:
   build-and-test:
@@ -17,6 +17,17 @@ jobs:
     secrets: inherit
     with:
       run_tests: true
+  
+  terraform-check:
+    name: Validate Terraform code
+    if: github.event.action != 'unlabeled' && github.event.action != 'closed'
+    uses: ./.github/workflows/reusable-terraform-check.yml
+    secrets: inherit
+    strategy:
+      matrix:
+        path: ["ops/jobs/development", "ops/jobs/staging", "ops/jobs/prod"]
+    with:
+      path: ${{ matrix.path }}
   
   notify:
     name: Notify
@@ -34,7 +45,7 @@ jobs:
     if: |
       (github.event.action == 'labeled' && github.event.label.name == ':rocket: deploy') ||
       (github.event.action != 'labeled' && contains(github.event.pull_request.labels.*.name, ':rocket: deploy'))
-    needs: build-and-test
+    needs: [build-and-test,terraform-check]
     name: Deploy Preview environment
     uses: ./.github/workflows/reusable-deploy.yml
     secrets: inherit

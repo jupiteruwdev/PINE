@@ -16,7 +16,8 @@ type SubgraphPool = {
 
 export default async function getPoolUtilization({ blockchain, poolAddress }: Params): Promise<Value> {
   switch (blockchain.network) {
-  case 'ethereum': {
+  case 'ethereum':
+  case 'polygon': {
     const { pool }: { pool: SubgraphPool } = await getOnChainPoolByAddress({ poolAddress }, { networkId: blockchain.networkId })
     const web3 = getEthWeb3(blockchain.networkId)
 

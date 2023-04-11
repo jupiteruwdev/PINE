@@ -2,9 +2,10 @@ import BigNumber from 'bignumber.js'
 import _ from 'lodash'
 import { PipelineStage } from 'mongoose'
 import { PoolModel } from '../../db'
-import { Blockchain, Pool } from '../../entities'
+import { Blockchain, Pool, Value } from '../../entities'
 import { mapPool } from '../adapters'
 import { getEthNFTMetadata } from '../collaterals'
+import getTokenUSDPrice, { AvailableToken } from '../utils/getTokenUSDPrice'
 import Tenor from '../utils/Tenor'
 
 export enum PoolSortType {
@@ -12,6 +13,7 @@ export enum PoolSortType {
   LTV = 'ltv',
   INTEREST = 'interest',
   UTILIZATION = 'utilization',
+  TVL = 'tvl',
 }
 
 export enum PoolSortDirection {
@@ -29,6 +31,7 @@ type Params = {
   lenderAddress?: string
   tenors?: number[]
   nftId?: string
+  poolVersion?: number
   paginateBy?: {
     count: number
     offset: number
@@ -64,14 +67,14 @@ async function searchPublishedPools({
   const aggregation = PoolModel.aggregate(getPipelineStages({
     ...params,
   }))
+  const blockchain = Blockchain.parseBlockchain(params.blockchainFilter ?? {})
+  const ethValueUSD = await getTokenUSDPrice(Blockchain.parseNativeToken(blockchain) as AvailableToken)
 
   let docs
   if (params.nftId !== undefined) {
     docs = await aggregation.exec()
-    docs = await filterByNftId(Blockchain.factory({
-      network: 'ethereum',
-      networkId: params.blockchainFilter?.ethereum,
-    }), docs, params.nftId)
+    const blockchain = Blockchain.parseBlockchain(params.blockchainFilter ?? {})
+    docs = await filterByNftId(blockchain, docs, params.nftId)
 
     if (paginateBy !== undefined) {
       docs = docs.slice(paginateBy.offset, paginateBy.offset + paginateBy.count - 1)
@@ -82,11 +85,16 @@ async function searchPublishedPools({
   }
 
   const pools = docs.map(mapPool)
+  const out = pools.map(pool => ({
+    ...pool,
+    valueLocked: Value.$USD(pool.valueLocked.amount.times(ethValueUSD.amount)),
+    utilization: Value.$USD(pool.utilization.amount.times(ethValueUSD.amount)),
+  }))
 
   if (checkLimit) {
-    return pools.filter(pool => !(!!pool.collection?.valuation?.value?.amount && pool.ethLimit !== 0 && pool.loanOptions.some(option => pool.utilization?.amount.plus(pool.collection?.valuation?.value?.amount ?? new BigNumber(0)).gt(new BigNumber(pool.ethLimit ?? 0)))))
+    return out.filter(pool => !(!!pool.collection?.valuation?.value?.amount && pool.ethLimit !== 0 && pool.loanOptions.some(option => pool.utilization?.amount.plus(pool.collection?.valuation?.value?.amount ?? new BigNumber(0)).gt(new BigNumber(pool.ethLimit ?? 0)))))
   }
-  return pools
+  return out
 }
 
 export default searchPublishedPools
@@ -95,6 +103,7 @@ function getPipelineStages({
   blockchainFilter = {
     ethereum: Blockchain.Ethereum.Network.MAIN,
     solana: Blockchain.Solana.Network.MAINNET,
+    polygon: Blockchain.Polygon.Network.MAIN,
   },
   collectionAddress,
   collectionName,
@@ -103,8 +112,9 @@ function getPipelineStages({
   sortBy,
   address,
   tenors,
+  poolVersion,
 }: Params): PipelineStage[] {
-  const blockchain = Blockchain.Ethereum(blockchainFilter.ethereum)
+  const blockchains = Blockchain.fromFilter(blockchainFilter)
 
   const collectionFilter = [
     ...collectionAddress === undefined ? [] : [{
@@ -132,12 +142,19 @@ function getPipelineStages({
         $in: Tenor.convertTenors(tenors),
       },
     }],
+    ...poolVersion === undefined ? [] : [{
+      poolVersion,
+    }],
   ]
 
   const stages: PipelineStage[] = [{
     $match: {
-      'networkType': blockchain.network,
-      'networkId': blockchain.networkId,
+      $or: blockchains.map(blockchain => ({
+        $and: [
+          { 'networkType': blockchain.network },
+          { 'networkId': blockchain.networkId },
+        ],
+      })),
       ...lenderAddress === undefined ? {} : { lenderAddress },
       ...includeRetired === true ? {} : { retired: { $ne: true } },
     },
@@ -186,6 +203,13 @@ function getPipelineStages({
           then: '$interestOverride',
           else: '$interest',
         },
+      },
+    },
+  },
+  {
+    $match: {
+      'valueLockedEth': {
+        $gte: 0.01,
       },
     },
   },
