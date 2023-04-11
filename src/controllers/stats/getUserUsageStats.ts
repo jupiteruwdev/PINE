@@ -32,18 +32,18 @@ const blockedCollections = [
   '0xde494e809e28e70d5e2a26fb402e263030089214',
 ]
 
-function convertNativeToUSD(snapshot: any, key: string, parse = true): BigNumber {
+export function convertNativeToUSD(snapshot: any, key: string, parse = true): BigNumber {
   const blockchain = Blockchain.factory({
     network: _.get(snapshot, 'networkType', 'ethereum'),
     networkId: _.get(snapshot, 'networkId', '1'),
   })
 
-  const value = parse ? ethers.utils.formatEther(`${_.get(snapshot, key) ?? 0}`) : _.get(snapshot, key)
+  const value = parse ? ethers.utils.formatEther(new BigNumber(_.get(snapshot, key) ?? '0').toFixed()) : _.get(snapshot, key)
 
   return new BigNumber(value).times(tokenUSDPrice[blockchain.networkId]?.amount ?? '0')
 }
 
-async function getUsageValues({ lendingSnapshots, borrowingSnapshots, address }: GetUsageValuesParams) {
+export async function getUsageValues({ lendingSnapshots, borrowingSnapshots, address }: GetUsageValuesParams) {
   const allEVMChains = Blockchain.allChains().filter(blockchain => blockchain.network !== 'solana')
   const borrowedSnapshots = borrowingSnapshots.filter(snapshot => _.get(snapshot, 'borrowerAddress')?.toLowerCase() === address.toLowerCase())
   const lendedSnapshots = borrowingSnapshots.filter(snapsoht => _.get(snapsoht, 'lenderAddress')?.toLowerCase() === address.toLowerCase())
@@ -56,13 +56,13 @@ async function getUsageValues({ lendingSnapshots, borrowingSnapshots, address }:
   const lendedUSD = _.reduce(lendedSnapshots, (pre, cur) => pre.plus(convertNativeToUSD(cur, 'borrowAmount')), new BigNumber(0))
 
   const usdPermissioned = _.reduce(
-    allEVMChains.map(blockchain => _.reduce(_.values(_.groupBy(lendingSnapshotsForAdddress.filter(snapshot => snapshot.networkId === blockchain.networkId), 'fundSource')), (pre, cur) => pre.plus(BigNumber.max(...cur.map(snapshot => convertNativeToUSD(snapshot, 'capacity', false)))), new BigNumber(0))),
+    allEVMChains.map(blockchain => _.reduce(_.values(_.groupBy(lendingSnapshotsForAdddress.filter(snapshot => (snapshot.networkId || '1') === blockchain.networkId), 'fundSource')), (pre, cur) => pre.plus(BigNumber.max(...cur.map(snapshot => convertNativeToUSD(snapshot, 'capacity', false)))), new BigNumber(0))),
     (pre, cur) => pre.plus(cur),
     new BigNumber(0)
   )
 
   const usdPermissionedAll = _.reduce(
-    allEVMChains.map(blockchain => _.reduce(_.values(_.groupBy(lendingSnapshots.filter(snapshot => snapshot.networkId === blockchain.networkId), 'fundSource')), (pre, cur) => pre.plus(BigNumber.max(...cur.map(snapshot => convertNativeToUSD(snapshot, 'capacity', false)))), new BigNumber(0))),
+    allEVMChains.map(blockchain => _.reduce(_.values(_.groupBy(lendingSnapshots.filter(snapshot => (snapshot.networkId || '1') === blockchain.networkId), 'fundSource')), (pre, cur) => pre.plus(BigNumber.max(...cur.map(snapshot => convertNativeToUSD(snapshot, 'capacity', false)))), new BigNumber(0))),
     (pre, cur) => pre.plus(cur),
     new BigNumber(0)
   )
@@ -75,8 +75,16 @@ async function getUsageValues({ lendingSnapshots, borrowingSnapshots, address }:
     .plus(usdPermissionedAll.gt(0) ? usdPermissioned.div(usdPermissionedAll).multipliedBy(12) : new BigNumber(0))
     .plus(totalAmountUSD.gt(0) ? lendedUSD.div(totalAmountUSD).multipliedBy(28) : new BigNumber(0))
 
+  const totalPercent = (
+    totalAmountUSD.gt(0) ? new BigNumber(42) : new BigNumber(0)
+  )
+    .plus(collateralPriceSumAll.gt(0) ? new BigNumber(18) : new BigNumber(0))
+    .plus(usdPermissionedAll.gt(0) ? new BigNumber(12) : new BigNumber(0))
+    .plus(totalAmountUSD.gt(0) ? new BigNumber(28) : new BigNumber(0))
+
   return {
     usagePercent,
+    totalPercent,
     borrowedUSD,
     lendedUSD,
     usdPermissioned,
@@ -130,10 +138,10 @@ async function getIncentiveRewards({ address }: Params): Promise<{
       const currentBorrowingSnapshots = allBorrowingSnapshots.filter(snapshot => new Date(_.get(snapshot, 'createdAt')).getTime() > currentSnapshotTime && new Date(_.get(snapshot, 'createdAt')).getTime() < prevFriday.getTime())
       const currentLendingSnapshots = allLendingSnapshots.filter(snapshot => new Date(_.get(snapshot, 'createdAt')).getTime() > currentSnapshotTime && new Date(_.get(snapshot, 'createdAt')).getTime() < prevFriday.getTime())
 
-      const { usagePercent } = await getUsageValues({ address, lendingSnapshots: currentLendingSnapshots, borrowingSnapshots: currentBorrowingSnapshots })
+      const { usagePercent, totalPercent } = await getUsageValues({ address, lendingSnapshots: currentLendingSnapshots, borrowingSnapshots: currentBorrowingSnapshots })
       const protocolIncentivePerHour = appConf.incentiveRewards / 12 / 24 / 7
 
-      incentiveRewards = incentiveRewards.plus(usagePercent.times(protocolIncentivePerHour).div(100))
+      incentiveRewards = incentiveRewards.plus(usagePercent.times(protocolIncentivePerHour).div(totalPercent))
       if (prevFriday.getTime() > now.getTime()) break
     }
 

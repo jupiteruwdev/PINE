@@ -38,6 +38,8 @@ export default {
   looksrareAPIKey: process.env.LOOKSRARE_API_KEY,
   spicyestAPIKey: process.env.SPICYEST_API_KEY,
   x2y2APIKey: process.env.X2Y2_API_KEY,
+  zyteAPIKey: process.env.ZYTE_API_KEY,
+  nftPerpAPIKey: process.env.NFT_PERP_API_KEY,
   requestTimeoutMs: Number(process.env.REQUEST_TIMEOUT_MS ?? 30000),
   metaquantsAPIKey: process.env.METAQUANTS_API_KEY,
   ethBlocksPerSecond: 14,
