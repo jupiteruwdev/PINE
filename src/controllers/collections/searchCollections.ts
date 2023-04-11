@@ -6,6 +6,7 @@ import fault from '../../utils/fault'
 import logger from '../../utils/logger'
 import postRequest from '../utils/postRequest'
 
+import { NFTCollectionModel } from '../../db'
 import DataSource from '../utils/DataSource'
 import getRequest from '../utils/getRequest'
 import getCollections from './getCollections'
@@ -32,6 +33,10 @@ const convertAlchemySupportMarketplace = (vendor?: string): string | undefined =
 async function aggregateCollectionResults(collections: Collection[], blockchain: Blockchain): Promise<Collection[]> {
   const spamContracts = blockchain.network === 'ethereum' ? await getSpamContracts({ blockchain }) : []
   const nonSpamCollections = collections.filter((c: Collection) => !spamContracts.find(ad => ad.toLowerCase() === c.address.toLowerCase()))
+  const addresses = nonSpamCollections.map(collection => collection.address.toLowerCase())
+  const dbCollections = await NFTCollectionModel.find({ address: {
+    $in: addresses,
+  } })
 
   const collectionResults = await Promise.all(
     nonSpamCollections.map(async (collection: Collection) => {
@@ -43,9 +48,11 @@ async function aggregateCollectionResults(collections: Collection[], blockchain:
       catch (err) {
         floorPrice = Value.$ETH(0)
       }
+      const dbCollection = dbCollections.find(c => c.address?.toLowerCase() === collection.address.toLowerCase())
 
       return {
         ...collection,
+        ...dbCollection ? { imageUrl: dbCollection.imageUrl } : {},
         sales: sales.map((sale: any) => NFTSale.factory({
           marketplace: _.get(sale, 'marketplace'),
           collectionAddress: _.get(sale, 'contractAddress'),
