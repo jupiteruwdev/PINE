@@ -1,7 +1,6 @@
-import { Request } from '@sentry/node'
 import BigNumber from 'bignumber.js'
 import EthDater from 'ethereum-block-by-date'
-import { NextFunction, Response } from 'express'
+import { NextFunction, Request, Response } from 'express'
 import keccak from 'keccak'
 import _ from 'lodash'
 import { MerkleTree } from 'merkletreejs'
@@ -15,12 +14,6 @@ import { Blockchain, Value } from '../entities'
 import logger from '../utils/logger'
 
 const kk = (x: any) => keccak('keccak256').update(x).digest().toString('hex')
-
-type GetUsageValuesParams = {
-  lendingSnapshots: any[]
-  borrowingSnapshots: any[]
-  address: string
-}
 
 const blockedCollections = [
   '0x04c003461abc646a5c22353edf8e8edc16837492',
@@ -296,7 +289,7 @@ export default async function syncMerkleTree(req: Request, res: Response, next: 
       `JOB_SYNC_MERKLE_TREE Merkle tree generation for ${currentBlock} with reards ${sum.toString()}... OK`
     )
 
-    return res.status(200).send()
+    res.status(200).send()
   }
   catch (err) {
     logger.error('JOB_SYNC_MERKLE_TREE Handling runtime error... ERR:', err)
