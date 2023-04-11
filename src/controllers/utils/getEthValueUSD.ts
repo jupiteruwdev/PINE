@@ -8,11 +8,11 @@ import DataSource from './DataSource'
 import getRequest from './getRequest'
 import { AvailableToken } from './getTokenUSDPrice'
 
-export default async function getEthValueUSD(amountEth: number | string | BigNumber = 1, symbol: AvailableToken = AvailableToken.ETH): Promise<Value<AnyCurrency>> {
+export default async function getEthValueUSD(amountEth: number | string | BigNumber = 1, symbol: Omit<AvailableToken, 'PINE'> = AvailableToken.ETH): Promise<Value<AnyCurrency>> {
   return DataSource.fetch(useCoingecko(symbol, amountEth), useBinance(symbol, amountEth), useCoinAPI(symbol, amountEth))
 }
 
-export function useBinance(symbol = 'eth', amountEth: number | string | BigNumber = 1): DataSource<Value<AnyCurrency>> {
+export function useBinance(symbol: Omit<AvailableToken, 'PINE'> = 'eth', amountEth: number | string | BigNumber = 1): DataSource<Value<AnyCurrency>> {
   return async () => {
     logger.info(`...using binance to fetch ${symbol} price`)
 
@@ -26,7 +26,7 @@ export function useBinance(symbol = 'eth', amountEth: number | string | BigNumbe
   }
 }
 
-export function useCoingecko(symbol = 'eth', amountEth: number | string | BigNumber = 1): DataSource<Value<AnyCurrency>> {
+export function useCoingecko(symbol: Omit<AvailableToken, 'PINE'> = 'eth', amountEth: number | string | BigNumber = 1): DataSource<Value<AnyCurrency>> {
   return async () => {
     logger.info(`... using coingecko to fetch ${symbol} price`)
 
@@ -42,7 +42,7 @@ export function useCoingecko(symbol = 'eth', amountEth: number | string | BigNum
   }
 }
 
-export function useCoinAPI(symbol = 'eth', amountEth: number | string | BigNumber = 1): DataSource<Value<AnyCurrency>> {
+export function useCoinAPI(symbol: Omit<AvailableToken, 'PINE'> = 'eth', amountEth: number | string | BigNumber = 1): DataSource<Value<AnyCurrency>> {
   return async () => {
     logger.info(`... using coinApi to fetch ${symbol} price`)
 

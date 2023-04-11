@@ -6,10 +6,8 @@ import logger from '../utils/logger'
 
 export default async function syncEthValueUSD(req: Request, res: Response, next: NextFunction) {
   try {
-    logger.info('JOB_SYNC_ETH_VALUE_USD: fetching eth price in usd')
-
     try {
-      for (const token of Object.keys(AvailableToken)) {
+      for (const token of Object.keys(AvailableToken).filter(key => key !== 'PINE')) {
         logger.info(`JOB_SYNC_ETH_VALUE_USD fetching ${AvailableToken[token as keyof typeof AvailableToken]} price in usd`)
         const tokenPrice = await getEthValueUSD(1, AvailableToken[token as keyof typeof AvailableToken])
         const price = await PriceModel.findOne({ name: AvailableToken[token as keyof typeof AvailableToken] })
