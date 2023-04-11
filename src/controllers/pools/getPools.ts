@@ -31,7 +31,7 @@ async function mapPool({ blockchain, pools, loanOptionsDict }: MapPoolParams): P
   const uniqPools = _.uniqWith(pools, (a, b) => (a.id === b.id && a.collection === b.toLowerCase))
 
   const poolsData = await Promise.all(_.map(uniqPools, (async pool => {
-    const collectionMetadata = await getEthCollectionMetadata({ blockchain, matchSubcollectionBy: { type: 'poolAddress', value: pool.id }, collectionAddress: pool.collection })
+    const collectionMetadata = await getEthCollectionMetadata({ blockchain, collectionAddress: pool.collection })
     const stats: any = {}
     const [
       { amount: utilizationEth },
