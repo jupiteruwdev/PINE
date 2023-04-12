@@ -2,6 +2,7 @@ import { Router } from 'express'
 import appConf from '../app.conf'
 import getWorkerVersion from '../controllers/utils/getWorkerVersion'
 import hookRouter from './hooks'
+import jobsRouter from './jobs'
 import v0Router from './v0'
 import v1Router from './v1'
 
@@ -28,7 +29,7 @@ router.get('/version', async (req, res) => {
 router.use('/v0', v0Router)
 router.use('/v1', v1Router)
 router.use('/hook', hookRouter)
-// router.use('/jobs', jobsRouter)
+router.use('/jobs', jobsRouter)
 router.use('/', v0Router)
 
 export default router

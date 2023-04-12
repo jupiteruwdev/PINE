@@ -242,6 +242,7 @@ export default async function syncBidOrders(req: Request, res: Response, next: N
         logger.error('JOB_SYNC_BID_ORDERS Handling bidorder... ERR:', err)
       }
     }
+    res.status(200).send()
   }
   catch (err) {
     logger.error('JOB_SYNC_BID_ORDERS Handling runtime error... ERR:', err)
