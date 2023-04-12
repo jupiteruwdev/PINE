@@ -21,7 +21,7 @@ export default async function getIdleGovernance(): Promise<IdleGovernance> {
     const totalSupply = await contract.methods.totalSupply().call()
     const staked = new BigNumber(ethers.utils.formatEther(totalSupply)).minus(burnt).toFixed()
     const totalVeSb = ethers.utils.formatEther(await contract.methods.totalVeSb().call())
-    const apyStake = new BigNumber(0.0594).div(totalVeSb).times((appConf.stakingRewards / 7) * 365)
+    const apyStake = new BigNumber(0.0594).div(totalVeSb).times((appConf.stakingRewards / 7) * 365).times(100)
     const apyBurnt = new BigNumber((appConf.stakingRewards / 7) * 365).div(totalVeSb).times(100)
 
     return IdleGovernance.factory({

@@ -73,6 +73,7 @@ export default {
   flashLoanSourceContractAddress: {
     [Blockchain.Ethereum.Network.RINKEBY]: '0x1Bf5d5051eA8025B41e69C139E5fE5d6499A9077',
     [Blockchain.Ethereum.Network.MAIN]: '0x63ca18f8cb75e28f94cf81901caf1e39657ea256',
+    [Blockchain.Polygon.Network.MAIN]: '0xb93bc157771e701452f0e4521a580c4552b55abc',
   },
   controlPlaneContractAddress: {
     [Blockchain.Ethereum.Network.RINKEBY]: '0x5E282F68a7CD593609C05AbCA32482395968d885',
@@ -112,7 +113,7 @@ export default {
     [Blockchain.Polygon.Network.MAIN]: '0x125488d05fe1D48A8B9053b7C1B021aEF08f1c02',
   },
   rolloverAddress: {
-    [Blockchain.Ethereum.Network.MAIN]: '0x5284d97a1462A767F385aE6Ae89BA9065ecE193c',
+    [Blockchain.Ethereum.Network.MAIN]: '0xA5835dB17E67c8D55c472Bb1B1711ccf4D91Bcd6',
     [Blockchain.Ethereum.Network.RINKEBY]: '0xC796d62fB1927a13D7E41eBd0c8eA80fdA5Ef80a',
     [Blockchain.Polygon.Network.MAIN]: '0x03542e5D86e39304FE347c779De78F3157ca3e6f',
   },

@@ -6,8 +6,10 @@ import fault from '../../utils/fault'
 import logger from '../../utils/logger'
 import postRequest from '../utils/postRequest'
 
+import { NFTCollectionModel } from '../../db'
 import DataSource from '../utils/DataSource'
 import getRequest from '../utils/getRequest'
+import getCollections from './getCollections'
 import getFloorPrice from './getFloorPrice'
 import getNFTSales from './getNFTSales'
 import getSpamContracts from './getSpamContracts'
@@ -31,6 +33,10 @@ const convertAlchemySupportMarketplace = (vendor?: string): string | undefined =
 async function aggregateCollectionResults(collections: Collection[], blockchain: Blockchain): Promise<Collection[]> {
   const spamContracts = blockchain.network === 'ethereum' ? await getSpamContracts({ blockchain }) : []
   const nonSpamCollections = collections.filter((c: Collection) => !spamContracts.find(ad => ad.toLowerCase() === c.address.toLowerCase()))
+  const addresses = nonSpamCollections.map(collection => collection.address.toLowerCase())
+  const dbCollections = await NFTCollectionModel.find({ address: {
+    $in: addresses,
+  } })
 
   const collectionResults = await Promise.all(
     nonSpamCollections.map(async (collection: Collection) => {
@@ -42,9 +48,11 @@ async function aggregateCollectionResults(collections: Collection[], blockchain:
       catch (err) {
         floorPrice = Value.$ETH(0)
       }
+      const dbCollection = dbCollections.find(c => c.address?.toLowerCase() === collection.address.toLowerCase())
 
       return {
         ...collection,
+        ...dbCollection ? { imageUrl: dbCollection.imageUrl } : {},
         sales: sales.map((sale: any) => NFTSale.factory({
           marketplace: _.get(sale, 'marketplace'),
           collectionAddress: _.get(sale, 'contractAddress'),
@@ -78,8 +86,11 @@ export default async function searchCollections({ query, blockchain }: Params): 
       useAlchemy({ query, blockchain }),
       useGemXYZ({ query, blockchain }),
     )
+    const polygonContracts = await getCollections({ blockchainFilter: {
+      polygon: blockchain.networkId,
+    } })
 
-    return aggregateCollectionResults(collectionsPolygon, blockchain)
+    return aggregateCollectionResults(collectionsPolygon.filter(collection => polygonContracts.find(con => con.address.toLowerCase() === collection.address.toLowerCase())), blockchain)
   case Blockchain.Ethereum.Network.GOERLI:
   case Blockchain.Polygon.Network.MUMBAI:
     const collectionsGoerli = await DataSource.fetch(
