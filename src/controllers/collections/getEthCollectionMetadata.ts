@@ -70,6 +70,19 @@ export function useDb({ blockchain, collectionAddress, matchSubcollectionBy }: P
 
     let docs
 
+    if (typeof matchSubcollectionBy === undefined) {
+      const doc = await NFTCollectionModel.find({ address: {
+        $regex: collectionAddress,
+        $options: 'i',
+      } }).lean()
+
+      return {
+        name: _.get(doc, 'displayName'),
+        imageUrl: _.get(doc, 'imageUrl'),
+        vendorIds: _.get(doc, 'vendorIds'),
+      }
+    }
+
     if (matchSubcollectionBy?.type === 'poolAddress') {
       const stages: PipelineStage[] = [{
         $match: {
