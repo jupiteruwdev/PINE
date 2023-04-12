@@ -17,21 +17,21 @@ export default async function syncCollectionValuation(req: Request, res: Respons
     const collections = await getAllCollections()
 
     for (const collection of collections) {
-      if (collection.networkType === 'ethereum') {
+      if (collection.networkType === 'ethereum' || collection.networkType === 'polygon') {
         const nftId = collection.matcher ? _.get(appConf.nftIds, collection.address ?? '', 0) : 0
 
-        logger.info(`JOB_SYNC_COLLECTION_VALUATION: Updating valuation for collection ${collection.address} and nftId ${nftId}`)
+        logger.info(`JOB_SYNC_COLLECTION_VALUATION Updating valuation for collection ${collection.address} and nftId ${nftId}`)
 
         if (collection.address) {
           try {
             const blockchain = Blockchain.factory({
               network: collection.networkType,
               networkId: collection.networkId,
-            }) as Blockchain<'ethereum'>
+            }) as Blockchain
 
             const oldValuation = JSON.parse(JSON.stringify(collection.valuation?.value))
 
-            const valuation = await getEthNFTValuation({ blockchain, collectionAddress: collection.address, nftId })
+            const valuation = await getEthNFTValuation({ blockchain, collectionAddress: collection.address, nftId: nftId.toString() })
             collection.valuation = {
               ...Valuation.serialize(valuation),
               lastValue: oldValuation,
@@ -40,7 +40,7 @@ export default async function syncCollectionValuation(req: Request, res: Respons
             await collection.save()
           }
           catch (err) {
-            logger.error(`JOB_SYNC_COLLECTION_VALUATION: Updating valuation for collection ${collection.address} and nftId ${nftId}... ERR:`, err)
+            logger.error(`JOB_SYNC_COLLECTION_VALUATION Updating valuation for collection ${collection.address} and nftId ${nftId}... ERR:`, err)
           }
         }
         await sleep(1000)
