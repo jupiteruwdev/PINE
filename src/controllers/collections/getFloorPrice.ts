@@ -24,6 +24,7 @@ export default async function getFloorPrice({ contractAddress, blockchain }: Par
     }
     case Blockchain.Polygon.Network.MAIN: {
       const floorPrice = await DataSource.fetch(useDb({ contractAddress, blockchain }), useMetaquants({ contractAddress, blockchain }))
+      console.log({ floorPrice })
       return floorPrice
     }
     default:
@@ -42,7 +43,7 @@ function useDb({ contractAddress, blockchain }: Params): DataSource<Value> {
   return async () => {
     logger.info(`...using db for floor price for collection <${contractAddress}> on network <${blockchain.networkId}>`)
 
-    const res = await NFTCollectionModel.find({ address: {
+    const res = await NFTCollectionModel.findOne({ address: {
       $regex: contractAddress,
       $options: 'i',
     }, networkId: blockchain.networkId, networkType: blockchain.network }).lean()
