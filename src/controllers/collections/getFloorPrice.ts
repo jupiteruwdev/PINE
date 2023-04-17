@@ -42,7 +42,7 @@ function useDb({ contractAddress, blockchain }: Params): DataSource<Value> {
   return async () => {
     logger.info(`...using db for floor price for collection <${contractAddress}> on network <${blockchain.networkId}>`)
 
-    const res = await NFTCollectionModel.find({ address: {
+    const res = await NFTCollectionModel.findOne({ address: {
       $regex: contractAddress,
       $options: 'i',
     }, networkId: blockchain.networkId, networkType: blockchain.network }).lean()
