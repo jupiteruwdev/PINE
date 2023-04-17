@@ -24,7 +24,6 @@ export default async function getFloorPrice({ contractAddress, blockchain }: Par
     }
     case Blockchain.Polygon.Network.MAIN: {
       const floorPrice = await DataSource.fetch(useDb({ contractAddress, blockchain }), useMetaquants({ contractAddress, blockchain }))
-      console.log({ floorPrice })
       return floorPrice
     }
     default:
