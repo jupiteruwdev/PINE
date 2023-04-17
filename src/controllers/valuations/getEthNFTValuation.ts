@@ -138,7 +138,7 @@ export function useMetaquants({ blockchain, collectionAddress, nftId }: Params):
   return async () => {
     logger.info(`...using Metaquants to determine valuation for Ethereum NFT <${collectionAddress}/${nftId}>`)
 
-    if (blockchain.networkId !== Blockchain.Ethereum.Network.MAIN && blockchain.networkId !== Blockchain.Polygon.Network.MAIN) rethrow(`Unsupported Ethereum network <${blockchain.networkId}>`)
+    if (blockchain.networkId !== Blockchain.Ethereum.Network.MAIN) rethrow(`Unsupported Ethereum network <${blockchain.networkId}>`)
 
     const apiKey = appConf.metaquantsAPIKey ?? rethrow('Missing Metaquants API key')
     const collectionMetadata = await getEthCollectionMetadata({ blockchain, collectionAddress, matchSubcollectionBy: { type: 'nftId', value: nftId } })
