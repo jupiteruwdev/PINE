@@ -8,6 +8,7 @@ import logger from '../../utils/logger'
 import rethrow from '../../utils/rethrow'
 import DataSource from '../utils/DataSource'
 import getRequest from '../utils/getRequest'
+import { useOpenSea } from '../valuations/getEthNFTValuation'
 
 type Params = {
   contractAddress: string
@@ -23,7 +24,7 @@ export default async function getFloorPrice({ contractAddress, blockchain }: Par
       return floorPrice
     }
     case Blockchain.Polygon.Network.MAIN: {
-      const floorPrice = await DataSource.fetch(useDb({ contractAddress, blockchain }), useMetaquants({ contractAddress, blockchain }))
+      const floorPrice = await DataSource.fetch(useDb({ contractAddress, blockchain }), useOpenSeaValue({ contractAddress, blockchain }))
       return floorPrice
     }
     default:
@@ -48,6 +49,18 @@ function useDb({ contractAddress, blockchain }: Params): DataSource<Value> {
     }, networkId: blockchain.networkId, networkType: blockchain.network }).lean()
 
     return Value.$ETH(_.get(res, 'valuation.value.amount', 0))
+  }
+}
+
+function useOpenSeaValue({ contractAddress, blockchain }: Params): DataSource<Value> {
+  return async () => {
+    logger.info(`...using opensea for floor price for collection <${contractAddress}> on network <${blockchain.networkId}>`)
+
+    const res = await DataSource.fetch(useOpenSea({ collectionAddress: contractAddress, blockchain, nftId: '0' }))
+
+    if (!res.value) throw rethrow('Unsupported collection')
+
+    return res.value
   }
 }
 
