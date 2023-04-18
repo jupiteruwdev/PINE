@@ -1,7 +1,7 @@
 import { Router } from 'express'
 import _ from 'lodash'
 import appConf from '../../app.conf'
-import { countPoolGroups, countPools, countPoolsByTenors, getPool, getPools, publishPool, searchPoolGroups, unpublishPool } from '../../controllers'
+import { countPoolGroups, countPoolOffers, countPools, countPoolsByTenors, getPool, getPools, publishPool, searchPoolGroups, unpublishPool } from '../../controllers'
 import searchPublishedPools, { PoolSortDirection, PoolSortType } from '../../controllers/pools/searchPublishedPools'
 import scheduleWorker from '../../controllers/utils/scheduleWorker'
 import { Pagination, Pool, PoolGroup, serializeEntityArray } from '../../entities'
@@ -39,7 +39,7 @@ router.get('/groups/search', async (req, res, next) => {
     const totalCount = await countPoolGroups({ collectionAddress, blockchainFilter, collectionName, includeRetired: false })
     const totalPoolGroupsCount = await countPoolGroups({ collectionAddress, blockchainFilter, includeRetired: false })
     const poolGroups = await searchPoolGroups({ collectionAddress, collectionName, blockchainFilter, paginateBy, sortBy })
-    const poolCount = await countPools({ collectionAddress, blockchainFilter, collectionName, includeRetired: false })
+    const poolsOfferCount = await countPoolOffers({ collectionAddress, blockchainFilter, collectionName, includeRetired: false })
     const payload = serializeEntityArray(poolGroups, PoolGroup.codingResolver)
     const nextOffset = (paginateBy?.offset ?? 0) + poolGroups.length
     const pagination = Pagination.serialize({ data: payload, totalCount, nextOffset: nextOffset === totalCount ? undefined : nextOffset })
@@ -47,7 +47,7 @@ router.get('/groups/search', async (req, res, next) => {
     res.setHeader('Cache-Control', 'public, max-age=60, stale-while-revalidate=30')
     res.status(200).json({
       poolGroups: pagination,
-      poolCount,
+      offerCount: poolsOfferCount,
       totalPoolGroupsCount,
     })
 
