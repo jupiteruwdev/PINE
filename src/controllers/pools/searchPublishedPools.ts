@@ -85,16 +85,11 @@ async function searchPublishedPools({
   }
 
   const pools = docs.map(mapPool)
-  const out = pools.map(pool => ({
-    ...pool,
-    valueLocked: Value.$USD(pool.valueLocked.amount.times(ethValueUSD.amount)),
-    utilization: Value.$USD(pool.utilization.amount.times(ethValueUSD.amount)),
-  }))
 
   if (checkLimit) {
-    return out.filter(pool => !(!!pool.collection?.valuation?.value?.amount && pool.ethLimit !== 0 && pool.loanOptions.some(option => pool.utilization?.amount.plus(pool.collection?.valuation?.value?.amount ?? new BigNumber(0)).gt(new BigNumber(pool.ethLimit ?? 0)))))
+    return pools.filter(pool => !(!!pool.collection?.valuation?.value?.amount && pool.ethLimit !== 0 && pool.loanOptions.some(option => pool.utilization?.amount.plus(pool.collection?.valuation?.value?.amount ?? new BigNumber(0)).gt(new BigNumber(pool.ethLimit ?? 0)))))
   }
-  return out
+  return pools
 }
 
 export default searchPublishedPools
