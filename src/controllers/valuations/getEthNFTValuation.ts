@@ -1,3 +1,4 @@
+import axios from 'axios'
 import BigNumber from 'bignumber.js'
 import _ from 'lodash'
 import appConf from '../../app.conf'
@@ -75,7 +76,69 @@ export function useSpicyest({ blockchain, collectionAddress, nftId }: Params): D
       useCache: false,
     })
     if (res?.currency !== 'ETH') rethrow('Wrong currency')
-    const floorPrice = new BigNumber(_.get(res, 'price'))
+    const floorPrice = new BigNumber(_.get(res, 'price') || '0')
+
+    const valuation = Valuation.factory({
+      value: Value.$ETH(floorPrice),
+      value24Hr: Value.$ETH(floorPrice),
+    })
+
+    return valuation
+  }
+}
+
+export function useMetaquants({ blockchain, collectionAddress, nftId }: Params): DataSource<Valuation> {
+  return async () => {
+    logger.info(`...using Metaquants to determine valuation for Ethereum NFT <${collectionAddress}/${nftId}>`)
+
+    if (blockchain.networkId !== Blockchain.Ethereum.Network.MAIN) rethrow(`Unsupported Ethereum network <${blockchain.networkId}>`)
+
+    const apiKey = appConf.metaquantsAPIKey ?? rethrow('Missing Metaquants API key')
+    const collectionMetadata = await getEthCollectionMetadata({ blockchain, collectionAddress, matchSubcollectionBy: { type: 'nftId', value: nftId } })
+    const vendorId = collectionMetadata.vendorIds?.['metaquants'] ?? (blockchain as Blockchain<'polygon'>).networkId === Blockchain.Polygon.Network.MAIN ? collectionAddress : rethrow('No vendor ID found')
+
+    const res = await getRequest(`https://api.metaquants.xyz/v1/realtime-floor-price/${collectionAddress.toLowerCase()}`, {
+      headers: {
+        'X-API-KEY': apiKey,
+      },
+      useCache: false,
+    })
+
+    if (!res?.body?.floor_price) rethrow('Collection not supported')
+    const floorPrice = new BigNumber(res?.body?.floor_price ?? '0')
+
+    const valuation = Valuation.factory({
+      value: Value.$ETH(floorPrice),
+      value24Hr: Value.$ETH(floorPrice),
+    })
+
+    return valuation
+  }
+}
+
+export function useZyteOnePlanet({ blockchain, collectionAddress, nftId }: Params): DataSource<Valuation> {
+  return async () => {
+    logger.info(`...using Zyte to determine valuation for Ethereum NFT <${collectionAddress}/${nftId}>`)
+
+    if (blockchain.networkId !== Blockchain.Ethereum.Network.MAIN && blockchain.networkId !== Blockchain.Polygon.Network.MAIN) rethrow(`Unsupported Ethereum network <${blockchain.networkId}>`)
+
+    const apiKey = appConf.zyteAPIKey ?? rethrow('Missing Zyte API key')
+    const collectionMetadata = await getEthCollectionMetadata({ blockchain, collectionAddress, matchSubcollectionBy: { type: 'nftId', value: nftId } })
+    const vendorId = collectionMetadata.vendorIds?.['zyte'] ?? rethrow('No vendor ID found')
+
+    const { data } = await axios.post(
+      'https://api.zyte.com/v1/extract',
+      {
+        url: vendorId,
+        browserHtml: true,
+      },
+      {
+        auth: { username: apiKey, password: '' },
+      },
+    )
+
+    const regex2 = /[\s\S]*<div class="[^"]*?">(\d+(?:\.\d+)?)\s*<\/div>[\s\S]*<h4>Floor Price<\/h4>[\s\S]*/
+    const floorPrice = new BigNumber(data?.browserHtml?.match(regex2)[1] ?? '0')
 
     const valuation = Valuation.factory({
       value: Value.$ETH(floorPrice),
