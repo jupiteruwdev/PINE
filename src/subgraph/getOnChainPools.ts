@@ -23,6 +23,7 @@ export default async function getOnChainPools({ lenderAddress, address, excludeA
         target
         fundSource
         duration
+        maxLoanLimit
         interestBPS1000000XBlock
         collateralFactorBPS
         lenderAddress
