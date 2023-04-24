@@ -106,7 +106,7 @@ async function getPool({
     routerAddress: _.get(appConf.routerAddress, blockchain.networkId),
     repayRouterAddress: _.get(appConf.repayRouterAddress, blockchain.networkId),
     rolloverAddress: _.get(appConf.rolloverAddress, blockchain.networkId),
-    ethLimit: _.toNumber(ethers.utils.formatEther(pool.maxLoanLimit)),
+    ethLimit: _.toNumber(ethers.utils.formatEther(pool.maxLoanLimit ?? '0')),
     published: false,
     utilization: Value.$ETH(utilizationEth),
     valueLocked: Value.$ETH(valueLockedEth),
