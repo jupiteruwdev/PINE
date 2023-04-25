@@ -52,12 +52,7 @@ async function getPool({
         throw fault('ERR_ZOMBIE_POOL', undefined, err)
       }
 
-      if (!!pool.collection?.valuation?.value?.amount && pool.ethLimit !== 0 && pool.loanOptions.some(option => pool.utilization.amount.plus(pool.collection?.valuation?.value?.amount ?? new BigNumber(0)).gt(new BigNumber(pool.ethLimit ?? 0)))) {
-        continue
-      }
-      else {
-        return pool
-      }
+      return pool
     }
   }
 
