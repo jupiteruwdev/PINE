@@ -59,7 +59,7 @@ export default async function getLoan({
         const loanDetails = await contract.methods._loans(nftId).call()
         loanDetails.interestBPS1000000XBlock = ((Math.log10(10000 + Number(loanDetails.interestBPS1000000XBlock.toString()) * 2628000 / 1000000) + 200 + Number(loanDetails.interestBPS1000000XBlock.toString()) * 2628000 / 1000000) * 1000000 / 2628000).toFixed(0)
         const controlPlaneContract = getControlPlaneContract({ blockchain, address: _.get(appConf.controlPlaneContractAddress, blockchain.networkId) })
-        const outstandingWithInterestWei = new BigNumber(await controlPlaneContract.methods.outstanding(loanDetails, 2000).call()).plus('10000000000000000')
+        const outstandingWithInterestWei = new BigNumber(await controlPlaneContract.methods.outstanding(loanDetails, txSpeedBlocks).call()).plus('10000000000000000')
 
         if (outstandingWithInterestWei.lte(new BigNumber(0))) return undefined
 
@@ -94,7 +94,7 @@ export default async function getLoan({
         const loanDetails = await contract.methods._loans(nftId).call()
         loanDetails.interestBPS1000000XBlock = ((Math.log10(10000 + Number(loanDetails.interestBPS1000000XBlock.toString()) * 2628000 / 1000000) + 200 + Number(loanDetails.interestBPS1000000XBlock.toString()) * 2628000 / 1000000) * 1000000 / 2628000).toFixed(0)
         const controlPlaneContract = getControlPlaneContract({ blockchain, address: _.get(appConf.controlPlaneContractAddress, blockchain.networkId) })
-        const outstandingWithInterestWei = new BigNumber(await controlPlaneContract.methods.outstanding(loanDetails, 2000).call()).multipliedBy('1.005')
+        const outstandingWithInterestWei = new BigNumber(await controlPlaneContract.methods.outstanding(loanDetails, txSpeedBlocks).call()).multipliedBy('1.01')
 
         // Early exit if loan is fully repaid.
         if (outstandingWithInterestWei.lte(new BigNumber(0))) return undefined
