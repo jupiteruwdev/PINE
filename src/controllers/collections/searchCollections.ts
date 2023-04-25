@@ -88,7 +88,6 @@ export default async function searchCollections({ query, blockchain }: Params): 
       useGemXYZ({ query, blockchain }),
     )
 
-    console.log('collectionsPolygon: ', collectionsPolygon)
     const polygonContracts = await getCollections({ blockchainFilter: Blockchain.parseFilter(blockchain) })
 
     return aggregateCollectionResults(collectionsPolygon.filter(collection => polygonContracts.find(con => con.address.toLowerCase() === collection.address.toLowerCase())), blockchain)
