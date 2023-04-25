@@ -33,7 +33,7 @@ export default async function getEthNFTsByOwner({ blockchain, ownerAddress, popu
   const supportedCollections = await getCollections({ blockchainFilter: Blockchain.parseFilter(blockchain) })
 
   let nfts = await DataSource.fetch(
-    useAlchemy({ blockchain, ownerAddress, populateMetadata, collectionAddresses: collectionAddress ? [collectionAddress] : undefined }),
+    useAlchemy({ blockchain, ownerAddress, populateMetadata, collectionAddresses: supportedCollections.map(collection => collection.address) }),
     // useMoralis({ blockchain, ownerAddress, populateMetadata }),
   )
 
@@ -45,7 +45,7 @@ export default async function getEthNFTsByOwner({ blockchain, ownerAddress, popu
 
   const populatedNfts = await populatePoolAvailabilityForNFTs({ nfts, blockchain })
 
-  return _.sortBy(populatedNfts, [
+  return _.sortBy(populatedNfts.filter(nft => nft.hasPools), [
     nft => nft.hasPools !== true,
     nft => nft.collection.name?.toLowerCase(),
   ])
