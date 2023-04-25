@@ -2,11 +2,11 @@ import BigNumber from 'bignumber.js'
 import _ from 'lodash'
 import { PipelineStage } from 'mongoose'
 import { PoolModel } from '../../db'
-import { Blockchain, Pool, Value } from '../../entities'
+import { Blockchain, Pool } from '../../entities'
 import { mapPool } from '../adapters'
 import { getEthNFTMetadata } from '../collaterals'
-import getTokenUSDPrice, { AvailableToken } from '../utils/getTokenUSDPrice'
 import Tenor from '../utils/Tenor'
+import getTokenUSDPrice, { AvailableToken } from '../utils/getTokenUSDPrice'
 
 export enum PoolSortType {
   NAME = 'name',
@@ -40,6 +40,7 @@ type Params = {
     type: PoolSortType
     direction: PoolSortDirection
   }
+  minorPools?: boolean
 }
 
 export async function filterByNftId(blockchain: Blockchain, docs: any[], nftId: string): Promise<any[]> {
@@ -108,6 +109,7 @@ function getPipelineStages({
   address,
   tenors,
   poolVersion,
+  minorPools = false,
 }: Params): PipelineStage[] {
   const blockchains = Blockchain.fromFilter(blockchainFilter)
 
@@ -204,7 +206,7 @@ function getPipelineStages({
   {
     $match: {
       'valueLockedEth': {
-        $gte: 0.01,
+        $gte: minorPools ? 0 : 0.01,
       },
     },
   },
