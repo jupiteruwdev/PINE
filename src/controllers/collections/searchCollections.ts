@@ -86,9 +86,7 @@ export default async function searchCollections({ query, blockchain }: Params): 
       useAlchemy({ query, blockchain }),
       useGemXYZ({ query, blockchain }),
     )
-    const polygonContracts = await getCollections({ blockchainFilter: {
-      polygon: blockchain.networkId,
-    } })
+    const polygonContracts = await getCollections({ blockchainFilter: Blockchain.parseFilter(blockchain) })
 
     return aggregateCollectionResults(collectionsPolygon.filter(collection => polygonContracts.find(con => con.address.toLowerCase() === collection.address.toLowerCase())), blockchain)
   case Blockchain.Ethereum.Network.GOERLI:

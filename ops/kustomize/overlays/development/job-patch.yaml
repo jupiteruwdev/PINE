@@ -1,0 +1,17 @@
+apiVersion: run.googleapis.com/v1
+kind: Job
+metadata:
+  name: job
+spec:
+  template:
+    spec:
+      template:
+        spec:
+          serviceAccountName: sa-core-service-development@pinedefi.iam.gserviceaccount.com
+          volumes:
+          - name: env
+            secret:
+              secretName: core-service-env-vars-development
+              items:
+              - key: latest
+                path: .env

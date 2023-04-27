@@ -1,10 +1,9 @@
 import { Router } from 'express'
 import _ from 'lodash'
 import appConf from '../../app.conf'
-import { countPoolGroups, countPools, countPoolsByTenors, getPool, getPools, publishPool, searchPoolGroups, unpublishPool } from '../../controllers'
+import { countPoolGroups, countPools, countPoolsByTenors, getPool, getPools, publishPool, searchPoolGroups, syncPools, unpublishPool } from '../../controllers'
 import getPublishedPoolAddresses from '../../controllers/pools/getPublishedPoolAddresses'
 import searchPublishedPools, { PoolSortDirection, PoolSortType } from '../../controllers/pools/searchPublishedPools'
-import scheduleWorker from '../../controllers/utils/scheduleWorker'
 import { Pagination, Pool, PoolGroup, serializeEntityArray } from '../../entities'
 import fault from '../../utils/fault'
 import { getBlockchain, getBlockchainFilter, getBoolean, getNumber, getString } from '../utils/query'
@@ -174,7 +173,8 @@ router.post('/', async (req, res, next) => {
 
 router.post('/sync', async (req, res, next) => {
   try {
-    await scheduleWorker('syncPools')
+    syncPools()
+
     res.status(200).send({
       success: 'success',
     })

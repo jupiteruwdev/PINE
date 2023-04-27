@@ -24,7 +24,7 @@ jobs:
     secrets: inherit
     strategy:
       matrix:
-        path: ["ops/jobs/development", "ops/jobs/staging", "ops/jobs/prod"]
+        path: ["ops/terraform/development", "ops/terraform/staging", "ops/terraform/prod"]
     with:
       path: ${{ matrix.path }}
   

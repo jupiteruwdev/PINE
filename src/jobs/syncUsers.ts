@@ -1,8 +1,8 @@
-import { NextFunction, Request, Response } from 'express'
 import _ from 'lodash'
 import appConf from '../app.conf'
 import getRequest from '../controllers/utils/getRequest'
-import { UserModel } from '../db'
+import { UserModel, initDb } from '../db'
+import fault from '../utils/fault'
 import logger from '../utils/logger'
 import sleep from '../utils/sleep'
 
@@ -19,8 +19,17 @@ const interactionContractAddresses = [
   '0x3B968D2D299B895A5Fcf3BBa7A64ad0F566e6F88',
 ]
 
-export default async function syncUsers(req: Request, res: Response, next: NextFunction) {
+export default async function syncUsers() {
   try {
+    await initDb({
+      onError: err => {
+        logger.error('Establishing database conection... ERR:', err)
+        throw fault('ERR_DB_CONNECTION', undefined, err)
+      },
+      onOpen: () => {
+        logger.info('Establishing database connection... OK')
+      },
+    })
     const users = await getAllUsers()
 
     for (const address of interactionContractAddresses) {
@@ -46,6 +55,7 @@ export default async function syncUsers(req: Request, res: Response, next: NextF
           }
           catch (err) {
             logger.error(`JOB_SYNC_USERS: Fetching transactions for contract<${address}> for page <${page}>... ERR:`, err)
+            process.exit(1)
           }
           page++
         } while (!!cursor)
@@ -64,7 +74,8 @@ export default async function syncUsers(req: Request, res: Response, next: NextF
         sleep(1000)
       }
       catch (err) {
-        logger.info(`JOB_SYNC_USERS: Fetching transactions for contract <${address}>... ERR:`, err)
+        logger.error(`JOB_SYNC_USERS: Fetching transactions for contract <${address}>... ERR:`, err)
+        process.exit(1)
       }
     }
 
@@ -73,11 +84,14 @@ export default async function syncUsers(req: Request, res: Response, next: NextF
         await user.save()
       }
     }
-
-    res.status(200).send()
   }
   catch (err) {
     logger.error('JOB_SYNC_USERS: Handling runtime error... ERR:')
-    next(err)
+    process.exit(1)
   }
 }
+
+syncUsers().catch(err => {
+  console.error(err)
+  process.exit(1) // Retry Job Task by exiting the process
+})

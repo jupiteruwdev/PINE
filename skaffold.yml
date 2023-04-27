@@ -1,0 +1,24 @@
+apiVersion: skaffold/v4beta3
+kind: Config
+
+build:
+  artifacts:
+  - image: gcr.io/pinedefi/core-service
+    platforms: ["linux/amd64"]
+    docker:
+      buildArgs:
+        BUILD_NUMBER: "{{ .BUILD_NUMBER }}"
+        SENTRY_RELEASE: "{{ .GITHUB_SHA }}"
+      cacheFrom:
+      - gcr.io/pinedefi/core-service
+  local: {}
+
+manifests:
+  kustomize:
+    paths:
+      - ops/kustomize/overlays/{{default "development" .ENVIRONMENT}}
+
+deploy:
+  cloudrun:
+    projectid: pinedefi
+    region: us-central1

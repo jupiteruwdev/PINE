@@ -1,5 +1,6 @@
 import _ from 'lodash'
 import appConf from '../../app.conf'
+import { NFTCollectionModel } from '../../db'
 import { Blockchain, Value } from '../../entities'
 import fault from '../../utils/fault'
 import logger from '../../utils/logger'
@@ -12,6 +13,10 @@ type Params = {
   collectionAddresses: string[]
 }
 
+type UseAlchemyParams = Params & {
+  dbCollections: any[]
+}
+
 export default async function getEthCollectionFloorPrices({
   blockchain,
   collectionAddresses,
@@ -20,9 +25,11 @@ export default async function getEthCollectionFloorPrices({
 
   logger.info(`Fetching floor prices for collections <${collectionAddresses}> on network <${blockchain.networkId}>...`)
 
+  const dbCollections = await NFTCollectionModel.find({ networkId: blockchain.networkId, networkType: blockchain.network }).lean()
+
   try {
     const floorPrices = await DataSource.fetch(
-      useAlchemy({ blockchain, collectionAddresses }),
+      useAlchemy({ blockchain, collectionAddresses, dbCollections }),
     )
 
     logger.info(`Fetching floor prices for collections <${collectionAddresses}> on network <${blockchain.networkId}>... OK: ${floorPrices.map(t => t.amount.toFixed())}`)
@@ -35,7 +42,7 @@ export default async function getEthCollectionFloorPrices({
   }
 }
 
-function useAlchemy({ blockchain, collectionAddresses }: Params): DataSource<Value<'ETH'>[]> {
+function useAlchemy({ blockchain, collectionAddresses, dbCollections }: UseAlchemyParams): DataSource<Value<'ETH'>[]> {
   return async () => {
     logger.info(`...using Alchemy to look up floor prices for collections <${collectionAddresses}>`)
 
@@ -61,8 +68,13 @@ function useAlchemy({ blockchain, collectionAddresses }: Params): DataSource<Val
         collections = [...collections, ...item]
       })
 
-      return collections.map((collection: any) => {
+      return collections.map((collection: any, index: number) => {
         const price = _.get(collection, 'contractMetadata.openSea.floorPrice')
+        const dbCollection = dbCollections.find(dbC => _.get(dbC, 'address').toLowerCase() === collectionAddresses[index].toLowerCase())
+
+        if (dbCollection && _.get(dbCollection, 'valuation.value.amount')) {
+          return Value.$ETH(_.get(dbCollection, 'valuation.value.amount'))
+        }
 
         return price === undefined ? Value.$ETH(NaN) : Value.$ETH(price)
       })

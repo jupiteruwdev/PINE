@@ -3,14 +3,14 @@ import EXCHANGE_ABI from '@looksrare/sdk/dist/abis/LooksRareExchange.json' asser
 import HDWalletProvider from '@truffle/hdwallet-provider'
 import BigNumber from 'bignumber.js'
 import { ethers } from 'ethers'
-import { NextFunction, Request, Response } from 'express'
 import _ from 'lodash'
 import { Network, OpenSeaPort } from 'opensea-js'
 import appConf from '../app.conf'
 import { searchPoolGroups } from '../controllers'
 import getRequest from '../controllers/utils/getRequest'
-import { BidOrderModel } from '../db'
+import { BidOrderModel, initDb } from '../db'
 import { Blockchain, Pool, PoolGroup, Value } from '../entities'
+import fault from '../utils/fault'
 import logger from '../utils/logger'
 import rethrow from '../utils/rethrow'
 import sleep from '../utils/sleep'
@@ -194,12 +194,17 @@ async function updateLooksrareBidOrder({ blockchain, bidOrder, isCancel }: Cance
   }
 }
 
-async function updateX2Y2BidOrder({ blockchain, bidOrder, isCancel }: CancelBidOrderParams) {
-
-}
-
-export default async function syncBidOrders(req: Request, res: Response, next: NextFunction) {
+export default async function syncBidOrders() {
   try {
+    await initDb({
+      onError: err => {
+        logger.error('Establishing database conection... ERR:', err)
+        throw fault('ERR_DB_CONNECTION', undefined, err)
+      },
+      onOpen: () => {
+        logger.info('Establishing database connection... OK')
+      },
+    })
     const bidOrders = await getAllBidOrders()
 
     for (const bidOrder of bidOrders) {
@@ -240,11 +245,19 @@ export default async function syncBidOrders(req: Request, res: Response, next: N
       }
       catch (err) {
         logger.error('JOB_SYNC_BID_ORDERS Handling bidorder... ERR:', err)
+        process.exit(1)
       }
     }
   }
   catch (err) {
     logger.error('JOB_SYNC_BID_ORDERS Handling runtime error... ERR:', err)
-    next(err)
+    process.exit(1)
   }
 }
+
+syncBidOrders()
+  .then(() => process.exit(0))
+  .catch(err => {
+    console.error(err)
+    process.exit(1) // Retry Job Task by exiting the process
+  })

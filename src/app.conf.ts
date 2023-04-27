@@ -154,10 +154,6 @@ export default {
     privateKey: process.env.TESTS_WALLET_PRIVATE_KEY ?? '',
     whaleWalletAddresses: _.compact((process.env.TESTS_WHALE_WALLET_ADDRESSES ?? '').split(',')),
   },
-  workerUrl: process.env.WORKER_URL,
-  // `workerCloudRunUrl` variable is required when deployed inside Cloud Run service
-  // to allow `core-service` to authenticate requests to `worker`
-  workerCloudRunUrl: process.env.WORKER_CLOUD_RUN_URL,
   signer: process.env.SIGNER,
   looksrareAPIUrl: {
     [Blockchain.Ethereum.Network.MAIN]: process.env.LOOKSRARE_API_URL_MAINNET,
