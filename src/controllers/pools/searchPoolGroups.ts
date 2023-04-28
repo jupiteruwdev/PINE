@@ -15,6 +15,8 @@ type Params = {
   offset?: number
   count?: number
   collectionName?: string
+  ethOneValueUSD?: Value
+  ethTwoValueUSD?: Value
   paginateBy?: {
     count: number
     offset: number
@@ -44,6 +46,8 @@ function getPipelineStages({
     solana: Blockchain.Solana.Network.MAINNET,
     polygon: Blockchain.Polygon.Network.MAIN,
   },
+  ethOneValueUSD,
+  ethTwoValueUSD,
   collectionAddress,
   collectionName,
   sortBy,
@@ -121,11 +125,29 @@ function getPipelineStages({
           else: '$interest',
         },
       },
+      valueLockedUSD: {
+        $switch: {
+          branches: [
+            {
+              case: { $eq: ['$networkId', '1'] },
+              then: { $multiply: ['$valueLockedEth', ethOneValueUSD?.amount.toNumber()] },
+            },
+            {
+              case: { $eq: ['$networkId', '137'] },
+              then: { $multiply: ['$valueLockedEth', ethTwoValueUSD?.amount.toNumber()] },
+            },
+          ],
+          default: { $multiply: ['$valueLockedEth', ethOneValueUSD?.amount.toNumber()] },
+        },
+      },
     },
   },
   {
     $group: {
       _id: '$collection.address',
+      groupValueLockedUSD: {
+        $sum: '$valueLockedUSD',
+      },
       groupValueLocked: {
         $sum: '$valueLockedEth',
       },
@@ -192,7 +214,7 @@ function getPipelineStages({
   case PoolSortType.TVL:
     stages.push({
       $sort: {
-        'groupValueLocked': sortBy?.direction === PoolSortDirection.DESC ? -1 : 1,
+        'groupValueLockedUSD': sortBy?.direction === PoolSortDirection.DESC ? -1 : 1,
         'pools.name': 1,
       },
     })
@@ -221,17 +243,20 @@ export default async function searchPoolGroups({
   try {
     const blockchain = Blockchain.parseBlockchain(blockchainFilter)
     const polygon = Blockchain.parseBlockchain({ polygon: '137' })
-    const [ethOneValueUSD, ethTwoValueUSD, groups] = await Promise.all([
+    const [ethOneValueUSD, ethTwoValueUSD] = await Promise.all([
       getTokenUSDPrice(Blockchain.parseNativeToken(blockchain) as AvailableToken),
       getTokenUSDPrice(Blockchain.parseNativeToken(polygon) as AvailableToken),
-      searchPublishedPoolGroups({
-        blockchainFilter,
-        collectionAddress,
-        collectionName,
-        paginateBy,
-        sortBy,
-      }),
     ])
+
+    const groups = await searchPublishedPoolGroups({
+      blockchainFilter,
+      collectionAddress,
+      collectionName,
+      ethOneValueUSD,
+      ethTwoValueUSD,
+      paginateBy,
+      sortBy,
+    })
 
     let nfts: NFT[] = []
 
