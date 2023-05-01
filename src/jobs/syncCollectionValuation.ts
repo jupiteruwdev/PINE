@@ -1,9 +1,9 @@
-import { NextFunction, Request, Response } from 'express'
 import _ from 'lodash'
 import appConf from '../app.conf'
 import { getEthNFTValuation } from '../controllers'
-import { NFTCollectionModel } from '../db'
+import { NFTCollectionModel, initDb } from '../db'
 import { Blockchain, Valuation } from '../entities'
+import fault from '../utils/fault'
 import logger from '../utils/logger'
 import sleep from '../utils/sleep'
 
@@ -12,8 +12,17 @@ async function getAllCollections() {
   return collections
 }
 
-export default async function syncCollectionValuation(req: Request, res: Response, next: NextFunction) {
+export default async function syncCollectionValuation() {
   try {
+    await initDb({
+      onError: err => {
+        logger.error('Establishing database conection... ERR:', err)
+        throw fault('ERR_DB_CONNECTION', undefined, err)
+      },
+      onOpen: () => {
+        logger.info('Establishing database connection... OK')
+      },
+    })
     const collections = await getAllCollections()
 
     for (const collection of collections) {
@@ -29,7 +38,7 @@ export default async function syncCollectionValuation(req: Request, res: Respons
               networkId: collection.networkId,
             }) as Blockchain
 
-            const oldValuation = JSON.parse(JSON.stringify(collection.valuation?.value))
+            const oldValuation = JSON.parse(JSON.stringify(collection.toObject().valuation?.value || {}))
 
             const valuation = await getEthNFTValuation({ blockchain, collectionAddress: collection.address, nftId: nftId.toString() })
             collection.valuation = {
@@ -46,11 +55,16 @@ export default async function syncCollectionValuation(req: Request, res: Respons
         await sleep(1000)
       }
     }
-
-    res.status(200).send()
   }
   catch (err) {
     logger.error('JOB_SYNC_COLLECTION_VALUATION: Handling runtime error... ERR:', err)
-    next(err)
+    process.exit(1)
   }
 }
+
+syncCollectionValuation()
+  .then(() => process.exit(0))
+  .catch(err => {
+    console.error(err)
+    process.exit(1) // Retry Job Task by exiting the process
+  })

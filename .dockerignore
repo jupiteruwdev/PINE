@@ -4,3 +4,8 @@ node_modules
 .vscode
 .github
 Dockerfile
+ops
+build
+skaffold.yml
+README.md
+docker-compose*

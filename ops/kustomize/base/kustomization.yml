@@ -1,0 +1,8 @@
+resources:
+- sync-collection-valuation.yml
+- sync-eth-value-usd.yml
+- sync-merkle-tree-state.yml
+- sync-merkle-tree.yml
+- sync-pine-value-usd.yml
+- sync-pools.yml
+- sync-snapshots.yml

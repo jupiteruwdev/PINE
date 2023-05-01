@@ -1,0 +1,29 @@
+apiVersion: run.googleapis.com/v1
+kind: Job
+metadata:
+  name: sync-eth-value-usd-job
+  annotations:
+    run.googleapis.com/launch-stage: BETA
+spec:
+  template:
+    spec:
+      template:
+        spec:
+          serviceAccountName: sa-core-service-development@pinedefi.iam.gserviceaccount.com
+          containers:
+          - image: gcr.io/pinedefi/core-service
+            args: ["node", "--no-warnings", "--experimental-specifier-resolution", "node", "build/jobs/syncEthValueUSD"]
+            env:
+            - name: DOTENV_CONFIG_PATH
+              value: /secrets/.env
+            volumeMounts:
+            - name: env
+              mountPath: /secrets/
+          volumes:
+          - name: env
+            secret:
+              secretName: core-service-env-vars-development
+              items:
+              - key: latest
+                path: .env
+          timeoutSeconds: '60'

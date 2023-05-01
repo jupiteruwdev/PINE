@@ -1,0 +1,6 @@
+nameSuffix: -development
+resources: ['../../base']
+patches:
+- path: job-patch.yaml
+  target:
+    kind: Job

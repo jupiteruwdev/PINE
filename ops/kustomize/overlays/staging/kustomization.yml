@@ -1,0 +1,6 @@
+nameSuffix: -staging
+resources: ['../../base']
+patches:
+- path: job-patch.yaml
+  target:
+    kind: Job

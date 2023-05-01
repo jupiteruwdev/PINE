@@ -1,13 +1,22 @@
 import { ethers } from 'ethers'
-import { NextFunction, Request, Response } from 'express'
 import MerkleABI from '../abis/Merkle.json' assert { type: 'json' }
 import appConf from '../app.conf'
 import getEthWeb3 from '../controllers/utils/getEthWeb3'
-import { MerkleTreeModel } from '../db'
+import { MerkleTreeModel, initDb } from '../db'
+import fault from '../utils/fault'
 import logger from '../utils/logger'
 
-export default async function syncMerkleTreeState(req: Request, res: Response, next: NextFunction) {
+export default async function syncMerkleTreeState() {
   try {
+    await initDb({
+      onError: err => {
+        logger.error('Establishing database conection... ERR:', err)
+        throw fault('ERR_DB_CONNECTION', undefined, err)
+      },
+      onOpen: () => {
+        logger.info('Establishing database connection... OK')
+      },
+    })
     const web3 = getEthWeb3('137')
     const contract = new web3.eth.Contract(
       MerkleABI as any[],
@@ -49,11 +58,16 @@ export default async function syncMerkleTreeState(req: Request, res: Response, n
     })
 
     logger.info(`SYNC_MERKLE_TREE_STATE: Update ${merkleIds.length} merkle tree state`)
-
-    return res.status(200).send()
   }
   catch (err) {
     logger.error('SYNC_MERKLE_TREE_STATE: Handling runtime error... ERR:', err)
-    next(err)
+    process.exit(1)
   }
 }
+
+syncMerkleTreeState()
+  .then(() => process.exit(0))
+  .catch(err => {
+    console.error(err)
+    process.exit(1) // Retry Job Task by exiting the process
+  })

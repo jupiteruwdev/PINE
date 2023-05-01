@@ -1,6 +1,5 @@
 import BigNumber from 'bignumber.js'
 import EthDater from 'ethereum-block-by-date'
-import { NextFunction, Request, Response } from 'express'
 import keccak from 'keccak'
 import _ from 'lodash'
 import { MerkleTree } from 'merkletreejs'
@@ -9,8 +8,9 @@ import VEPINE_ABI from '../abis/VePine.json' assert { type: 'json' }
 import appConf from '../app.conf'
 import { getUsageValues } from '../controllers/stats/getUserUsageStats'
 import getEthWeb3 from '../controllers/utils/getEthWeb3'
-import { BorrowSnapshotModel, LendingSnapshotModel, MerkleTreeModel, PriceModel } from '../db'
+import { BorrowSnapshotModel, LendingSnapshotModel, MerkleTreeModel, PriceModel, initDb } from '../db'
 import { Blockchain, Value } from '../entities'
+import fault from '../utils/fault'
 import logger from '../utils/logger'
 
 const kk = (x: any) => keccak('keccak256').update(x).digest().toString('hex')
@@ -57,8 +57,17 @@ const tokenUSDPrice: Record<string, Value | null> = {
   [Blockchain.Polygon.Network.MAIN]: null,
 }
 
-export default async function syncMerkleTree(req: Request, res: Response, next: NextFunction) {
+export default async function syncMerkleTree() {
   try {
+    await initDb({
+      onError: err => {
+        logger.error('Establishing database conection... ERR:', err)
+        throw fault('ERR_DB_CONNECTION', undefined, err)
+      },
+      onOpen: () => {
+        logger.info('Establishing database connection... OK')
+      },
+    })
     const web3 = getEthWeb3(Blockchain.Polygon.Network.MAIN)
     const { startBlock, startDate } = await getStartBlockAndDate(web3)
     const ethPrice = await PriceModel.findOne({ name: 'eth' }).lean()
@@ -288,11 +297,16 @@ export default async function syncMerkleTree(req: Request, res: Response, next: 
     logger.info(
       `JOB_SYNC_MERKLE_TREE Merkle tree generation for ${currentBlock} with reards ${sum.toString()}... OK`
     )
-
-    res.status(200).send()
   }
   catch (err) {
     logger.error('JOB_SYNC_MERKLE_TREE Handling runtime error... ERR:', err)
-    next(err)
+    process.exit(1)
   }
 }
+
+syncMerkleTree()
+  .then(() => process.exit(0))
+  .catch(err => {
+    console.error(err)
+    process.exit(1) // Retry Job Task by exiting the process
+  })
