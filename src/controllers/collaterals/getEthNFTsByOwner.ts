@@ -33,7 +33,7 @@ export default async function getEthNFTsByOwner({ blockchain, ownerAddress, popu
   const supportedCollections = await getCollections({ blockchainFilter: Blockchain.parseFilter(blockchain) })
 
   let nfts = await DataSource.fetch(
-    useAlchemy({ blockchain, ownerAddress, populateMetadata, collectionAddresses: supportedCollections.map(collection => collection.address) }),
+    useAlchemy({ blockchain, ownerAddress, populateMetadata, collectionAddresses: !collectionAddress ? supportedCollections.map(collection => collection.address) : [collectionAddress] }),
     // useMoralis({ blockchain, ownerAddress, populateMetadata }),
   )
 
