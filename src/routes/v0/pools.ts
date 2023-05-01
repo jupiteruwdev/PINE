@@ -3,7 +3,8 @@ import _ from 'lodash'
 import appConf from '../../app.conf'
 import { countPoolGroups, countPools, countPoolsByTenors, getPool, getPools, publishPool, searchPoolGroups, syncPools, unpublishPool } from '../../controllers'
 import getPublishedPoolAddresses from '../../controllers/pools/getPublishedPoolAddresses'
-import searchPublishedPools, { PoolSortDirection, PoolSortType } from '../../controllers/pools/searchPublishedPools'
+import getPublishedPools from '../../controllers/pools/getPublishedPools'
+import { PoolSortDirection, PoolSortType } from '../../controllers/pools/searchPublishedPools'
 import { Pagination, Pool, PoolGroup, serializeEntityArray } from '../../entities'
 import fault from '../../utils/fault'
 import { getBlockchain, getBlockchainFilter, getBoolean, getNumber, getString } from '../utils/query'
@@ -134,7 +135,7 @@ router.get('/', async (req, res, next) => {
     const totalCount = await countPools({ collectionAddress, blockchainFilter, tenors, nftId })
     const checkLimit = getBoolean(req.query, 'checkLimit', { optional: true })
 
-    const pools = await searchPublishedPools({
+    const pools = await getPublishedPools({
       blockchainFilter,
       collectionAddress,
       tenors,

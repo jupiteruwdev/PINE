@@ -30,6 +30,7 @@ export default async function syncPINEValueUSD() {
       })
     }
     logger.info('JOB_SYNC_PINE_VALUE_USD: fetching pine price in usd... OK')
+
   }
   catch (err) {
     logger.error('JOB_SYNC_PINE_VALUE_USD: Handling runtime error... ERR:', err)
