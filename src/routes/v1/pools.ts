@@ -1,7 +1,7 @@
 import { Router } from 'express'
 import _ from 'lodash'
 import appConf from '../../app.conf'
-import { countPoolGroups, countPools, countPoolsByTenors, getPool, getPools, publishPool, searchPoolGroups, syncPools, unpublishPool } from '../../controllers'
+import { countPoolGroups, countPoolOffers, countPools, countPoolsByTenors, getPool, getPools, publishPool, searchPoolGroups, syncPools, unpublishPool } from '../../controllers'
 import searchPublishedPools, { PoolSortDirection, PoolSortType } from '../../controllers/pools/searchPublishedPools'
 import { Pagination, Pool, PoolGroup, serializeEntityArray } from '../../entities'
 import fault from '../../utils/fault'
