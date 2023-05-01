@@ -248,7 +248,6 @@ export default async function syncBidOrders() {
         process.exit(1)
       }
     }
-    res.status(200).send()
   }
   catch (err) {
     logger.error('JOB_SYNC_BID_ORDERS Handling runtime error... ERR:', err)
