@@ -141,7 +141,7 @@ async function getIncentiveRewards({ address }: Params): Promise<{
       const { usagePercent, totalPercent } = await getUsageValues({ address, lendingSnapshots: currentLendingSnapshots, borrowingSnapshots: currentBorrowingSnapshots })
       const protocolIncentivePerHour = appConf.incentiveRewards / 12 / 24 / 7
 
-      incentiveRewards = incentiveRewards.plus(usagePercent.times(protocolIncentivePerHour).div(totalPercent))
+      if (totalPercent.gt('0')) { incentiveRewards = incentiveRewards.plus(usagePercent.times(protocolIncentivePerHour).div(totalPercent)) }
       if (prevFriday.getTime() > now.getTime()) break
     }
 
