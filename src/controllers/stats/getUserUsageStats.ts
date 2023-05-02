@@ -207,8 +207,6 @@ export default async function getUserUsageStats({
 
     const protocolIncentivePerHour = appConf.incentiveRewards / 12 / 24 / 7
 
-    console.log(protocolIncentiveRewards)
-
     rewards.liveRewards.amount = rewards.liveRewards.amount.plus(protocolIncentiveRewards)
 
     return ProtocolUsage.factory({
