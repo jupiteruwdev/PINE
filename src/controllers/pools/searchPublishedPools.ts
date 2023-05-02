@@ -2,7 +2,7 @@ import BigNumber from 'bignumber.js'
 import _ from 'lodash'
 import { PipelineStage } from 'mongoose'
 import { PoolModel } from '../../db'
-import { Blockchain, Pool } from '../../entities'
+import { Blockchain, Pool, Value } from '../../entities'
 import { mapPool } from '../adapters'
 import { getEthNFTMetadata } from '../collaterals'
 import Tenor from '../utils/Tenor'
@@ -87,10 +87,16 @@ async function searchPublishedPools({
 
   const pools = docs.map(mapPool)
 
+  const out = pools.map(pool => ({
+    ...pool,
+    valueLocked: Value.$USD(pool.valueLocked.amount.times(ethValueUSD.amount)),
+    utilization: Value.$USD(pool.utilization.amount.times(ethValueUSD.amount)),
+  }))
+
   if (checkLimit) {
-    return pools.filter(pool => !(!!pool.collection?.valuation?.value?.amount && pool.ethLimit !== 0 && pool.loanOptions.some(option => pool.utilization?.amount.plus(pool.collection?.valuation?.value?.amount ?? new BigNumber(0)).gt(new BigNumber(pool.ethLimit ?? 0)))))
+    return out.filter(pool => !(!!pool.collection?.valuation?.value?.amount && pool.ethLimit !== 0 && pool.loanOptions.some(option => pool.utilization?.amount.plus(pool.collection?.valuation?.value?.amount ?? new BigNumber(0)).gt(new BigNumber(pool.ethLimit ?? 0)))))
   }
-  return pools
+  return out
 }
 
 export default searchPublishedPools
