@@ -1,7 +1,7 @@
 name: development
 on:
   push:
-    branches: [development]
+    branches: [main]
   workflow_dispatch:
 
 permissions:
@@ -11,7 +11,17 @@ permissions:
   pull-requests: write
 
 jobs:
+  init:
+    runs-on: ubuntu-latest
+    name: Apply environment protections rules
+    environment: 
+      name: development
+      url: https://core-service-development.pine.loans
+    steps:
+      - run: echo 'Deploy development'
+  
   build-and-test:
+    needs: [init]
     name: Build and Test
     uses: ./.github/workflows/reusable-build.yml
     secrets: inherit
@@ -19,6 +29,7 @@ jobs:
       run_tests: true
 
   terraform-check:
+    needs: [init]
     name: Validate Terraform code
     uses: ./.github/workflows/reusable-terraform-check.yml
     secrets: inherit

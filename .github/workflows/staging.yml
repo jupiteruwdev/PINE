@@ -1,7 +1,7 @@
 name: staging
 on:
   push:
-    branches: [staging]
+    branches: [main]
   workflow_dispatch:
 
 permissions:
@@ -11,8 +11,18 @@ permissions:
   pull-requests: write
 
 jobs:
+  init:
+    runs-on: ubuntu-latest
+    name: Apply environment protections rules
+    environment: 
+      name: staging
+      url: https://core-service-staging.pine.loans
+    steps:
+      - run: echo 'Deploy staging'
+
   build-and-test:
     name: Build and Test
+    needs: [init]
     uses: ./.github/workflows/reusable-build.yml
     secrets: inherit
     with:
@@ -20,6 +30,7 @@ jobs:
 
   terraform-check:
     name: Validate Terraform code
+    needs: [init]
     uses: ./.github/workflows/reusable-terraform-check.yml
     secrets: inherit
     strategy:
