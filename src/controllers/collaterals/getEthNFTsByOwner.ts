@@ -63,22 +63,26 @@ export function useAlchemy({ blockchain, ownerAddress, populateMetadata, collect
 
     let currPageKey: string | undefined
 
-    currPageKey = undefined
     while (true) {
-      const { ownedNfts: partialRes, pageKey }: any = await retryPromise(() => getRequest(`${apiHost}${apiKey}/getNFTs`, {
-        params: {
-          owner: ownerAddress,
-          withMetadata: populateMetadata,
-          pageKey: currPageKey,
-          contractAddresses: collectionAddresses ? collectionAddresses : undefined,
-        },
-      })).catch(err => rethrow(`Failed to fetch NFTs for owner <${ownerAddress}> using Alchemy: ${err}`))
+      const collectionAddressesChunk = collectionAddresses?.splice(0, 45)
+      currPageKey = undefined
+      while (true) {
+        const { ownedNfts: partialRes, pageKey }: any = await retryPromise(() => getRequest(`${apiHost}${apiKey}/getNFTs`, {
+          params: {
+            owner: ownerAddress,
+            withMetadata: populateMetadata,
+            pageKey: currPageKey,
+            contractAddresses: collectionAddressesChunk ? collectionAddressesChunk : undefined,
+          },
+        })).catch(err => rethrow(`Failed to fetch NFTs for owner <${ownerAddress}> using Alchemy: ${err}`))
 
-      if (!_.isArray(partialRes)) rethrow('Bad request or unrecognized payload when fetching NFTs from Alchemy API')
-      res.push(...partialRes)
+        if (!_.isArray(partialRes)) rethrow('Bad request or unrecognized payload when fetching NFTs from Alchemy API')
+        res.push(...partialRes)
 
-      if (_.isNil(pageKey)) break
-      currPageKey = pageKey
+        if (_.isNil(pageKey)) break
+        currPageKey = pageKey
+      }
+      if (!collectionAddresses?.length) break
     }
 
     const unsanitizedNFTs = await Promise.all(res.map(async entry => {
