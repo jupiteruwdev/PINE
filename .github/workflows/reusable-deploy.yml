@@ -102,7 +102,7 @@ jobs:
         if: ${{ !inputs.preview }}
         run: |
           export ENVIRONMENT=${{ inputs.environment }}
-          skaffold deploy -i "${{ inputs.image_name }}:${{ inputs.version }}"
+          skaffold deploy -p ${ENVIRONMENT}  -i "${{ inputs.image_name }}:${{ inputs.version }}"
       
       - name: Deploy Cloud Scheduler jobs with Terraform
         if: ${{ !inputs.preview }}

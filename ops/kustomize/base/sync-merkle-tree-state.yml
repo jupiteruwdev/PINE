@@ -26,4 +26,4 @@ spec:
               items:
               - key: latest
                 path: .env
-          timeoutSeconds: '300'
+          timeoutSeconds: '600'

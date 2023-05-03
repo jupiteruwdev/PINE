@@ -5,7 +5,7 @@ resource "google_cloud_scheduler_job" "sync-collection-valuation" {
   retry_config { retry_count = 1 }
   http_target {
     http_method = "POST"
-    uri         = "https://us-central1-run.googleapis.com/apis/run.googleapis.com/v1/namespaces/677718976504/jobs/sync-collection-valuation-job-${local.env}:run"
+    uri         = "https://${local.job_location}-run.googleapis.com/apis/run.googleapis.com/v1/namespaces/677718976504/jobs/sync-collection-valuation-job-${local.env}:run"
     oauth_token { service_account_email = "677718976504-compute@developer.gserviceaccount.com" }
   }
 }
@@ -17,19 +17,19 @@ resource "google_cloud_scheduler_job" "sync-eth-value-usd" {
   retry_config { retry_count = 1 }
   http_target {
     http_method = "POST"
-    uri         = "https://us-central1-run.googleapis.com/apis/run.googleapis.com/v1/namespaces/677718976504/jobs/sync-eth-value-usd-job-${local.env}:run"
+    uri         = "https://${local.job_location}-run.googleapis.com/apis/run.googleapis.com/v1/namespaces/677718976504/jobs/sync-eth-value-usd-job-${local.env}:run"
     oauth_token { service_account_email = "677718976504-compute@developer.gserviceaccount.com" }
   }
 }
 
 resource "google_cloud_scheduler_job" "sync-merkle-tree-state" {
-  schedule         = "*/5 * * * *"
+  schedule         = "*/10 * * * *"
   name             = "sync-merkle-tree-state-job-trigger-${local.env}"
   attempt_deadline = "300s"
   retry_config { retry_count = 1 }
   http_target {
     http_method = "POST"
-    uri         = "https://us-central1-run.googleapis.com/apis/run.googleapis.com/v1/namespaces/677718976504/jobs/sync-merkle-tree-state-job-${local.env}:run"
+    uri         = "https://${local.job_location}-run.googleapis.com/apis/run.googleapis.com/v1/namespaces/677718976504/jobs/sync-merkle-tree-state-job-${local.env}:run"
     oauth_token { service_account_email = "677718976504-compute@developer.gserviceaccount.com" }
   }
 }
@@ -42,7 +42,7 @@ resource "google_cloud_scheduler_job" "sync-merkle-tree" {
   retry_config { retry_count = 1 }
   http_target {
     http_method = "POST"
-    uri         = "https://us-central1-run.googleapis.com/apis/run.googleapis.com/v1/namespaces/677718976504/jobs/sync-merkle-tree-job-${local.env}:run"
+    uri         = "https://${local.job_location}-run.googleapis.com/apis/run.googleapis.com/v1/namespaces/677718976504/jobs/sync-merkle-tree-job-${local.env}:run"
     oauth_token { service_account_email = "677718976504-compute@developer.gserviceaccount.com" }
   }
 }
@@ -54,7 +54,7 @@ resource "google_cloud_scheduler_job" "sync-pine-value-usd" {
   retry_config { retry_count = 1 }
   http_target {
     http_method = "POST"
-    uri         = "https://us-central1-run.googleapis.com/apis/run.googleapis.com/v1/namespaces/677718976504/jobs/sync-pine-value-usd-job-${local.env}:run"
+    uri         = "https://${local.job_location}-run.googleapis.com/apis/run.googleapis.com/v1/namespaces/677718976504/jobs/sync-pine-value-usd-job-${local.env}:run"
     oauth_token { service_account_email = "677718976504-compute@developer.gserviceaccount.com" }
   }
 }
@@ -66,7 +66,7 @@ resource "google_cloud_scheduler_job" "sync-pools" {
   retry_config { retry_count = 1 }
   http_target {
     http_method = "POST"
-    uri         = "https://us-central1-run.googleapis.com/apis/run.googleapis.com/v1/namespaces/677718976504/jobs/sync-pools-job-${local.env}:run"
+    uri         = "https://${local.job_location}-run.googleapis.com/apis/run.googleapis.com/v1/namespaces/677718976504/jobs/sync-pools-job-${local.env}:run"
     oauth_token { service_account_email = "677718976504-compute@developer.gserviceaccount.com" }
   }
 }
@@ -78,7 +78,7 @@ resource "google_cloud_scheduler_job" "sync-snapshots" {
   retry_config { retry_count = 1 }
   http_target {
     http_method = "POST"
-    uri         = "https://us-central1-run.googleapis.com/apis/run.googleapis.com/v1/namespaces/677718976504/jobs/sync-snapshots-job-${local.env}:run"
+    uri         = "https://${local.job_location}-run.googleapis.com/apis/run.googleapis.com/v1/namespaces/677718976504/jobs/sync-snapshots-job-${local.env}:run"
     oauth_token { service_account_email = "677718976504-compute@developer.gserviceaccount.com" }
   }
 }
@@ -90,7 +90,7 @@ resource "google_cloud_scheduler_job" "sync-snapshots" {
 #   retry_config { retry_count = 1 }
 #   http_target {
 #     http_method = "POST"
-#     uri         = "https://us-central1-run.googleapis.com/apis/run.googleapis.com/v1/namespaces/677718976504/jobs/sync-bid-orders-job-${local.env}:run"
+#     uri         = "https://${local.job_location}-run.googleapis.com/apis/run.googleapis.com/v1/namespaces/677718976504/jobs/sync-bid-orders-job-${local.env}:run"
 #     oauth_token { service_account_email = "677718976504-compute@developer.gserviceaccount.com" }
 #   }
 # }
@@ -102,7 +102,7 @@ resource "google_cloud_scheduler_job" "sync-snapshots" {
 #   retry_config { retry_count = 1 }
 #   http_target {
 #     http_method = "POST"
-#     uri         = "https://us-central1-run.googleapis.com/apis/run.googleapis.com/v1/namespaces/677718976504/jobs/sync-users-job-${local.env}:run"
+#     uri         = "https://${local.job_location}-run.googleapis.com/apis/run.googleapis.com/v1/namespaces/677718976504/jobs/sync-users-job-${local.env}:run"
 #     oauth_token { service_account_email = "677718976504-compute@developer.gserviceaccount.com" }
 #   }
 # }

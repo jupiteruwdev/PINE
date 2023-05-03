@@ -18,7 +18,8 @@ provider "google" {
 }
 
 locals {
-  project  = "pinedefi"
-  location = "us-central1"
-  env      = "staging"
+  project      = "pinedefi"
+  location     = "us-central1"
+  env          = "staging"
+  job_location = "us-east4"
 }
