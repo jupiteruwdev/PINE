@@ -11,6 +11,7 @@ import { mapPool } from '../adapters'
 import getEthCollectionMetadata from '../collections/getEthCollectionMetadata'
 import getOnChainLoanOptions from './getOnChainLoanOptions'
 import getPoolCapacity from './getPoolCapacity'
+import getPoolMaxLoanLimit from './getPoolMaxLoanLimit'
 import getPoolUtilization from './getPoolUtilization'
 import verifyPool from './verifyPool'
 
@@ -73,9 +74,11 @@ async function getPool({
   const [
     { amount: utilizationEth },
     { amount: capacityEth },
+    maxLoanLimit,
   ] = await Promise.all([
     getPoolUtilization({ blockchain, poolAddress: pool.id }),
     getPoolCapacity({ blockchain, poolAddress: pool.id, tokenAddress: pool.supportedCurrency, fundSource: pool.fundSource }),
+    getPoolMaxLoanLimit({ blockchain, address: pool.id }),
   ])
   const valueLockedEth = capacityEth.plus(utilizationEth).gt(new BigNumber(pool.ethLimit || Number.POSITIVE_INFINITY)) ? new BigNumber(pool.ethLimit ?? 0) : capacityEth.plus(utilizationEth)
 
@@ -101,7 +104,7 @@ async function getPool({
     routerAddress: _.get(appConf.routerAddress, blockchain.networkId),
     repayRouterAddress: _.get(appConf.repayRouterAddress, blockchain.networkId),
     rolloverAddress: _.get(appConf.rolloverAddress, blockchain.networkId),
-    ethLimit: _.toNumber(ethers.utils.formatEther(pool.maxLoanLimit ?? '0')),
+    ethLimit: _.toNumber(ethers.utils.formatEther(maxLoanLimit ?? pool.maxLoanLimit ?? '0')),
     published: false,
     utilization: Value.$ETH(utilizationEth),
     valueLocked: Value.$ETH(valueLockedEth),
