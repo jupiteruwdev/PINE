@@ -42,7 +42,7 @@ describe('GET /v0/loans', () => {
         .expect('Content-Type', /json/)
         .expect(200)
 
-      expect(res.length).to.equal(2)
+      expect(res.length).to.equal(1)
 
       const codingResolver = Loan.codingResolver
 
