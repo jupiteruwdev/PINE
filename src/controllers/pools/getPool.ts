@@ -80,7 +80,8 @@ async function getPool({
     getPoolCapacity({ blockchain, poolAddress: pool.id, tokenAddress: pool.supportedCurrency, fundSource: pool.fundSource }),
     getPoolMaxLoanLimit({ blockchain, address: pool.id }),
   ])
-  const valueLockedEth = capacityEth.plus(utilizationEth).gt(new BigNumber(pool.ethLimit || Number.POSITIVE_INFINITY)) ? new BigNumber(pool.ethLimit ?? 0) : capacityEth.plus(utilizationEth)
+  const ethLimit = _.toNumber(ethers.utils.formatEther(maxLoanLimit ?? pool.maxLoanLimit ?? '0'))
+  const valueLockedEth = capacityEth.plus(utilizationEth).gt(new BigNumber(ethLimit || Number.POSITIVE_INFINITY)) ? new BigNumber(ethLimit ?? 0) : capacityEth.plus(utilizationEth)
 
   return Pool.factory({
     version: 2,

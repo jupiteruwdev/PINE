@@ -17,6 +17,7 @@ type GetUsageValuesParams = {
   lendingSnapshots: any[]
   borrowingSnapshots: any[]
   address: string
+  tokenPrices?: Record<string, Value | null>
 }
 
 const tokenUSDPrice: Record<string, Value | null> = {
@@ -32,7 +33,7 @@ const blockedCollections = [
   '0xde494e809e28e70d5e2a26fb402e263030089214',
 ]
 
-export function convertNativeToUSD(snapshot: any, key: string, parse = true): BigNumber {
+export function convertNativeToUSD(snapshot: any, key: string, parse = true, tokenPrices?: Record<string, Value | null>): BigNumber {
   const blockchain = Blockchain.factory({
     network: _.get(snapshot, 'networkType', 'ethereum'),
     networkId: _.get(snapshot, 'networkId', '1'),
@@ -40,35 +41,35 @@ export function convertNativeToUSD(snapshot: any, key: string, parse = true): Bi
 
   const value = parse ? ethers.utils.formatEther(new BigNumber(_.get(snapshot, key) ?? '0').toFixed()) : _.get(snapshot, key)
 
-  return new BigNumber(value).times(tokenUSDPrice[blockchain.networkId]?.amount ?? '0')
+  return new BigNumber(value).times((tokenPrices || tokenUSDPrice)[blockchain.networkId]?.amount ?? '0')
 }
 
-export async function getUsageValues({ lendingSnapshots, borrowingSnapshots, address }: GetUsageValuesParams) {
+export async function getUsageValues({ lendingSnapshots, borrowingSnapshots, address, tokenPrices }: GetUsageValuesParams) {
   const allEVMChains = Blockchain.allChains().filter(blockchain => blockchain.network !== 'solana')
   const borrowedSnapshots = borrowingSnapshots.filter(snapshot => _.get(snapshot, 'borrowerAddress')?.toLowerCase() === address.toLowerCase())
   const lendedSnapshots = borrowingSnapshots.filter(snapsoht => _.get(snapsoht, 'lenderAddress')?.toLowerCase() === address.toLowerCase())
 
   const lendingSnapshotsForAdddress = lendingSnapshots.filter(snapshot => _.get(snapshot, 'lenderAddress')?.toLowerCase() === address.toLowerCase())
 
-  const totalAmountUSD = _.reduce(borrowingSnapshots, (pre, cur) => pre.plus(convertNativeToUSD(cur, 'borrowAmount')), new BigNumber(0))
+  const totalAmountUSD = _.reduce(borrowingSnapshots, (pre, cur) => pre.plus(convertNativeToUSD(cur, 'borrowAmount', true, tokenPrices)), new BigNumber(0))
 
-  const borrowedUSD = _.reduce(borrowedSnapshots, (pre, cur) => pre.plus(convertNativeToUSD(cur, 'borrowAmount')), new BigNumber(0))
-  const lendedUSD = _.reduce(lendedSnapshots, (pre, cur) => pre.plus(convertNativeToUSD(cur, 'borrowAmount')), new BigNumber(0))
+  const borrowedUSD = _.reduce(borrowedSnapshots, (pre, cur) => pre.plus(convertNativeToUSD(cur, 'borrowAmount', true, tokenPrices)), new BigNumber(0))
+  const lendedUSD = _.reduce(lendedSnapshots, (pre, cur) => pre.plus(convertNativeToUSD(cur, 'borrowAmount', true, tokenPrices)), new BigNumber(0))
 
   const usdPermissioned = _.reduce(
-    allEVMChains.map(blockchain => _.reduce(_.values(_.groupBy(lendingSnapshotsForAdddress.filter(snapshot => (snapshot.networkId || '1') === blockchain.networkId), 'fundSource')), (pre, cur) => pre.plus(BigNumber.max(...cur.map(snapshot => convertNativeToUSD(snapshot, 'capacity', false)))), new BigNumber(0))),
+    allEVMChains.map(blockchain => _.reduce(_.values(_.groupBy(lendingSnapshotsForAdddress.filter(snapshot => (snapshot.networkId || '1') === blockchain.networkId), 'fundSource')), (pre, cur) => pre.plus(BigNumber.max(...cur.map(snapshot => convertNativeToUSD(snapshot, 'capacity', false, tokenPrices)))), new BigNumber(0))),
     (pre, cur) => pre.plus(cur),
     new BigNumber(0)
   )
 
   const usdPermissionedAll = _.reduce(
-    allEVMChains.map(blockchain => _.reduce(_.values(_.groupBy(lendingSnapshots.filter(snapshot => (snapshot.networkId || '1') === blockchain.networkId), 'fundSource')), (pre, cur) => pre.plus(BigNumber.max(...cur.map(snapshot => convertNativeToUSD(snapshot, 'capacity', false)))), new BigNumber(0))),
+    allEVMChains.map(blockchain => _.reduce(_.values(_.groupBy(lendingSnapshots.filter(snapshot => (snapshot.networkId || '1') === blockchain.networkId), 'fundSource')), (pre, cur) => pre.plus(BigNumber.max(...cur.map(snapshot => convertNativeToUSD(snapshot, 'capacity', false, tokenPrices)))), new BigNumber(0))),
     (pre, cur) => pre.plus(cur),
     new BigNumber(0)
   )
 
-  const collateralPriceSumForUser = _.reduce(borrowedSnapshots, (pre, cur) => pre.plus(convertNativeToUSD(cur, 'collateralPrice.amount', false)), new BigNumber(0))
-  const collateralPriceSumAll = _.reduce(borrowingSnapshots, (pre, cur) => pre.plus(convertNativeToUSD(cur, 'collateralPrice.amount', false)), new BigNumber(0))
+  const collateralPriceSumForUser = _.reduce(borrowedSnapshots, (pre, cur) => pre.plus(convertNativeToUSD(cur, 'collateralPrice.amount', false, tokenPrices)), new BigNumber(0))
+  const collateralPriceSumAll = _.reduce(borrowingSnapshots, (pre, cur) => pre.plus(convertNativeToUSD(cur, 'collateralPrice.amount', false, tokenPrices)), new BigNumber(0))
 
   const usagePercent = (totalAmountUSD.gt(0) ? borrowedUSD.div(totalAmountUSD).multipliedBy(42) : new BigNumber(0))
     .plus(collateralPriceSumAll.gt(0) ? collateralPriceSumForUser.div(collateralPriceSumAll).multipliedBy(18) : new BigNumber(0))
