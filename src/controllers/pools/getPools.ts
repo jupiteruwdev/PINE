@@ -1,4 +1,3 @@
-import BigNumber from 'bignumber.js'
 import { ethers } from 'ethers'
 import _ from 'lodash'
 import appConf from '../../app.conf'
@@ -42,7 +41,7 @@ async function mapPool({ blockchain, pools, loanOptionsDict }: MapPoolParams): P
       getPoolMaxLoanLimit({ blockchain, address: pool.id }),
     ])
     const ethLimit = _.toNumber(ethers.utils.formatEther(maxLoanLimit ?? pool.maxLoanLimit ?? '0'))
-    const valueLockedEth = capacityEth.plus(utilizationEth).gt(new BigNumber(ethLimit || Number.POSITIVE_INFINITY)) ? new BigNumber(ethLimit ?? 0) : capacityEth.plus(utilizationEth)
+    const valueLockedEth = capacityEth.plus(utilizationEth)
     stats.utilization = Value.$ETH(utilizationEth)
     stats.valueLocked = Value.$ETH(valueLockedEth)
 

@@ -1,4 +1,3 @@
-import BigNumber from 'bignumber.js'
 import { ethers } from 'ethers'
 import _ from 'lodash'
 import { PipelineStage } from 'mongoose'
@@ -81,7 +80,7 @@ async function getPool({
     getPoolMaxLoanLimit({ blockchain, address: pool.id }),
   ])
   const ethLimit = _.toNumber(ethers.utils.formatEther(maxLoanLimit ?? pool.maxLoanLimit ?? '0'))
-  const valueLockedEth = capacityEth.plus(utilizationEth).gt(new BigNumber(ethLimit || Number.POSITIVE_INFINITY)) ? new BigNumber(ethLimit ?? 0) : capacityEth.plus(utilizationEth)
+  const valueLockedEth = capacityEth.plus(utilizationEth)
 
   return Pool.factory({
     version: 2,
@@ -105,7 +104,7 @@ async function getPool({
     routerAddress: _.get(appConf.routerAddress, blockchain.networkId),
     repayRouterAddress: _.get(appConf.repayRouterAddress, blockchain.networkId),
     rolloverAddress: _.get(appConf.rolloverAddress, blockchain.networkId),
-    ethLimit: _.toNumber(ethers.utils.formatEther(maxLoanLimit ?? pool.maxLoanLimit ?? '0')),
+    ethLimit,
     published: false,
     utilization: Value.$ETH(utilizationEth),
     valueLocked: Value.$ETH(valueLockedEth),
