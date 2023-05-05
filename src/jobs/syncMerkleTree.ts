@@ -195,6 +195,7 @@ export default async function syncMerkleTree() {
           address: incentiveUser,
           lendingSnapshots: currentLendingSnapshots,
           borrowingSnapshots: currentBorrowingSnapshots,
+          tokenPrices: tokenUSDPrice,
         })
 
         const protocolIncentivePerHour = appConf.incentiveRewards / 12 / 24 / 7
