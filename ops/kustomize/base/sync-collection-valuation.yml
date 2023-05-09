@@ -16,6 +16,8 @@ spec:
             env:
             - name: DOTENV_CONFIG_PATH
               value: /secrets/.env
+            - name: LOG_LEVEL
+              value: info
             volumeMounts:
             - name: env
               mountPath: /secrets/
