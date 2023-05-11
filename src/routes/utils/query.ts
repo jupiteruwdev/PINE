@@ -47,7 +47,11 @@ export function getNumber<Optional extends boolean = false>(query: Query, key: s
     throw fault('ERR_INVALID_QUERY', `Cannot derive number from key "${key}"`)
   }
 
-  return _.toNumber(value)
+  const nValue = _.toNumber(value)
+
+  if (_.isNaN(nValue)) throw fault('ERR_INVALID_QUERY', `Invalid number type from key "${key}"`)
+
+  return nValue
 }
 
 /**
