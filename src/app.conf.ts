@@ -148,7 +148,7 @@ export default {
   snapshotPeriod: 39000,
   rewardPINE: 5952,
   mongoUri: process.env.MONGO_URI ?? '',
-  tenors: process.env.NODE_ENV !== 'production' ? [0.007, 1, 3, 7, 14, 30, 60, 90] : [1, 3, 7, 14, 30, 60, 90],
+  tenors: process.env.SENTRY_ENVIRONMENT !== 'prod' ? [0.007, 1, 3, 7, 14, 30, 60, 90] : [1, 3, 7, 14, 30, 60, 90],
   tests: {
     walletAddress: process.env.TESTS_WALLET_ADDRESS ?? '',
     privateKey: process.env.TESTS_WALLET_PRIVATE_KEY ?? '',
