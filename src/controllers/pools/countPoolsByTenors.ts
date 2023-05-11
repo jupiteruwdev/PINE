@@ -12,7 +12,7 @@ type Params = {
 
 export default async function countPoolsByTenors({ blockchainFilter, collectionAddress, nftId }: Params): Promise<number[]> {
   const tenors = appConf.tenors
-  const pools = await searchPublishedPools({ blockchainFilter, collectionAddress, nftId, tenors })
+  const pools = (await searchPublishedPools({ blockchainFilter, collectionAddress, nftId, tenors })).filter(pool => pool.valueLocked.amount.gt(pool.utilization.amount ?? '0'))
   const poolsByTenors: number[] = []
 
   tenors.forEach(tenor => {

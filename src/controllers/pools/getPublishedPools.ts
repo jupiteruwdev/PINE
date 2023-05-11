@@ -1,7 +1,6 @@
-import _ from 'lodash'
 import { Blockchain, Pool, Value } from '../../entities'
-import searchPublishedPools from './searchPublishedPools'
 import getTokenUSDPrice, { AvailableToken } from '../utils/getTokenUSDPrice'
+import searchPublishedPools from './searchPublishedPools'
 
 export enum PoolSortType {
   NAME = 'name',
@@ -59,7 +58,7 @@ async function getPublishedPools({
     ...pool,
     valueLocked: Value.$USD(pool.valueLocked.amount.times(ethValueUSD.amount)),
     utilization: Value.$USD(pool.utilization.amount.times(ethValueUSD.amount)),
-  }))
+  })).filter(pool => pool.valueLocked.amount.gt(pool.utilization.amount ?? '0'))
 
   return out
 }
