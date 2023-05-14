@@ -24,7 +24,7 @@ const blockedCollections = [
 ]
 
 const getStartBlockAndDate = async (web3: Web3) => {
-  const today = new Date()
+  const today = new Date(1683878400)
   const dayOfWeek = today.getDay()
   const prevSaturday = new Date(today)
 
