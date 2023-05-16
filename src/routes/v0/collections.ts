@@ -10,7 +10,7 @@ const router = Router()
 
 router.get('/search', async (req, res, next) => {
   try {
-    const blockchain = getBlockchain(req.query)
+    const blockchain = getBlockchain(req.query, { optional: true })
     const query = getString(req.query, 'query')
     const collections = await searchCollections({ blockchain, query })
     const payload = serializeEntityArray(collections, Collection.codingResolver)

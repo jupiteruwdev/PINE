@@ -94,8 +94,8 @@ export function getBoolean<Optional extends boolean = false>(query: Query, key: 
  * @returns The {@link Blockchain.Filter} dictionary. If no blockchain can be found in the request
  *          query, an empty dictionary is simply returned.
  */
-export function getBlockchainFilter<T extends boolean>(query: Query, autofillDefaults: T): T extends true ? Required<Blockchain.Filter> : Blockchain.Filter
-export function getBlockchainFilter<T extends boolean>(query: Query, autofillDefaults: T): Required<Blockchain.Filter> | Blockchain.Filter {
+export function getBlockchainFilter<T extends boolean>(query: Query, autofillDefaults: T, setDefaultState?: T): T extends true ? Required<Blockchain.Filter> : Blockchain.Filter
+export function getBlockchainFilter<T extends boolean>(query: Query, autofillDefaults: T, setDefaultState = true): Required<Blockchain.Filter> | Blockchain.Filter {
   const ethBlockchain = _.get(query, 'ethereum', _.get(query, 'eth')) === undefined
     ? autofillDefaults ? Blockchain.Ethereum() : undefined
     : Blockchain.Ethereum(parseEthNetworkId(query.ethereum))
@@ -108,7 +108,7 @@ export function getBlockchainFilter<T extends boolean>(query: Query, autofillDef
     ? autofillDefaults ? Blockchain.Polygon() : undefined
     : Blockchain.Polygon(parseEthNetworkId(query.polygon))
 
-  if (!ethBlockchain && !solBlockchain && !polyBlockchain) {
+  if (!ethBlockchain && !solBlockchain && !polyBlockchain && setDefaultState) {
     return {
       ethereum: Blockchain.Ethereum().networkId,
       polygon: Blockchain.Polygon().networkId,
@@ -136,7 +136,7 @@ export function getBlockchainFilter<T extends boolean>(query: Query, autofillDef
  */
 export function getBlockchain<Optional extends boolean = false>(query: Query, options?: Options<Optional>): Optional extends true ? Blockchain<AnyBlockchain> | undefined : Blockchain<AnyBlockchain>
 export function getBlockchain<Optional extends boolean = false>(query: Query, { optional }: Options<Optional> = {}): Blockchain<AnyBlockchain> | undefined {
-  const blockchainFilter = _.omitBy(getBlockchainFilter(query, false), value => value === undefined)
+  const blockchainFilter = _.omitBy(getBlockchainFilter(query, false, false), value => value === undefined)
 
   if (_.values(blockchainFilter).length > 1) {
     throw fault('ERR_AMBIGUOUS_BLOCKCHAIN', 'Expecting exactly 1 blockchain in query')
