@@ -11,6 +11,7 @@ import getPoolCapacity from './getPoolCapacity'
 import getPoolMaxLoanLimit from './getPoolMaxLoanLimit'
 import getPoolUtilization from './getPoolUtilization'
 import searchPublishedPools from './searchPublishedPools'
+import getTokenUSDPrice, { AvailableToken } from '../utils/getTokenUSDPrice'
 
 type Params = {
   blockchainFilter?: Blockchain.Filter
@@ -91,13 +92,21 @@ export default async function getPools({
 
   if (blockchainFilter.ethereum !== undefined || blockchainFilter.polygon !== undefined) {
     const blockchain = Blockchain.parseBlockchain(blockchainFilter)
-    const publishedPools = await searchPublishedPools({
+    const ethValueUSD = await getTokenUSDPrice(Blockchain.parseNativeToken(blockchain) as AvailableToken)
+    const out = await searchPublishedPools({
       blockchainFilter,
       lenderAddress,
       address,
       collectionAddress,
       minorPools: true,
     })
+
+    const publishedPools = out.map(pool => ({
+      ...pool,
+      valueLocked: Value.$ETH(pool.valueLocked.amount.div(ethValueUSD.amount)),
+      utilization: Value.$ETH(pool.utilization.amount.div(ethValueUSD.amount)),
+    }))
+
     const excludeAddresses = publishedPools.map(pool => pool.address.toLowerCase())
 
     switch (blockchain.networkId) {
