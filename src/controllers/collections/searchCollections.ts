@@ -16,7 +16,7 @@ import getNFTSales from './getNFTSales'
 import getSpamContracts from './getSpamContracts'
 
 type Params = {
-  query: string
+  query?: string
   blockchain?: Blockchain
 }
 
