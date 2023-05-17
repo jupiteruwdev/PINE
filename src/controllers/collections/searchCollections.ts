@@ -74,6 +74,11 @@ async function aggregateCollectionResults(collections: Collection[], blockchain:
 export default async function searchCollections({ query, blockchain }: Params): Promise<Collection[]> {
   logger.info(`Fetching collection by search text <${query}>...`)
 
+  if (!query) {
+    const collections = await getCollections({ blockchainFilter: blockchain ? Blockchain.parseFilter(blockchain) : undefined })
+    return collections
+  }
+
   if (!ethers.utils.isAddress(query)) {
     const collections = await getCollections({ collectionNames: [query], blockchainFilter: blockchain ? Blockchain.parseFilter(blockchain) : undefined })
     return collections
