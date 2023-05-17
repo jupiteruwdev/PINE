@@ -3,6 +3,7 @@ import lw from '@google-cloud/logging-winston'
 import { RewriteFrames } from '@sentry/integrations'
 import * as Sentry from '@sentry/node'
 import * as Tracing from '@sentry/tracing'
+import { ErrorEvent } from '@sentry/types'
 import cors from 'cors'
 import express, { NextFunction, Request, Response } from 'express'
 import http from 'http'
@@ -44,6 +45,16 @@ if (appConf.env === 'production') {
       }),
     ],
     tracesSampleRate: 1.0,
+    beforeSend: (event: ErrorEvent, hint: Sentry.EventHint) => {
+      const error = hint.originalException
+      const status = (error as any).status ?? rootCause(error as SuperError)
+
+      if (status === 400) {
+        return null
+      }
+
+      return event
+    },
   })
   app.use(Sentry.Handlers.requestHandler() as express.RequestHandler)
   app.use(Sentry.Handlers.tracingHandler())

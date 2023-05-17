@@ -120,8 +120,8 @@ export default {
     [Blockchain.Polygon.Network.MAIN]: '0x03542e5D86e39304FE347c779De78F3157ca3e6f',
   },
   poolHelperAddress: {
-    [Blockchain.Ethereum.Network.MAIN]: '0x0aab1368f6704e8403105162690bdf6ee75305c0',
-    [Blockchain.Polygon.Network.MAIN]: '0xd8785Fa74dc7D94558c62D0ba9e6452437aC967B',
+    [Blockchain.Ethereum.Network.MAIN]: process.env.SENTRY_ENVIRONMENT !== 'prod' ? '0x979F81e74609A589623a3250147AEc3423A8483D' : '0x0aab1368f6704e8403105162690bdf6ee75305c0',
+    [Blockchain.Polygon.Network.MAIN]: process.env.SENTRY_ENVIRONMENT !== 'prod' ? '0x5EAD97b1171B1062A2740a1e972BE8fdC7C23701' : '0xd8785Fa74dc7D94558c62D0ba9e6452437aC967B',
   },
   pinePieceGenesisAddress: {
     [Blockchain.Ethereum.Network.MAIN]: '0xacadb3c6290392f59f45dddacca8add2cec24366',
