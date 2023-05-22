@@ -97,7 +97,9 @@ export default async function getPools({
       address,
       collectionAddress,
       minorPools: true,
+      convertToUSD: false,
     })
+
     const excludeAddresses = publishedPools.map(pool => pool.address.toLowerCase())
 
     switch (blockchain.networkId) {
