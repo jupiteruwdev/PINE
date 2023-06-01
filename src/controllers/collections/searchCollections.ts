@@ -53,7 +53,7 @@ async function aggregateCollectionResults(collections: Collection[], blockchain:
 
       return {
         ...collection,
-        ...dbCollection ? { imageUrl: dbCollection.imageUrl } : {},
+        ...dbCollection ? { imageUrl: dbCollection.imageUrl, name: dbCollection.displayName } : {},
         sales: sales.map((sale: any) => NFTSale.factory({
           marketplace: _.get(sale, 'marketplace'),
           collectionAddress: _.get(sale, 'contractAddress'),

@@ -41,6 +41,7 @@ type Params = {
     direction: PoolSortDirection
   }
   minorPools?: boolean
+  convertToUSD?: boolean
 }
 
 export async function filterByNftId(blockchain: Blockchain, docs: any[], nftId: string): Promise<any[]> {
@@ -63,13 +64,13 @@ export async function filterByNftId(blockchain: Blockchain, docs: any[], nftId: 
 async function searchPublishedPools({
   checkLimit,
   paginateBy,
+  convertToUSD = true,
   ...params
 }: Params): Promise<Pool[]> {
   const aggregation = PoolModel.aggregate(getPipelineStages({
     ...params,
   }))
   const blockchain = Blockchain.parseBlockchain(params.blockchainFilter ?? {})
-  const ethValueUSD = await getTokenUSDPrice(Blockchain.parseNativeToken(blockchain) as AvailableToken)
 
   let docs
   if (params.nftId !== undefined) {
@@ -85,18 +86,22 @@ async function searchPublishedPools({
     docs = paginateBy === undefined ? await aggregation.exec() : await aggregation.skip(paginateBy.offset).limit(paginateBy.count).exec()
   }
 
-  const pools = docs.map(mapPool)
+  let pools = docs.map(mapPool)
 
-  const out = pools.map(pool => ({
-    ...pool,
-    valueLocked: Value.$USD(pool.valueLocked.amount.times(ethValueUSD.amount)),
-    utilization: Value.$USD(pool.utilization.amount.times(ethValueUSD.amount)),
-  }))
+  if (convertToUSD) {
+    const ethValueUSD = await getTokenUSDPrice(Blockchain.parseNativeToken(blockchain) as AvailableToken)
+
+    pools = pools.map(pool => ({
+      ...pool,
+      valueLocked: Value.$USD(pool.valueLocked.amount.times(ethValueUSD.amount)),
+      utilization: Value.$USD(pool.utilization.amount.times(ethValueUSD.amount)),
+    }))
+  }
 
   if (checkLimit) {
-    return out.filter(pool => !(!!pool.collection?.valuation?.value?.amount && pool.ethLimit !== 0 && pool.loanOptions.some(option => pool.utilization?.amount.plus(pool.collection?.valuation?.value?.amount ?? new BigNumber(0)).gt(new BigNumber(pool.ethLimit ?? 0)))))
+    return pools.filter(pool => !(!!pool.collection?.valuation?.value?.amount && pool.ethLimit !== 0 && pool.loanOptions.some(option => pool.utilization?.amount.plus(pool.collection?.valuation?.value?.amount ?? new BigNumber(0)).gt(new BigNumber(pool.ethLimit ?? 0)))))
   }
-  return out
+  return pools
 }
 
 export default searchPublishedPools

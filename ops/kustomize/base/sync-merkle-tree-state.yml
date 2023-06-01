@@ -21,6 +21,10 @@ spec:
             volumeMounts:
             - name: env
               mountPath: /secrets/
+            resources:
+              limits:
+                cpu: 1000m
+                memory: 1Gi
           volumes:
           - name: env
             secret:
