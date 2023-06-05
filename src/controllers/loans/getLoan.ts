@@ -8,7 +8,7 @@ import fault from '../../utils/fault'
 import logger from '../../utils/logger'
 import { getEthNFTMetadata } from '../collaterals'
 import { getEthCollectionMetadata } from '../collections'
-import { getControlPlaneContract, getPoolContract } from '../contracts'
+import { getControlPlaneContract, getERC721Contract, getPoolContract } from '../contracts'
 import { getPool, searchPublishedPools } from '../pools'
 import getEthWeb3 from '../utils/getEthWeb3'
 
@@ -37,6 +37,9 @@ export default async function getLoan({
       const onChainLoan = await getOnChainLoanById({ loanId }, { networkId: blockchain.networkId })
 
       const web3 = getEthWeb3(blockchain.networkId)
+
+      const collectionContract = getERC721Contract({ blockchain, address: collectionAddress })
+      const tokenUri = await collectionContract.methods.tokenURI(nftId).call()
 
       const [blockNumber, pools] = await Promise.all([
         web3.eth.getBlockNumber(),
@@ -79,6 +82,7 @@ export default async function getLoan({
           returned: Value.$WEI(onChainLoan.returnedWei),
           valuation: newPool ? newPool.collection?.valuation : undefined,
           updatedAtBlock: blockNumber,
+          tokenURI: tokenUri,
         })
       }
 
@@ -126,6 +130,7 @@ export default async function getLoan({
           returned: Value.$WEI(onChainLoan.returnedWei),
           valuation: populateValuation === true ? pool.collection.valuation : undefined,
           updatedAtBlock: blockNumber,
+          tokenURI: tokenUri,
         })
       }, new Promise(resolve => resolve(undefined)))
 
