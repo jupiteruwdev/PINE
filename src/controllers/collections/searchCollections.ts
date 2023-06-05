@@ -6,6 +6,7 @@ import fault from '../../utils/fault'
 import logger from '../../utils/logger'
 import postRequest from '../utils/postRequest'
 
+import { ethers } from 'ethers'
 import { NFTCollectionModel } from '../../db'
 import DataSource from '../utils/DataSource'
 import getRequest from '../utils/getRequest'
@@ -15,8 +16,8 @@ import getNFTSales from './getNFTSales'
 import getSpamContracts from './getSpamContracts'
 
 type Params = {
-  query: string
-  blockchain: Blockchain
+  query?: string
+  blockchain?: Blockchain
 }
 
 const convertAlchemySupportMarketplace = (vendor?: string): string | undefined => {
@@ -72,6 +73,22 @@ async function aggregateCollectionResults(collections: Collection[], blockchain:
 
 export default async function searchCollections({ query, blockchain }: Params): Promise<Collection[]> {
   logger.info(`Fetching collection by search text <${query}>...`)
+
+  if (!query) {
+    const collections = await getCollections({ blockchainFilter: blockchain ? Blockchain.parseFilter(blockchain) : undefined })
+    return collections
+  }
+
+  if (!ethers.utils.isAddress(query)) {
+    const collections = await getCollections({ collectionNames: [query], blockchainFilter: blockchain ? Blockchain.parseFilter(blockchain) : undefined })
+    return collections
+  }
+
+  const dbCollections = await getCollections({ collectionAddresses: [query], blockchainFilter: blockchain ? Blockchain.parseFilter(blockchain) : undefined })
+  if (dbCollections.length) return dbCollections
+
+  if (!blockchain) blockchain = Blockchain.Ethereum()
+
   switch (blockchain.networkId) {
   case Blockchain.Ethereum.Network.MAIN:
     const collections = await DataSource.fetch(
