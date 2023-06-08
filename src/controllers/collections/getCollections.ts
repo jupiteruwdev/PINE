@@ -8,6 +8,7 @@ type Params = {
   blockchainFilter?: Blockchain.Filter
   collectionAddresses?: string[]
   collectionNames?: string[]
+  verifiedOnly?: boolean
 }
 
 export default async function getCollections(params: Params = {}): Promise<Collection[]> {
@@ -39,6 +40,7 @@ export function useDb({
   },
   collectionAddresses,
   collectionNames,
+  verifiedOnly = true,
 }: Params): DataSource<Collection[]> {
   return async () => {
     const blockchains = Blockchain.fromFilter(blockchainFilter)
@@ -58,6 +60,9 @@ export function useDb({
             '$regex': collectionNames.join('|'),
             '$options': 'i',
           },
+        },
+        ...!verifiedOnly ? {} : {
+          verified: true,
         },
       }
 
