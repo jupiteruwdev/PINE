@@ -53,7 +53,7 @@ async function aggregateCollectionResults(collections: Collection[], blockchain:
 
       return {
         ...collection,
-        ...dbCollection ? { imageUrl: dbCollection.imageUrl, name: dbCollection.displayName } : {},
+        ...dbCollection ? { imageUrl: dbCollection.imageUrl, name: dbCollection.displayName, verified: dbCollection.verified } : {},
         sales: sales.map((sale: any) => NFTSale.factory({
           marketplace: _.get(sale, 'marketplace'),
           collectionAddress: _.get(sale, 'contractAddress'),
@@ -75,12 +75,12 @@ export default async function searchCollections({ query, blockchain }: Params): 
   logger.info(`Fetching collection by search text <${query}>...`)
 
   if (!query) {
-    const collections = await getCollections({ blockchainFilter: blockchain ? Blockchain.parseFilter(blockchain) : undefined })
+    const collections = await getCollections({ blockchainFilter: blockchain ? Blockchain.parseFilter(blockchain) : undefined, verifiedOnly: true })
     return collections
   }
 
   if (!ethers.utils.isAddress(query)) {
-    const collections = await getCollections({ collectionNames: [query], blockchainFilter: blockchain ? Blockchain.parseFilter(blockchain) : undefined })
+    const collections = await getCollections({ collectionNames: [query], blockchainFilter: blockchain ? Blockchain.parseFilter(blockchain) : undefined, verifiedOnly: true })
     return collections
   }
 
