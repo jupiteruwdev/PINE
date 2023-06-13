@@ -240,7 +240,7 @@ export function useAlchemy({ blockchain, collectionAddress }: Params): DataSourc
     }).catch(err => rethrow(`Failed to fetch metadata from Alchemy for collection <${collectionAddress}>: ${err}`))
 
     const name = _.get(res, 'contractMetadata.name')
-    const imageUrl = undefined // Alchemy API does not provide collection image
+    const imageUrl = ['contractMetadata.opensea.imageUrl', 'contractMetadata.looksrare.imageUrl'].reduceRight((prev, curr) => !_.isEmpty(prev) ? prev : _.get(res, curr), '') // Alchemy API does not provide collection image
 
     return {
       name,
