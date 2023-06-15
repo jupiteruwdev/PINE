@@ -146,21 +146,23 @@ async function updatePoolEthLimmits(networkId: string) {
   logger.info(`JOB_SYNC_POOLS updating pool ethLimit of ${pools.length} pool(s)...`)
 
   await Promise.all(pools.map(async pool => {
-    const amount = await getPoolEthLimit({ blockchain: Blockchain.factory({
-      network: pool.networkType,
-      networkId: pool.networkId,
-    }), poolAddress: pool.address ?? '' })
+    if (!pool.noMaxLoanLimit) {
+      const amount = await getPoolEthLimit({ blockchain: Blockchain.factory({
+        network: pool.networkType,
+        networkId: pool.networkId,
+      }), poolAddress: pool.address ?? '' })
 
-    const ethLimit = new BigNumber(pool.ethLimit?.toString() || '0')
+      const ethLimit = new BigNumber(pool.ethLimit?.toString() || '0')
 
-    if (amount && ethers.utils.parseEther(ethLimit.toFixed() ?? '0') !== amount) {
-      count++
-      await PoolModel.updateOne({ address: pool.address }, {
-        $set: { ethLimit: ethers.utils.formatEther(amount) },
-      })
-    }
-    else {
-      logger.info(`JOB_SYNC_POOLS updating pool ethLimit <${pool.address}> ... SKIP: No Changes`)
+      if (amount && ethers.utils.parseEther(ethLimit.toFixed() ?? '0') !== amount) {
+        count++
+        await PoolModel.updateOne({ address: pool.address }, {
+          $set: { ethLimit: ethers.utils.formatEther(amount) },
+        })
+      }
+      else {
+        logger.info(`JOB_SYNC_POOLS updating pool ethLimit <${pool.address}> ... SKIP: No Changes`)
+      }
     }
   }))
 
