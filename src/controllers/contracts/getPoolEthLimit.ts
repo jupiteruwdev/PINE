@@ -1,4 +1,5 @@
 import ERC721LendingV2 from '../../abis/ERC721LendingV2.json' assert { type: 'json' }
+import { PoolModel } from '../../db'
 import { Blockchain } from '../../entities'
 import fault from '../../utils/fault'
 import getEthWeb3 from '../utils/getEthWeb3'
@@ -20,6 +21,13 @@ export default async function getPoolEthLimit({ blockchain, poolAddress }: Param
       return ethLimit
     }
     catch (err) {
+      await PoolModel.updateOne({
+        address: poolAddress.toLowerCase(),
+      }, {
+        $set: {
+          noMaxLoanLimit: true,
+        },
+      })
       return null
     }
   default:
