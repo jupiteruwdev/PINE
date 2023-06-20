@@ -1,5 +1,3 @@
-import { ethers } from 'ethers'
-import { GcpKmsSigner } from 'ethers-gcp-kms-signer'
 import _ from 'lodash'
 import appConf from '../../app.conf'
 import { Blockchain, Valuation } from '../../entities'
@@ -43,18 +41,18 @@ export default async function signValuation({ blockchain, nftId, collectionAddre
     ]
     const messageHash = await contract.methods[contractFunc].apply(undefined, contractParams).call()
     if (poolVersion > 3) {
-      const kmsCredentials = appConf.env === 'development' ? appConf.devKmsCredentials : appConf.prodKmsCredenials
+      // const kmsCredentials = appConf.env === 'development' ? appConf.devKmsCredentials : appConf.prodKmsCredenials
 
-      const provider = new ethers.providers.AlchemyProvider(Number(blockchain.networkId), appConf.alchemyAPIKey)
+      // const provider = new ethers.providers.AlchemyProvider(Number(blockchain.networkId), appConf.alchemyAPIKey)
 
-      let signer = new GcpKmsSigner(kmsCredentials)
-      signer = signer.connect(provider)
-      const signature = await signer.signMessage(ethers.utils.arrayify(messageHash))
+      // let signer = new GcpKmsSigner(kmsCredentials)
+      // signer = signer.connect(provider)
+      // const signature = await signer.signMessage(ethers.utils.arrayify(messageHash))
 
       return {
         expiresAtBlock,
         issuedAtBlock: blockNumber,
-        signature,
+        signature: '',
       }
     }
 

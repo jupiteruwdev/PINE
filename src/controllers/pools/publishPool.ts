@@ -25,49 +25,54 @@ type SavePoolParams = {
 }
 
 async function savePool({ poolData, blockchain, ethLimit }: SavePoolParams) {
-  let [collection] = await NFTCollectionModel.find({
-    address: {
-      '$regex': poolData.collection,
-      '$options': 'i',
-    },
-    matcher: null,
-  }).lean()
+  try {
+    let [collection] = await NFTCollectionModel.find({
+      address: {
+        '$regex': poolData.collection,
+        '$options': 'i',
+      },
+      matcher: null,
+    }).lean()
 
-  if (collection === undefined) {
-    collection = await saveCollection({ collectionAddress: poolData.collection, blockchain })
-  }
+    if (collection === undefined) {
+      collection = await saveCollection({ collectionAddress: poolData.collection, blockchain })
+    }
 
-  syncPools()
+    syncPools()
 
-  const pool = await PoolModel.findOneAndUpdate({
-    address: poolData.id,
-    retired: true,
-  }, {
-    $set: {
+    const pool = await PoolModel.findOneAndUpdate({
       address: poolData.id,
-      networkType: blockchain.network,
-      networkId: blockchain.networkId,
-      tokenAddress: poolData.supportedCurrency,
-      fundSource: poolData.fundSource,
-      poolVersion: 4,
-      lenderAddress: poolData.lenderAddress,
-      routerAddress: _.get(appConf.routerAddress, blockchain.networkId),
-      repayRouterAddress: _.get(appConf.repayRouterAddress, blockchain.networkId),
-      rolloverAddress: _.get(appConf.rolloverAddress, blockchain.networkId),
-      ethLimit,
-      nftCollection: collection?._id,
-      defaultFees: [],
-      retired: false,
-    },
-  }, {
-    returnDocument: 'after',
-    upsert: true,
-  }).exec()
+      retired: true,
+    }, {
+      $set: {
+        address: poolData.id,
+        networkType: blockchain.network,
+        networkId: blockchain.networkId,
+        tokenAddress: poolData.supportedCurrency,
+        fundSource: poolData.fundSource,
+        poolVersion: 4,
+        lenderAddress: poolData.lenderAddress,
+        routerAddress: _.get(appConf.routerAddress, blockchain.networkId),
+        repayRouterAddress: _.get(appConf.repayRouterAddress, blockchain.networkId),
+        rolloverAddress: _.get(appConf.rolloverAddress, blockchain.networkId),
+        ethLimit,
+        nftCollection: collection?._id,
+        defaultFees: [],
+        retired: false,
+      },
+    }, {
+      returnDocument: 'after',
+      upsert: true,
+    }).exec()
 
-  return mapPool({
-    ...pool.toObject(),
-    collection,
-  })
+    return mapPool({
+      ...pool.toObject(),
+      collection,
+    })
+  }
+  catch (err) {
+    throw fault('ERR_PUBLISH_POOL_SAVE_POOL', undefined, err)
+  }
 }
 
 export default async function publishPool({

@@ -55,53 +55,63 @@ export default async function getEthCollectionImage({
 
 export function useOpenSea({ blockchain, collectionAddress }: Params): DataSource<string> {
   return async () => {
-    logger.info(`...using OpenSea to look up imageUrl for collection ${collectionAddress}`)
+    try {
+      logger.info(`...using OpenSea to look up imageUrl for collection ${collectionAddress}`)
 
-    if (collectionAddress === undefined) rethrow('Collection address must be provided')
-    if (blockchain?.network !== 'ethereum') rethrow(`Unsupported blockchain <${JSON.stringify(blockchain)}>`)
+      if (collectionAddress === undefined) rethrow('Collection address must be provided')
+      if (blockchain?.network !== 'ethereum') rethrow(`Unsupported blockchain <${JSON.stringify(blockchain)}>`)
 
-    const apiKey = appConf.openseaAPIKey ?? rethrow('Missing OpenSea API key')
-    let res
+      const apiKey = appConf.openseaAPIKey ?? rethrow('Missing OpenSea API key')
+      let res
 
-    switch (blockchain.networkId) {
-    case Blockchain.Ethereum.Network.MAIN:
-      res = await getRequest(`https://api.opensea.io/api/v1/asset_contract/${collectionAddress}`, { headers: { 'X-API-KEY': apiKey } }).catch(err => rethrow(`Failed to fetch imageUrl from OpenSea for collection <${collectionAddress}>: ${err}`))
-      break
-    case Blockchain.Ethereum.Network.RINKEBY:
-      res = await getRequest(`https://testnets-api.opensea.io/api/v1/asset_contract/${collectionAddress}`, { headers: { 'X-API-KEY': apiKey } }).catch(err => rethrow(`Failed to imageUrl from OpenSea for collection <${collectionAddress}>: ${err}`))
-      break
+      switch (blockchain.networkId) {
+      case Blockchain.Ethereum.Network.MAIN:
+        res = await getRequest(`https://api.opensea.io/api/v1/asset_contract/${collectionAddress}`, { headers: { 'X-API-KEY': apiKey } }).catch(err => rethrow(`Failed to fetch imageUrl from OpenSea for collection <${collectionAddress}>: ${err}`))
+        break
+      case Blockchain.Ethereum.Network.RINKEBY:
+        res = await getRequest(`https://testnets-api.opensea.io/api/v1/asset_contract/${collectionAddress}`, { headers: { 'X-API-KEY': apiKey } }).catch(err => rethrow(`Failed to imageUrl from OpenSea for collection <${collectionAddress}>: ${err}`))
+        break
+      }
+
+      if (res === undefined) rethrow('Unexpected payload when looking up collection imageUrl from OpenSea')
+
+      const imageUrl = _.get(res, 'collection.image_url')
+
+      if (!imageUrl) rethrow('Unknown collection image')
+
+      return imageUrl
     }
-
-    if (res === undefined) rethrow('Unexpected payload when looking up collection imageUrl from OpenSea')
-
-    const imageUrl = _.get(res, 'collection.image_url')
-
-    if (!imageUrl) rethrow('Unknown collection image')
-
-    return imageUrl
+    catch (err) {
+      throw fault('GET_ETH_COLLECTION_IMAGE_USE_OPENSEA', undefined, err)
+    }
   }
 }
 
 export function useAlchemy({ blockchain, collectionAddress }: Params): DataSource<string> {
   return async () => {
-    logger.info(`...using Alchemy to look up imageUrl for collection <${collectionAddress}>`)
+    try {
+      logger.info(`...using Alchemy to look up imageUrl for collection <${collectionAddress}>`)
 
-    if (collectionAddress === undefined) rethrow('Collection address must be provided')
-    if (blockchain?.network !== 'ethereum' && blockchain?.network !== 'polygon') rethrow(`Unsupported blockchain <${JSON.stringify(blockchain)}>`)
+      if (collectionAddress === undefined) rethrow('Collection address must be provided')
+      if (blockchain?.network !== 'ethereum' && blockchain?.network !== 'polygon') rethrow(`Unsupported blockchain <${JSON.stringify(blockchain)}>`)
 
-    const apiHost = _.get(appConf.alchemyAPIUrl, blockchain.networkId) ?? rethrow(`Missing Alchemy API URL for blockchain <${JSON.stringify(blockchain)}>`)
-    const apiKey = appConf.alchemyAPIKey ?? rethrow('Missing Alchemy API key')
+      const apiHost = _.get(appConf.alchemyAPIUrl, blockchain.networkId) ?? rethrow(`Missing Alchemy API URL for blockchain <${JSON.stringify(blockchain)}>`)
+      const apiKey = appConf.alchemyAPIKey ?? rethrow('Missing Alchemy API key')
 
-    const res = await getRequest(`${apiHost}${apiKey}/getContractMetadata`, {
-      params: {
-        contractAddress: collectionAddress,
-      },
-    }).catch(err => rethrow(`Failed to fetch imageUrl from Alchemy for collection <${collectionAddress}>: ${err}`))
+      const res = await getRequest(`${apiHost}${apiKey}/getContractMetadata`, {
+        params: {
+          contractAddress: collectionAddress,
+        },
+      }).catch(err => rethrow(`Failed to fetch imageUrl from Alchemy for collection <${collectionAddress}>: ${err}`))
 
-    const imageUrl = ['contractMetadata.openSea.imageUrl', 'contractMetadata.looksrare.imageUrl'].reduceRight((prev, curr) => !_.isEmpty(prev) ? prev : _.get(res, curr), '') // Alchemy API does not provide collection image
+      const imageUrl = ['contractMetadata.openSea.imageUrl', 'contractMetadata.looksrare.imageUrl'].reduceRight((prev, curr) => !_.isEmpty(prev) ? prev : _.get(res, curr), '') // Alchemy API does not provide collection image
 
-    if (!imageUrl?.length) rethrow('Unknown collection image')
+      if (!imageUrl?.length) rethrow('Unknown collection image')
 
-    return imageUrl
+      return imageUrl
+    }
+    catch (err) {
+      throw fault('GET_ETH_COLLECTION_IMAGE_USE_ALCHEMY', undefined, err)
+    }
   }
 }

@@ -41,67 +41,62 @@ export default async function getFloorPrice({ contractAddress, blockchain }: Par
 
 function useDb({ contractAddress, blockchain }: Params): DataSource<Value> {
   return async () => {
-    logger.info(`...using db for floor price for collection <${contractAddress}> on network <${blockchain.networkId}>`)
+    try {
+      logger.info(`...using db for floor price for collection <${contractAddress}> on network <${blockchain.networkId}>`)
 
-    const res = await NFTCollectionModel.findOne({ address: {
-      $regex: contractAddress,
-      $options: 'i',
-    }, networkId: blockchain.networkId, networkType: blockchain.network }).lean()
+      const res = await NFTCollectionModel.findOne({ address: {
+        $regex: contractAddress,
+        $options: 'i',
+      }, networkId: blockchain.networkId, networkType: blockchain.network }).lean()
 
-    return Value.$ETH(_.get(res, 'valuation.value.amount', 0))
+      return Value.$ETH(_.get(res, 'valuation.value.amount', 0))
+    }
+    catch (err) {
+      throw fault('ERR_FETCHING_CONTRACT_FLOOR_PRICE_USE_DB', undefined, err)
+    }
   }
 }
 
 function useOpenSeaValue({ contractAddress, blockchain }: Params): DataSource<Value> {
   return async () => {
-    logger.info(`...using opensea for floor price for collection <${contractAddress}> on network <${blockchain.networkId}>`)
+    try {
+      logger.info(`...using opensea for floor price for collection <${contractAddress}> on network <${blockchain.networkId}>`)
 
-    const res = await DataSource.fetch(useOpenSea({ collectionAddress: contractAddress, blockchain, nftId: '0' }))
+      const res = await DataSource.fetch(useOpenSea({ collectionAddress: contractAddress, blockchain, nftId: '0' }))
 
-    if (!res.value) throw rethrow('Unsupported collection')
+      if (!res.value) throw rethrow('Unsupported collection')
 
-    return res.value
+      return res.value
+    }
+    catch (err) {
+      throw fault('ERR_FETCHING_CONTRACT_FLOOR_PRICE_USE_OPENSEA', undefined, err)
+    }
   }
 }
 
 function useAlchemy({ contractAddress, blockchain }: Params): DataSource<Value> {
   return async () => {
-    logger.info(`...using alchemy to fetch floor price for collection <${contractAddress}> on network <${blockchain.networkId}>`)
+    try {
+      logger.info(`...using alchemy to fetch floor price for collection <${contractAddress}> on network <${blockchain.networkId}>`)
 
-    if (blockchain.networkId !== Blockchain.Ethereum.Network.MAIN) rethrow(`Unsupported Ethereum network <${blockchain.networkId}>`)
+      if (blockchain.networkId !== Blockchain.Ethereum.Network.MAIN) rethrow(`Unsupported Ethereum network <${blockchain.networkId}>`)
 
-    const apiUrl = _.get(appConf.alchemyNFTAPIUrl, blockchain.networkId) ?? rethrow(`Missing Alchemy API Url for blockchain <${JSON.stringify(blockchain)}>`)
-    const apiKey = appConf.alchemyAPIKey ?? rethrow('Missing Alchemy API key')
+      const apiUrl = _.get(appConf.alchemyNFTAPIUrl, blockchain.networkId) ?? rethrow(`Missing Alchemy API Url for blockchain <${JSON.stringify(blockchain)}>`)
+      const apiKey = appConf.alchemyAPIKey ?? rethrow('Missing Alchemy API key')
 
-    const res = await getRequest(`${apiUrl}${apiKey}/getFloorPrice`, {
-      params: {
-        contractAddress,
-      },
-    })
+      const res = await getRequest(`${apiUrl}${apiKey}/getFloorPrice`, {
+        params: {
+          contractAddress,
+        },
+      })
 
-    if (res?.openSea?.priceCurrency !== 'ETH') rethrow('Wrong Currency')
-    const floorPrice = new BigNumber(_.get(res, 'openSea.floorPrice', '0'))
+      if (res?.openSea?.priceCurrency !== 'ETH') rethrow('Wrong Currency')
+      const floorPrice = new BigNumber(_.get(res, 'openSea.floorPrice', '0'))
 
-    return Value.$ETH(floorPrice)
-  }
-}
-
-function useMetaquants({ contractAddress, blockchain }: Params): DataSource<Value> {
-  return async () => {
-    logger.info(`...using metaquants to fetch floor price for collection <${contractAddress}> on network <${blockchain.networkId}>`)
-
-    if (blockchain.networkId !== Blockchain.Polygon.Network.MAIN) rethrow(`Unsupported Polygon network <${blockchain.networkId}>`)
-
-    const apiKey = appConf.metaquantsAPIKey ?? rethrow('Missing metaquants API key')
-    const res = await getRequest(`https://api.metaquants.xyz/v1/realtime-floor-price/${contractAddress.toLowerCase()}`, {
-      headers: {
-        'X-API-KEY': apiKey,
-      },
-      useCache: false,
-    })
-
-    const floorPrice = new BigNumber(res?.body?.floor_price ?? '0')
-
-    return Value.$ETH(floorPrice)
+      return Value.$ETH(floorPrice)
+    }
+    catch (err) {
+      throw fault('ERR_FETCHING_CONTRACT_FLOOR_PRICE_USE_ALCHEMY', undefined, err)
+    }
   }
 }

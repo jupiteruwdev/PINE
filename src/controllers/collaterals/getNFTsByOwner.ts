@@ -34,13 +34,18 @@ type Params = {
  * @returns An array of {@link NFT}.
  */
 export default async function getNFTsByOwner({ blockchain, ownerAddress, populateMetadata = false, collectionAddress }: Params): Promise<NFT[]> {
-  switch (blockchain.network) {
-  case 'ethereum':
-  case 'polygon':
-    return getEthNFTsByOwner({ blockchain, ownerAddress, populateMetadata, collectionAddress })
-  case 'solana':
-    return getSolNFTsByOwner({ blockchain, ownerAddress, populateMetadata, collectionAddress })
-  default:
-    throw fault('ERR_UNSUPPORTED_BLOCKCHAIN')
+  try {
+    switch (blockchain.network) {
+    case 'ethereum':
+    case 'polygon':
+      return getEthNFTsByOwner({ blockchain, ownerAddress, populateMetadata, collectionAddress })
+    case 'solana':
+      return getSolNFTsByOwner({ blockchain, ownerAddress, populateMetadata, collectionAddress })
+    default:
+      throw fault('ERR_UNSUPPORTED_BLOCKCHAIN')
+    }
+  }
+  catch (err) {
+    throw fault('ERR_GET_NFTS_BY_OWNER', undefined, err)
   }
 }
