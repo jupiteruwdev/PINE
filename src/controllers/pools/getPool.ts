@@ -39,7 +39,7 @@ async function getPool({
   if (res.length) {
     for (const resPool of res) {
       const pool = mapPool(resPool)
-      if (_.isString(_.get(resPool, 'collection.matcher.regex')) && _.isString(_.get(resPool, 'collection.matcher.fieldPath'))) {
+      if (nft && _.isString(_.get(resPool, 'collection.matcher.regex')) && _.isString(_.get(resPool, 'collection.matcher.fieldPath'))) {
         const regex = new RegExp(resPool.collection.matcher.regex)
         if (!regex.test(_.get(nft, resPool.collection.matcher.fieldPath))) {
           continue
