@@ -5,6 +5,7 @@ import VEPINE_ABI from '../../abis/VePine.json' assert { type: 'json' }
 import appConf from '../../app.conf'
 import { Blockchain, IdleGovernance } from '../../entities'
 import { getOnChainPineStats } from '../../subgraph'
+import fault from '../../utils/fault'
 import logger from '../../utils/logger'
 import getEthWeb3 from '../utils/getEthWeb3'
 import getTokenUSDPrice, { AvailableToken } from '../utils/getTokenUSDPrice'
@@ -35,6 +36,6 @@ export default async function getIdleGovernance(): Promise<IdleGovernance> {
   }
   catch (err) {
     logger.error('Fetching idle governance stats... ERR:', err)
-    throw err
+    throw fault('ERR_GET_IDLE_GOVERNANCE', undefined, err)
   }
 }
