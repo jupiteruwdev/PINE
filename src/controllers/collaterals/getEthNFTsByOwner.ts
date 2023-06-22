@@ -31,7 +31,7 @@ export default async function getEthNFTsByOwner({ blockchain, ownerAddress, popu
 
     logger.info(`Fetching Ethereum NFTs by owner <${ownerAddress}> on network <${blockchain.networkId}>...`)
 
-    const supportedCollections = await getCollections({ blockchainFilter: Blockchain.parseFilter(blockchain) })
+    const supportedCollections = await getCollections({ blockchainFilter: Blockchain.parseFilter(blockchain), verifiedOnly: false })
 
     let nfts = await DataSource.fetch(
       useAlchemy({ blockchain, ownerAddress, populateMetadata, collectionAddresses: !collectionAddress ? supportedCollections.map(collection => collection.address) : [collectionAddress] }),
