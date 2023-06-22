@@ -5,6 +5,7 @@ import { Blockchain } from '../../entities'
 import UserMissionStats from '../../entities/lib/UserMissionStats'
 import { getOnChainPoolsByLenderAddress, getPNPLHistoriesByBorrowerAddress } from '../../subgraph'
 import getOnChainLoanHistoriesByBorrowerAddress from '../../subgraph/getOnChainLoanHistoriesByBorrowerAddress'
+import fault from '../../utils/fault'
 import logger from '../../utils/logger'
 import rethrow from '../../utils/rethrow'
 import getRequest from '../utils/getRequest'
@@ -97,6 +98,6 @@ export default async function getUserMissionStats({
   }
   catch (err) {
     logger.error(`Fetching user mission stats for blockchain <${JSON.stringify(blockchain)}>... ERR:`, err)
-    throw err
+    throw fault('ERR_GET_USER_MISSION_STATS', undefined, err)
   }
 }

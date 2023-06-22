@@ -5,6 +5,7 @@ import Web3 from 'web3'
 import appConf from '../../app.conf'
 import { Blockchain, GlobalStats, Pool, Value } from '../../entities'
 import { getOnChainGlobalStats, getOnChainPools } from '../../subgraph'
+import fault from '../../utils/fault'
 import logger from '../../utils/logger'
 import { getTokenContract } from '../contracts'
 import { searchPublishedPools } from '../pools'
@@ -115,6 +116,6 @@ export default async function getGlobalStats({
   }
   catch (err) {
     logger.error(`Fetching global stats for blockchain filter <${JSON.stringify(blockchainFilter)}>... ERR:`, err)
-    throw err
+    throw fault('ERR_GET_GLOBAL_STATS', undefined, err)
   }
 }

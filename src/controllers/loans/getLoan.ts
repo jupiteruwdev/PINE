@@ -144,6 +144,6 @@ export default async function getLoan({
   }
   catch (err) {
     logger.error(`Fetching loan for collection address <${collectionAddress}>, NFT ID <${nftId}>, txSpeedBlocks <${txSpeedBlocks}> and blockchain <${JSON.stringify(blockchain)}>... ERR:`, err)
-    throw err
+    throw fault('ERR_GET_LOAN', undefined, err)
   }
 }

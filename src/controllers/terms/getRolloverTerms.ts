@@ -125,6 +125,6 @@ export default async function getRolloverTerms({
   catch (err) {
     logger.error(`Fetching rollover terms for NFT ID <${nftIds.join(',')}> and collection address <${collectionAddresses.join(',')}> on blockchain <${JSON.stringify(blockchain)}>... ERR:`, err)
 
-    throw err
+    throw fault('ERR_GET_ROLLOVER_TERMS', undefined, err)
   }
 }

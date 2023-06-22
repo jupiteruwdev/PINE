@@ -112,6 +112,6 @@ export default async function getLoanTerms({ blockchain, collectionAddresses, nf
     logger.error(`Fetching loan terms for NFT ID <${nftIds}> and collection address <${collectionAddresses}> on blockchain <${JSON.stringify(blockchain)}>... ERR`)
     if (logger.isErrorEnabled() && !logger.silent) console.error(err)
 
-    throw err
+    throw fault('ERR_GET_LOAN_TERMS', undefined, err)
   }
 }

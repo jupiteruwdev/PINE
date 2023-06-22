@@ -39,41 +39,46 @@ type Params = {
 
 function useGraph({ blockchainFilter, lenderAddresses, collectionAddresses, sortBy, paginateBy }: Params): DataSource<Loan[]> {
   return async () => {
-    const blockchain = Blockchain.parseBlockchain(blockchainFilter)
-    const onChainLoans = await getOnChainLoans({
-      lenderAddresses,
-      collectionAddresses,
-      sortBy,
-      paginateBy,
-    }, {
-      networkId: blockchain.networkId,
-    })
-
-    const loans = onChainLoans.map(loan => {
-      const nftId = loan.id.split('/')[1]
-
-      return Loan.factory({
-        accuredInterest: Value.$WEI(loan.accuredInterestWei),
-        borrowed: Value.$ETH(loan.borrowedWei),
-        borrowerAddress: loan.borrower,
-        expiresAt: new Date(_.toNumber(loan.loanExpiretimestamp) * 1000),
-        interestBPSPerBlock: new BigNumber(loan.interestBPS1000000XBlock).dividedBy(1_000_000),
-        loanStartBlock: loan.loanStartBlock,
-        maxLTVBPS: new BigNumber(loan.maxLTVBPS),
-        nft: NFT.factory({
-          collection: Collection.factory({
-            address: loan.erc721,
-            blockchain,
-          }),
-          id: nftId,
-        }),
-        poolAddress: loan.pool,
-        repaidInterest: Value.$WEI(loan.repaidInterestWei),
-        returned: Value.$WEI(loan.returnedWei),
+    try {
+      const blockchain = Blockchain.parseBlockchain(blockchainFilter)
+      const onChainLoans = await getOnChainLoans({
+        lenderAddresses,
+        collectionAddresses,
+        sortBy,
+        paginateBy,
+      }, {
+        networkId: blockchain.networkId,
       })
-    })
 
-    return loans
+      const loans = onChainLoans.map(loan => {
+        const nftId = loan.id.split('/')[1]
+
+        return Loan.factory({
+          accuredInterest: Value.$WEI(loan.accuredInterestWei),
+          borrowed: Value.$ETH(loan.borrowedWei),
+          borrowerAddress: loan.borrower,
+          expiresAt: new Date(_.toNumber(loan.loanExpiretimestamp) * 1000),
+          interestBPSPerBlock: new BigNumber(loan.interestBPS1000000XBlock).dividedBy(1_000_000),
+          loanStartBlock: loan.loanStartBlock,
+          maxLTVBPS: new BigNumber(loan.maxLTVBPS),
+          nft: NFT.factory({
+            collection: Collection.factory({
+              address: loan.erc721,
+              blockchain,
+            }),
+            id: nftId,
+          }),
+          poolAddress: loan.pool,
+          repaidInterest: Value.$WEI(loan.repaidInterestWei),
+          returned: Value.$WEI(loan.returnedWei),
+        })
+      })
+
+      return loans
+    }
+    catch (err) {
+      throw fault('ERR_SEARCH_LOANS_USE_GRAPH', undefined, err)
+    }
   }
 }
 
@@ -145,6 +150,6 @@ export default async function searchLoans({
   }
   catch (err) {
     logger.error(`Searching loans for collection addresses <${collectionAddresses?.join(',')}>, lender addresses<${lenderAddresses?.join(',')}>, collection names <${collectionNames?.join(',')} and blockchain <${JSON.stringify(blockchainFilter)}>... ERR:`, err)
-    throw err
+    throw fault('ERR_SEARCH_LOANS', undefined, err)
   }
 }

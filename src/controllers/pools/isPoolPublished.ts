@@ -1,6 +1,7 @@
 import { PipelineStage } from 'mongoose'
 import { PoolModel } from '../../db'
 import { Blockchain } from '../../entities'
+import fault from '../../utils/fault'
 
 type Params = {
   blockchain: Blockchain
@@ -14,12 +15,17 @@ async function isPoolPublished({
   blockchain,
   ...params
 }: Params): Promise<boolean> {
-  const res = await PoolModel.aggregate(getPipelineStages({
-    blockchain,
-    ...params,
-  })).exec()
+  try {
+    const res = await PoolModel.aggregate(getPipelineStages({
+      blockchain,
+      ...params,
+    })).exec()
 
-  return !!res.length
+    return !!res.length
+  }
+  catch (err) {
+    throw fault('IS_POOL_PUBLISHED', undefined, err)
+  }
 }
 
 export default isPoolPublished
@@ -31,48 +37,53 @@ function getPipelineStages({
   includeRetired = false,
   lenderAddress,
 }: Params): PipelineStage[] {
-  const stages: PipelineStage[] = [{
-    $match: {
-      'networkType': blockchain.network,
-      'networkId': blockchain.networkId,
-      ...address === undefined ? {} : {
-        'address': {
-          $regex: address,
+  try {
+    const stages: PipelineStage[] = [{
+      $match: {
+        'networkType': blockchain.network,
+        'networkId': blockchain.networkId,
+        ...address === undefined ? {} : {
+          'address': {
+            $regex: address,
+            $options: 'i',
+          },
+        },
+        ...lenderAddress === undefined ? {} : {
+          'lenderAddress': {
+            $regex: lenderAddress,
+            $options: 'i',
+          },
+        },
+        ...includeRetired === true ? {} : {
+          'retired': {
+            $ne: true,
+          },
+        },
+      },
+    }, {
+      $lookup: {
+        from: 'nftCollections',
+        localField: 'nftCollection',
+        foreignField: '_id',
+        as: 'collection',
+      },
+    }, {
+      $unwind: '$collection',
+    },
+    ...collectionAddress === undefined ? [] : [{
+      $match: {
+        'collection.address': {
+          $regex: collectionAddress,
           $options: 'i',
         },
       },
-      ...lenderAddress === undefined ? {} : {
-        'lenderAddress': {
-          $regex: lenderAddress,
-          $options: 'i',
-        },
-      },
-      ...includeRetired === true ? {} : {
-        'retired': {
-          $ne: true,
-        },
-      },
-    },
-  }, {
-    $lookup: {
-      from: 'nftCollections',
-      localField: 'nftCollection',
-      foreignField: '_id',
-      as: 'collection',
-    },
-  }, {
-    $unwind: '$collection',
-  },
-  ...collectionAddress === undefined ? [] : [{
-    $match: {
-      'collection.address': {
-        $regex: collectionAddress,
-        $options: 'i',
-      },
-    },
-  }], {
-    $limit: 1,
-  }]
+    }], {
+      $limit: 1,
+    }]
 
-  return stages
+    return stages
+  }
+  catch (err) {
+    throw fault('ERR_IS_POOL_PUBLISHED_GET_PIPELINE_STAGES', undefined, err)
+  }
 }
