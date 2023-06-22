@@ -1,6 +1,5 @@
 import axios from 'axios'
 import BigNumber from 'bignumber.js'
-import { CoinGeckoClient } from 'coingecko-api-v3'
 import _ from 'lodash'
 import Web3 from 'web3'
 import appConf from '../../app.conf'
@@ -11,6 +10,7 @@ import rethrow from '../../utils/rethrow'
 import { getEthCollectionMetadata } from '../collections'
 import DataSource from '../utils/DataSource'
 import getRequest from '../utils/getRequest'
+import getTokenUSDPrice, { AvailableToken } from '../utils/getTokenUSDPrice'
 import postRequest from '../utils/postRequest'
 
 type Params = {
@@ -277,14 +277,13 @@ export function useOpenSea({ blockchain, collectionAddress, nftId }: Params): Da
         })
       }
       else if (blockchain.networkId === Blockchain.Polygon.Network.MAIN) {
-        const client = new CoinGeckoClient({
-          timeout: 10000,
-          autoRetry: true,
-        }, 'CG-JU9yFWZXNqUdsWHs32HnRUXG')
-        const maticPrice = await client.simplePrice({ 'vs_currencies': 'eth', 'ids': 'matic-network' })
+        const [ethPrice, maticPrice] = await Promise.all([
+          getTokenUSDPrice(AvailableToken.ETH),
+          getTokenUSDPrice(AvailableToken.MATIC),
+        ])
         return Valuation.factory({
-          value: Value.$ETH(value.dividedBy((maticPrice as { 'matic-network': { eth: number } })?.['matic-network']?.eth ?? 0)),
-          value24Hr: Value.$ETH(value24Hr.dividedBy((maticPrice as { 'matic-network': { eth: number } })?.['matic-network']?.eth ?? 0)),
+          value: Value.$ETH(value.times(ethPrice.amount).div(maticPrice.amount)),
+          value24Hr: Value.$ETH(value24Hr.times(ethPrice.amount).div(maticPrice.amount)),
         })
       }
       else rethrow(`Unsupported Ethereum network <${blockchain.networkId}>`)
