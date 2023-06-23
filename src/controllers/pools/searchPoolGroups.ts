@@ -235,7 +235,7 @@ function getPipelineStages({
     case PoolSortType.BORROWING:
       stages.push({
         $sort: {
-          'pools.lowestAPR': sortBy?.direction === PoolSortDirection.DESC ? 1 : -1,
+          'groupLowestARP': sortBy?.direction === PoolSortDirection.DESC ? 1 : -1,
           'pools.name': 1,
         },
       })
