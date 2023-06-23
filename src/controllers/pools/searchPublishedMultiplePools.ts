@@ -37,23 +37,26 @@ type Params = {
   }
 }
 
-export async function filterByNftId(blockchain: Blockchain, docs: any[], nftIds: string[]): Promise<any[]> {
+export async function filterByNftId(blockchain: Blockchain, docs: any[], nftIds: string[], collectionAddresses?: string[]): Promise<any[]> {
   try {
     if (docs.length) {
-      let subDocs = docs
-      nftIds.forEach(async nftId => {
-        const metadata = await getEthNFTMetadata({ blockchain, collectionAddress: docs[0].collection.address, nftId })
-        const nftProps = { id: nftId, ...metadata }
-        subDocs = subDocs.concat(docs.filter(doc => {
-          if (_.isString(_.get(doc, 'collection.matcher.regex')) && _.isString(_.get(doc, 'collection.matcher.fieldPath'))) {
-            const regex = new RegExp(doc.collection.matcher.regex)
-            if (regex.test(_.get(nftProps, doc.collection.matcher.fieldPath))) return true
-            return false
+      const subDocs: any[] = []
+      if (!collectionAddresses) collectionAddresses = _.uniq(docs.map(doc => doc.collection.address))
+      const regexDocs = docs.filter(doc => _.isString(_.get(doc, 'collection.matcher.regex')) && _.isString(_.get(doc, 'collection.matcher.fieldPath')))
+
+      regexDocs.forEach(async doc => {
+        const nftId = collectionAddresses?.indexOf(doc.collection.address) || -1
+        if (nftId >= 0) {
+          const metadata = await getEthNFTMetadata({ blockchain, collectionAddress: doc.collection.address, nftId: nftIds[nftId] })
+          const nftProps = { id: nftIds[nftId], ...metadata }
+          const regex = new RegExp(doc.collection.matcher.regex)
+          if (regex.test(_.get(nftProps, doc.collection.matcher.fieldPath))) {
+            subDocs.push(doc)
           }
-          return true
-        }))
+        }
       })
-      return subDocs.length ? subDocs : docs
+
+      return _.xor(docs, regexDocs).concat(subDocs)
     }
     return docs
   }
@@ -74,7 +77,7 @@ async function searchPublishedMultiplePools({
     let docs
     if (params.nftIds !== undefined) {
       docs = await aggregation.exec()
-      docs = await filterByNftId(Blockchain.parseBlockchain(params.blockchainFilter ?? {}), docs, params.nftIds)
+      docs = await filterByNftId(Blockchain.parseBlockchain(params.blockchainFilter ?? {}), docs, params.nftIds, params.collectionAddresses)
 
       if (paginateBy !== undefined) {
         docs = docs.slice(paginateBy.offset, paginateBy.offset + paginateBy.count - 1)
