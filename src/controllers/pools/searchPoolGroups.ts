@@ -161,6 +161,12 @@ function getPipelineStages({
         groupUtilization: {
           $sum: '$utilizationEth',
         },
+        groupLowestARP: {
+          $min: '$lowestAPR',
+        },
+        groupMaxLTV: {
+          $max: '$maxLTV',
+        },
         pools: {
           $push: '$$ROOT',
         },
@@ -197,7 +203,7 @@ function getPipelineStages({
     case PoolSortType.INTEREST:
       stages.push({
         $sort: {
-          'pools.lowestAPR': sortBy?.direction === PoolSortDirection.DESC ? -1 : 1,
+          'groupLowestARP': sortBy?.direction === PoolSortDirection.DESC ? -1 : 1,
           'pools.name': 1,
         },
       })
@@ -205,7 +211,7 @@ function getPipelineStages({
     case PoolSortType.LTV:
       stages.push({
         $sort: {
-          'pools.maxLTV': sortBy?.direction === PoolSortDirection.DESC ? -1 : 1,
+          'groupMaxLTV': sortBy?.direction === PoolSortDirection.DESC ? -1 : 1,
           'pools.name': 1,
         },
       })

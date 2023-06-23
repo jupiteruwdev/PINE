@@ -49,17 +49,19 @@ type Params = {
 export async function filterByNftId(blockchain: Blockchain, docs: any[], nftId: string): Promise<any[]> {
   try {
     if (docs.length) {
-      const metadata = await getEthNFTMetadata({ blockchain, collectionAddress: docs[0].collection.address, nftId })
-      const nftProps = { id: nftId, ...metadata }
-      const subDocs = docs.filter(doc => {
-        if (_.isString(_.get(doc, 'collection.matcher.regex')) && _.isString(_.get(doc, 'collection.matcher.fieldPath'))) {
-          const regex = new RegExp(doc.collection.matcher.regex)
-          if (regex.test(_.get(nftProps, doc.collection.matcher.fieldPath))) return true
-          return false
-        }
-        return true
-      })
-      return subDocs.length ? subDocs : docs
+      if (_.isString(_.get(docs[0], 'collection.matcher.regex')) && _.isString(_.get(docs[0], 'collection.matcher.fieldPath'))) {
+        const metadata = await getEthNFTMetadata({ blockchain, collectionAddress: docs[0].collection.address, nftId })
+        const nftProps = { id: nftId, ...metadata }
+        const subDocs = docs.filter(doc => {
+          if (_.isString(_.get(doc, 'collection.matcher.regex')) && _.isString(_.get(doc, 'collection.matcher.fieldPath'))) {
+            const regex = new RegExp(doc.collection.matcher.regex)
+            if (regex.test(_.get(nftProps, doc.collection.matcher.fieldPath))) return true
+            return false
+          }
+          return true
+        })
+        return subDocs.length ? subDocs : docs
+      }
     }
     return docs
   }
