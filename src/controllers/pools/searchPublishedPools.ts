@@ -14,6 +14,7 @@ export enum PoolSortType {
   INTEREST = 'interest',
   UTILIZATION = 'utilization',
   TVL = 'tvl',
+  BORROWING = 'borrowing'
 }
 
 export enum PoolSortDirection {
