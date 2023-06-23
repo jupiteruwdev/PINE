@@ -16,7 +16,7 @@ async function getPoolMaxLoanLimit({ address, blockchain }: Params): Promise<str
     return new BigNumber(maxLoanLimit).gt('0') ? maxLoanLimit : null
   }
   catch (err) {
-    logger.info(`Get max loan limit for pool ${address} ERR:`, err)
+    logger.error(`Get max loan limit for pool ${address} ERR:`, err)
     return null
   }
 }

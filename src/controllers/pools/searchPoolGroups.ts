@@ -2,6 +2,7 @@ import BigNumber from 'bignumber.js'
 import { PipelineStage } from 'mongoose'
 import { PoolModel } from '../../db'
 import { Blockchain, NFT, Pool, PoolGroup, Value } from '../../entities'
+import fault from '../../utils/fault'
 import logger from '../../utils/logger'
 import { mapPool } from '../adapters'
 import { getNFTsByOwner } from '../collaterals'
@@ -31,13 +32,18 @@ async function searchPublishedPoolGroups({
   paginateBy,
   ...params
 }: Params = {}): Promise<Pool[][]> {
-  const aggregation = PoolModel.aggregate(getPipelineStages({
-    ...params,
-  }))
+  try {
+    const aggregation = PoolModel.aggregate(getPipelineStages({
+      ...params,
+    }))
 
-  const docs = paginateBy === undefined ? await aggregation.exec() : await aggregation.skip(paginateBy.offset).limit(paginateBy.count).exec()
+    const docs = paginateBy === undefined ? await aggregation.exec() : await aggregation.skip(paginateBy.offset).limit(paginateBy.count).exec()
 
-  return docs.map(doc => doc.pools.map(mapPool))
+    return docs.map(doc => doc.pools.map(mapPool))
+  }
+  catch (err) {
+    throw fault('ERR_SEARCH_PUBLISHED_POOL_GROUPS', undefined, err)
+  }
 }
 
 function getPipelineStages({
@@ -52,186 +58,191 @@ function getPipelineStages({
   collectionName,
   sortBy,
 }: Params = {}): PipelineStage[] {
-  const blockchains = Blockchain.fromFilter(blockchainFilter)
+  try {
+    const blockchains = Blockchain.fromFilter(blockchainFilter)
 
-  const collectionFilter = [
-    ...collectionAddress === undefined ? [] : [{
-      'collection.address': {
-        $regex: collectionAddress,
-        $options: 'i',
-      },
-    }],
-    ...collectionName === undefined ? [] : [{
-      'collection.displayName': {
-        $regex: `.*${collectionName}.*`,
-        $options: 'i',
-      },
-    }],
-  ]
+    const collectionFilter = [
+      ...collectionAddress === undefined ? [] : [{
+        'collection.address': {
+          $regex: collectionAddress,
+          $options: 'i',
+        },
+      }],
+      ...collectionName === undefined ? [] : [{
+        'collection.displayName': {
+          $regex: `.*${collectionName}.*`,
+          $options: 'i',
+        },
+      }],
+    ]
 
-  const stages: PipelineStage[] = [{
-    $match: {
-      'retired': { $ne: true },
-      '$or': blockchains.map(blockchain => ({
-        $and: [
-          { 'networkType': blockchain.network },
-          { 'networkId': blockchain.networkId },
-        ],
-      })),
-      'valueLockedEth': {
-        $gte: 0.01,
-      },
-    },
-  }, {
-    $lookup: {
-      from: 'nftCollections',
-      localField: 'nftCollection',
-      foreignField: '_id',
-      as: 'collection',
-    },
-  }, {
-    $unwind: '$collection',
-  },
-  ...collectionFilter.length === 0 ? [] : [{
-    $match: { $and: collectionFilter },
-  }], {
-    $addFields: {
-      name: {
-        $toLower: {
-          $trim: {
-            input: '$collection.displayName',
-            chars: '"',
-          },
-        },
-      },
-      interest: {
-        $min: '$loanOptions.interestBpsBlock',
-      },
-      interestOverride: {
-        $min: '$loanOptions.interestBpsBlockOverride',
-      },
-      maxLTV: {
-        $max: '$loanOptions.maxLtvBps',
-      },
-    },
-  }, {
-    $addFields: {
-      lowestAPR: {
-        $cond: {
-          if: {
-            $ne: ['$interestOverride', null],
-          },
-          then: '$interestOverride',
-          else: '$interest',
-        },
-      },
-      valueLockedUSD: {
-        $switch: {
-          branches: [
-            {
-              case: { $eq: ['$networkId', '1'] },
-              then: { $multiply: ['$valueLockedEth', ethOneValueUSD?.amount.toNumber()] },
-            },
-            {
-              case: { $eq: ['$networkId', '137'] },
-              then: { $multiply: ['$valueLockedEth', ethTwoValueUSD?.amount.toNumber()] },
-            },
+    const stages: PipelineStage[] = [{
+      $match: {
+        'retired': { $ne: true },
+        '$or': blockchains.map(blockchain => ({
+          $and: [
+            { 'networkType': blockchain.network },
+            { 'networkId': blockchain.networkId },
           ],
-          default: { $multiply: ['$valueLockedEth', ethOneValueUSD?.amount.toNumber()] },
+        })),
+        'valueLockedEth': {
+          $gte: 0.01,
+        },
+      },
+    }, {
+      $lookup: {
+        from: 'nftCollections',
+        localField: 'nftCollection',
+        foreignField: '_id',
+        as: 'collection',
+      },
+    }, {
+      $unwind: '$collection',
+    },
+    ...collectionFilter.length === 0 ? [] : [{
+      $match: { $and: collectionFilter },
+    }], {
+      $addFields: {
+        name: {
+          $toLower: {
+            $trim: {
+              input: '$collection.displayName',
+              chars: '"',
+            },
+          },
+        },
+        interest: {
+          $min: '$loanOptions.interestBpsBlock',
+        },
+        interestOverride: {
+          $min: '$loanOptions.interestBpsBlockOverride',
+        },
+        maxLTV: {
+          $max: '$loanOptions.maxLtvBps',
+        },
+      },
+    }, {
+      $addFields: {
+        lowestAPR: {
+          $cond: {
+            if: {
+              $ne: ['$interestOverride', null],
+            },
+            then: '$interestOverride',
+            else: '$interest',
+          },
+        },
+        valueLockedUSD: {
+          $switch: {
+            branches: [
+              {
+                case: { $eq: ['$networkId', '1'] },
+                then: { $multiply: ['$valueLockedEth', ethOneValueUSD?.amount.toNumber()] },
+              },
+              {
+                case: { $eq: ['$networkId', '137'] },
+                then: { $multiply: ['$valueLockedEth', ethTwoValueUSD?.amount.toNumber()] },
+              },
+            ],
+            default: { $multiply: ['$valueLockedEth', ethOneValueUSD?.amount.toNumber()] },
+          },
         },
       },
     },
-  },
-  {
-    $group: {
-      _id: '$collection.address',
-      groupValueLockedUSD: {
-        $sum: '$valueLockedUSD',
-      },
-      groupValueLocked: {
-        $sum: '$valueLockedEth',
-      },
-      groupUtilization: {
-        $sum: '$utilizationEth',
-      },
-      pools: {
-        $push: '$$ROOT',
-      },
-    },
-  },
-  {
-    $addFields: {
-      totalUtilization: {
-        $cond: {
-          if: {
-            $ne: ['$groupValueLocked', 0],
-          },
-          then: {
-            $divide: ['$groupUtilization', '$groupValueLocked'],
-          },
-          else: 0,
+    {
+      $group: {
+        _id: '$collection.address',
+        groupValueLockedUSD: {
+          $sum: '$valueLockedUSD',
+        },
+        groupValueLocked: {
+          $sum: '$valueLockedEth',
+        },
+        groupUtilization: {
+          $sum: '$utilizationEth',
+        },
+        pools: {
+          $push: '$$ROOT',
         },
       },
     },
-  },
-  {
-    $unset: '_id',
-  },
-  ]
+    {
+      $addFields: {
+        totalUtilization: {
+          $cond: {
+            if: {
+              $ne: ['$groupValueLocked', 0],
+            },
+            then: {
+              $divide: ['$groupUtilization', '$groupValueLocked'],
+            },
+            else: 0,
+          },
+        },
+      },
+    },
+    {
+      $unset: '_id',
+    },
+    ]
 
-  switch (sortBy?.type) {
-  case PoolSortType.NAME:
-    stages.push({
-      $sort: {
-        'pools.name': sortBy?.direction === PoolSortDirection.DESC ? -1 : 1,
-      },
-    })
-    break
-  case PoolSortType.INTEREST:
-    stages.push({
-      $sort: {
-        'pools.lowestAPR': sortBy?.direction === PoolSortDirection.DESC ? -1 : 1,
-        'pools.name': 1,
-      },
-    })
-    break
-  case PoolSortType.LTV:
-    stages.push({
-      $sort: {
-        'pools.maxLTV': sortBy?.direction === PoolSortDirection.DESC ? -1 : 1,
-        'pools.name': 1,
-      },
-    })
-    break
-  case PoolSortType.UTILIZATION:
-    stages.push({
-      $sort: {
-        'totalUtilization': sortBy?.direction === PoolSortDirection.DESC ? -1 : 1,
-        'pools.name': 1,
-      },
-    })
-    break
-  case PoolSortType.TVL:
-    stages.push({
-      $sort: {
-        'groupValueLockedUSD': sortBy?.direction === PoolSortDirection.DESC ? -1 : 1,
-        'pools.name': 1,
-      },
-    })
-    break
-  case PoolSortType.BORROWING:
-    stages.push({
-      $sort: {
-        'pools.lowestAPR': sortBy?.direction === PoolSortDirection.DESC ? 1 : -1,
-        'pools.name': 1,
-      },
-    })
-    break
+    switch (sortBy?.type) {
+    case PoolSortType.NAME:
+      stages.push({
+        $sort: {
+          'pools.name': sortBy?.direction === PoolSortDirection.DESC ? -1 : 1,
+        },
+      })
+      break
+    case PoolSortType.INTEREST:
+      stages.push({
+        $sort: {
+          'pools.lowestAPR': sortBy?.direction === PoolSortDirection.DESC ? -1 : 1,
+          'pools.name': 1,
+        },
+      })
+      break
+    case PoolSortType.LTV:
+      stages.push({
+        $sort: {
+          'pools.maxLTV': sortBy?.direction === PoolSortDirection.DESC ? -1 : 1,
+          'pools.name': 1,
+        },
+      })
+      break
+    case PoolSortType.UTILIZATION:
+      stages.push({
+        $sort: {
+          'totalUtilization': sortBy?.direction === PoolSortDirection.DESC ? -1 : 1,
+          'pools.name': 1,
+        },
+      })
+      break
+    case PoolSortType.TVL:
+      stages.push({
+        $sort: {
+          'groupValueLockedUSD': sortBy?.direction === PoolSortDirection.DESC ? -1 : 1,
+          'pools.name': 1,
+        },
+      })
+      break
+    case PoolSortType.BORROWING:
+      stages.push({
+        $sort: {
+          'pools.lowestAPR': sortBy?.direction === PoolSortDirection.DESC ? 1 : -1,
+          'pools.name': 1,
+        },
+      })
+      break
+    }
+
+    return [
+      ...stages,
+    ]
   }
-
-  return [
-    ...stages,
-  ]
+  catch (err) {
+    throw fault('ERR_SEARCH_POOL_GROUPS_GET_PIPELINE_STAGES', undefined, err)
+  }
 }
 
 export default async function searchPoolGroups({
@@ -318,6 +329,6 @@ export default async function searchPoolGroups({
     logger.error('Searching pool groups... ERR')
     if (logger.isErrorEnabled() && !logger.silent) console.error(err)
 
-    throw err
+    throw fault('ERR_SERACH_POOL_GROUPS', undefined, err)
   }
 }

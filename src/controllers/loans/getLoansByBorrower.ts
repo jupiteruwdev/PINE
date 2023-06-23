@@ -83,37 +83,42 @@ export default async function getLoansByBorrower({
 
 export function useGraph({ blockchain, borrowerAddress }: Params): DataSource<Loan[]> {
   return async () => {
-    logger.info(`...using Graph to look up loans by borrower <${borrowerAddress}>`)
+    try {
+      logger.info(`...using Graph to look up loans by borrower <${borrowerAddress}>`)
 
-    if (blockchain.network !== 'ethereum' && blockchain.network !== 'polygon') rethrow(`Unsupported blockchain <${JSON.stringify(blockchain)}>`)
+      if (blockchain.network !== 'ethereum' && blockchain.network !== 'polygon') rethrow(`Unsupported blockchain <${JSON.stringify(blockchain)}>`)
 
-    const onChainLoans = await getOnChainLoans({ borrowerAddress }, { networkId: blockchain.networkId })
+      const onChainLoans = await getOnChainLoans({ borrowerAddress }, { networkId: blockchain.networkId })
 
-    const loans = onChainLoans.map(loan => {
-      const collectionAddress = loan.id.split('/')[0] ?? ''
-      const nftId = loan.id.split('/')[1] ?? ''
+      const loans = onChainLoans.map(loan => {
+        const collectionAddress = loan.id.split('/')[0] ?? ''
+        const nftId = loan.id.split('/')[1] ?? ''
 
-      return Loan.factory({
-        accuredInterest: Value.$WEI(loan.accuredInterestWei),
-        borrowed: Value.$ETH(loan.borrowedWei),
-        borrowerAddress: loan.borrower,
-        expiresAt: new Date(_.toNumber(loan.loanExpiretimestamp) * 1000),
-        interestBPSPerBlock: new BigNumber(loan.interestBPS1000000XBlock).dividedBy(1_000_000),
-        loanStartBlock: loan.loanStartBlock,
-        maxLTVBPS: new BigNumber(loan.maxLTVBPS),
-        nft: NFT.factory({
-          collection: Collection.factory({
-            address: collectionAddress,
-            blockchain,
+        return Loan.factory({
+          accuredInterest: Value.$WEI(loan.accuredInterestWei),
+          borrowed: Value.$ETH(loan.borrowedWei),
+          borrowerAddress: loan.borrower,
+          expiresAt: new Date(_.toNumber(loan.loanExpiretimestamp) * 1000),
+          interestBPSPerBlock: new BigNumber(loan.interestBPS1000000XBlock).dividedBy(1_000_000),
+          loanStartBlock: loan.loanStartBlock,
+          maxLTVBPS: new BigNumber(loan.maxLTVBPS),
+          nft: NFT.factory({
+            collection: Collection.factory({
+              address: collectionAddress,
+              blockchain,
+            }),
+            id: nftId,
           }),
-          id: nftId,
-        }),
-        poolAddress: loan.pool,
-        repaidInterest: Value.$WEI(loan.repaidInterestWei),
-        returned: Value.$WEI(loan.returnedWei),
+          poolAddress: loan.pool,
+          repaidInterest: Value.$WEI(loan.repaidInterestWei),
+          returned: Value.$WEI(loan.returnedWei),
+        })
       })
-    })
 
-    return loans
+      return loans
+    }
+    catch (err) {
+      throw fault('ERR_GET_LOANS_BY_BORROWER_USE_GRAPH', undefined, err)
+    }
   }
 }
