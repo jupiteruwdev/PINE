@@ -43,9 +43,8 @@ export async function filterByNftId(blockchain: Blockchain, docs: any[], nftIds:
       const subDocs: any[] = []
       if (!collectionAddresses) collectionAddresses = _.uniq(docs.map(doc => doc.collection.address))
       const regexDocs = docs.filter(doc => _.isString(_.get(doc, 'collection.matcher.regex')) && _.isString(_.get(doc, 'collection.matcher.fieldPath')))
-
-      regexDocs.forEach(async doc => {
-        const nftId = collectionAddresses?.indexOf(doc.collection.address) || -1
+      for (const doc of regexDocs) {
+        const nftId = (collectionAddresses || [])?.indexOf(doc.collection.address)
         if (nftId >= 0) {
           const metadata = await getEthNFTMetadata({ blockchain, collectionAddress: doc.collection.address, nftId: nftIds[nftId] })
           const nftProps = { id: nftIds[nftId], ...metadata }
@@ -54,7 +53,7 @@ export async function filterByNftId(blockchain: Blockchain, docs: any[], nftIds:
             subDocs.push(doc)
           }
         }
-      })
+      }
 
       return _.xor(docs, regexDocs).concat(subDocs)
     }
