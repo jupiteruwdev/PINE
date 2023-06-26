@@ -17,6 +17,7 @@ type Params = {
   blockchain: Blockchain
   collectionAddress: string
   nftId: string
+  vendorIds?: Record<string, string>
 }
 
 const nftPerpSlugs: Record<string, string> = {
@@ -37,6 +38,7 @@ export default async function getEthNFTValuation({
   blockchain,
   collectionAddress,
   nftId,
+  vendorIds,
 }: Params): Promise<Valuation> {
   try {
     logger.info(`Fetching valuation for Ethereum NFT <${collectionAddress}/${nftId}>...`)
@@ -47,13 +49,13 @@ export default async function getEthNFTValuation({
     case Blockchain.Ethereum.Network.MAIN:
     case Blockchain.Polygon.Network.MAIN:
       const valuation = await DataSource.fetch(
-        useNFTPerp({ blockchain, collectionAddress, nftId }),
-        useZyteOnePlanet({ blockchain, collectionAddress, nftId }),
-        useMetaquants({ blockchain, collectionAddress, nftId }),
-        useOpenSea({ blockchain, collectionAddress, nftId }),
-        useAlchemy({ blockchain, collectionAddress, nftId }),
-        useSpicyest({ blockchain, collectionAddress, nftId }),
-        useGemXYZ({ blockchain, collectionAddress, nftId }),
+        useNFTPerp({ blockchain, collectionAddress, nftId, vendorIds }),
+        useZyteOnePlanet({ blockchain, collectionAddress, nftId, vendorIds }),
+        useMetaquants({ blockchain, collectionAddress, nftId, vendorIds }),
+        useOpenSea({ blockchain, collectionAddress, nftId, vendorIds }),
+        useAlchemy({ blockchain, collectionAddress, nftId, vendorIds }),
+        useSpicyest({ blockchain, collectionAddress, nftId, vendorIds }),
+        useGemXYZ({ blockchain, collectionAddress, nftId, vendorIds }),
       )
 
       return valuation
@@ -152,8 +154,6 @@ export function useMetaquants({ blockchain, collectionAddress, nftId }: Params):
       if (blockchain.networkId !== Blockchain.Ethereum.Network.MAIN) rethrow(`Unsupported Ethereum network <${blockchain.networkId}>`)
 
       const apiKey = appConf.metaquantsAPIKey ?? rethrow('Missing Metaquants API key')
-      const collectionMetadata = await getEthCollectionMetadata({ blockchain, collectionAddress, matchSubcollectionBy: { type: 'nftId', value: nftId } })
-      const vendorId = collectionMetadata.vendorIds?.['metaquants'] ?? (blockchain as Blockchain<'polygon'>).networkId === Blockchain.Polygon.Network.MAIN ? collectionAddress : rethrow('No vendor ID found')
 
       const res = await getRequest(`https://api.metaquants.xyz/v1/realtime-floor-price/${collectionAddress.toLowerCase()}`, {
         headers: {
@@ -178,7 +178,7 @@ export function useMetaquants({ blockchain, collectionAddress, nftId }: Params):
   }
 }
 
-export function useZyteOnePlanet({ blockchain, collectionAddress, nftId }: Params): DataSource<Valuation> {
+export function useZyteOnePlanet({ blockchain, collectionAddress, nftId, vendorIds }: Params): DataSource<Valuation> {
   return async () => {
     try {
       logger.info(`...using Zyte to determine valuation for Ethereum NFT <${collectionAddress}/${nftId}>`)
@@ -186,8 +186,11 @@ export function useZyteOnePlanet({ blockchain, collectionAddress, nftId }: Param
       if (blockchain.networkId !== Blockchain.Ethereum.Network.MAIN && blockchain.networkId !== Blockchain.Polygon.Network.MAIN) rethrow(`Unsupported Ethereum network <${blockchain.networkId}>`)
 
       const apiKey = appConf.zyteAPIKey ?? rethrow('Missing Zyte API key')
-      const collectionMetadata = await getEthCollectionMetadata({ blockchain, collectionAddress, matchSubcollectionBy: { type: 'nftId', value: nftId } })
-      const vendorId = collectionMetadata.vendorIds?.['zyte'] ?? rethrow('No vendor ID found')
+      if (!vendorIds) {
+        const collectionMetadata = await getEthCollectionMetadata({ blockchain, collectionAddress, matchSubcollectionBy: { type: 'nftId', value: nftId } })
+        vendorIds = collectionMetadata.vendorIds
+      }
+      const vendorId = vendorIds?.['zyte'] ?? rethrow('No vendor ID found')
 
       const { data } = await axios.post(
         'https://api.zyte.com/v1/extract',
@@ -248,7 +251,7 @@ export function useAlchemy({ blockchain, collectionAddress, nftId }: Params): Da
   }
 }
 
-export function useOpenSea({ blockchain, collectionAddress, nftId }: Params): DataSource<Valuation> {
+export function useOpenSea({ blockchain, collectionAddress, nftId, vendorIds }: Params): DataSource<Valuation> {
   return async () => {
     try {
       logger.info(`...using OpenSea to determine valuation for Ethereum NFT <${collectionAddress}/${nftId}>`)
@@ -256,8 +259,11 @@ export function useOpenSea({ blockchain, collectionAddress, nftId }: Params): Da
       if (blockchain.networkId !== Blockchain.Ethereum.Network.MAIN && blockchain.networkId !== Blockchain.Polygon.Network.MAIN) rethrow(`Unsupported Ethereum network <${blockchain.networkId}>`)
 
       const apiKey = appConf.openseaAPIKey ?? rethrow('Missing OpenSea API key')
-      const collectionMetadata = await getEthCollectionMetadata({ blockchain, collectionAddress, matchSubcollectionBy: { type: 'nftId', value: nftId } })
-      const vendorId = collectionMetadata.vendorIds?.['opensea'] ?? rethrow('No vendor ID found')
+      if (!vendorIds) {
+        const collectionMetadata = await getEthCollectionMetadata({ blockchain, collectionAddress, matchSubcollectionBy: { type: 'nftId', value: nftId } })
+        vendorIds = collectionMetadata.vendorIds
+      }
+      const vendorId = vendorIds?.['opensea'] ?? rethrow('No vendor ID found')
 
       const res = await getRequest(`https://api.opensea.io/api/v1/collection/${vendorId}/stats`, {
         headers: {
@@ -294,7 +300,7 @@ export function useOpenSea({ blockchain, collectionAddress, nftId }: Params): Da
   }
 }
 
-export function useGemXYZ({ blockchain, collectionAddress, nftId }: Params): DataSource<Valuation> {
+export function useGemXYZ({ blockchain, collectionAddress, nftId, vendorIds }: Params): DataSource<Valuation> {
   return async () => {
     try {
       logger.info(`...using GemXYZ to determine valuation for Ethereum NFT <${collectionAddress}/${nftId}>`)
@@ -302,8 +308,11 @@ export function useGemXYZ({ blockchain, collectionAddress, nftId }: Params): Dat
       if (blockchain.networkId !== Blockchain.Ethereum.Network.MAIN) rethrow(`Unsupported Ethereum network <${blockchain.networkId}>`)
 
       const apiKey = appConf.gemxyzAPIKey ?? rethrow('Missing GemXYZ API key')
-      const collectionMetadata = await getEthCollectionMetadata({ blockchain, collectionAddress, matchSubcollectionBy: { type: 'nftId', value: nftId } })
-      const vendorId = collectionMetadata.vendorIds?.['gemxyz'] ?? rethrow('No vendor ID found')
+      if (!vendorIds) {
+        const collectionMetadata = await getEthCollectionMetadata({ blockchain, collectionAddress, matchSubcollectionBy: { type: 'nftId', value: nftId } })
+        vendorIds = collectionMetadata.vendorIds
+      }
+      const vendorId = vendorIds?.['gemxyz'] ?? rethrow('No vendor ID found')
 
       const reqData = {
         filters: {

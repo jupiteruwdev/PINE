@@ -40,7 +40,7 @@ export default async function syncCollectionValuation() {
 
             const oldValuation = JSON.parse(JSON.stringify(collection.toObject().valuation?.value || {}))
 
-            const valuation = await getEthNFTValuation({ blockchain, collectionAddress: collection.address, nftId: nftId.toString() })
+            const valuation = await getEthNFTValuation({ blockchain, collectionAddress: collection.address, nftId: nftId.toString(), vendorIds: collection.vendorIds })
             collection.valuation = {
               ...Valuation.serialize(valuation),
               lastValue: oldValuation,
