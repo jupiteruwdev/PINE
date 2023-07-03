@@ -1,6 +1,7 @@
 import BigNumber from 'bignumber.js'
 import _ from 'lodash'
 import { PipelineStage } from 'mongoose'
+import appConf from '../../app.conf'
 import { PoolModel } from '../../db'
 import { Blockchain, Pool, Value } from '../../entities'
 import fault from '../../utils/fault'
@@ -44,6 +45,7 @@ type Params = {
   }
   minorPools?: boolean
   convertToUSD?: boolean
+  includeInvalidTenors?: boolean
 }
 
 export async function filterByNftId(blockchain: Blockchain, docs: any[], nftId: string): Promise<any[]> {
@@ -74,6 +76,7 @@ async function searchPublishedPools({
   checkLimit,
   paginateBy,
   convertToUSD = true,
+  includeInvalidTenors = true,
   ...params
 }: Params): Promise<Pool[]> {
   try {
@@ -111,7 +114,19 @@ async function searchPublishedPools({
     if (checkLimit) {
       return pools.filter(pool => !(!!pool.collection?.valuation?.value?.amount && pool.ethLimit !== 0 && pool.loanOptions.some(option => pool.utilization?.amount.plus(pool.collection?.valuation?.value?.amount ?? new BigNumber(0)).gt(new BigNumber(pool.ethLimit ?? 0)))))
     }
-    return pools
+
+    if (includeInvalidTenors) return pools
+
+    const filteredPools: Pool[] = []
+    pools.forEach(pool => {
+      const filteredLoanOptions = pool.loanOptions.filter(loanOption => appConf.tenors.find(tenor => Math.abs(Tenor.convertTenor(tenor) - loanOption.loanDurationSeconds) <= 1))
+      if (filteredLoanOptions.length) {
+        pool.loanOptions = filteredLoanOptions
+        filteredPools.push(pool)
+      }
+    })
+
+    return filteredPools
   }
   catch (err) {
     throw fault('ERR_SERACH_PUBLISHED_POOLS', undefined, err)

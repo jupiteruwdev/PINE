@@ -1,5 +1,6 @@
 import _ from 'lodash'
 import { PipelineStage } from 'mongoose'
+import appConf from '../../app.conf'
 import { PoolModel } from '../../db'
 import { Blockchain, Pool } from '../../entities'
 import fault from '../../utils/fault'
@@ -35,6 +36,7 @@ type Params = {
     type: PoolSortType
     direction: PoolSortDirection
   }
+  includeInvalidTenors?: boolean
 }
 
 export async function filterByNftId(blockchain: Blockchain, docs: any[], nftIds: string[], collectionAddresses?: string[]): Promise<any[]> {
@@ -66,6 +68,7 @@ export async function filterByNftId(blockchain: Blockchain, docs: any[], nftIds:
 
 async function searchPublishedMultiplePools({
   paginateBy,
+  includeInvalidTenors = true,
   ...params
 }: Params): Promise<Pool[]> {
   try {
@@ -88,7 +91,20 @@ async function searchPublishedMultiplePools({
 
     const pools = docs.map(mapPool)
 
-    return pools
+    if (includeInvalidTenors) {
+      return pools
+    }
+
+    const filteredPools: Pool[] = []
+    pools.forEach(pool => {
+      const filteredLoanOptions = pool.loanOptions.filter(loanOption => appConf.tenors.find(tenor => Math.abs(Tenor.convertTenor(tenor) - loanOption.loanDurationSeconds) <= 1))
+      if (filteredLoanOptions.length) {
+        pool.loanOptions = filteredLoanOptions
+        filteredPools.push(pool)
+      }
+    })
+
+    return filteredPools
   }
   catch (err) {
     throw fault('ERR_SEARCH_PUBLISHED_MULTIPLE_POOLS', undefined, err)

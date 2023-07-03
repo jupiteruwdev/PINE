@@ -136,6 +136,7 @@ router.get('/', async (req, res, next) => {
       nftId,
       paginateBy,
       checkLimit,
+      includeInvalidTenors: false,
     })
 
     const payload = serializeEntityArray(pools, Pool.codingResolver)
