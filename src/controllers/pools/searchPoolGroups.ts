@@ -2,7 +2,7 @@ import BigNumber from 'bignumber.js'
 import { PipelineStage } from 'mongoose'
 import appConf from '../../app.conf'
 import { PoolModel } from '../../db'
-import { Blockchain, LoanOption, NFT, Pool, PoolGroup, Value } from '../../entities'
+import { Blockchain, NFT, Pool, PoolGroup, Value } from '../../entities'
 import fault from '../../utils/fault'
 import logger from '../../utils/logger'
 import { mapPool } from '../adapters'
@@ -89,6 +89,28 @@ function getPipelineStages({
         })),
         'valueLockedEth': {
           $gte: 0.01,
+        },
+      },
+    }, {
+      $addFields: {
+        loanOptions: {
+          $filter: {
+            input: '$loanOptions',
+            as: 'loanOption',
+            cond: {
+              $or: [
+                ...Tenor.convertTenors(appConf.tenors).map(seconds => ({
+                  $eq: ['$$loanOption.loanDurationSecond', seconds],
+                })),
+              ],
+            },
+          },
+        },
+      },
+    }, {
+      $match: {
+        'loanOptions.0': {
+          $exists: true,
         },
       },
     }, {
@@ -306,10 +328,6 @@ export default async function searchPoolGroups({
         collection: group[0].collection,
         pools: group.map(pool => ({
           ...pool,
-          loanOptions: !paginateBy ? pool.loanOptions.filter(
-            (loanOption: LoanOption) =>
-              appConf.tenors.find(tenor => Math.abs(Tenor.convertTenor(tenor) - loanOption.loanDurationSeconds) <= 1)
-          ) : pool.loanOptions,
           valueLocked: Value.$USD(pool.valueLocked.amount.times(ethValueUSD.amount)),
           utilization: Value.$USD(pool.utilization.amount.times(ethValueUSD.amount)),
         })),
