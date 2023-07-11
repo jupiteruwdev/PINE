@@ -1,14 +1,12 @@
 import BigNumber from 'bignumber.js'
 import EthDater from 'ethereum-block-by-date'
 import keccak from 'keccak'
-import _ from 'lodash'
 import { MerkleTree } from 'merkletreejs'
 import Web3 from 'web3'
 import VEPINE_ABI from '../abis/VePine.json' assert { type: 'json' }
 import appConf from '../app.conf'
-import { getUsageValues } from '../controllers/stats/getUserUsageStats'
 import getEthWeb3 from '../controllers/utils/getEthWeb3'
-import { BorrowSnapshotModel, LendingSnapshotModel, MerkleTreeModel, PriceModel, initDb } from '../db'
+import { MerkleTreeModel, PriceModel, initDb } from '../db'
 import { Blockchain, Value } from '../entities'
 import fault from '../utils/fault'
 import logger from '../utils/logger'
@@ -82,35 +80,35 @@ export default async function syncMerkleTree() {
       currency: maticPrice?.value?.currency,
     })
 
-    const allBorrowingSnapshots = await BorrowSnapshotModel.find({
-      createdAt: {
-        $gt: startDate,
-      },
-      collectionAddress: {
-        $not: {
-          $in: blockedCollections,
-        },
-      },
-    })
-    const allLendingSnapshots = await LendingSnapshotModel.find({
-      createdAt: {
-        $gt: startDate,
-      },
-      collectionAddress: {
-        $not: {
-          $in: blockedCollections,
-        },
-      },
-    })
+    // const allBorrowingSnapshots = await BorrowSnapshotModel.find({
+    //   createdAt: {
+    //     $gt: startDate,
+    //   },
+    //   collectionAddress: {
+    //     $not: {
+    //       $in: blockedCollections,
+    //     },
+    //   },
+    // })
+    // const allLendingSnapshots = await LendingSnapshotModel.find({
+    //   createdAt: {
+    //     $gt: startDate,
+    //   },
+    //   collectionAddress: {
+    //     $not: {
+    //       $in: blockedCollections,
+    //     },
+    //   },
+    // })
 
-    const allIncentiveUsers: string[] = _.uniq([
-      ...allBorrowingSnapshots.map(
-        snapshot => snapshot.borrowerAddress?.toLowerCase() ?? ''
-      ),
-      ...allLendingSnapshots.map(
-        snapshot => snapshot.lenderAddress?.toLowerCase() ?? ''
-      ),
-    ])
+    // const allIncentiveUsers: string[] = _.uniq([
+    //   ...allBorrowingSnapshots.map(
+    //     snapshot => snapshot.borrowerAddress?.toLowerCase() ?? ''
+    //   ),
+    //   ...allLendingSnapshots.map(
+    //     snapshot => snapshot.lenderAddress?.toLowerCase() ?? ''
+    //   ),
+    // ])
 
     const now = new Date()
     now.setHours(now.getHours() - 1)
@@ -126,7 +124,8 @@ export default async function syncMerkleTree() {
     const users: string[] = await contract.methods.getAllUsers().call()
     const stakedUsers = users.map(user => user.toLowerCase())
 
-    const totalUsers = [...allIncentiveUsers, ...stakedUsers]
+    // const totalUsers = [...allIncentiveUsers, ...stakedUsers]
+    const totalUsers = [...stakedUsers]
     let block = startBlock
 
     let stakingSum = new BigNumber(0)
@@ -164,66 +163,66 @@ export default async function syncMerkleTree() {
 
     logger.info(`JOB_SYNC_MERKLE_TREE Total staking rewards: ${stakingSum.toString()}`)
 
-    let totalIncentiveRewards = new BigNumber(0)
+    // let totalIncentiveRewards = new BigNumber(0)
 
-    const snapshotStateDate = new Date(startDate)
-    while (1) {
-      if (
-        snapshotStateDate.getTime() > now.getTime()
-      ) { break }
-      let usagePerSnapshot = new BigNumber(0)
-      const currentSnapshotTime = snapshotStateDate.getTime()
-      snapshotStateDate.setUTCHours(snapshotStateDate.getUTCHours() + 1)
+    // const snapshotStateDate = new Date(startDate)
+    // while (1) {
+    //   if (
+    //     snapshotStateDate.getTime() > now.getTime()
+    //   ) { break }
+    //   let usagePerSnapshot = new BigNumber(0)
+    //   const currentSnapshotTime = snapshotStateDate.getTime()
+    //   snapshotStateDate.setUTCHours(snapshotStateDate.getUTCHours() + 1)
 
-      for (const incentiveUser of allIncentiveUsers) {
-        const currentBorrowingSnapshots = allBorrowingSnapshots.filter(
-          snapshot =>
-            new Date(_.get(snapshot, 'createdAt')).getTime() >
-              currentSnapshotTime &&
-            new Date(_.get(snapshot, 'createdAt')).getTime() <
-              snapshotStateDate.getTime()
-        )
-        const currentLendingSnapshots = allLendingSnapshots.filter(
-          snapshot =>
-            new Date(_.get(snapshot, 'createdAt')).getTime() >
-              currentSnapshotTime &&
-            new Date(_.get(snapshot, 'createdAt')).getTime() <
-              snapshotStateDate.getTime()
-        )
+    //   for (const incentiveUser of allIncentiveUsers) {
+    //     const currentBorrowingSnapshots = allBorrowingSnapshots.filter(
+    //       snapshot =>
+    //         new Date(_.get(snapshot, 'createdAt')).getTime() >
+    //           currentSnapshotTime &&
+    //         new Date(_.get(snapshot, 'createdAt')).getTime() <
+    //           snapshotStateDate.getTime()
+    //     )
+    //     const currentLendingSnapshots = allLendingSnapshots.filter(
+    //       snapshot =>
+    //         new Date(_.get(snapshot, 'createdAt')).getTime() >
+    //           currentSnapshotTime &&
+    //         new Date(_.get(snapshot, 'createdAt')).getTime() <
+    //           snapshotStateDate.getTime()
+    //     )
 
-        const { usagePercent, totalPercent } = await getUsageValues({
-          address: incentiveUser,
-          lendingSnapshots: currentLendingSnapshots,
-          borrowingSnapshots: currentBorrowingSnapshots,
-          tokenPrices: tokenUSDPrice,
-        })
+    //     const { usagePercent, totalPercent } = await getUsageValues({
+    //       address: incentiveUser,
+    //       lendingSnapshots: currentLendingSnapshots,
+    //       borrowingSnapshots: currentBorrowingSnapshots,
+    //       tokenPrices: tokenUSDPrice,
+    //     })
 
-        const protocolIncentivePerHour = appConf.incentiveRewards / 12 / 24 / 7
-        usagePerSnapshot = usagePerSnapshot.plus(usagePercent)
-        if (totalPercent.gt(0)) {
-          if (rewards[incentiveUser]) {
-            rewards[incentiveUser] = usagePercent
-              .times(protocolIncentivePerHour)
-              .div(totalPercent)
-              .plus(rewards[incentiveUser])
-          }
-          else {
-            rewards[incentiveUser] = usagePercent
-              .times(protocolIncentivePerHour)
-              .div(totalPercent)
-          }
-          totalIncentiveRewards = totalIncentiveRewards.plus(
-            usagePercent.times(protocolIncentivePerHour).div(totalPercent)
-          )
-        }
-      }
+    //     const protocolIncentivePerHour = appConf.incentiveRewards / 12 / 24 / 7
+    //     usagePerSnapshot = usagePerSnapshot.plus(usagePercent)
+    //     if (totalPercent.gt(0)) {
+    //       if (rewards[incentiveUser]) {
+    //         rewards[incentiveUser] = usagePercent
+    //           .times(protocolIncentivePerHour)
+    //           .div(totalPercent)
+    //           .plus(rewards[incentiveUser])
+    //       }
+    //       else {
+    //         rewards[incentiveUser] = usagePercent
+    //           .times(protocolIncentivePerHour)
+    //           .div(totalPercent)
+    //       }
+    //       totalIncentiveRewards = totalIncentiveRewards.plus(
+    //         usagePercent.times(protocolIncentivePerHour).div(totalPercent)
+    //       )
+    //     }
+    //   }
 
-      logger.info(
-        `JOB_SYNC_MERKLE_TREE Calculation usage sum for snapshot ${snapshotStateDate}: ${usagePerSnapshot.toString()}`
-      )
-    }
+    //   logger.info(
+    //     `JOB_SYNC_MERKLE_TREE Calculation usage sum for snapshot ${snapshotStateDate}: ${usagePerSnapshot.toString()}`
+    //   )
+    // }
 
-    logger.info(`JOB_SYNC_MERKLE_TREE Total incentive rewards: ${totalIncentiveRewards.toString()}`)
+    // logger.info(`JOB_SYNC_MERKLE_TREE Total incentive rewards: ${totalIncentiveRewards.toString()}`)
 
     const addresses = Array(smallestPowerOfTwoGreaterThan(totalUsers.length))
       .fill(
