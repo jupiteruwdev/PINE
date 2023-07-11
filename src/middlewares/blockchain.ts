@@ -11,6 +11,7 @@ export default function(req: Request, res: Response, next: NextFunction) {
     && blockchainFilter?.solana !== Blockchain.Solana.Network.DEVNET
     || blockchainFilter.polygon !== Blockchain.Polygon.Network.MAIN
     && blockchainFilter.polygon !== Blockchain.Polygon.Network.MUMBAI
+    || blockchainFilter.arbitrum !== Blockchain.Arbitrum.Network.MAIN
   ) {
     next(fault('ERR_UNSUPPORTED_BLOCKCHAIN', undefined))
   }

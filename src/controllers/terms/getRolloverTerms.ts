@@ -61,6 +61,7 @@ export default async function getRolloverTerms({
       }
 
       const associatedPools = await Promise.all(pools.map((pool, index) => new Promise<Pool>(async (resolve, reject) => {
+        // TODO: get valuation from Solv for SBTs
         if (pool.collection.valuation) resolve(pool)
         else {
           const valuation = await getEthNFTValuation({ blockchain: blockchain as Blockchain, collectionAddress: collectionAddresses[index], nftId: nftIds[index] })

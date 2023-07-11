@@ -50,6 +50,7 @@ export default async function getLoanTerms({ blockchain, collectionAddresses, nf
       }
 
       const associatedPools = await Promise.all(pools.map((pool, index) => new Promise<Pool>(async (resolve, reject) => {
+        // TODO: get valuation for SBTs from Solv pageprops
         if (pool.collection.valuation) resolve(pool)
         else {
           const valuation = await getEthNFTValuation({ blockchain: blockchain as Blockchain<'ethereum'>, collectionAddress: collectionAddresses[index], nftId: nftIds[index] })

@@ -69,6 +69,7 @@ export default {
     [Blockchain.Ethereum.Network.GOERLI]: process.env.ETH_RPC_GOERLI,
     [Blockchain.Polygon.Network.MAIN]: process.env.POLYGON_RPC_MAINNET,
     [Blockchain.Polygon.Network.MUMBAI]: process.env.POLYGON_RPC_MUMBAI,
+    [Blockchain.Arbitrum.Network.MAIN]: process.env.ARBITRUM_RPC_MAINNET,
   },
   ethValuationExpiryBlocks: 64, // quote expires in 15 mins
   ethValuationSigner: process.env.VALUATION_SIGNER,

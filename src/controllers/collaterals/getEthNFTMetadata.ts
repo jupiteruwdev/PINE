@@ -36,6 +36,7 @@ export default async function getEthNFTMetadata({
   nftId,
   tokenUri,
 }: Params): Promise<NFTMetadata> {
+  // TODO: use XPath to get pageprops for solv SFTs
   try {
     const metadata = await DataSource.fetch(
       useTokenUri({ tokenUri }),
