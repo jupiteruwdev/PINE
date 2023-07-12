@@ -1,5 +1,6 @@
 import BigNumber from 'bignumber.js'
 import _ from 'lodash'
+import appConf from '../../app.conf'
 import { Blockchain, Collection, Loan, NFT, Value } from '../../entities'
 import { getOnChainLoans } from '../../subgraph'
 import fault from '../../utils/fault'
@@ -8,6 +9,7 @@ import { getEthNFTMetadata } from '../collaterals'
 import { getEthCollectionMetadata } from '../collections'
 import { searchPublishedPools } from '../pools'
 import DataSource from '../utils/DataSource'
+import Tenor from '../utils/Tenor'
 
 type Params = {
   blockchain: Blockchain
@@ -85,7 +87,8 @@ export function useGraph({ blockchain, collectionAddress }: Params): DataSource<
   return async () => {
     try {
       const pools = await searchPublishedPools({ collectionAddress, includeRetired: true, blockchainFilter: Blockchain.parseFilter(blockchain) })
-      const poolAddresses = pools.map(pool => pool.address)
+      const filteredPools = pools.filter(pool => pool.loanOptions.find(loanOption => appConf.tenors.find(tenor => Math.abs(Tenor.convertTenor(tenor) - loanOption.loanDurationSeconds) <= 1)))
+      const poolAddresses = filteredPools.map(pool => pool.address)
       if (!poolAddresses.length) return []
       const onChainLoans = await getOnChainLoans({ poolAddresses }, { networkId: blockchain.networkId })
 
@@ -112,7 +115,7 @@ export function useGraph({ blockchain, collectionAddress }: Params): DataSource<
           repaidInterest: Value.$WEI(loan.repaidInterestWei),
           returned: Value.$WEI(loan.returnedWei),
         })
-      })
+      }).filter(loan => filteredPools.find(pool => pool.loanOptions.find(loanOption => loanOption.interestBPSPerBlock === loan.interestBPSPerBlock)))
 
       return loans
     }

@@ -1,5 +1,6 @@
 import _ from 'lodash'
 import { PipelineStage } from 'mongoose'
+import appConf from '../../app.conf'
 import { PoolModel } from '../../db'
 import { Blockchain } from '../../entities'
 import fault from '../../utils/fault'
@@ -91,6 +92,28 @@ function getPipelineStages({
         ...includeRetired === true ? {} : { retired: { $ne: true } },
         'valueLockedEth': {
           $gte: 0.01,
+        },
+      },
+    }, {
+      $addFields: {
+        loanOptions: {
+          $filter: {
+            input: '$loanOptions',
+            as: 'loanOption',
+            cond: {
+              $or: [
+                ...Tenor.convertTenors(appConf.tenors).map(seconds => ({
+                  $eq: ['$$loanOption.loanDurationSecond', seconds],
+                })),
+              ],
+            },
+          },
+        },
+      },
+    }, {
+      $match: {
+        'loanOptions.0': {
+          $exists: true,
         },
       },
     }, {

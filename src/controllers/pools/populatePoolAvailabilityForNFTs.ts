@@ -1,8 +1,10 @@
 import _ from 'lodash'
 import { PipelineStage } from 'mongoose'
+import appConf from '../../app.conf'
 import { PoolModel } from '../../db'
 import { Blockchain, NFT } from '../../entities'
 import fault from '../../utils/fault'
+import Tenor from '../utils/Tenor'
 
 type Params = {
   blockchain: Blockchain
@@ -49,15 +51,17 @@ export default async function populatePoolAvailabilityForNFTs({
     const populatedNfts = await Promise.all(nfts.map(async nft => {
       const hasPools = docs.some(doc => {
         if (doc.collection.address.toLowerCase() === nft.collection.address.toLowerCase()) {
-          const regexStr = _.get(doc, 'collection.matcher.regex')
-          const fieldPath = _.get(doc, 'collection.matcher.fieldPath')
-          const hasMatcher = _.isString(regexStr) && _.isString(fieldPath)
-          if (hasMatcher) {
-            const regex = new RegExp(regexStr)
-            if (regex.test(_.get(nft, fieldPath))) return true
-            return false
+          if (doc.loanOptions.find((loanOption: any) => appConf.tenors.find(tenor => Math.abs(Tenor.convertTenor(tenor) - loanOption.loanDurationSecond) <= 1))) {
+            const regexStr = _.get(doc, 'collection.matcher.regex')
+            const fieldPath = _.get(doc, 'collection.matcher.fieldPath')
+            const hasMatcher = _.isString(regexStr) && _.isString(fieldPath)
+            if (hasMatcher) {
+              const regex = new RegExp(regexStr)
+              if (regex.test(_.get(nft, fieldPath))) return true
+              return false
+            }
+            return true
           }
-          return true
         }
         return false
       })
