@@ -21,5 +21,5 @@ locals {
   project      = "pinedefi"
   location     = "us-central1"
   env          = "staging"
-  job_location = "us-east4"
+  job_location = "us-central1"
 }

@@ -18,6 +18,7 @@ import routes from './routes'
 import rootCause from './utils/error'
 import fault from './utils/fault'
 import logger from './utils/logger'
+import { initRedis } from './utils/redis'
 
 // Remove depth from console logs
 util.inspect.defaultOptions.depth = undefined
@@ -31,6 +32,15 @@ initDb({
     logger.info('Establishing database connection... OK')
   },
 })
+
+if (appConf.env !== 'test') {
+  initRedis({
+    onError: err => {
+      logger.error('Establishing redis conection... ERR:', err)
+      // throw fault('ERR_REDIS_CONNECTION', undefined, err)
+    },
+  })
+}
 
 const app = express()
 if (appConf.env === 'production') {
