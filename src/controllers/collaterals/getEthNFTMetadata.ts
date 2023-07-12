@@ -4,6 +4,7 @@ import appConf from '../../app.conf'
 import { Blockchain, NFTMetadata } from '../../entities'
 import fault from '../../utils/fault'
 import logger from '../../utils/logger'
+import { getRedisCache, setRedisCache } from '../../utils/redis'
 import rethrow from '../../utils/rethrow'
 import DataSource from '../utils/DataSource'
 import getEthWeb3 from '../utils/getEthWeb3'
@@ -37,11 +38,21 @@ export default async function getEthNFTMetadata({
   tokenUri,
 }: Params): Promise<NFTMetadata> {
   try {
+    const redisKey = `nft:metadata:${collectionAddress?.toLowerCase()}:${nftId ? `${nftId}:` : ''}${blockchain?.networkId}`
+
+    const data = await getRedisCache(redisKey)
+
+    if (data) {
+      return data as NFTMetadata
+    }
+
     const metadata = await DataSource.fetch(
       useTokenUri({ tokenUri }),
       useAlchemy({ blockchain, collectionAddress, nftId }),
       useContract({ blockchain, collectionAddress, nftId }),
     )
+
+    await setRedisCache(redisKey, metadata)
 
     return metadata
   }

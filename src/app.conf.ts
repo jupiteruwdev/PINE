@@ -173,4 +173,5 @@ export default {
     [Blockchain.Ethereum.Network.MAIN]: '',
     [Blockchain.Ethereum.Network.GOERLI]: '0x9e70ef3cd5565f4eb78996eb037765d759cc257b',
   },
+  redisHost: `redis://${process.env.REDISHOST}:6379`,
 }

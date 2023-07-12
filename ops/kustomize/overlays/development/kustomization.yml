@@ -9,6 +9,6 @@ patches:
       path: "/spec/template/spec/template/spec/containers/0/env/-"
       value:
         name: REDISHOST
-        value: "10.121.0.35"
+        value: "10.215.151.51"
   target:
     kind: Job
