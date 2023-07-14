@@ -115,7 +115,12 @@ export function useGraph({ blockchain, collectionAddress }: Params): DataSource<
           repaidInterest: Value.$WEI(loan.repaidInterestWei),
           returned: Value.$WEI(loan.returnedWei),
         })
-      }).filter(loan => filteredPools.find(pool => pool.loanOptions.find(loanOption => loanOption.interestBPSPerBlock === loan.interestBPSPerBlock)))
+      }).filter(loan => {
+        const pool = filteredPools.find(pool => pool.address === loan.poolAddress)
+        const loanOption = pool?.loanOptions.find(loanOption => loanOption.interestBPSPerBlock.toString() === loan.interestBPSPerBlock.toString())
+
+        return !!appConf.tenors.find(tenor => Math.abs(Tenor.convertTenor(tenor) - (loanOption?.loanDurationSeconds || 0)) <= 1)
+      })
 
       return loans
     }
