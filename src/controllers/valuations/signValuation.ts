@@ -46,7 +46,7 @@ export default async function signValuation({ blockchain, nftId, collectionAddre
       if (poolVersion > 3) {
         const kmsCredentials = appConf.env === 'development' ? appConf.devKmsCredentials : appConf.prodKmsCredenials
 
-        const provider = new ethers.providers.AlchemyProvider(Number(blockchain.networkId), appConf.alchemyAPIKey)
+        const provider = new ethers.providers.JsonRpcProvider(_.get(appConf.alchemyAPIUrl, blockchain.networkId), Number(blockchain.networkId))
 
         let signer = new GcpKmsSigner(kmsCredentials)
         signer = signer.connect(provider)

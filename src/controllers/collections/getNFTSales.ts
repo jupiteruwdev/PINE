@@ -21,10 +21,9 @@ export default async function getNFTSales({ contractAddress, blockchain, ...prop
     switch (blockchain.networkId) {
     case Blockchain.Ethereum.Network.MAIN:
     case Blockchain.Polygon.Network.MAIN:
-      const apiHost = _.get(appConf.alchemyNFTAPIUrl, blockchain.networkId) ?? rethrow(`Missing Alchemy API URL for blockchain <${JSON.stringify(blockchain)}>`)
-      const apiKey = appConf.alchemyAPIKey ?? rethrow('Missing Alchemy API key')
+      const apiMainUrl = _.get(appConf.alchemyNFTAPIUrl, blockchain.networkId) ?? rethrow(`Missing Alchemy API URL for blockchain <${JSON.stringify(blockchain)}>`)
 
-      const { nftSales } = await getRequest(`${apiHost}${apiKey}/getNFTSales`, {
+      const { nftSales } = await getRequest(`${apiMainUrl}/getNFTSales`, {
         params: {
           contractAddress,
           ...props,
