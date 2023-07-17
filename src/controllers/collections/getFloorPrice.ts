@@ -81,10 +81,9 @@ function useAlchemy({ contractAddress, blockchain }: Params): DataSource<Value> 
 
       if (blockchain.networkId !== Blockchain.Ethereum.Network.MAIN) rethrow(`Unsupported Ethereum network <${blockchain.networkId}>`)
 
-      const apiUrl = _.get(appConf.alchemyNFTAPIUrl, blockchain.networkId) ?? rethrow(`Missing Alchemy API Url for blockchain <${JSON.stringify(blockchain)}>`)
-      const apiKey = appConf.alchemyAPIKey ?? rethrow('Missing Alchemy API key')
+      const apiMainUrl = _.get(appConf.alchemyNFTAPIUrl, blockchain.networkId) ?? rethrow(`Missing Alchemy API Url for blockchain <${JSON.stringify(blockchain)}>`)
 
-      const res = await getRequest(`${apiUrl}${apiKey}/getFloorPrice`, {
+      const res = await getRequest(`${apiMainUrl}/getFloorPrice`, {
         params: {
           contractAddress,
         },

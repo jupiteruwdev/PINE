@@ -102,10 +102,9 @@ export function useAlchemy({ blockchain, collectionAddress }: Params): DataSourc
       if (collectionAddress === undefined) rethrow('Collection address must be provided')
       if (blockchain?.network !== 'ethereum' && blockchain?.network !== 'polygon') rethrow(`Unsupported blockchain <${JSON.stringify(blockchain)}>`)
 
-      const apiHost = _.get(appConf.alchemyAPIUrl, blockchain.networkId) ?? rethrow(`Missing Alchemy API URL for blockchain <${JSON.stringify(blockchain)}>`)
-      const apiKey = appConf.alchemyAPIKey ?? rethrow('Missing Alchemy API key')
+      const apiMainUrl = _.get(appConf.alchemyAPIUrl, blockchain.networkId) ?? rethrow(`Missing Alchemy API URL for blockchain <${JSON.stringify(blockchain)}>`)
 
-      const res = await getRequest(`${apiHost}${apiKey}/getContractMetadata`, {
+      const res = await getRequest(`${apiMainUrl}/getContractMetadata`, {
         params: {
           contractAddress: collectionAddress,
         },

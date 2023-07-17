@@ -226,13 +226,9 @@ export function useAlchemy({ blockchain, collectionAddress, nftId }: Params): Da
 
       if (blockchain.networkId !== Blockchain.Ethereum.Network.MAIN && blockchain.networkId !== Blockchain.Polygon.Network.MAIN) rethrow(`Unsupported Ethereum network <${blockchain.networkId}>`)
 
-      const apiUrl = _.get(appConf.alchemyNFTAPIUrl, blockchain.networkId) ?? rethrow(`Missing Alchemy API Url for blockchain <${JSON.stringify(blockchain)}>`)
-      const apiKey = appConf.alchemyAPIKey ?? rethrow('Missing Alchemy API key')
+      const apiMainUrl = _.get(appConf.alchemyNFTAPIUrl, blockchain.networkId) ?? rethrow(`Missing Alchemy API Url for blockchain <${JSON.stringify(blockchain)}>`)
 
-      const res = await getRequest(`${apiUrl}${apiKey}/getFloorPrice?contractAddress=${collectionAddress}`, {
-        headers: {
-          'X-API-KEY': apiKey,
-        },
+      const res = await getRequest(`${apiMainUrl}/getFloorPrice?contractAddress=${collectionAddress}`, {
         useCache: false,
       })
       if (res?.openSea?.priceCurrency !== 'ETH') rethrow('Wrong currency')
