@@ -3,6 +3,7 @@ import appConf from '../../app.conf'
 import { Blockchain } from '../../entities'
 import fault from '../../utils/fault'
 import logger from '../../utils/logger'
+import { getRedisCache } from '../../utils/redis'
 import rethrow from '../../utils/rethrow'
 import DataSource from '../utils/DataSource'
 import getRequest from '../utils/getRequest'
@@ -23,7 +24,13 @@ export default async function getEthCollectionImage({
   try {
     logger.info(`Fetching imageUrl for collection using params <${JSON.stringify(params)}> on blockchain <${JSON.stringify(blockchain)}>...`)
 
-    let imageUrl
+    const redisKey = `COL_IMG_${params.collectionAddress}_${params.matchSubcollectionBy?.value}_${blockchain.networkId}`
+
+    let imageUrl = await getRedisCache(redisKey)
+
+    if (imageUrl) {
+      return imageUrl
+    }
 
     switch (blockchain.network) {
     case 'ethereum':
@@ -95,10 +102,9 @@ export function useAlchemy({ blockchain, collectionAddress }: Params): DataSourc
       if (collectionAddress === undefined) rethrow('Collection address must be provided')
       if (blockchain?.network !== 'ethereum' && blockchain?.network !== 'polygon') rethrow(`Unsupported blockchain <${JSON.stringify(blockchain)}>`)
 
-      const apiHost = _.get(appConf.alchemyAPIUrl, blockchain.networkId) ?? rethrow(`Missing Alchemy API URL for blockchain <${JSON.stringify(blockchain)}>`)
-      const apiKey = appConf.alchemyAPIKey ?? rethrow('Missing Alchemy API key')
+      const apiMainUrl = _.get(appConf.alchemyAPIUrl, blockchain.networkId) ?? rethrow(`Missing Alchemy API URL for blockchain <${JSON.stringify(blockchain)}>`)
 
-      const res = await getRequest(`${apiHost}${apiKey}/getContractMetadata`, {
+      const res = await getRequest(`${apiMainUrl}/getContractMetadata`, {
         params: {
           contractAddress: collectionAddress,
         },

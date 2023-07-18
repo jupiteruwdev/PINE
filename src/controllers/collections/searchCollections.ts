@@ -8,6 +8,7 @@ import postRequest from '../utils/postRequest'
 
 import { ethers } from 'ethers'
 import { NFTCollectionModel } from '../../db'
+import rethrow from '../../utils/rethrow'
 import DataSource from '../utils/DataSource'
 import getRequest from '../utils/getRequest'
 import getCollections from './getCollections'
@@ -135,8 +136,9 @@ export default async function searchCollections({ query, blockchain }: Params): 
 function useAlchemy({ query, blockchain }: { query: string; blockchain: Blockchain }): DataSource<Collection[]> {
   return async () => {
     try {
-      const apiKey = appConf.alchemyAPIKey
-      const collectionData = await getRequest(_.get(appConf.alchemyNFTAPIUrl, blockchain.networkId) + apiKey + '/searchContractMetadata',
+      const apiMainUrl = _.get(appConf.alchemyNFTAPIUrl, blockchain.networkId) ?? rethrow(`Missing Alchemy API URL for blockchain <${JSON.stringify(blockchain)}>`)
+
+      const collectionData = await getRequest(`${apiMainUrl}/searchContractMetadata`,
         {
           params: {
             query,
@@ -160,8 +162,9 @@ function useAlchemy({ query, blockchain }: { query: string; blockchain: Blockcha
 function useAlchemyContract({ query, blockchain }: { query: string; blockchain: Blockchain }): DataSource<Collection[]> {
   return async () => {
     try {
-      const apiKey = appConf.alchemyAPIKey
-      const cd = await getRequest(_.get(appConf.alchemyNFTAPIUrl, blockchain.networkId) + apiKey + '/getContractMetadata',
+      const apiMainUrl = _.get(appConf.alchemyNFTAPIUrl, blockchain.networkId) ?? rethrow(`Missing Alchemy API URL for blockchain <${JSON.stringify(blockchain)}>`)
+
+      const cd = await getRequest(`${apiMainUrl}/getContractMetadata`,
         {
           params: {
             contractAddress: query,

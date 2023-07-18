@@ -119,7 +119,10 @@ jobs:
     - run: npm run test:ci
       env:
         NODE_ENV: test
-        ALCHEMY_API_KEY: ${{ secrets.ALCHEMY_API_KEY }}
+        ALCHEMY_API_KEY_MAINNET: ${{ secrets.ALCHEMY_API_KEY_MAINNET }}
+        ALCHEMY_API_KEY_GOERLI: ${{ secrets.ALCHEMY_API_KEY_GOERLI }}
+        ALCHEMY_API_KEY_POLYGON_MAINNET: ${{ secrets.ALCHEMY_API_KEY_POLYGON_MAINNET }}
+        ALCHEMY_API_KEY_POLYGON_MUMBAI: ${{ secrets.ALCHEMY_API_KEY_POLYGON_MUMBAI }}
         ETH_RPC_MAINNET: ${{ secrets.ETH_RPC_MAINNET }}
         ETH_RPC_RINKEBY: ${{ secrets.ETH_RPC_RINKEBY }}
         GEMXYZ_API_KEY: ${{ secrets.GEMXYZ_API_KEY }}
