@@ -8,7 +8,7 @@ import getRequest from '../utils/getRequest'
 import fault from '../../utils/fault'
 import BigNumber from 'bignumber.js'
 import _ from 'lodash'
-import sftABI from '../../abis/SolvSft.json'
+import sftABI from '../../abis/SolvSft.json' assert { type: 'json' }
 
 type Params = {
   blockchain: Blockchain
