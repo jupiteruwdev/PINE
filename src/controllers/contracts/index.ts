@@ -1,3 +1,4 @@
+export { default as getContract } from './getContract'
 export { default as getControlPlaneContract } from './getControlPlaneContract'
 export { default as getERC721Contract } from './getERC721Contract'
 export { default as getPoolContract } from './getPoolContract'

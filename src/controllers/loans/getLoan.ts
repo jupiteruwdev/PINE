@@ -1,5 +1,6 @@
 import BigNumber from 'bignumber.js'
 import _ from 'lodash'
+import FeeStructureABI from '../../abis/FeeStructure.json' assert { type: 'json' }
 import appConf from '../../app.conf'
 import { Blockchain, Collection, Value } from '../../entities'
 import Loan from '../../entities/lib/Loan'
@@ -8,7 +9,7 @@ import fault from '../../utils/fault'
 import logger from '../../utils/logger'
 import { getEthNFTMetadata } from '../collaterals'
 import { getEthCollectionMetadata } from '../collections'
-import { getControlPlaneContract, getERC721Contract, getPoolContract } from '../contracts'
+import { getContract, getControlPlaneContract, getERC721Contract, getPoolContract } from '../contracts'
 import { getPool, searchPublishedPools } from '../pools'
 import getEthWeb3 from '../utils/getEthWeb3'
 
@@ -60,9 +61,18 @@ export default async function getLoan({
         const newPool = await getPool({ collectionAddress, blockchain, nft: { id: nftId, name: nft.name } })
         const contract = await getPoolContract({ blockchain, poolAddress: onChainLoan.pool })
         const loanDetails = await contract.methods._loans(nftId).call()
-        loanDetails.interestBPS1000000XBlock = ((Math.log10(10000 + Number(loanDetails.interestBPS1000000XBlock.toString()) * 2628000 / 1000000) + 200 + Number(loanDetails.interestBPS1000000XBlock.toString()) * 2628000 / 1000000) * 1000000 / 2628000).toFixed(0)
+        const feeStructureAddress = await contract.methods._feeStructure().call()
+
+        loanDetails.interestBPS1000000XBlock = await getContract({
+          blockchain,
+          address: feeStructureAddress,
+          abi: FeeStructureABI,
+        })
+          .methods
+          .getClientRateByLenderRatePerBlock(loanDetails.interestBPS1000000XBlock)
+          .call()
         const controlPlaneContract = getControlPlaneContract({ blockchain, address: _.get(appConf.controlPlaneContractAddress, blockchain.networkId) })
-        const outstandingWithInterestWei = new BigNumber(await controlPlaneContract.methods.outstanding(loanDetails, txSpeedBlocks).call()).plus('10000000000000000')
+        const outstandingWithInterestWei = new BigNumber(await controlPlaneContract.methods.outstanding(loanDetails, txSpeedBlocks).call())
 
         if (outstandingWithInterestWei.lte(new BigNumber(0))) return undefined
 
@@ -96,9 +106,17 @@ export default async function getLoan({
 
         const contract = await getPoolContract({ blockchain, poolAddress: pool.address })
         const loanDetails = await contract.methods._loans(nftId).call()
-        loanDetails.interestBPS1000000XBlock = ((Math.log10(10000 + Number(loanDetails.interestBPS1000000XBlock.toString()) * 2628000 / 1000000) + 200 + Number(loanDetails.interestBPS1000000XBlock.toString()) * 2628000 / 1000000) * 1000000 / 2628000).toFixed(0)
+        const feeStructureAddress = await contract.methods._feeStructure().call()
+        loanDetails.interestBPS1000000XBlock = await getContract({
+          blockchain,
+          address: feeStructureAddress,
+          abi: FeeStructureABI,
+        })
+          .methods
+          .getClientRateByLenderRatePerBlock(loanDetails.interestBPS1000000XBlock)
+          .call()
         const controlPlaneContract = getControlPlaneContract({ blockchain, address: _.get(appConf.controlPlaneContractAddress, blockchain.networkId) })
-        const outstandingWithInterestWei = new BigNumber(await controlPlaneContract.methods.outstanding(loanDetails, txSpeedBlocks).call()).multipliedBy('1.01')
+        const outstandingWithInterestWei = new BigNumber(await controlPlaneContract.methods.outstanding(loanDetails, txSpeedBlocks).call())
 
         // Early exit if loan is fully repaid.
         if (outstandingWithInterestWei.lte(new BigNumber(0))) return undefined
