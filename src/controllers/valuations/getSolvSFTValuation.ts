@@ -51,7 +51,7 @@ export default async function getSolvSFTValuation({
     // Check if the nftId belongs to the marketId
     const nftMarketId = await sftContract.methods.slotOf(nftId).call()
     if (marketId !== nftMarketId) {
-      logger.info(`Solv SFT <${collection.address}/${nftId}> does not belong to market <${marketId}>`)
+      logger.error(`Solv SFT <${collection.address}/${nftId}> does not belong to market <${marketId}>`)
       rethrow('ERR_SFT_NOT_IN_MARKET')
     }
     const sftDenomination = collection.sftDenomination

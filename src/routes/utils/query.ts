@@ -108,24 +108,10 @@ export function getBlockchainFilter<T extends boolean>(query: Query, autofillDef
     ? autofillDefaults ? Blockchain.Polygon() : undefined
     : Blockchain.Polygon(parseEthNetworkId(query.polygon))
 
-  const arbBlockchain = _.get(query, 'arbitrum', _.get(query, 'arb')) === undefined
-    ? autofillDefaults ? Blockchain.Arbitrum() : undefined
-    : Blockchain.Arbitrum(parseEthNetworkId(query.arbitrum))
-
-  if (!ethBlockchain && !solBlockchain && !polyBlockchain && !arbBlockchain && setDefaultState) {
-    return {
-      ethereum: Blockchain.Ethereum().networkId,
-      polygon: Blockchain.Polygon().networkId,
-      solana: Blockchain.Solana().networkId,
-      arbitrum: Blockchain.Arbitrum().networkId,
-    }
-  }
-
   return {
     ethereum: ethBlockchain?.networkId,
     solana: solBlockchain?.networkId,
     polygon: polyBlockchain?.networkId,
-    arbitrum: arbBlockchain?.networkId,
   }
 }
 
