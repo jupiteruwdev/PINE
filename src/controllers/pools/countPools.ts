@@ -1,4 +1,5 @@
 import { PipelineStage } from 'mongoose'
+import appConf from '../../app.conf'
 import { PoolModel } from '../../db'
 import { Blockchain } from '../../entities'
 import fault from '../../utils/fault'
@@ -25,7 +26,8 @@ export default async function countPools(params: Params = {}): Promise<number> {
       docs = await filterByNftId(Blockchain.parseBlockchain(params.blockchainFilter ?? {}), docs, params.nftId)
     }
 
-    return docs.length
+    return docs.filter(doc => doc.loanOptions.find((loanOption: any) => appConf.tenors.find(tenor => Math
+      .abs(Tenor.convertTenor(tenor) - loanOption.loanDurationSecond) <= 1))).length
   }
   catch (err) {
     throw fault('ERR_COUNT_POOLS', undefined, err)

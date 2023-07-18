@@ -95,6 +95,7 @@
     "object-hash": "^3.0.0",
     "opensea-js": "^4.0.20",
     "rate-limiter-flexible": "^2.4.1",
+    "redis": "^4.6.7",
     "tslib": "^2.4.1",
     "web3": "^1.7.5",
     "winston": "^3.8.1"

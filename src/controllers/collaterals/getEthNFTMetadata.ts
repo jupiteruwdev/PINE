@@ -4,6 +4,7 @@ import appConf from '../../app.conf'
 import { Blockchain, NFTMetadata } from '../../entities'
 import fault from '../../utils/fault'
 import logger from '../../utils/logger'
+import { getRedisCache, setRedisCache } from '../../utils/redis'
 import rethrow from '../../utils/rethrow'
 import DataSource from '../utils/DataSource'
 import getEthWeb3 from '../utils/getEthWeb3'
@@ -38,11 +39,21 @@ export default async function getEthNFTMetadata({
 }: Params): Promise<NFTMetadata> {
   // TODO: use XPath to get pageprops for solv SFTs
   try {
+    const redisKey = `nft:metadata:${collectionAddress?.toLowerCase()}:${nftId ? `${nftId}:` : ''}${blockchain?.networkId}`
+
+    const data = await getRedisCache(redisKey)
+
+    if (data) {
+      return data as NFTMetadata
+    }
+
     const metadata = await DataSource.fetch(
       useTokenUri({ tokenUri }),
       useAlchemy({ blockchain, collectionAddress, nftId }),
       useContract({ blockchain, collectionAddress, nftId }),
     )
+
+    await setRedisCache(redisKey, metadata)
 
     return metadata
   }
@@ -59,10 +70,9 @@ export function useAlchemy({ blockchain, collectionAddress, nftId }: Omit<Params
 
       if (blockchain?.network !== 'ethereum' && blockchain?.network !== 'polygon') rethrow(`Unsupported blockchain <${JSON.stringify(blockchain)}>`)
 
-      const apiHost = _.get(appConf.alchemyAPIUrl, blockchain.networkId) ?? rethrow(`Missing Alchemy API URL for blockchain <${JSON.stringify(blockchain)}>`)
-      const apiKey = appConf.alchemyAPIKey ?? rethrow('Missing Alchemy API key')
+      const apiMainUrl = _.get(appConf.alchemyAPIUrl, blockchain.networkId) ?? rethrow(`Missing Alchemy API URL for blockchain <${JSON.stringify(blockchain)}>`)
 
-      const res = await getRequest(`${apiHost}${apiKey}/getNFTMetadata`, {
+      const res = await getRequest(`${apiMainUrl}/getNFTMetadata`, {
         params: {
           contractAddress: collectionAddress,
           tokenId: nftId,

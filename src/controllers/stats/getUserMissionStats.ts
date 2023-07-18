@@ -28,8 +28,7 @@ export default async function getUserMissionStats({
 }: Params): Promise<UserMissionStats> {
   try {
     logger.info(`Fetching user mission stats for blockchain <${JSON.stringify(blockchain)}>...`)
-    const apiHost = _.get(appConf.alchemyAPIUrl, blockchain.networkId) ?? rethrow(`Missing Alchemy API URL for blockchain <${JSON.stringify(blockchain)}>`)
-    const apiKey = appConf.alchemyAPIKey ?? rethrow('Missing Alchemy API key')
+    const apiMainUrl = _.get(appConf.alchemyAPIUrl, blockchain.networkId) ?? rethrow(`Missing Alchemy API URL for blockchain <${JSON.stringify(blockchain)}>`)
     let user = await UserModel.findOne({
       address: {
         '$regex': address,
@@ -53,7 +52,7 @@ export default async function getUserMissionStats({
 
     switch (blockchain.network) {
     case 'ethereum':
-      const res = await getRequest(`${apiHost}${apiKey}/getNFTs`, {
+      const res = await getRequest(`${apiMainUrl}/getNFTs`, {
         params: {
           owner: address,
           contractAddresses: [

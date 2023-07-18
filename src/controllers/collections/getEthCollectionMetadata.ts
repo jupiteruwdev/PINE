@@ -6,6 +6,7 @@ import { Blockchain, CollectionMetadata } from '../../entities'
 import fault from '../../utils/fault'
 import logger from '../../utils/logger'
 import { convertToMoralisChain } from '../../utils/moralis'
+import { getRedisCache, setRedisCache } from '../../utils/redis'
 import rethrow from '../../utils/rethrow'
 import { getEthNFTMetadata } from '../collaterals'
 import DataSource from '../utils/DataSource'
@@ -27,7 +28,13 @@ export default async function getEthCollectionMetadata({
   try {
     logger.info(`Fetching metadata for collection using params <${JSON.stringify(params)}> on blockchain <${JSON.stringify(blockchain)}>...`)
 
-    let metadata
+    const redisKey = `collection:metadata:${params.collectionAddress}:${params.matchSubcollectionBy?.value ? `${params.matchSubcollectionBy?.value}:` : ''}${blockchain.networkId}`
+
+    let metadata = await getRedisCache(redisKey)
+
+    if (metadata) {
+      return metadata as CollectionMetadata
+    }
 
     switch (blockchain.network) {
     case 'ethereum':
@@ -51,6 +58,8 @@ export default async function getEthCollectionMetadata({
 
     logger.info(`Fetching metadata for collection using params <${JSON.stringify(params)}> on blockchain <${JSON.stringify(blockchain)}>... OK`)
     logger.debug(JSON.stringify(metadata, undefined, 2))
+
+    await setRedisCache(redisKey, metadata)
 
     return metadata
   }
@@ -241,10 +250,9 @@ export function useAlchemy({ blockchain, collectionAddress }: Params): DataSourc
       if (collectionAddress === undefined) rethrow('Collection address must be provided')
       if (blockchain?.network !== 'ethereum' && blockchain?.network !== 'polygon') rethrow(`Unsupported blockchain <${JSON.stringify(blockchain)}>`)
 
-      const apiHost = _.get(appConf.alchemyAPIUrl, blockchain.networkId) ?? rethrow(`Missing Alchemy API URL for blockchain <${JSON.stringify(blockchain)}>`)
-      const apiKey = appConf.alchemyAPIKey ?? rethrow('Missing Alchemy API key')
+      const apiMainUrl = _.get(appConf.alchemyAPIUrl, blockchain.networkId) ?? rethrow(`Missing Alchemy API URL for blockchain <${JSON.stringify(blockchain)}>`)
 
-      const res = await getRequest(`${apiHost}${apiKey}/getContractMetadata`, {
+      const res = await getRequest(`${apiMainUrl}/getContractMetadata`, {
         params: {
           contractAddress: collectionAddress,
         },

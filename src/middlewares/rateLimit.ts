@@ -3,7 +3,7 @@ import { RateLimiterMemory } from 'rate-limiter-flexible'
 import fault from '../utils/fault'
 
 const opts = {
-  points: 100, // 6 points
+  points: 200, // 6 points
   duration: 1, // Per second
 }
 

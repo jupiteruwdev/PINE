@@ -49,15 +49,13 @@ function useAlchemy({ blockchain, collectionAddresses, dbCollections }: UseAlche
 
       if (blockchain.network !== 'ethereum' && blockchain.network !== 'polygon') rethrow(`Unsupported blockchain <${JSON.stringify(blockchain)}>`)
 
-      const apiUrl = _.get(appConf.alchemyNFTAPIUrl, blockchain.networkId) ?? rethrow(`Missing alchemy url for blockchain ${JSON.stringify(blockchain)}`)
-
-      const apiKey = appConf.alchemyAPIKey ?? rethrow('Missing OpenSea API key')
+      const apiMainUrl = _.get(appConf.alchemyNFTAPIUrl, blockchain.networkId) ?? rethrow(`Missing alchemy url for blockchain ${JSON.stringify(blockchain)}`)
 
       switch (blockchain.networkId) {
       case Blockchain.Ethereum.Network.MAIN:
       case Blockchain.Polygon.Network.MAIN:
         const res: any[] = await Promise.all(_.chunk(collectionAddresses, 100).map(addresses => new Promise((resolve, reject) => {
-          postRequest(`${apiUrl}${apiKey}/getContractMetadataBatch`, {
+          postRequest(`${apiMainUrl}/getContractMetadataBatch`, {
             contractAddresses: addresses,
           })
             .then(res => resolve(res))

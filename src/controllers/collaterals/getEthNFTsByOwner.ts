@@ -63,8 +63,7 @@ export function useAlchemy({ blockchain, ownerAddress, populateMetadata, collect
 
       if (blockchain.network !== 'ethereum' && blockchain.network !== 'polygon') rethrow(`Unsupported blockchain <${JSON.stringify(blockchain)}>`)
 
-      const apiHost = _.get(appConf.alchemyAPIUrl, blockchain.networkId) ?? rethrow(`Missing Alchemy API URL for blockchain ${JSON.stringify(blockchain)}`)
-      const apiKey = appConf.alchemyAPIKey ?? rethrow('Missing Alchemy API key')
+      const apiMainUrl = _.get(appConf.alchemyAPIUrl, blockchain.networkId) ?? rethrow(`Missing Alchemy API URL for blockchain ${JSON.stringify(blockchain)}`)
       const res = []
 
       let currPageKey: string | undefined
@@ -73,7 +72,7 @@ export function useAlchemy({ blockchain, ownerAddress, populateMetadata, collect
         const collectionAddressesChunk = collectionAddresses?.splice(0, 45)
         currPageKey = undefined
         while (true) {
-          const { ownedNfts: partialRes, pageKey }: any = await retryPromise(() => getRequest(`${apiHost}${apiKey}/getNFTs`, {
+          const { ownedNfts: partialRes, pageKey }: any = await retryPromise(() => getRequest(`${apiMainUrl}/getNFTs`, {
             params: {
               owner: ownerAddress,
               withMetadata: populateMetadata,

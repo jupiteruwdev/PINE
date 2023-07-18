@@ -1,11 +1,13 @@
 import BigNumber from 'bignumber.js'
 import { PipelineStage } from 'mongoose'
+import appConf from '../../app.conf'
 import { PoolModel } from '../../db'
 import { Blockchain, NFT, Pool, PoolGroup, Value } from '../../entities'
 import fault from '../../utils/fault'
 import logger from '../../utils/logger'
 import { mapPool } from '../adapters'
 import { getNFTsByOwner } from '../collaterals'
+import Tenor from '../utils/Tenor'
 import getTokenUSDPrice, { AvailableToken } from '../utils/getTokenUSDPrice'
 import { PoolSortDirection, PoolSortType } from './searchPublishedPools'
 
@@ -87,6 +89,28 @@ function getPipelineStages({
         })),
         'valueLockedEth': {
           $gte: 0.01,
+        },
+      },
+    }, {
+      $addFields: {
+        loanOptions: {
+          $filter: {
+            input: '$loanOptions',
+            as: 'loanOption',
+            cond: {
+              $or: [
+                ...Tenor.convertTenors(appConf.tenors).map(seconds => ({
+                  $eq: ['$$loanOption.loanDurationSecond', seconds],
+                })),
+              ],
+            },
+          },
+        },
+      },
+    }, {
+      $match: {
+        'loanOptions.0': {
+          $exists: true,
         },
       },
     }, {
