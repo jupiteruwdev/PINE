@@ -3,27 +3,8 @@ import { getLoanTerms, getPNPLTermsByUrl, getRolloverTerms } from '../../control
 import { LoanTerms, PNPLTerms, RolloverTerms } from '../../entities'
 import fault from '../../utils/fault'
 import { getBlockchain } from '../utils/query'
-import getSolvSFTValuation from '../../controllers/valuations/getSolvSFTValuation'
 
 const router = Router()
-
-router.get('/sftValuation', async (req, res, next) => {
-  try {
-    const blockchain = getBlockchain(req.query)
-    const collectionAddress = req.query.collectionAddress as string
-    const sftMarketId = req.query.sftMarketId as string
-    const sftTokenId = req.query.sftTokenId as string
-    const valuation = await getSolvSFTValuation({ blockchain, collection: {
-      address: collectionAddress,
-      sftMarketId,
-      blockchain,
-    }, nftId: sftTokenId })
-    res.status(200).json(valuation)
-  }
-  catch (err) {
-    next(fault('ERR_API_FETCH_SOLV_VALUATION', undefined, err))
-  }
-})
 
 router.get('/borrow', async (req, res, next) => {
   try {
