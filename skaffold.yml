@@ -25,28 +25,16 @@ deploy:
 
 profiles:
   - name: development
-    deploy:
-      cloudrun:
-        projectid: pinedefi
-        region: us-east1
     manifests:
       kustomize:
         paths:
           - ops/kustomize/overlays/development
   - name: staging
-    deploy:
-      cloudrun:
-        projectid: pinedefi
-        region: us-east4
     manifests:
       kustomize:
         paths:
           - ops/kustomize/overlays/staging
   - name: prod
-    deploy:
-      cloudrun:
-        projectid: pinedefi
-        region: us-central1
     manifests:
       kustomize:
         paths:

@@ -31,40 +31,50 @@ type Params = {
 }
 
 async function getNFTDataFromMoralis(id: string, mintAddress: string, networkId: string): Promise<[NFT, string]> {
-  const apiKey = appConf.moralisAPIKey
-  if (!apiKey) throw fault('ERR_MISSING_API_KEY', 'Missing Moralis API key')
+  try {
+    const apiKey = appConf.moralisAPIKey
+    if (!apiKey) throw fault('ERR_MISSING_API_KEY', 'Missing Moralis API key')
 
-  const data = await getRequest(`https://solana-gateway.moralis.io/nft/${networkId}/${mintAddress}/metadata`, {
-    headers: {
-      'accept': 'application/json',
-      'X-API-Key': apiKey,
-    },
-  })
+    const data = await getRequest(`https://solana-gateway.moralis.io/nft/${networkId}/${mintAddress}/metadata`, {
+      headers: {
+        'accept': 'application/json',
+        'X-API-Key': apiKey,
+      },
+    })
 
-  return [{
-    collection: {
-      address: data.metaplex.updateAuthority,
-      blockchain: Blockchain.Solana(networkId),
-    },
-    id,
-    mintAddress,
-  }, data.metaplex.metadataUri]
+    return [{
+      collection: {
+        address: data.metaplex.updateAuthority,
+        blockchain: Blockchain.Solana(networkId),
+      },
+      id,
+      mintAddress,
+    }, data.metaplex.metadataUri]
+  }
+  catch (err) {
+    throw fault('GET_NFT_DATA_FROM_MORALIS', undefined, err)
+  }
 }
 
 async function getNFTDataFromBlockchain(id: string, mintAddress: string, networkId: string): Promise<[NFT, string]> {
-  const connection = new Connection('https://api.mainnet-beta.solana.com') // TODO: Handle different networks
-  const mintPubicKey = new PublicKey(mintAddress)
-  const [metadataPubicKey] = await PublicKey.findProgramAddress([Buffer.from('metadata'), PROGRAM_ID.toBuffer(), mintPubicKey.toBuffer()], PROGRAM_ID)
-  const metadata = await Metadata.fromAccountAddress(connection, metadataPubicKey)
+  try {
+    const connection = new Connection('https://api.mainnet-beta.solana.com') // TODO: Handle different networks
+    const mintPubicKey = new PublicKey(mintAddress)
+    const [metadataPubicKey] = await PublicKey.findProgramAddress([Buffer.from('metadata'), PROGRAM_ID.toBuffer(), mintPubicKey.toBuffer()], PROGRAM_ID)
+    const metadata = await Metadata.fromAccountAddress(connection, metadataPubicKey)
 
-  return [{
-    collection: {
-      address: metadata.updateAuthority.toString(),
-      blockchain: Blockchain.Solana(networkId),
-    },
-    id,
-    mintAddress,
-  }, metadata.data.uri]
+    return [{
+      collection: {
+        address: metadata.updateAuthority.toString(),
+        blockchain: Blockchain.Solana(networkId),
+      },
+      id,
+      mintAddress,
+    }, metadata.data.uri]
+  }
+  catch (err) {
+    throw fault('GET_NFT_DATA_FROM_BLOCKCHAIN', undefined, err)
+  }
 }
 
 /**
@@ -80,83 +90,88 @@ export default async function getSolNFTsByOwner({
   populateMetadata = false,
   collectionAddress,
 }: Params): Promise<NFT[]> {
-  if (blockchain.network !== 'solana') throw fault('ERR_UNSUPPORTED_BLOCKCHAIN')
+  try {
+    if (blockchain.network !== 'solana') throw fault('ERR_UNSUPPORTED_BLOCKCHAIN')
 
-  const apiKey = appConf.moralisAPIKey
-  if (!apiKey) throw fault('ERR_MISSING_API_KEY', 'Missing Moralis API key')
+    const apiKey = appConf.moralisAPIKey
+    if (!apiKey) throw fault('ERR_MISSING_API_KEY', 'Missing Moralis API key')
 
-  const result = await getRequest(`https://solana-gateway.moralis.io/account/${blockchain.networkId}/${ownerAddress}/nft`, {
-    params: {
-      'token_addresses': collectionAddress ? [collectionAddress] : undefined,
-    },
-    headers: {
-      'accept': 'application/json',
-      'X-API-Key': apiKey,
-    },
-  })
+    const result = await getRequest(`https://solana-gateway.moralis.io/account/${blockchain.networkId}/${ownerAddress}/nft`, {
+      params: {
+        'token_addresses': collectionAddress ? [collectionAddress] : undefined,
+      },
+      headers: {
+        'accept': 'application/json',
+        'X-API-Key': apiKey,
+      },
+    })
 
-  const nfts: (NFT | undefined)[] = await Promise.all(result.map(async (value: any) => {
-    const nftId = value.associatedTokenAddress
-    if (!nftId) return undefined
+    const nfts: (NFT | undefined)[] = await Promise.all(result.map(async (value: any) => {
+      const nftId = value.associatedTokenAddress
+      if (!nftId) return undefined
 
-    const mintAddress = value.mint
-    if (!mintAddress) return undefined
+      const mintAddress = value.mint
+      if (!mintAddress) return undefined
 
-    let nft: NFT | undefined
-    let metadataUri: string | undefined
+      let nft: NFT | undefined
+      let metadataUri: string | undefined
 
-    try {
-      [nft, metadataUri] = await getNFTDataFromMoralis(nftId, mintAddress, blockchain.networkId)
-    }
-    catch {
       try {
-        [nft, metadataUri] = await getNFTDataFromBlockchain(nftId, mintAddress, blockchain.networkId)
+        [nft, metadataUri] = await getNFTDataFromMoralis(nftId, mintAddress, blockchain.networkId)
       }
       catch {
-        nft = undefined
-        metadataUri = undefined
-      }
-    }
-
-    if (!nft) return undefined
-
-    let metadata: NFTMetadata | undefined
-    let collectionName: string | undefined
-
-    if (populateMetadata) {
-      if (!metadataUri) return undefined
-
-      try {
-        const res = await getRequest(metadataUri)
-        const name = _.get(res, 'name')
-        const image = _.get(res, 'image')
-
-        if (!name || !image) throw 0
-
-        collectionName = _.get(res, 'collection.name') ?? name
-
-        metadata = {
-          name,
-          imageUrl: normalizeIPFSUri(image),
+        try {
+          [nft, metadataUri] = await getNFTDataFromBlockchain(nftId, mintAddress, blockchain.networkId)
+        }
+        catch {
+          nft = undefined
+          metadataUri = undefined
         }
       }
-      catch {
-        metadata = undefined
+
+      if (!nft) return undefined
+
+      let metadata: NFTMetadata | undefined
+      let collectionName: string | undefined
+
+      if (populateMetadata) {
+        if (!metadataUri) return undefined
+
+        try {
+          const res = await getRequest(metadataUri)
+          const name = _.get(res, 'name')
+          const image = _.get(res, 'image')
+
+          if (!name || !image) throw 0
+
+          collectionName = _.get(res, 'collection.name') ?? name
+
+          metadata = {
+            name,
+            imageUrl: normalizeIPFSUri(image),
+          }
+        }
+        catch {
+          metadata = undefined
+        }
       }
-    }
 
-    if (populateMetadata && !metadata) return undefined
+      if (populateMetadata && !metadata) return undefined
 
-    return {
-      ...nft,
-      collection: {
-        ...nft.collection,
-        name: collectionName,
-      },
-      ownerAddress,
-      ...metadata ?? {},
-    }
-  }))
+      return {
+        ...nft,
+        collection: {
+          ...nft.collection,
+          name: collectionName,
+        },
+        ownerAddress,
+        ...metadata ?? {},
+      }
+    }))
 
-  return _.compact(nfts)
+    return _.compact(nfts)
+  }
+  catch (err) {
+    throw fault('GET_SOL_NFTS_BY_OWNER', undefined, err)
+  }
 }

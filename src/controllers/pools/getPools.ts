@@ -26,54 +26,59 @@ type MapPoolParams = {
 }
 
 async function mapPool({ blockchain, pools, loanOptionsDict }: MapPoolParams): Promise<Pool[]> {
-  const uniqPools = _.uniqWith(pools, (a, b) => (a.id === b.id && a.collection === b.toLowerCase))
+  try {
+    const uniqPools = _.uniqWith(pools, (a, b) => (a.id === b.id && a.collection === b.toLowerCase))
 
-  const poolsData = await Promise.all(_.map(uniqPools, (async pool => {
-    const collectionMetadata = await getEthCollectionMetadata({ blockchain, collectionAddress: pool.collection })
-    const stats: any = {}
-    const [
-      { amount: utilizationEth },
-      { amount: capacityEth },
-      maxLoanLimit,
-    ] = await Promise.all([
-      getPoolUtilization({ blockchain, poolAddress: pool.id }),
-      getPoolCapacity({ blockchain, poolAddress: pool.id, tokenAddress: pool.supportedCurrency, fundSource: pool.fundSource }),
-      getPoolMaxLoanLimit({ blockchain, address: pool.id }),
-    ])
-    const ethLimit = _.toNumber(ethers.utils.formatEther(maxLoanLimit ?? pool.maxLoanLimit ?? '0'))
-    const valueLockedEth = capacityEth.plus(utilizationEth)
-    stats.utilization = Value.$ETH(utilizationEth)
-    stats.valueLocked = Value.$ETH(valueLockedEth)
+    const poolsData = await Promise.all(_.map(uniqPools, (async pool => {
+      const collectionMetadata = await getEthCollectionMetadata({ blockchain, collectionAddress: pool.collection })
+      const stats: any = {}
+      const [
+        { amount: utilizationEth },
+        { amount: capacityEth },
+        maxLoanLimit,
+      ] = await Promise.all([
+        getPoolUtilization({ blockchain, poolAddress: pool.id }),
+        getPoolCapacity({ blockchain, poolAddress: pool.id, tokenAddress: pool.supportedCurrency, fundSource: pool.fundSource }),
+        getPoolMaxLoanLimit({ blockchain, address: pool.id }),
+      ])
+      const ethLimit = _.toNumber(ethers.utils.formatEther(maxLoanLimit ?? pool.maxLoanLimit ?? '0'))
+      const valueLockedEth = capacityEth.plus(utilizationEth)
+      stats.utilization = Value.$ETH(utilizationEth)
+      stats.valueLocked = Value.$ETH(valueLockedEth)
 
-    return Pool.factory({
-      version: 2,
-      collection: Collection.factory({
-        address: pool.collection,
+      return Pool.factory({
+        version: 2,
+        collection: Collection.factory({
+          address: pool.collection,
+          blockchain,
+          ...collectionMetadata,
+        }),
+        address: pool.id,
+        tokenAddress: pool.supportedCurrency,
+        fundSource: pool.fundSource,
         blockchain,
-        ...collectionMetadata,
-      }),
-      address: pool.id,
-      tokenAddress: pool.supportedCurrency,
-      fundSource: pool.fundSource,
-      blockchain,
-      loanOptions: loanOptionsDict[pool.id.toLowerCase()]?.map((lo: any) => LoanOption.factory({
-        interestBPSPerBlock: lo.interestBpsBlock,
-        loanDurationBlocks: lo.loanDurationSecond / appConf.blocksPerSecond,
-        loanDurationSeconds: lo.loanDurationSecond,
-        maxLTVBPS: lo.maxLtvBps,
-        fees: appConf.defaultFees.map(fee => Fee.factory(fee)),
-      })) || [],
-      lenderAddress: pool.lenderAddress ?? '',
-      routerAddress: _.get(appConf.routerAddress, blockchain.networkId),
-      repayRouterAddress: _.get(appConf.repayRouterAddress, blockchain.networkId),
-      rolloverAddress: _.get(appConf.rolloverAddress, blockchain.networkId),
-      ethLimit,
-      published: false,
-      ...stats,
-    })
-  })))
+        loanOptions: loanOptionsDict[pool.id.toLowerCase()]?.map((lo: any) => LoanOption.factory({
+          interestBPSPerBlock: lo.interestBpsBlock,
+          loanDurationBlocks: lo.loanDurationSecond / appConf.blocksPerSecond,
+          loanDurationSeconds: lo.loanDurationSecond,
+          maxLTVBPS: lo.maxLtvBps,
+          fees: appConf.defaultFees.map(fee => Fee.factory(fee)),
+        })) || [],
+        lenderAddress: pool.lenderAddress ?? '',
+        routerAddress: _.get(appConf.routerAddress, blockchain.networkId),
+        repayRouterAddress: _.get(appConf.repayRouterAddress, blockchain.networkId),
+        rolloverAddress: _.get(appConf.rolloverAddress, blockchain.networkId),
+        ethLimit,
+        published: false,
+        ...stats,
+      })
+    })))
 
-  return poolsData
+    return poolsData
+  }
+  catch (err) {
+    throw fault('ERR_GET_POOLS_MAP_POOL', undefined, err)
+  }
 }
 
 export default async function getPools({
@@ -86,44 +91,51 @@ export default async function getPools({
   address,
   collectionAddress,
 }: Params): Promise<Pool[]> {
-  logger.info(`Fetching unpublished pools by lender address <${lenderAddress}>, collection address <${collectionAddress}> and address <${address}> on blockchain ${JSON.stringify(blockchainFilter)}`)
-  let poolsData: Pool[] = []
+  try {
+    logger.info(`Fetching unpublished pools by lender address <${lenderAddress}>, collection address <${collectionAddress}> and address <${address}> on blockchain ${JSON.stringify(blockchainFilter)}`)
+    let poolsData: Pool[] = []
 
-  if (blockchainFilter.ethereum !== undefined || blockchainFilter.polygon !== undefined) {
-    const blockchain = Blockchain.parseBlockchain(blockchainFilter)
-    const publishedPools = await searchPublishedPools({
-      blockchainFilter,
-      lenderAddress,
-      address,
-      collectionAddress,
-      minorPools: true,
-    })
-    const excludeAddresses = publishedPools.map(pool => pool.address.toLowerCase())
+    if (blockchainFilter.ethereum !== undefined || blockchainFilter.polygon !== undefined) {
+      const blockchain = Blockchain.parseBlockchain(blockchainFilter)
+      const publishedPools = await searchPublishedPools({
+        blockchainFilter,
+        lenderAddress,
+        address,
+        collectionAddress,
+        minorPools: true,
+        convertToUSD: false,
+      })
 
-    switch (blockchain.networkId) {
-    case Blockchain.Ethereum.Network.MAIN:
-    case Blockchain.Polygon.Network.MAIN:
-      const { pools: poolsMainnet } = await getOnChainPools({ lenderAddress, address, excludeAddresses, collectionAddress }, { networkId: blockchain.networkId })
+      const excludeAddresses = publishedPools.map(pool => pool.address.toLowerCase())
 
-      const loanOptionsDict = await getOnChainLoanOptions({ addresses: poolsMainnet.map((p: any) => p.id), networkId: blockchain.networkId })
+      switch (blockchain.networkId) {
+      case Blockchain.Ethereum.Network.MAIN:
+      case Blockchain.Polygon.Network.MAIN:
+        const { pools: poolsMainnet } = await getOnChainPools({ lenderAddress, address, excludeAddresses, collectionAddress }, { networkId: blockchain.networkId })
 
-      poolsData = [
-        ...publishedPools,
-        ...await mapPool({ blockchain, pools: poolsMainnet, loanOptionsDict }),
-      ]
-      break
-    case Blockchain.Ethereum.Network.GOERLI:
-    case Blockchain.Polygon.Network.MUMBAI:
-      const { pools: poolsRinkeby } = await getOnChainPools({ lenderAddress, address, excludeAddresses, collectionAddress }, { networkId: blockchain.networkId })
-      poolsData = [
-        ...publishedPools,
-        ...await mapPool({ blockchain, pools: poolsRinkeby, loanOptionsDict: {} }),
-      ]
+        const loanOptionsDict = await getOnChainLoanOptions({ addresses: poolsMainnet.map((p: any) => p.id), networkId: blockchain.networkId })
+
+        poolsData = [
+          ...publishedPools,
+          ...await mapPool({ blockchain, pools: poolsMainnet, loanOptionsDict }),
+        ]
+        break
+      case Blockchain.Ethereum.Network.GOERLI:
+      case Blockchain.Polygon.Network.MUMBAI:
+        const { pools: poolsRinkeby } = await getOnChainPools({ lenderAddress, address, excludeAddresses, collectionAddress }, { networkId: blockchain.networkId })
+        poolsData = [
+          ...publishedPools,
+          ...await mapPool({ blockchain, pools: poolsRinkeby, loanOptionsDict: {} }),
+        ]
+      }
     }
-  }
-  else {
-    throw fault('ERR_UNSUPPORTED_BLOCKCHAIN')
-  }
+    else {
+      throw fault('ERR_UNSUPPORTED_BLOCKCHAIN')
+    }
 
-  return poolsData
+    return poolsData
+  }
+  catch (err) {
+    throw fault('ERR_GET_POOLS', undefined, err)
+  }
 }

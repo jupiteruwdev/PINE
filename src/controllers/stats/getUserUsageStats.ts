@@ -5,6 +5,7 @@ import appConf from '../../app.conf'
 import { BorrowSnapshotModel, LendingSnapshotModel } from '../../db'
 import { Value } from '../../entities'
 import { Blockchain, ProtocolUsage } from '../../entities/lib'
+import fault from '../../utils/fault'
 import logger from '../../utils/logger'
 import { getRewards } from '../contracts'
 import getTokenUSDPrice, { AvailableToken } from '../utils/getTokenUSDPrice'
@@ -34,65 +35,75 @@ const blockedCollections = [
 ]
 
 export function convertNativeToUSD(snapshot: any, key: string, parse = true, tokenPrices?: Record<string, Value | null>): BigNumber {
-  const blockchain = Blockchain.factory({
-    network: _.get(snapshot, 'networkType', 'ethereum'),
-    networkId: _.get(snapshot, 'networkId', '1'),
-  })
+  try {
+    const blockchain = Blockchain.factory({
+      network: _.get(snapshot, 'networkType', 'ethereum'),
+      networkId: _.get(snapshot, 'networkId', '1'),
+    })
 
-  const value = parse ? ethers.utils.formatEther(new BigNumber(_.get(snapshot, key) ?? '0').toFixed()) : _.get(snapshot, key)
+    const value = parse ? ethers.utils.formatEther(new BigNumber(_.get(snapshot, key) ?? '0').toFixed()) : _.get(snapshot, key)
 
-  return new BigNumber(value).times((tokenPrices || tokenUSDPrice)[blockchain.networkId]?.amount ?? '0')
+    return new BigNumber(value).times((tokenPrices || tokenUSDPrice)[blockchain.networkId]?.amount ?? '0')
+  }
+  catch (err) {
+    throw fault('ERR_CONVERT_NATIVE_TO_USD', undefined, err)
+  }
 }
 
 export async function getUsageValues({ lendingSnapshots, borrowingSnapshots, address, tokenPrices }: GetUsageValuesParams) {
-  const allEVMChains = Blockchain.allChains().filter(blockchain => blockchain.network !== 'solana')
-  const borrowedSnapshots = borrowingSnapshots.filter(snapshot => _.get(snapshot, 'borrowerAddress')?.toLowerCase() === address.toLowerCase())
-  const lendedSnapshots = borrowingSnapshots.filter(snapsoht => _.get(snapsoht, 'lenderAddress')?.toLowerCase() === address.toLowerCase())
+  try {
+    const allEVMChains = Blockchain.allChains().filter(blockchain => blockchain.network !== 'solana')
+    const borrowedSnapshots = borrowingSnapshots.filter(snapshot => _.get(snapshot, 'borrowerAddress')?.toLowerCase() === address.toLowerCase())
+    const lendedSnapshots = borrowingSnapshots.filter(snapsoht => _.get(snapsoht, 'lenderAddress')?.toLowerCase() === address.toLowerCase())
 
-  const lendingSnapshotsForAdddress = lendingSnapshots.filter(snapshot => _.get(snapshot, 'lenderAddress')?.toLowerCase() === address.toLowerCase())
+    const lendingSnapshotsForAdddress = lendingSnapshots.filter(snapshot => _.get(snapshot, 'lenderAddress')?.toLowerCase() === address.toLowerCase())
 
-  const totalAmountUSD = _.reduce(borrowingSnapshots, (pre, cur) => pre.plus(convertNativeToUSD(cur, 'borrowAmount', true, tokenPrices)), new BigNumber(0))
+    const totalAmountUSD = _.reduce(borrowingSnapshots, (pre, cur) => pre.plus(convertNativeToUSD(cur, 'borrowAmount', true, tokenPrices)), new BigNumber(0))
 
-  const borrowedUSD = _.reduce(borrowedSnapshots, (pre, cur) => pre.plus(convertNativeToUSD(cur, 'borrowAmount', true, tokenPrices)), new BigNumber(0))
-  const lendedUSD = _.reduce(lendedSnapshots, (pre, cur) => pre.plus(convertNativeToUSD(cur, 'borrowAmount', true, tokenPrices)), new BigNumber(0))
+    const borrowedUSD = _.reduce(borrowedSnapshots, (pre, cur) => pre.plus(convertNativeToUSD(cur, 'borrowAmount', true, tokenPrices)), new BigNumber(0))
+    const lendedUSD = _.reduce(lendedSnapshots, (pre, cur) => pre.plus(convertNativeToUSD(cur, 'borrowAmount', true, tokenPrices)), new BigNumber(0))
 
-  const usdPermissioned = _.reduce(
-    allEVMChains.map(blockchain => _.reduce(_.values(_.groupBy(lendingSnapshotsForAdddress.filter(snapshot => (snapshot.networkId || '1') === blockchain.networkId), 'fundSource')), (pre, cur) => pre.plus(BigNumber.max(...cur.map(snapshot => convertNativeToUSD(snapshot, 'capacity', false, tokenPrices)))), new BigNumber(0))),
-    (pre, cur) => pre.plus(cur),
-    new BigNumber(0)
-  )
+    const usdPermissioned = _.reduce(
+      allEVMChains.map(blockchain => _.reduce(_.values(_.groupBy(lendingSnapshotsForAdddress.filter(snapshot => (snapshot.networkId || '1') === blockchain.networkId), 'fundSource')), (pre, cur) => pre.plus(BigNumber.max(...cur.map(snapshot => convertNativeToUSD(snapshot, 'capacity', false, tokenPrices)))), new BigNumber(0))),
+      (pre, cur) => pre.plus(cur),
+      new BigNumber(0)
+    )
 
-  const usdPermissionedAll = _.reduce(
-    allEVMChains.map(blockchain => _.reduce(_.values(_.groupBy(lendingSnapshots.filter(snapshot => (snapshot.networkId || '1') === blockchain.networkId), 'fundSource')), (pre, cur) => pre.plus(BigNumber.max(...cur.map(snapshot => convertNativeToUSD(snapshot, 'capacity', false, tokenPrices)))), new BigNumber(0))),
-    (pre, cur) => pre.plus(cur),
-    new BigNumber(0)
-  )
+    const usdPermissionedAll = _.reduce(
+      allEVMChains.map(blockchain => _.reduce(_.values(_.groupBy(lendingSnapshots.filter(snapshot => (snapshot.networkId || '1') === blockchain.networkId), 'fundSource')), (pre, cur) => pre.plus(BigNumber.max(...cur.map(snapshot => convertNativeToUSD(snapshot, 'capacity', false, tokenPrices)))), new BigNumber(0))),
+      (pre, cur) => pre.plus(cur),
+      new BigNumber(0)
+    )
 
-  const collateralPriceSumForUser = _.reduce(borrowedSnapshots, (pre, cur) => pre.plus(convertNativeToUSD(cur, 'collateralPrice.amount', false, tokenPrices)), new BigNumber(0))
-  const collateralPriceSumAll = _.reduce(borrowingSnapshots, (pre, cur) => pre.plus(convertNativeToUSD(cur, 'collateralPrice.amount', false, tokenPrices)), new BigNumber(0))
+    const collateralPriceSumForUser = _.reduce(borrowedSnapshots, (pre, cur) => pre.plus(convertNativeToUSD(cur, 'collateralPrice.amount', false, tokenPrices)), new BigNumber(0))
+    const collateralPriceSumAll = _.reduce(borrowingSnapshots, (pre, cur) => pre.plus(convertNativeToUSD(cur, 'collateralPrice.amount', false, tokenPrices)), new BigNumber(0))
 
-  const usagePercent = (totalAmountUSD.gt(0) ? borrowedUSD.div(totalAmountUSD).multipliedBy(42) : new BigNumber(0))
-    .plus(collateralPriceSumAll.gt(0) ? collateralPriceSumForUser.div(collateralPriceSumAll).multipliedBy(18) : new BigNumber(0))
-    .plus(usdPermissionedAll.gt(0) ? usdPermissioned.div(usdPermissionedAll).multipliedBy(12) : new BigNumber(0))
-    .plus(totalAmountUSD.gt(0) ? lendedUSD.div(totalAmountUSD).multipliedBy(28) : new BigNumber(0))
+    const usagePercent = (totalAmountUSD.gt(0) ? borrowedUSD.div(totalAmountUSD).multipliedBy(42) : new BigNumber(0))
+      .plus(collateralPriceSumAll.gt(0) ? collateralPriceSumForUser.div(collateralPriceSumAll).multipliedBy(18) : new BigNumber(0))
+      .plus(usdPermissionedAll.gt(0) ? usdPermissioned.div(usdPermissionedAll).multipliedBy(12) : new BigNumber(0))
+      .plus(totalAmountUSD.gt(0) ? lendedUSD.div(totalAmountUSD).multipliedBy(28) : new BigNumber(0))
 
-  const totalPercent = (
-    totalAmountUSD.gt(0) ? new BigNumber(42) : new BigNumber(0)
-  )
-    .plus(collateralPriceSumAll.gt(0) ? new BigNumber(18) : new BigNumber(0))
-    .plus(usdPermissionedAll.gt(0) ? new BigNumber(12) : new BigNumber(0))
-    .plus(totalAmountUSD.gt(0) ? new BigNumber(28) : new BigNumber(0))
+    const totalPercent = (
+      totalAmountUSD.gt(0) ? new BigNumber(42) : new BigNumber(0)
+    )
+      .plus(collateralPriceSumAll.gt(0) ? new BigNumber(18) : new BigNumber(0))
+      .plus(usdPermissionedAll.gt(0) ? new BigNumber(12) : new BigNumber(0))
+      .plus(totalAmountUSD.gt(0) ? new BigNumber(28) : new BigNumber(0))
 
-  return {
-    usagePercent,
-    totalPercent,
-    borrowedUSD,
-    lendedUSD,
-    usdPermissioned,
-    collateralPriceSumForUser,
-    collateralPriceSumAll,
-    totalAmountUSD,
-    usdPermissionedAll,
+    return {
+      usagePercent,
+      totalPercent,
+      borrowedUSD,
+      lendedUSD,
+      usdPermissioned,
+      collateralPriceSumForUser,
+      collateralPriceSumAll,
+      totalAmountUSD,
+      usdPermissionedAll,
+    }
+  }
+  catch (err) {
+    throw fault('ERR_GET_USAGE_VALUES', undefined, err)
   }
 }
 
@@ -152,7 +163,7 @@ async function getIncentiveRewards({ address }: Params): Promise<{
     }
   }
   catch (err) {
-    throw err
+    throw fault('ERR_GET_INCENTIVE_REWARDS', undefined, err)
   }
 }
 
@@ -228,6 +239,6 @@ export default async function getUserUsageStats({
   }
   catch (err) {
     logger.info(`Fetching user protocol usage stats for address ${address}... ERR:`, err)
-    throw err
+    throw fault('ERR_GET_USER_USAGE_STATS', undefined, err)
   }
 }

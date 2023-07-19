@@ -3,6 +3,7 @@ import lw from '@google-cloud/logging-winston'
 import { RewriteFrames } from '@sentry/integrations'
 import * as Sentry from '@sentry/node'
 import * as Tracing from '@sentry/tracing'
+import { ErrorEvent } from '@sentry/types'
 import cors from 'cors'
 import express, { NextFunction, Request, Response } from 'express'
 import http from 'http'
@@ -17,6 +18,7 @@ import routes from './routes'
 import rootCause from './utils/error'
 import fault from './utils/fault'
 import logger from './utils/logger'
+import { initRedis } from './utils/redis'
 
 // Remove depth from console logs
 util.inspect.defaultOptions.depth = undefined
@@ -31,6 +33,15 @@ initDb({
   },
 })
 
+if (appConf.env !== 'test') {
+  initRedis({
+    onError: err => {
+      logger.error('Establishing redis conection... ERR:', err)
+      // throw fault('ERR_REDIS_CONNECTION', undefined, err)
+    },
+  })
+}
+
 const app = express()
 if (appConf.env === 'production') {
   // Sentry configs
@@ -44,6 +55,16 @@ if (appConf.env === 'production') {
       }),
     ],
     tracesSampleRate: 1.0,
+    beforeSend: (event: ErrorEvent, hint: Sentry.EventHint) => {
+      const error = hint.originalException
+      const status = (error as any).status ?? rootCause(error as SuperError)
+
+      if (status === 400) {
+        return null
+      }
+
+      return event
+    },
   })
   app.use(Sentry.Handlers.requestHandler() as express.RequestHandler)
   app.use(Sentry.Handlers.tracingHandler())

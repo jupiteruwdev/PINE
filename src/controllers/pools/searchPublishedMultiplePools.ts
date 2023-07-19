@@ -1,7 +1,9 @@
 import _ from 'lodash'
 import { PipelineStage } from 'mongoose'
+import appConf from '../../app.conf'
 import { PoolModel } from '../../db'
 import { Blockchain, Pool } from '../../entities'
+import fault from '../../utils/fault'
 import { mapPool } from '../adapters'
 import { getEthNFTMetadata } from '../collaterals'
 import Tenor from '../utils/Tenor'
@@ -34,52 +36,79 @@ type Params = {
     type: PoolSortType
     direction: PoolSortDirection
   }
+  includeInvalidTenors?: boolean
 }
 
-export async function filterByNftId(blockchain: Blockchain, docs: any[], nftIds: string[]): Promise<any[]> {
-  if (docs.length) {
-    let subDocs = docs
-    nftIds.forEach(async nftId => {
-      const metadata = await getEthNFTMetadata({ blockchain, collectionAddress: docs[0].collection.address, nftId })
-      const nftProps = { id: nftId, ...metadata }
-      subDocs = subDocs.concat(docs.filter(doc => {
-        if (_.isString(_.get(doc, 'collection.matcher.regex')) && _.isString(_.get(doc, 'collection.matcher.fieldPath'))) {
+export async function filterByNftId(blockchain: Blockchain, docs: any[], nftIds: string[], collectionAddresses?: string[]): Promise<any[]> {
+  try {
+    if (docs.length) {
+      const subDocs: any[] = []
+      if (!collectionAddresses) collectionAddresses = _.uniq(docs.map(doc => doc.collection.address))
+      const regexDocs = docs.filter(doc => _.isString(_.get(doc, 'collection.matcher.regex')) && _.isString(_.get(doc, 'collection.matcher.fieldPath')))
+      for (const doc of regexDocs) {
+        const nftId = (collectionAddresses || [])?.indexOf(doc.collection.address)
+        if (nftId >= 0) {
+          const metadata = await getEthNFTMetadata({ blockchain, collectionAddress: doc.collection.address, nftId: nftIds[nftId] })
+          const nftProps = { id: nftIds[nftId], ...metadata }
           const regex = new RegExp(doc.collection.matcher.regex)
-          if (regex.test(_.get(nftProps, doc.collection.matcher.fieldPath))) return true
-          return false
+          if (regex.test(_.get(nftProps, doc.collection.matcher.fieldPath))) {
+            subDocs.push(doc)
+          }
         }
-        return true
-      }))
-    })
-    return subDocs.length ? subDocs : docs
+      }
+
+      return _.xor(docs, regexDocs).concat(subDocs)
+    }
+    return docs
   }
-  return docs
+  catch (err) {
+    throw fault('ERR_SEARCH_PUBLISHED_MULTIPLE_POOLS_FILTER_BY_NFT_ID', undefined, err)
+  }
 }
 
 async function searchPublishedMultiplePools({
   paginateBy,
+  includeInvalidTenors = true,
   ...params
 }: Params): Promise<Pool[]> {
-  const aggregation = PoolModel.aggregate(getPipelineStages({
-    ...params,
-  }))
+  try {
+    const aggregation = PoolModel.aggregate(getPipelineStages({
+      ...params,
+    }))
 
-  let docs
-  if (params.nftIds !== undefined) {
-    docs = await aggregation.exec()
-    docs = await filterByNftId(Blockchain.parseBlockchain(params.blockchainFilter ?? {}), docs, params.nftIds)
+    let docs
+    if (params.nftIds !== undefined) {
+      docs = await aggregation.exec()
+      docs = await filterByNftId(Blockchain.parseBlockchain(params.blockchainFilter ?? {}), docs, params.nftIds, params.collectionAddresses)
 
-    if (paginateBy !== undefined) {
-      docs = docs.slice(paginateBy.offset, paginateBy.offset + paginateBy.count - 1)
+      if (paginateBy !== undefined) {
+        docs = docs.slice(paginateBy.offset, paginateBy.offset + paginateBy.count - 1)
+      }
     }
-  }
-  else {
-    docs = paginateBy === undefined ? await aggregation.exec() : await aggregation.skip(paginateBy.offset).limit(paginateBy.count).exec()
-  }
+    else {
+      docs = paginateBy === undefined ? await aggregation.exec() : await aggregation.skip(paginateBy.offset).limit(paginateBy.count).exec()
+    }
 
-  const pools = docs.map(mapPool)
+    const pools = docs.map(mapPool)
 
-  return pools
+    if (includeInvalidTenors) {
+      return pools
+    }
+
+    const filteredPools: Pool[] = []
+    pools.forEach(pool => {
+      const filteredLoanOptions = pool.loanOptions.filter(loanOption => appConf.tenors.find(tenor => Math.abs(Tenor.convertTenor(tenor) - loanOption.loanDurationSeconds) <= 1))
+      if (filteredLoanOptions.length) {
+        pool.loanOptions = filteredLoanOptions
+        filteredPools.push(pool)
+      }
+    })
+
+    return filteredPools
+  }
+  catch (err) {
+    throw fault('ERR_SEARCH_PUBLISHED_MULTIPLE_POOLS', undefined, err)
+  }
 }
 
 export default searchPublishedMultiplePools
@@ -98,131 +127,136 @@ function getPipelineStages({
   addresses,
   tenors,
 }: Params): PipelineStage[] {
-  const blockchains = Blockchain.fromFilter(blockchainFilter)
+  try {
+    const blockchains = Blockchain.fromFilter(blockchainFilter)
 
-  const collectionFilter = [
-    ...collectionAddresses === undefined ? [] : [{
-      'collection.address': {
-        $regex: collectionAddresses.join('|'),
-        $options: 'i',
-      },
-    }],
-    ...collectionName === undefined ? [] : [{
-      'collection.displayName': {
-        $regex: `.*${collectionName}.*`,
-        $options: 'i',
-      },
-    }],
-  ]
-  const poolFilter = [
-    ...addresses === undefined ? [] : [{
-      'address': {
-        $regex: addresses.join('|'),
-        $options: 'i',
-      },
-    }],
-    ...tenors === undefined ? [] : [{
-      'loanOptions.loanDurationSecond': {
-        $in: Tenor.convertTenors(tenors),
-      },
-    }],
-  ]
+    const collectionFilter = [
+      ...collectionAddresses === undefined ? [] : [{
+        'collection.address': {
+          $regex: collectionAddresses.join('|'),
+          $options: 'i',
+        },
+      }],
+      ...collectionName === undefined ? [] : [{
+        'collection.displayName': {
+          $regex: `.*${collectionName}.*`,
+          $options: 'i',
+        },
+      }],
+    ]
+    const poolFilter = [
+      ...addresses === undefined ? [] : [{
+        'address': {
+          $regex: addresses.join('|'),
+          $options: 'i',
+        },
+      }],
+      ...tenors === undefined ? [] : [{
+        'loanOptions.loanDurationSecond': {
+          $in: Tenor.convertTenors(tenors),
+        },
+      }],
+    ]
 
-  const stages: PipelineStage[] = [{
-    $match: {
-      $or: blockchains.map(blockchain => ({
-        $and: [
-          { 'networkType': blockchain.network },
-          { 'networkId': blockchain.networkId },
-        ],
-      })),
-      ...lenderAddress === undefined ? {} : { lenderAddress },
-      ...includeRetired === true ? {} : { retired: { $ne: true } },
+    const stages: PipelineStage[] = [{
+      $match: {
+        $or: blockchains.map(blockchain => ({
+          $and: [
+            { 'networkType': blockchain.network },
+            { 'networkId': blockchain.networkId },
+          ],
+        })),
+        ...lenderAddress === undefined ? {} : { lenderAddress },
+        ...includeRetired === true ? {} : { retired: { $ne: true } },
+      },
+    }, {
+      $lookup: {
+        from: 'nftCollections',
+        localField: 'nftCollection',
+        foreignField: '_id',
+        as: 'collection',
+      },
+    }, {
+      $unwind: '$collection',
     },
-  }, {
-    $lookup: {
-      from: 'nftCollections',
-      localField: 'nftCollection',
-      foreignField: '_id',
-      as: 'collection',
-    },
-  }, {
-    $unwind: '$collection',
-  },
-  ...collectionFilter.length === 0 ? [] : [{
-    $match: { $and: collectionFilter },
-  }],
-  ...poolFilter.length === 0 ? [] : [{
-    $match: { $and: poolFilter },
-  }], {
-    $addFields: {
-      name: {
-        $toLower: {
-          $trim: {
-            input: '$collection.displayName',
-            chars: '"',
+    ...collectionFilter.length === 0 ? [] : [{
+      $match: { $and: collectionFilter },
+    }],
+    ...poolFilter.length === 0 ? [] : [{
+      $match: { $and: poolFilter },
+    }], {
+      $addFields: {
+        name: {
+          $toLower: {
+            $trim: {
+              input: '$collection.displayName',
+              chars: '"',
+            },
+          },
+        },
+        interest: {
+          $toDouble: {
+            $min: '$loanOptions.interestBpsBlock',
+          },
+        },
+        interestOverride: {
+          $min: '$loanOptions.interestBpsBlockOverride',
+        },
+        maxLTV: {
+          $max: '$loanOptions.maxLtvBps',
+        },
+      },
+    }, {
+      $addFields: {
+        lowestAPR: {
+          $cond: {
+            if: {
+              $ne: ['$interestOverride', null],
+            },
+            then: '$interestOverride',
+            else: '$interest',
           },
         },
       },
-      interest: {
-        $toDouble: {
-          $min: '$loanOptions.interestBpsBlock',
-        },
-      },
-      interestOverride: {
-        $min: '$loanOptions.interestBpsBlockOverride',
-      },
-      maxLTV: {
-        $max: '$loanOptions.maxLtvBps',
-      },
     },
-  }, {
-    $addFields: {
-      lowestAPR: {
-        $cond: {
-          if: {
-            $ne: ['$interestOverride', null],
-          },
-          then: '$interestOverride',
-          else: '$interest',
+    {
+      $match: {
+        'valueLockedEth': {
+          $gte: 0.01,
         },
       },
     },
-  },
-  {
-    $match: {
-      'valueLockedEth': {
-        $gte: 0.01,
-      },
-    },
-  },
-  ]
+    ]
 
-  switch (sortBy?.type) {
-  case PoolSortType.NAME:
-    stages.push({
-      $sort: {
-        name: sortBy?.direction === PoolSortDirection.DESC ? -1 : 1,
-      },
-    })
-    break
-  case PoolSortType.INTEREST:
-    stages.push({
-      $sort: {
-        lowestAPR: sortBy?.direction === PoolSortDirection.DESC ? -1 : 1,
-        name: 1,
-      },
-    })
-    break
-  case PoolSortType.LTV:
-    stages.push({
-      $sort: {
-        maxLTV: sortBy?.direction === PoolSortDirection.DESC ? -1 : 1,
-        name: 1,
-      },
-    })
-    break
+    switch (sortBy?.type) {
+    case PoolSortType.NAME:
+      stages.push({
+        $sort: {
+          name: sortBy?.direction === PoolSortDirection.DESC ? -1 : 1,
+        },
+      })
+      break
+    case PoolSortType.INTEREST:
+      stages.push({
+        $sort: {
+          lowestAPR: sortBy?.direction === PoolSortDirection.DESC ? -1 : 1,
+          name: 1,
+        },
+      })
+      break
+    case PoolSortType.LTV:
+      stages.push({
+        $sort: {
+          maxLTV: sortBy?.direction === PoolSortDirection.DESC ? -1 : 1,
+          name: 1,
+        },
+      })
+      break
+    }
+
+    return stages
   }
-
-  return stages
+  catch (err) {
+    throw fault('ERR_SEARCH_PUBLISHED_MULTIPLE_POOLS_GET_PIPELINE_STAGES', undefined, err)
+  }
 }

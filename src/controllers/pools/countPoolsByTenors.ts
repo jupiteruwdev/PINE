@@ -1,6 +1,7 @@
 
 import appConf from '../../app.conf'
 import { Blockchain } from '../../entities'
+import fault from '../../utils/fault'
 import Tenor from '../utils/Tenor'
 import searchPublishedPools from './searchPublishedPools'
 
@@ -11,15 +12,20 @@ type Params = {
 }
 
 export default async function countPoolsByTenors({ blockchainFilter, collectionAddress, nftId }: Params): Promise<number[]> {
-  const tenors = appConf.tenors
-  const pools = (await searchPublishedPools({ blockchainFilter, collectionAddress, nftId, tenors })).filter(pool => pool.valueLocked.amount.gt(pool.utilization.amount ?? '0'))
-  const poolsByTenors: number[] = []
+  try {
+    const tenors = appConf.tenors
+    const pools = (await searchPublishedPools({ blockchainFilter, collectionAddress, nftId, tenors })).filter(pool => pool.valueLocked.amount.gt(pool.utilization.amount ?? '0'))
+    const poolsByTenors: number[] = []
 
-  tenors.forEach(tenor => {
-    poolsByTenors.push(pools.filter(
-      pool => pool.loanOptions.find(loanOption => Tenor.convertTenor(tenor) === loanOption.loanDurationSeconds)
-    ).length)
-  })
+    tenors.forEach(tenor => {
+      poolsByTenors.push(pools.filter(
+        pool => pool.loanOptions.find(loanOption => Tenor.convertTenor(tenor) === loanOption.loanDurationSeconds)
+      ).length)
+    })
 
-  return poolsByTenors
+    return poolsByTenors
+  }
+  catch (err) {
+    throw fault('ERR_COUNT_POOLS_BY_TENORS', undefined, err)
+  }
 }

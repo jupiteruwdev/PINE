@@ -1,21 +1,23 @@
 import axios from 'axios'
 import BigNumber from 'bignumber.js'
-import { CoinGeckoClient } from 'coingecko-api-v3'
 import _ from 'lodash'
 import Web3 from 'web3'
 import appConf from '../../app.conf'
 import { Blockchain, Valuation, Value } from '../../entities'
+import fault from '../../utils/fault'
 import logger from '../../utils/logger'
 import rethrow from '../../utils/rethrow'
 import { getEthCollectionMetadata } from '../collections'
 import DataSource from '../utils/DataSource'
 import getRequest from '../utils/getRequest'
+import getTokenUSDPrice, { AvailableToken } from '../utils/getTokenUSDPrice'
 import postRequest from '../utils/postRequest'
 
 type Params = {
   blockchain: Blockchain
   collectionAddress: string
   nftId: string
+  vendorIds?: Record<string, string>
 }
 
 const nftPerpSlugs: Record<string, string> = {
@@ -36,6 +38,7 @@ export default async function getEthNFTValuation({
   blockchain,
   collectionAddress,
   nftId,
+  vendorIds,
 }: Params): Promise<Valuation> {
   try {
     logger.info(`Fetching valuation for Ethereum NFT <${collectionAddress}/${nftId}>...`)
@@ -46,13 +49,13 @@ export default async function getEthNFTValuation({
     case Blockchain.Ethereum.Network.MAIN:
     case Blockchain.Polygon.Network.MAIN:
       const valuation = await DataSource.fetch(
-        useNFTPerp({ blockchain, collectionAddress, nftId }),
-        useZyteOnePlanet({ blockchain, collectionAddress, nftId }),
-        useMetaquants({ blockchain, collectionAddress, nftId }),
-        useOpenSea({ blockchain, collectionAddress, nftId }),
-        useAlchemy({ blockchain, collectionAddress, nftId }),
-        useSpicyest({ blockchain, collectionAddress, nftId }),
-        useGemXYZ({ blockchain, collectionAddress, nftId }),
+        useNFTPerp({ blockchain, collectionAddress, nftId, vendorIds }),
+        useZyteOnePlanet({ blockchain, collectionAddress, nftId, vendorIds }),
+        useMetaquants({ blockchain, collectionAddress, nftId, vendorIds }),
+        useOpenSea({ blockchain, collectionAddress, nftId, vendorIds }),
+        useAlchemy({ blockchain, collectionAddress, nftId, vendorIds }),
+        useSpicyest({ blockchain, collectionAddress, nftId, vendorIds }),
+        useGemXYZ({ blockchain, collectionAddress, nftId, vendorIds }),
       )
 
       return valuation
@@ -74,266 +77,302 @@ export default async function getEthNFTValuation({
     logger.error(`Fetching valuation for Ethereum NFT <${collectionAddress}/${nftId}>... ERR`)
     if (logger.isErrorEnabled() && !logger.silent) console.error(err)
 
-    throw err
+    throw fault('ERR_GET_ETH_NFT_VALUATION', undefined, err)
   }
 }
 
 function useNFTPerp({ blockchain, collectionAddress }: Params): DataSource<Valuation> {
   return async () => {
-    logger.info(`...using NFTPerp to look up floor price for collection <${collectionAddress}>`)
+    try {
+      logger.info(`...using NFTPerp to look up floor price for collection <${collectionAddress}>`)
 
-    if (blockchain.networkId !== Blockchain.Ethereum.Network.MAIN) rethrow(`Unsupported Ethereum network <${blockchain.networkId}>`)
+      if (blockchain.networkId !== Blockchain.Ethereum.Network.MAIN) rethrow(`Unsupported Ethereum network <${blockchain.networkId}>`)
 
-    const apiKey = appConf.nftPerpAPIKey ?? rethrow('Missing NFTPerp API Key')
+      const apiKey = appConf.nftPerpAPIKey ?? rethrow('Missing NFTPerp API Key')
 
-    const slug = nftPerpSlugs[collectionAddress.toLowerCase()] ?? rethrow('Unsupported collection')
-    const res = await getRequest('https://vdj0xvxta8.execute-api.eu-central-1.amazonaws.com/twap', {
-      headers: {
-        'x-api-key': apiKey,
-      },
-      params: {
-        slug,
-        hours: 1,
-      },
-    })
+      const slug = nftPerpSlugs[collectionAddress.toLowerCase()] ?? rethrow('Unsupported collection')
+      const res = await getRequest('https://vdj0xvxta8.execute-api.eu-central-1.amazonaws.com/twap', {
+        headers: {
+          'x-api-key': apiKey,
+        },
+        params: {
+          slug,
+          hours: 1,
+        },
+      })
 
-    const price = _.get(res, 'price') ?? rethrow('Unable to infer floor price')
+      const price = _.get(res, 'price') ?? rethrow('Unable to infer floor price')
 
-    const valuation = Valuation.factory({
-      value: Value.$ETH(Web3.utils.fromWei(price)),
-      value24Hr: Value.$ETH(Web3.utils.fromWei(price)),
-    })
-    return valuation
-
+      const valuation = Valuation.factory({
+        value: Value.$ETH(Web3.utils.fromWei(price)),
+        value24Hr: Value.$ETH(Web3.utils.fromWei(price)),
+      })
+      return valuation
+    }
+    catch (err) {
+      throw fault('ERR_GET_ETH_NFT_VALUATION_USE_NFTPERP', undefined, err)
+    }
   }
 }
 
 export function useSpicyest({ blockchain, collectionAddress, nftId }: Params): DataSource<Valuation> {
   return async () => {
-    logger.info(`...using Spicyest to determine valuation for Ethereum NFT <${collectionAddress}/${nftId}>`)
+    try {
+      logger.info(`...using Spicyest to determine valuation for Ethereum NFT <${collectionAddress}/${nftId}>`)
 
-    if (blockchain.networkId !== Blockchain.Ethereum.Network.MAIN) rethrow(`Unsupported Ethereum network <${blockchain.networkId}>`)
+      if (blockchain.networkId !== Blockchain.Ethereum.Network.MAIN) rethrow(`Unsupported Ethereum network <${blockchain.networkId}>`)
 
-    const apiKey = appConf.spicyestAPIKey ?? rethrow('Missing Spicyest API key')
+      const apiKey = appConf.spicyestAPIKey ?? rethrow('Missing Spicyest API key')
 
-    const res = await getRequest(`https://api.spicyest.com/floor?address=${collectionAddress}`, {
-      headers: {
-        'X-API-KEY': apiKey,
-      },
-      useCache: false,
-    })
-    if (res?.currency !== 'ETH') rethrow('Wrong currency')
-    const floorPrice = new BigNumber(_.get(res, 'price') || '0')
+      const res = await getRequest(`https://api.spicyest.com/floor?address=${collectionAddress}`, {
+        headers: {
+          'X-API-KEY': apiKey,
+        },
+        useCache: false,
+      })
+      if (res?.currency !== 'ETH') rethrow('Wrong currency')
+      const floorPrice = new BigNumber(_.get(res, 'price') || '0')
 
-    const valuation = Valuation.factory({
-      value: Value.$ETH(floorPrice),
-      value24Hr: Value.$ETH(floorPrice),
-    })
+      const valuation = Valuation.factory({
+        value: Value.$ETH(floorPrice),
+        value24Hr: Value.$ETH(floorPrice),
+      })
 
-    return valuation
+      return valuation
+    }
+    catch (err) {
+      throw fault('ERR_GET_ETH_NFT_VALUATION_USE_SPICYEST', undefined, err)
+    }
   }
 }
 
 export function useMetaquants({ blockchain, collectionAddress, nftId }: Params): DataSource<Valuation> {
   return async () => {
-    logger.info(`...using Metaquants to determine valuation for Ethereum NFT <${collectionAddress}/${nftId}>`)
+    try {
+      logger.info(`...using Metaquants to determine valuation for Ethereum NFT <${collectionAddress}/${nftId}>`)
 
-    if (blockchain.networkId !== Blockchain.Ethereum.Network.MAIN) rethrow(`Unsupported Ethereum network <${blockchain.networkId}>`)
+      if (blockchain.networkId !== Blockchain.Ethereum.Network.MAIN) rethrow(`Unsupported Ethereum network <${blockchain.networkId}>`)
 
-    const apiKey = appConf.metaquantsAPIKey ?? rethrow('Missing Metaquants API key')
-    const collectionMetadata = await getEthCollectionMetadata({ blockchain, collectionAddress, matchSubcollectionBy: { type: 'nftId', value: nftId } })
-    const vendorId = collectionMetadata.vendorIds?.['metaquants'] ?? (blockchain as Blockchain<'polygon'>).networkId === Blockchain.Polygon.Network.MAIN ? collectionAddress : rethrow('No vendor ID found')
+      const apiKey = appConf.metaquantsAPIKey ?? rethrow('Missing Metaquants API key')
 
-    const res = await getRequest(`https://api.metaquants.xyz/v1/realtime-floor-price/${collectionAddress.toLowerCase()}`, {
-      headers: {
-        'X-API-KEY': apiKey,
-      },
-      useCache: false,
-    })
+      const res = await getRequest(`https://api.metaquants.xyz/v1/realtime-floor-price/${collectionAddress.toLowerCase()}`, {
+        headers: {
+          'X-API-KEY': apiKey,
+        },
+        useCache: false,
+      })
 
-    if (!res?.body?.floor_price) rethrow('Collection not supported')
-    const floorPrice = new BigNumber(res?.body?.floor_price ?? '0')
+      if (!res?.body?.floor_price) rethrow('Collection not supported')
+      const floorPrice = new BigNumber(res?.body?.floor_price ?? '0')
 
-    const valuation = Valuation.factory({
-      value: Value.$ETH(floorPrice),
-      value24Hr: Value.$ETH(floorPrice),
-    })
+      const valuation = Valuation.factory({
+        value: Value.$ETH(floorPrice),
+        value24Hr: Value.$ETH(floorPrice),
+      })
 
-    return valuation
+      return valuation
+    }
+    catch (err) {
+      throw fault('ERR_GET_ETH_NFT_VALUATION_USE_METAQUANTS', undefined, err)
+    }
   }
 }
 
-export function useZyteOnePlanet({ blockchain, collectionAddress, nftId }: Params): DataSource<Valuation> {
+export function useZyteOnePlanet({ blockchain, collectionAddress, nftId, vendorIds }: Params): DataSource<Valuation> {
   return async () => {
-    logger.info(`...using Zyte to determine valuation for Ethereum NFT <${collectionAddress}/${nftId}>`)
+    try {
+      logger.info(`...using Zyte to determine valuation for Ethereum NFT <${collectionAddress}/${nftId}>`)
 
-    if (blockchain.networkId !== Blockchain.Ethereum.Network.MAIN && blockchain.networkId !== Blockchain.Polygon.Network.MAIN) rethrow(`Unsupported Ethereum network <${blockchain.networkId}>`)
+      if (blockchain.networkId !== Blockchain.Ethereum.Network.MAIN && blockchain.networkId !== Blockchain.Polygon.Network.MAIN) rethrow(`Unsupported Ethereum network <${blockchain.networkId}>`)
 
-    const apiKey = appConf.zyteAPIKey ?? rethrow('Missing Zyte API key')
-    const collectionMetadata = await getEthCollectionMetadata({ blockchain, collectionAddress, matchSubcollectionBy: { type: 'nftId', value: nftId } })
-    const vendorId = collectionMetadata.vendorIds?.['zyte'] ?? rethrow('No vendor ID found')
+      const apiKey = appConf.zyteAPIKey ?? rethrow('Missing Zyte API key')
+      if (!vendorIds) {
+        const collectionMetadata = await getEthCollectionMetadata({ blockchain, collectionAddress, matchSubcollectionBy: { type: 'nftId', value: nftId } })
+        vendorIds = collectionMetadata.vendorIds
+      }
+      const vendorId = vendorIds?.['zyte'] ?? rethrow('No vendor ID found')
 
-    const { data } = await axios.post(
-      'https://api.zyte.com/v1/extract',
-      {
-        url: vendorId,
-        browserHtml: true,
-      },
-      {
-        auth: { username: apiKey, password: '' },
-      },
-    )
+      const { data } = await axios.post(
+        'https://api.zyte.com/v1/extract',
+        {
+          url: vendorId,
+          browserHtml: true,
+        },
+        {
+          auth: { username: apiKey, password: '' },
+        },
+      )
 
-    const regex2 = /[\s\S]*<div class="[^"]*?">(\d+(?:\.\d+)?)\s*<\/div>[\s\S]*<h4>Floor Price<\/h4>[\s\S]*/
-    const floorPrice = new BigNumber(data?.browserHtml?.match(regex2)[1] ?? '0')
+      const regex2 = /[\s\S]*<div class="[^"]*?">(\d+(?:\.\d+)?)\s*<\/div>[\s\S]*<h4>Floor Price<\/h4>[\s\S]*/
+      const floorPrice = new BigNumber(data?.browserHtml?.match(regex2)[1] ?? '0')
 
-    const valuation = Valuation.factory({
-      value: Value.$ETH(floorPrice),
-      value24Hr: Value.$ETH(floorPrice),
-    })
+      const valuation = Valuation.factory({
+        value: Value.$ETH(floorPrice),
+        value24Hr: Value.$ETH(floorPrice),
+      })
 
-    return valuation
+      return valuation
+    }
+    catch (err) {
+      throw fault('ERR_GET_ETH_NFT_VALUATION_USE_ZYTE_ONEPLANNET', undefined, err)
+    }
   }
 }
 
 export function useAlchemy({ blockchain, collectionAddress, nftId }: Params): DataSource<Valuation> {
   return async () => {
-    logger.info(`...using Alchemy to determine valuation for Ethereum NFT <${collectionAddress}/${nftId}>`)
+    try {
+      logger.info(`...using Alchemy to determine valuation for Ethereum NFT <${collectionAddress}/${nftId}>`)
 
-    if (blockchain.networkId !== Blockchain.Ethereum.Network.MAIN && blockchain.networkId !== Blockchain.Polygon.Network.MAIN) rethrow(`Unsupported Ethereum network <${blockchain.networkId}>`)
+      if (blockchain.networkId !== Blockchain.Ethereum.Network.MAIN && blockchain.networkId !== Blockchain.Polygon.Network.MAIN) rethrow(`Unsupported Ethereum network <${blockchain.networkId}>`)
 
-    const apiUrl = _.get(appConf.alchemyNFTAPIUrl, blockchain.networkId) ?? rethrow(`Missing Alchemy API Url for blockchain <${JSON.stringify(blockchain)}>`)
-    const apiKey = appConf.alchemyAPIKey ?? rethrow('Missing Alchemy API key')
+      const apiMainUrl = _.get(appConf.alchemyNFTAPIUrl, blockchain.networkId) ?? rethrow(`Missing Alchemy API Url for blockchain <${JSON.stringify(blockchain)}>`)
 
-    const res = await getRequest(`${apiUrl}${apiKey}/getFloorPrice?contractAddress=${collectionAddress}`, {
-      headers: {
-        'X-API-KEY': apiKey,
-      },
-      useCache: false,
-    })
-    if (res?.openSea?.priceCurrency !== 'ETH') rethrow('Wrong currency')
-    const floorPrice = new BigNumber(_.get(res, 'openSea.floorPrice', '0'))
+      const res = await getRequest(`${apiMainUrl}/getFloorPrice?contractAddress=${collectionAddress}`, {
+        useCache: false,
+      })
+      if (res?.openSea?.priceCurrency !== 'ETH') rethrow('Wrong currency')
+      const floorPrice = new BigNumber(_.get(res, 'openSea.floorPrice', '0'))
 
-    const valuation = Valuation.factory({
-      value: Value.$ETH(floorPrice),
-      value24Hr: Value.$ETH(floorPrice),
-    })
+      const valuation = Valuation.factory({
+        value: Value.$ETH(floorPrice),
+        value24Hr: Value.$ETH(floorPrice),
+      })
 
-    return valuation
+      return valuation
+    }
+    catch (err) {
+      throw fault('ERR_GET_ETH_NFT_VALUATION_USE_ALCHEMY', undefined, err)
+    }
   }
 }
 
-export function useOpenSea({ blockchain, collectionAddress, nftId }: Params): DataSource<Valuation> {
+export function useOpenSea({ blockchain, collectionAddress, nftId, vendorIds }: Params): DataSource<Valuation> {
   return async () => {
-    logger.info(`...using OpenSea to determine valuation for Ethereum NFT <${collectionAddress}/${nftId}>`)
+    try {
+      logger.info(`...using OpenSea to determine valuation for Ethereum NFT <${collectionAddress}/${nftId}>`)
 
-    if (blockchain.networkId !== Blockchain.Ethereum.Network.MAIN && blockchain.networkId !== Blockchain.Polygon.Network.MAIN) rethrow(`Unsupported Ethereum network <${blockchain.networkId}>`)
+      if (blockchain.networkId !== Blockchain.Ethereum.Network.MAIN && blockchain.networkId !== Blockchain.Polygon.Network.MAIN) rethrow(`Unsupported Ethereum network <${blockchain.networkId}>`)
 
-    const apiKey = appConf.openseaAPIKey ?? rethrow('Missing OpenSea API key')
-    const collectionMetadata = await getEthCollectionMetadata({ blockchain, collectionAddress, matchSubcollectionBy: { type: 'nftId', value: nftId } })
-    const vendorId = collectionMetadata.vendorIds?.['opensea'] ?? rethrow('No vendor ID found')
+      const apiKey = appConf.openseaAPIKey ?? rethrow('Missing OpenSea API key')
+      if (!vendorIds) {
+        const collectionMetadata = await getEthCollectionMetadata({ blockchain, collectionAddress, matchSubcollectionBy: { type: 'nftId', value: nftId } })
+        vendorIds = collectionMetadata.vendorIds
+      }
+      const vendorId = vendorIds?.['opensea'] ?? rethrow('No vendor ID found')
 
-    const res = await getRequest(`https://api.opensea.io/api/v1/collection/${vendorId}/stats`, {
-      headers: {
-        'X-API-KEY': apiKey,
-        'content-type': 'application/json',
-        'Accept-Encoding': 'gzip,deflate,compress',
-      },
-    })
-    const floorPrice = new BigNumber(_.get(res, 'stats.floor_price') ?? '0')
-    const value24Hr = new BigNumber(_.get(res, 'stats.one_day_average_price') ?? '0')
-    const value = floorPrice
-
-    if (blockchain.networkId === Blockchain.Ethereum.Network.MAIN) {
-      return Valuation.factory({
-        value: Value.$ETH(value),
-        value24Hr: Value.$ETH(value24Hr),
+      const res = await getRequest(`https://api.opensea.io/api/v1/collection/${vendorId}/stats`, {
+        headers: {
+          'X-API-KEY': apiKey,
+          'content-type': 'application/json',
+          'Accept-Encoding': 'gzip,deflate,compress',
+        },
       })
+      const floorPrice = new BigNumber(_.get(res, 'stats.floor_price') ?? '0')
+      const value24Hr = new BigNumber(_.get(res, 'stats.one_day_average_price') ?? '0')
+      const value = floorPrice
+
+      if (blockchain.networkId === Blockchain.Ethereum.Network.MAIN) {
+        return Valuation.factory({
+          value: Value.$ETH(value),
+          value24Hr: Value.$ETH(value24Hr),
+        })
+      }
+      else if (blockchain.networkId === Blockchain.Polygon.Network.MAIN) {
+        const [ethPrice, maticPrice] = await Promise.all([
+          getTokenUSDPrice(AvailableToken.ETH),
+          getTokenUSDPrice(AvailableToken.MATIC),
+        ])
+        return Valuation.factory({
+          value: Value.$ETH(value.times(ethPrice.amount).div(maticPrice.amount)),
+          value24Hr: Value.$ETH(value24Hr.times(ethPrice.amount).div(maticPrice.amount)),
+        })
+      }
+      else rethrow(`Unsupported Ethereum network <${blockchain.networkId}>`)
     }
-    else if (blockchain.networkId === Blockchain.Polygon.Network.MAIN) {
-      const client = new CoinGeckoClient({
-        timeout: 10000,
-        autoRetry: true,
-      }, 'CG-JU9yFWZXNqUdsWHs32HnRUXG')
-      const maticPrice = await client.simplePrice({ 'vs_currencies': 'eth', 'ids': 'matic-network' })
-      return Valuation.factory({
-        value: Value.$ETH(value.dividedBy((maticPrice as { 'matic-network': { eth: number } })?.['matic-network']?.eth ?? 0)),
-        value24Hr: Value.$ETH(value24Hr.dividedBy((maticPrice as { 'matic-network': { eth: number } })?.['matic-network']?.eth ?? 0)),
-      })
+    catch (err) {
+      throw fault('ERR_GET_ETH_NFT_VALUATION_USE_OPENSEA', undefined, err)
     }
-    else rethrow(`Unsupported Ethereum network <${blockchain.networkId}>`)
   }
 }
 
-export function useGemXYZ({ blockchain, collectionAddress, nftId }: Params): DataSource<Valuation> {
+export function useGemXYZ({ blockchain, collectionAddress, nftId, vendorIds }: Params): DataSource<Valuation> {
   return async () => {
-    logger.info(`...using GemXYZ to determine valuation for Ethereum NFT <${collectionAddress}/${nftId}>`)
+    try {
+      logger.info(`...using GemXYZ to determine valuation for Ethereum NFT <${collectionAddress}/${nftId}>`)
 
-    if (blockchain.networkId !== Blockchain.Ethereum.Network.MAIN) rethrow(`Unsupported Ethereum network <${blockchain.networkId}>`)
+      if (blockchain.networkId !== Blockchain.Ethereum.Network.MAIN) rethrow(`Unsupported Ethereum network <${blockchain.networkId}>`)
 
-    const apiKey = appConf.gemxyzAPIKey ?? rethrow('Missing GemXYZ API key')
-    const collectionMetadata = await getEthCollectionMetadata({ blockchain, collectionAddress, matchSubcollectionBy: { type: 'nftId', value: nftId } })
-    const vendorId = collectionMetadata.vendorIds?.['gemxyz'] ?? rethrow('No vendor ID found')
+      const apiKey = appConf.gemxyzAPIKey ?? rethrow('Missing GemXYZ API key')
+      if (!vendorIds) {
+        const collectionMetadata = await getEthCollectionMetadata({ blockchain, collectionAddress, matchSubcollectionBy: { type: 'nftId', value: nftId } })
+        vendorIds = collectionMetadata.vendorIds
+      }
+      const vendorId = vendorIds?.['gemxyz'] ?? rethrow('No vendor ID found')
 
-    const reqData = {
-      filters: {
-        traits: JSON.parse(vendorId),
-        traitsRange: {},
-        address: collectionAddress,
-        rankRange: {},
-        price: {},
-      },
-      sort: {
-        currentEthPrice: 'asc',
-      },
-      fields: {
-        id: 1,
-        name: 1,
-        address: 1,
-        collectionName: 1,
-        collectionSymbol: 1,
-        externalLink: 1,
-        imageUrl: 1,
-        smallImageUrl: 1,
-        animationUrl: 1,
-        standard: 1,
-        market: 1,
-        pendingTrxs: 1,
-        currentBasePrice: 1,
-        paymentToken: 1,
-        marketUrl: 1,
-        marketplace: 1,
-        nftId: 1,
-        priceInfo: 1,
-        tokenReserves: 1,
-        ethReserves: 1,
-        sellOrders: 1,
-        startingPrice: 1,
-        rarityScore: 1,
-      },
-      offset: 0,
-      limit: 30,
-      markets: [],
-      status: [
-        'buy_now',
-      ],
+      const reqData = {
+        filters: {
+          traits: JSON.parse(vendorId),
+          traitsRange: {},
+          address: collectionAddress,
+          rankRange: {},
+          price: {},
+        },
+        sort: {
+          currentEthPrice: 'asc',
+        },
+        fields: {
+          id: 1,
+          name: 1,
+          address: 1,
+          collectionName: 1,
+          collectionSymbol: 1,
+          externalLink: 1,
+          imageUrl: 1,
+          smallImageUrl: 1,
+          animationUrl: 1,
+          standard: 1,
+          market: 1,
+          pendingTrxs: 1,
+          currentBasePrice: 1,
+          paymentToken: 1,
+          marketUrl: 1,
+          marketplace: 1,
+          nftId: 1,
+          priceInfo: 1,
+          tokenReserves: 1,
+          ethReserves: 1,
+          sellOrders: 1,
+          startingPrice: 1,
+          rarityScore: 1,
+        },
+        offset: 0,
+        limit: 30,
+        markets: [],
+        status: [
+          'buy_now',
+        ],
+      }
+
+      const res = await postRequest('https://gem-public-api-v2.herokuapp.com/assets', reqData, {
+        headers: {
+          'Content-Type': 'application/json',
+          'X-API-KEY': apiKey,
+        },
+        useCache: false,
+      }).catch(err => rethrow(`Failed to fetch valuation from GemXYZ: ${err}`))
+
+      const floorPrice = new BigNumber(_.get(res, 'data.0.currentBasePrice') ?? '0').div(new BigNumber(10).pow(new BigNumber(18)))
+
+      const valuation = Valuation.factory({
+        value: Value.$ETH(floorPrice),
+        value24Hr: Value.$ETH(floorPrice),
+      })
+
+      return valuation
     }
-
-    const res = await postRequest('https://gem-public-api-v2.herokuapp.com/assets', reqData, {
-      headers: {
-        'Content-Type': 'application/json',
-        'X-API-KEY': apiKey,
-      },
-      useCache: false,
-    }).catch(err => rethrow(`Failed to fetch valuation from GemXYZ: ${err}`))
-
-    const floorPrice = new BigNumber(_.get(res, 'data.0.currentBasePrice') ?? '0').div(new BigNumber(10).pow(new BigNumber(18)))
-
-    const valuation = Valuation.factory({
-      value: Value.$ETH(floorPrice),
-      value24Hr: Value.$ETH(floorPrice),
-    })
-
-    return valuation
+    catch (err) {
+      throw fault('ERR_GET_ETH_NFT_VALUATION_USE_GEMXYZ', undefined, err)
+    }
   }
 }

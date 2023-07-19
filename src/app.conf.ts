@@ -32,7 +32,6 @@ export default {
   openseaAPIKey: process.env.OPENSEA_API_KEY,
   gemxyzAPIKey: process.env.GEMXYZ_API_KEY,
   moralisAPIKey: process.env.MORALIS_API_KEY,
-  alchemyAPIKey: process.env.ALCHEMY_API_KEY,
   coinAPIKey: process.env.COIN_API_KEY,
   lunarCrushAPIKey: process.env.LUNARCRUSH_API_KEY,
   looksrareAPIKey: process.env.LOOKSRARE_API_KEY,
@@ -44,18 +43,16 @@ export default {
   metaquantsAPIKey: process.env.METAQUANTS_API_KEY,
   ethBlocksPerSecond: 14,
   alchemyAPIUrl: {
-    [Blockchain.Ethereum.Network.RINKEBY]: 'https://eth-rinkeby.g.alchemy.com/v2/',
-    [Blockchain.Ethereum.Network.MAIN]: 'https://eth-mainnet.g.alchemy.com/v2/',
-    [Blockchain.Ethereum.Network.GOERLI]: 'https://eth-goerli.g.alchemy.com/v2/',
-    [Blockchain.Polygon.Network.MAIN]: 'https://polygon-mainnet.g.alchemy.com/v2/',
-    [Blockchain.Polygon.Network.MUMBAI]: 'https://polygon-mumbai.g.alchemy.com/v2/',
+    [Blockchain.Ethereum.Network.MAIN]: `https://eth-mainnet.g.alchemy.com/v2/${process.env.ALCHEMY_API_KEY_MAINNET}`,
+    [Blockchain.Ethereum.Network.GOERLI]: `https://eth-goerli.g.alchemy.com/v2/${process.env.ALCHEMY_API_KEY_GOERLI}`,
+    [Blockchain.Polygon.Network.MAIN]: `https://polygon-mainnet.g.alchemy.com/v2/${process.env.ALCHEMY_API_KEY_POLYGON_MAINNET}`,
+    [Blockchain.Polygon.Network.MUMBAI]: `https://polygon-mumbai.g.alchemy.com/v2/${process.env.ALCHEMY_API_KEY_POLYGON_MUMBAI}`,
   },
   alchemyNFTAPIUrl: {
-    [Blockchain.Ethereum.Network.RINKEBY]: 'https://eth-rinkeby.g.alchemy.com/nft/v2/',
-    [Blockchain.Ethereum.Network.MAIN]: 'https://eth-mainnet.g.alchemy.com/nft/v2/',
-    [Blockchain.Ethereum.Network.GOERLI]: 'https://eth-goerli.g.alchemy.com/nft/v2/',
-    [Blockchain.Polygon.Network.MAIN]: 'https://polygon-mainnet.g.alchemy.com/nft/v2/',
-    [Blockchain.Polygon.Network.MUMBAI]: 'https://polygon-mumbai.g.alchemy.com/nft/v2/',
+    [Blockchain.Ethereum.Network.MAIN]: `https://eth-mainnet.g.alchemy.com/nft/v2/${process.env.ALCHEMY_API_KEY_MAINNET}`,
+    [Blockchain.Ethereum.Network.GOERLI]: `https://eth-goerli.g.alchemy.com/nft/v2/${process.env.ALCHEMY_API_KEY_GOERLI}`,
+    [Blockchain.Polygon.Network.MAIN]: `https://polygon-mainnet.g.alchemy.com/nft/v2/${process.env.ALCHEMY_API_KEY_POLYGON_MAINNET}`,
+    [Blockchain.Polygon.Network.MUMBAI]: `https://polygon-mumbai.g.alchemy.com/nft/v2/${process.env.ALCHEMY_API_KEY_POLYGON_MUMBAI}`,
   },
   subgraphAPIUrl: {
     [Blockchain.Ethereum.Network.RINKEBY]: process.env.SUBGRAPH_API_RINKEBY_URL,
@@ -120,8 +117,8 @@ export default {
     [Blockchain.Polygon.Network.MAIN]: '0x03542e5D86e39304FE347c779De78F3157ca3e6f',
   },
   poolHelperAddress: {
-    [Blockchain.Ethereum.Network.MAIN]: '0x0aab1368f6704e8403105162690bdf6ee75305c0',
-    [Blockchain.Polygon.Network.MAIN]: '0xd8785Fa74dc7D94558c62D0ba9e6452437aC967B',
+    [Blockchain.Ethereum.Network.MAIN]: process.env.SENTRY_ENVIRONMENT !== 'prod' ? '0x979F81e74609A589623a3250147AEc3423A8483D' : '0x0aab1368f6704e8403105162690bdf6ee75305c0',
+    [Blockchain.Polygon.Network.MAIN]: process.env.SENTRY_ENVIRONMENT !== 'prod' ? '0x5EAD97b1171B1062A2740a1e972BE8fdC7C23701' : '0xd8785Fa74dc7D94558c62D0ba9e6452437aC967B',
   },
   pinePieceGenesisAddress: {
     [Blockchain.Ethereum.Network.MAIN]: '0xacadb3c6290392f59f45dddacca8add2cec24366',
@@ -148,7 +145,7 @@ export default {
   snapshotPeriod: 39000,
   rewardPINE: 5952,
   mongoUri: process.env.MONGO_URI ?? '',
-  tenors: process.env.SENTRY_ENVIRONMENT !== 'prod' ? [0.007, 1, 3, 7, 14, 30, 60, 90] : [1, 3, 7, 14, 30, 60, 90],
+  tenors: process.env.SENTRY_ENVIRONMENT !== 'prod' ? [0.007, 7, 14] : [7, 14],
   tests: {
     walletAddress: process.env.TESTS_WALLET_ADDRESS ?? '',
     privateKey: process.env.TESTS_WALLET_PRIVATE_KEY ?? '',
@@ -167,10 +164,11 @@ export default {
   turnstileSecretKey: process.env.TURNSTILE_SECRET_KEY,
   sentryApiDsn: process.env.SENTRY_API_DSN,
   alchemySigningKey: process.env.ALCHEMY_SIGNING_KEY ?? '',
-  incentiveRewards: 2500000,
+  incentiveRewards: 1248000,
   stakingRewards: 41666,
   bidTreasuryContractAddress: {
     [Blockchain.Ethereum.Network.MAIN]: '',
     [Blockchain.Ethereum.Network.GOERLI]: '0x9e70ef3cd5565f4eb78996eb037765d759cc257b',
   },
+  redisHost: `redis://${process.env.REDISHOST}:6379`,
 }

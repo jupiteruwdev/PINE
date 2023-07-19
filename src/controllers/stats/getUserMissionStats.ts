@@ -5,6 +5,7 @@ import { Blockchain } from '../../entities'
 import UserMissionStats from '../../entities/lib/UserMissionStats'
 import { getOnChainPoolsByLenderAddress, getPNPLHistoriesByBorrowerAddress } from '../../subgraph'
 import getOnChainLoanHistoriesByBorrowerAddress from '../../subgraph/getOnChainLoanHistoriesByBorrowerAddress'
+import fault from '../../utils/fault'
 import logger from '../../utils/logger'
 import rethrow from '../../utils/rethrow'
 import getRequest from '../utils/getRequest'
@@ -27,8 +28,7 @@ export default async function getUserMissionStats({
 }: Params): Promise<UserMissionStats> {
   try {
     logger.info(`Fetching user mission stats for blockchain <${JSON.stringify(blockchain)}>...`)
-    const apiHost = _.get(appConf.alchemyAPIUrl, blockchain.networkId) ?? rethrow(`Missing Alchemy API URL for blockchain <${JSON.stringify(blockchain)}>`)
-    const apiKey = appConf.alchemyAPIKey ?? rethrow('Missing Alchemy API key')
+    const apiMainUrl = _.get(appConf.alchemyAPIUrl, blockchain.networkId) ?? rethrow(`Missing Alchemy API URL for blockchain <${JSON.stringify(blockchain)}>`)
     let user = await UserModel.findOne({
       address: {
         '$regex': address,
@@ -52,7 +52,7 @@ export default async function getUserMissionStats({
 
     switch (blockchain.network) {
     case 'ethereum':
-      const res = await getRequest(`${apiHost}${apiKey}/getNFTs`, {
+      const res = await getRequest(`${apiMainUrl}/getNFTs`, {
         params: {
           owner: address,
           contractAddresses: [
@@ -97,6 +97,6 @@ export default async function getUserMissionStats({
   }
   catch (err) {
     logger.error(`Fetching user mission stats for blockchain <${JSON.stringify(blockchain)}>... ERR:`, err)
-    throw err
+    throw fault('ERR_GET_USER_MISSION_STATS', undefined, err)
   }
 }

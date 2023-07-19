@@ -38,51 +38,54 @@ export default async function getEthCollectionFloorPrices({
   catch (err) {
     logger.error(`Fetching floor prices for collections <${collectionAddresses}> on network <${blockchain.networkId}>... ERR`)
     if (logger.isErrorEnabled() && !logger.silent) console.error(err)
-    throw fault('ERR_FETCH_FLOOR_PRICES', undefined, err)
+    throw fault('ERR_FETCH_COLLECTION_FLOOR_PRICES', undefined, err)
   }
 }
 
 function useAlchemy({ blockchain, collectionAddresses, dbCollections }: UseAlchemyParams): DataSource<Value<'ETH'>[]> {
   return async () => {
-    logger.info(`...using Alchemy to look up floor prices for collections <${collectionAddresses}>`)
+    try {
+      logger.info(`...using Alchemy to look up floor prices for collections <${collectionAddresses}>`)
 
-    if (blockchain.network !== 'ethereum' && blockchain.network !== 'polygon') rethrow(`Unsupported blockchain <${JSON.stringify(blockchain)}>`)
+      if (blockchain.network !== 'ethereum' && blockchain.network !== 'polygon') rethrow(`Unsupported blockchain <${JSON.stringify(blockchain)}>`)
 
-    const apiUrl = _.get(appConf.alchemyNFTAPIUrl, blockchain.networkId) ?? rethrow(`Missing alchemy url for blockchain ${JSON.stringify(blockchain)}`)
+      const apiMainUrl = _.get(appConf.alchemyNFTAPIUrl, blockchain.networkId) ?? rethrow(`Missing alchemy url for blockchain ${JSON.stringify(blockchain)}`)
 
-    const apiKey = appConf.alchemyAPIKey ?? rethrow('Missing OpenSea API key')
+      switch (blockchain.networkId) {
+      case Blockchain.Ethereum.Network.MAIN:
+      case Blockchain.Polygon.Network.MAIN:
+        const res: any[] = await Promise.all(_.chunk(collectionAddresses, 100).map(addresses => new Promise((resolve, reject) => {
+          postRequest(`${apiMainUrl}/getContractMetadataBatch`, {
+            contractAddresses: addresses,
+          })
+            .then(res => resolve(res))
+            .catch(err => reject(err))
+        })))
 
-    switch (blockchain.networkId) {
-    case Blockchain.Ethereum.Network.MAIN:
-    case Blockchain.Polygon.Network.MAIN:
-      const res: any[] = await Promise.all(_.chunk(collectionAddresses, 100).map(addresses => new Promise((resolve, reject) => {
-        postRequest(`${apiUrl}${apiKey}/getContractMetadataBatch`, {
-          contractAddresses: addresses,
+        let collections: any[] = []
+        res.forEach(item => {
+          collections = [...collections, ...item]
         })
-          .then(res => resolve(res))
-          .catch(err => reject(err))
-      })))
 
-      let collections: any[] = []
-      res.forEach(item => {
-        collections = [...collections, ...item]
-      })
+        return collections.map((collection: any, index: number) => {
+          const price = _.get(collection, 'contractMetadata.openSea.floorPrice')
+          const dbCollection = dbCollections.find(dbC => _.get(dbC, 'address').toLowerCase() === collectionAddresses[index].toLowerCase())
 
-      return collections.map((collection: any, index: number) => {
-        const price = _.get(collection, 'contractMetadata.openSea.floorPrice')
-        const dbCollection = dbCollections.find(dbC => _.get(dbC, 'address').toLowerCase() === collectionAddresses[index].toLowerCase())
+          if (dbCollection && _.get(dbCollection, 'valuation.value.amount')) {
+            return Value.$ETH(_.get(dbCollection, 'valuation.value.amount'))
+          }
 
-        if (dbCollection && _.get(dbCollection, 'valuation.value.amount')) {
-          return Value.$ETH(_.get(dbCollection, 'valuation.value.amount'))
-        }
-
-        return price === undefined ? Value.$ETH(NaN) : Value.$ETH(price)
-      })
-    case Blockchain.Ethereum.Network.GOERLI:
-    case Blockchain.Polygon.Network.MUMBAI:
-      return collectionAddresses.map(() => Value.$ETH(1))
-    default:
-      rethrow(`Unsupported blockchain <${JSON.stringify(blockchain)}>`)
+          return price === undefined ? Value.$ETH(NaN) : Value.$ETH(price)
+        })
+      case Blockchain.Ethereum.Network.GOERLI:
+      case Blockchain.Polygon.Network.MUMBAI:
+        return collectionAddresses.map(() => Value.$ETH(1))
+      default:
+        rethrow(`Unsupported blockchain <${JSON.stringify(blockchain)}>`)
+      }
+    }
+    catch (err) {
+      throw fault('ERR_FETCH_COLLECTION_FLOOR_PRICES_USE_ALCHEMY', undefined, err)
     }
   }
 }

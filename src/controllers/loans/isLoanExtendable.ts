@@ -14,23 +14,28 @@ export default async function isLoanExtendable({
   collectionAddress,
   nftId,
 }: Params): Promise<boolean> {
-  switch (blockchain.network) {
-  case 'ethereum':
-  case 'polygon': {
-    const loan = await getLoan({ blockchain, nftId, collectionAddress })
-    if (loan === undefined) return false
+  try {
+    switch (blockchain.network) {
+    case 'ethereum':
+    case 'polygon': {
+      const loan = await getLoan({ blockchain, nftId, collectionAddress })
+      if (loan === undefined) return false
 
-    const isRepaid = loan.returned.amount.gte(loan.borrowed.amount)
-    if (isRepaid) return false
+      const isRepaid = loan.returned.amount.gte(loan.borrowed.amount)
+      if (isRepaid) return false
 
-    const pools = await searchPublishedPools({ blockchainFilter: Blockchain.parseFilter(blockchain), collectionAddress })
-    const numPools = pools.filter(pool => pool.valueLocked.amount.gt(pool.utilization.amount ?? '0')).length
+      const pools = await searchPublishedPools({ blockchainFilter: Blockchain.parseFilter(blockchain), collectionAddress })
+      const numPools = pools.filter(pool => pool.valueLocked.amount.gt(pool.utilization.amount ?? '0')).length
 
-    if (numPools <= 0) return false
+      if (numPools <= 0) return false
 
-    return true
+      return true
+    }
+    default:
+      throw fault('ERR_UNSUPPORTED_BLOCKCHAIN')
+    }
   }
-  default:
-    throw fault('ERR_UNSUPPORTED_BLOCKCHAIN')
+  catch (err) {
+    throw fault('ERR_IS_LOAN_EXTENDABLE', undefined, err)
   }
 }

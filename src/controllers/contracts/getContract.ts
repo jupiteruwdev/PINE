@@ -1,4 +1,4 @@
-import ERC20 from '../../abis/ERC20.json' assert { type: 'json' }
+import { Contract } from 'web3-eth-contract'
 import { Blockchain } from '../../entities'
 import fault from '../../utils/fault'
 import getEthWeb3 from '../utils/getEthWeb3'
@@ -6,15 +6,16 @@ import getEthWeb3 from '../utils/getEthWeb3'
 type Params = {
   blockchain: Blockchain
   address: string
+  abi: any[]
 }
 
-export default function getTokenContract({ blockchain, address }: Params) {
+export default function getContract({ blockchain, address, abi }: Params): Contract {
   try {
     switch (blockchain.network) {
     case 'ethereum':
     case 'polygon': {
       const web3 = getEthWeb3(blockchain.networkId)
-      const contract = new web3.eth.Contract(ERC20 as any, address)
+      const contract: Contract = new web3.eth.Contract(abi as any, address)
       return contract
     }
     default:
@@ -22,6 +23,6 @@ export default function getTokenContract({ blockchain, address }: Params) {
     }
   }
   catch (err) {
-    throw fault('ERR_GET_TOKEN_CONTRACT', undefined, err)
+    throw fault('ERR_GET_POOL_CONTRACT', undefined, err)
   }
 }
