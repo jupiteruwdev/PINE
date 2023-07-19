@@ -1,7 +1,7 @@
 import { getLoan } from '.'
 import { Blockchain } from '../../entities'
 import fault from '../../utils/fault'
-import { countPools } from '../pools'
+import { searchPublishedPools } from '../pools'
 
 type Params = {
   blockchain: Blockchain
@@ -24,7 +24,9 @@ export default async function isLoanExtendable({
       const isRepaid = loan.returned.amount.gte(loan.borrowed.amount)
       if (isRepaid) return false
 
-      const numPools = await countPools({ blockchainFilter: Blockchain.parseFilter(blockchain), collectionAddress })
+      const pools = await searchPublishedPools({ blockchainFilter: Blockchain.parseFilter(blockchain), collectionAddress })
+      const numPools = pools.filter(pool => pool.valueLocked.amount.gt(pool.utilization.amount ?? '0')).length
+
       if (numPools <= 0) return false
 
       return true

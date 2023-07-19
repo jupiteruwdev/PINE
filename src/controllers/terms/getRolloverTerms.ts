@@ -119,7 +119,9 @@ export default async function getRolloverTerms({
         }
       }
 
-      return loanTerms
+      const exactLoanTerm = loanTerms.find(loanTerm => loanTerm.poolAddress.toLowerCase() === poolAddresses?.[0].toLowerCase())
+
+      return exactLoanTerm ? [exactLoanTerm] : loanTerms
     }
     default:
       throw fault('ERR_UNSUPPORTED_BLOCKCHAIN')
