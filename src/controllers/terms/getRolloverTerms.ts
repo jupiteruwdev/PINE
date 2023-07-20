@@ -9,6 +9,7 @@ import { getLoan, isLoanExtendable } from '../loans'
 import searchPublishedMultiplePools from '../pools/searchPublishedMultiplePools'
 import { getEthNFTValuation, signValuation } from '../valuations'
 import getFlashLoanSource from './getFlashLoanSource'
+import getSolvSFTValuation from '../valuations/getSolvSFTValuation'
 
 type Params = {
   blockchain: Blockchain
@@ -64,8 +65,17 @@ export default async function getRolloverTerms({
       }
 
       const associatedPools = await Promise.all(pools.map((pool, index) => new Promise<Pool>(async (resolve, reject) => {
-        // TODO: get valuation from Solv for SBTs
-        if (pool.collection.valuation) resolve(pool)
+        if (pool.collection.sftMarketId) {
+          const valuation = await getSolvSFTValuation({ blockchain: blockchain as Blockchain<'ethereum'>, collection: pool.collection, nftId: nftIds[index] })
+          resolve({
+            ...pool,
+            collection: {
+              ...pool.collection,
+              valuation,
+            },
+          })
+        }
+        else if (pool.collection.valuation) resolve(pool)
         else {
           const valuation = await getEthNFTValuation({ blockchain: blockchain as Blockchain, collectionAddress: collectionAddresses[index], nftId: nftIds[index] })
           resolve({
