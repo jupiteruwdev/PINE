@@ -37,6 +37,7 @@ export default async function getEthNFTMetadata({
   nftId,
   tokenUri,
 }: Params): Promise<NFTMetadata> {
+  // TODO: use XPath to get pageprops for solv SFTs
   try {
     const redisKey = `nft:metadata:${collectionAddress?.toLowerCase()}:${nftId ? `${nftId}:` : ''}${blockchain?.networkId}`
 
