@@ -126,7 +126,7 @@ async function searchPublishedPools({
       }
     })
 
-    return filteredPools
+    return filteredPools.filter(pool => pool.valueLocked.amount.gt(pool.utilization.amount ?? '0'))
   }
   catch (err) {
     throw fault('ERR_SERACH_PUBLISHED_POOLS', undefined, err)
