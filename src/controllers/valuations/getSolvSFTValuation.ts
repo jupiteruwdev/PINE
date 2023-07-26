@@ -23,26 +23,26 @@ export function useCoingecko(symbol: string | undefined, amountEth: number | str
       logger.info(`... using coingecko to fetch ${symbol} price`)
 
       const id = symbol || ''
-      // const redisKey = `solv:nft:valuation:${symbol}`
+      const redisKey = `solv:nft:valuation:${symbol}`
 
-      // const redisData = await getRedisCache(redisKey)
+      const redisData = await getRedisCache(redisKey)
       const amount = new BigNumber(amountEth)
 
-      // if (redisData) {
-      //   const timestamp = _.get(redisData, 'timestamp')
+      if (redisData) {
+        const timestamp = _.get(redisData, 'timestamp')
 
-      //   if (Date.now() - timestamp <= 60 * 5 * 1000) {
-      //     const price = new BigNumber(_.get(redisData, 'price'))
-      //     return Value.$USD(amount.times(price))
-      //   }
-      // }
+        if (Date.now() - timestamp <= 60 * 5 * 1000) {
+          const price = new BigNumber(_.get(redisData, 'price'))
+          return Value.$USD(amount.times(price))
+        }
+      }
 
       const data = await getRequest(`https://api.coingecko.com/api/v3/simple/price?ids=${id}&vs_currencies=eth`)
         .catch(err => { throw fault('ERR_ETH_FETCH_USD_PRICE', undefined, err) })
 
       const priceData = _.get(data, [id, 'eth'])
 
-      // setRedisCache(redisKey, priceData)
+      setRedisCache(redisKey, { price: priceData })
 
       const price = new BigNumber(priceData)
 

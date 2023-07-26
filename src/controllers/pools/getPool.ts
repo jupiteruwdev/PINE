@@ -8,9 +8,9 @@ import { getOnChainPools } from '../../subgraph'
 import fault from '../../utils/fault'
 import { mapPool } from '../adapters'
 import getEthCollectionMetadata from '../collections/getEthCollectionMetadata'
+import getPoolEthLimit from '../contracts/getPoolEthLimit'
 import getOnChainLoanOptions from './getOnChainLoanOptions'
 import getPoolCapacity from './getPoolCapacity'
-import getPoolMaxLoanLimit from './getPoolMaxLoanLimit'
 import getPoolUtilization from './getPoolUtilization'
 import verifyPool from './verifyPool'
 
@@ -78,7 +78,7 @@ async function getPool({
     ] = await Promise.all([
       getPoolUtilization({ blockchain, poolAddress: pool.id }),
       getPoolCapacity({ blockchain, poolAddress: pool.id, tokenAddress: pool.supportedCurrency, fundSource: pool.fundSource }),
-      getPoolMaxLoanLimit({ blockchain, address: pool.id }),
+      getPoolEthLimit({ blockchain, poolAddress: pool.id }),
     ])
     const ethLimit = _.toNumber(ethers.utils.formatEther(maxLoanLimit ?? pool.maxLoanLimit ?? '0'))
     const valueLockedEth = capacityEth.plus(utilizationEth)

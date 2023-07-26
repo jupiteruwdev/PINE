@@ -1,8 +1,8 @@
-import ERC721LendingV2 from '../../abis/ERC721LendingV2.json' assert { type: 'json' }
 import { PoolModel } from '../../db'
 import { Blockchain } from '../../entities'
 import fault from '../../utils/fault'
-import getEthWeb3 from '../utils/getEthWeb3'
+import { getRedisCache, setRedisCache } from '../../utils/redis'
+import getPoolContract from './getPoolContract'
 
 type Params = {
   blockchain: Blockchain
@@ -14,23 +14,45 @@ export default async function getPoolEthLimit({ blockchain, poolAddress }: Param
     switch (blockchain.network) {
     case 'ethereum':
     case 'polygon':
-      const web3 = getEthWeb3(blockchain.networkId)
-      const contract = new web3.eth.Contract(ERC721LendingV2 as any, poolAddress)
+      const poolContract = await getPoolContract({ blockchain, poolAddress })
+      const pool = await PoolModel.findOne({ address: poolAddress }).lean()
 
-      try {
-        const ethLimit = await contract.methods._maxLoanLimit().call()
-        return ethLimit
+      if (!pool?.noMaxLoanLimit) {
+        try {
+          const ethLimit = await poolContract.methods._maxLoanLimit().call()
+          return ethLimit
+        }
+        catch (err) {
+          await PoolModel.updateOne({
+            address: poolAddress.toLowerCase(),
+          }, {
+            $set: {
+              noMaxLoanLimit: true,
+            },
+          })
+          return null
+        }
       }
-      catch (err) {
-        await PoolModel.updateOne({
-          address: poolAddress.toLowerCase(),
-        }, {
-          $set: {
-            noMaxLoanLimit: true,
-          },
-        })
-        return null
+      else {
+        if (pool) return null
+        const redisKey = `poolEthLimit:${poolAddress}:${blockchain.networkId}`
+        const redisData = await getRedisCache(redisKey)
+
+        if (redisData) {
+          return null
+        }
+
+        try {
+          const ethLimit = await poolContract.methods._maxLoanLimit().call()
+
+          return ethLimit
+        }
+        catch (err) {
+          setRedisCache(redisKey, { noMaxLoanLimit: true })
+          return null
+        }
       }
+
     default:
       throw fault('ERR_UNSUPPORTED_BLOCKCHAIN')
     }
