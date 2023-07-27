@@ -224,7 +224,7 @@ export function useAlchemy({ blockchain, collectionAddress, nftId }: Params): Da
     try {
       logger.info(`...using Alchemy to determine valuation for Ethereum NFT <${collectionAddress}/${nftId}>`)
 
-      if (blockchain.networkId !== Blockchain.Ethereum.Network.MAIN && blockchain.networkId !== Blockchain.Polygon.Network.MAIN) rethrow(`Unsupported Ethereum network <${blockchain.networkId}>`)
+      if (blockchain.networkId !== Blockchain.Ethereum.Network.MAIN) rethrow(`Unsupported Ethereum network <${blockchain.networkId}>`)
 
       const apiMainUrl = _.get(appConf.alchemyNFTAPIUrl, blockchain.networkId) ?? rethrow(`Missing Alchemy API Url for blockchain <${JSON.stringify(blockchain)}>`)
 
