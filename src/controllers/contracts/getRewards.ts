@@ -7,6 +7,7 @@ import { MerkleTreeModel } from '../../db'
 import { Blockchain, Value } from '../../entities'
 import Rewards from '../../entities/lib/Rewards'
 import fault from '../../utils/fault'
+import logger from '../../utils/logger'
 import getEthWeb3 from '../utils/getEthWeb3'
 
 type Params = {
@@ -70,6 +71,7 @@ export default async function getRewards({ address, epochStartBlock }: Params): 
     })
   }
   catch (err) {
+    logger.error(`Getting rewards for address ${address}... ERR:`, err)
     throw fault('ERR_GET_REWARDS', undefined, err)
   }
 }
