@@ -1,13 +1,11 @@
 import { Router } from 'express'
-import { getGlobalStats, getIdleGovernance, getRewards, getUserMissionStats, getUserUsageStats, updateRewardsStats } from '../../controllers'
+import { getGlobalStats, getIdleGovernance, getRewards, getUserUsageStats, updateRewardsStats } from '../../controllers'
 import getTokenUSDPrice, { AvailableToken } from '../../controllers/utils/getTokenUSDPrice'
 import { GlobalStats, IdleGovernance } from '../../entities'
 import ProtocolUsage from '../../entities/lib/ProtocolUsage'
 import Rewards from '../../entities/lib/Rewards'
-import UserMissionStats from '../../entities/lib/UserMissionStats'
-import { turnstileMiddleware } from '../../middlewares'
 import fault from '../../utils/fault'
-import { getBlockchain, getBlockchainFilter, getNumber, getString } from '../utils/query'
+import { getBlockchainFilter, getString } from '../utils/query'
 
 const router = Router()
 
@@ -85,22 +83,6 @@ router.post('/user/rewards/:address', async (req, res, next) => {
   }
   catch (err) {
     next(fault('ERR_API_UPDATE_USER_REWARDS', undefined, err))
-  }
-})
-
-router.get('/user/:address', turnstileMiddleware, async (req, res, next) => {
-  try {
-    const blockchain = getBlockchain(req.query)
-    const address = getString(req.params, 'address')
-    const timestamp = getNumber(req.query, 'timestamp', { optional: true })
-
-    const stats = await getUserMissionStats({ blockchain, address, timestamp })
-    const payload = UserMissionStats.serialize(stats)
-
-    res.status(200).json(payload)
-  }
-  catch (err) {
-    next(fault('ERR_API_FETCH_USER_STATS', undefined, err))
   }
 })
 
