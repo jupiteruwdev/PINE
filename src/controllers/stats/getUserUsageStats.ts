@@ -107,65 +107,65 @@ export async function getUsageValues({ lendingSnapshots, borrowingSnapshots, add
   }
 }
 
-// async function getIncentiveRewards({ address }: Params): Promise<{
-//   incentiveRewards: BigNumber
-//   epochStartBlock?: number
-// }> {
-//   try {
-//     const today = new Date()
-//     const dayOfWeek = today.getUTCDay()
-//     const prevFriday = new Date(today)
-//     const now = new Date()
+async function getIncentiveRewards({ address }: Params): Promise<{
+  incentiveRewards: BigNumber
+  epochStartBlock?: number
+}> {
+  try {
+    const today = new Date()
+    const dayOfWeek = today.getUTCDay()
+    const prevFriday = new Date(today)
+    const now = new Date()
 
-//     if (dayOfWeek < 5 || (dayOfWeek === 5 && prevFriday.getUTCHours() <= 7)) {
-//       prevFriday.setDate(today.getDate() - dayOfWeek - 2)
-//     }
-//     else if (dayOfWeek >= 5) {
-//       prevFriday.setDate(today.getDate() - dayOfWeek + 5)
-//     }
-//     prevFriday.setUTCHours(8)
-//     prevFriday.setUTCMinutes(0)
-//     prevFriday.setUTCSeconds(0)
-//     prevFriday.setUTCMilliseconds(0)
+    if (dayOfWeek < 5 || (dayOfWeek === 5 && prevFriday.getUTCHours() <= 7)) {
+      prevFriday.setDate(today.getDate() - dayOfWeek - 2)
+    }
+    else if (dayOfWeek >= 5) {
+      prevFriday.setDate(today.getDate() - dayOfWeek + 5)
+    }
+    prevFriday.setUTCHours(8)
+    prevFriday.setUTCMinutes(0)
+    prevFriday.setUTCSeconds(0)
+    prevFriday.setUTCMilliseconds(0)
 
-//     const allBorrowingSnapshots = await BorrowSnapshotModel.find({ updatedAt: {
-//       $gt: prevFriday,
-//     }, collectionAddress: {
-//       $not: {
-//         $in: blockedCollections,
-//       },
-//     } }).sort({ createdAt: 1 }).lean()
-//     const allLendingSnapshots = await LendingSnapshotModel.find({ updatedAt: {
-//       $gt: prevFriday,
-//     }, collectionAddress: {
-//       $not: {
-//         $in: blockedCollections,
-//       },
-//     } }).sort({ createdAt: 1 }).lean()
-//     let incentiveRewards = new BigNumber(0)
+    const allBorrowingSnapshots = await BorrowSnapshotModel.find({ updatedAt: {
+      $gt: prevFriday,
+    }, collectionAddress: {
+      $not: {
+        $in: blockedCollections,
+      },
+    } }).sort({ createdAt: 1 }).lean()
+    const allLendingSnapshots = await LendingSnapshotModel.find({ updatedAt: {
+      $gt: prevFriday,
+    }, collectionAddress: {
+      $not: {
+        $in: blockedCollections,
+      },
+    } }).sort({ createdAt: 1 }).lean()
+    let incentiveRewards = new BigNumber(0)
 
-//     while (1) {
-//       const currentSnapshotTime = prevFriday.getTime()
-//       prevFriday.setUTCHours(prevFriday.getUTCHours() + 1)
-//       const currentBorrowingSnapshots = allBorrowingSnapshots.filter(snapshot => new Date(_.get(snapshot, 'createdAt')).getTime() > currentSnapshotTime && new Date(_.get(snapshot, 'createdAt')).getTime() < prevFriday.getTime())
-//       const currentLendingSnapshots = allLendingSnapshots.filter(snapshot => new Date(_.get(snapshot, 'createdAt')).getTime() > currentSnapshotTime && new Date(_.get(snapshot, 'createdAt')).getTime() < prevFriday.getTime())
+    while (1) {
+      const currentSnapshotTime = prevFriday.getTime()
+      prevFriday.setUTCHours(prevFriday.getUTCHours() + 1)
+      const currentBorrowingSnapshots = allBorrowingSnapshots.filter(snapshot => new Date(_.get(snapshot, 'createdAt')).getTime() > currentSnapshotTime && new Date(_.get(snapshot, 'createdAt')).getTime() < prevFriday.getTime())
+      const currentLendingSnapshots = allLendingSnapshots.filter(snapshot => new Date(_.get(snapshot, 'createdAt')).getTime() > currentSnapshotTime && new Date(_.get(snapshot, 'createdAt')).getTime() < prevFriday.getTime())
 
-//       const { usagePercent, totalPercent } = await getUsageValues({ address, lendingSnapshots: currentLendingSnapshots, borrowingSnapshots: currentBorrowingSnapshots })
-//       const protocolIncentivePerHour = appConf.incentiveRewards / 12 / 24 / 7
+      const { usagePercent, totalPercent } = await getUsageValues({ address, lendingSnapshots: currentLendingSnapshots, borrowingSnapshots: currentBorrowingSnapshots })
+      const protocolIncentivePerHour = appConf.incentiveRewards / 12 / 24 / 7
 
-//       if (totalPercent.gt('0')) { incentiveRewards = incentiveRewards.plus(usagePercent.times(protocolIncentivePerHour).div(totalPercent)) }
-//       if (prevFriday.getTime() > now.getTime()) break
-//     }
+      if (totalPercent.gt('0')) { incentiveRewards = incentiveRewards.plus(usagePercent.times(protocolIncentivePerHour).div(totalPercent)) }
+      if (prevFriday.getTime() > now.getTime()) break
+    }
 
-//     return {
-//       incentiveRewards,
-//       epochStartBlock: allBorrowingSnapshots[0].blockNumber,
-//     }
-//   }
-//   catch (err) {
-//     throw fault('ERR_GET_INCENTIVE_REWARDS', undefined, err)
-//   }
-// }
+    return {
+      incentiveRewards,
+      epochStartBlock: allBorrowingSnapshots[0].blockNumber,
+    }
+  }
+  catch (err) {
+    throw fault('ERR_GET_INCENTIVE_REWARDS', undefined, err)
+  }
+}
 
 export default async function getUserUsageStats({
   address,
@@ -208,18 +208,23 @@ export default async function getUserUsageStats({
       borrowingSnapshots: allBorrowingSnapshots,
     })
 
-    // const { incentiveRewards: protocolIncentiveRewards, epochStartBlock } = await getIncentiveRewards({ address })
+    let rewards
+
+    if (appConf.incentiveRewards) {
+      const { incentiveRewards: protocolIncentiveRewards, epochStartBlock } = await getIncentiveRewards({ address })
+      rewards = await getRewards({ address, epochStartBlock })
+      rewards.liveRewards.amount = rewards.liveRewards.amount.plus(protocolIncentiveRewards)
+    }
+    else {
+      rewards = await getRewards({ address })
+    }
 
     now.setHours(now.getHours() + 2)
     now.setMinutes(0)
     now.setSeconds(0)
     now.setMilliseconds(0)
 
-    const rewards = await getRewards({ address })
-
     const protocolIncentivePerHour = appConf.incentiveRewards / 12 / 24 / 7
-
-    // rewards.liveRewards.amount = rewards.liveRewards.amount.plus(protocolIncentiveRewards)
 
     return ProtocolUsage.factory({
       usagePercent: usagePercent.div(100),
