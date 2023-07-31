@@ -208,18 +208,27 @@ export default async function getUserUsageStats({
       borrowingSnapshots: allBorrowingSnapshots,
     })
 
-    const { incentiveRewards: protocolIncentiveRewards, epochStartBlock } = await getIncentiveRewards({ address })
+    let rewards
+
+    /**
+     * check if incentive rewards are enabled.
+     * if rewards amount > 0 then it's enabled. otherwise it's disabled.
+     */
+    if (appConf.incentiveRewards) {
+      const { incentiveRewards: protocolIncentiveRewards, epochStartBlock } = await getIncentiveRewards({ address })
+      rewards = await getRewards({ address, epochStartBlock })
+      rewards.liveRewards.amount = rewards.liveRewards.amount.plus(protocolIncentiveRewards)
+    }
+    else {
+      rewards = await getRewards({ address })
+    }
 
     now.setHours(now.getHours() + 2)
     now.setMinutes(0)
     now.setSeconds(0)
     now.setMilliseconds(0)
 
-    const rewards = await getRewards({ address, epochStartBlock })
-
     const protocolIncentivePerHour = appConf.incentiveRewards / 12 / 24 / 7
-
-    rewards.liveRewards.amount = rewards.liveRewards.amount.plus(protocolIncentiveRewards)
 
     return ProtocolUsage.factory({
       usagePercent: usagePercent.div(100),
