@@ -210,6 +210,10 @@ export default async function getUserUsageStats({
 
     let rewards
 
+    /**
+     * check if incentive rewards are enabled.
+     * if rewards amount > 0 then it's enabled. otherwise it's disabled.
+     */
     if (appConf.incentiveRewards) {
       const { incentiveRewards: protocolIncentiveRewards, epochStartBlock } = await getIncentiveRewards({ address })
       rewards = await getRewards({ address, epochStartBlock })
