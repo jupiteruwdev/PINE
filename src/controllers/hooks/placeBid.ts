@@ -3,7 +3,7 @@ import HDWalletProvider from '@truffle/hdwallet-provider'
 import { ethersWallet, init, offer } from '@x2y2-io/sdk'
 import ethers from 'ethers'
 import _ from 'lodash'
-import { Network, OpenSeaPort } from 'opensea-js'
+import { Chain, OpenSeaPort } from 'opensea-js'
 import ERC20 from '../../abis/ERC20.json' assert { type: 'json' }
 import appConf from '../../app.conf'
 import { BidOrderModel, NFTCollectionModel } from '../../db'
@@ -85,7 +85,7 @@ async function openSeaPlaceBid({ blockchain, bidPrice, nftAddress, nftId, attemp
         })
 
         const seaport = new OpenSeaPort(provider as any, {
-          networkName: blockchain.networkId === Blockchain.Ethereum.Network.GOERLI ? Network.Goerli : Network.Main,
+          chain: blockchain.networkId === Blockchain.Ethereum.Network.GOERLI ? Chain.Goerli : Chain.Mainnet,
         })
 
         offer = await seaport.createBuyOrder({
