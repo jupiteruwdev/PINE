@@ -31,6 +31,7 @@ SUBGRAPH_API_MAINNET_URL # URL of Mainnet subgraph
 SUBGRAPH_API_RINKEBY_URL # URL of Rinkeby subgraph
 
 VALUATION_SIGNER # Key for signing NFT valuations
+REDISHOST # Redis host, use "localhost" for local development
 ```
 
 The following are environment variables used by unit and integration tests:
@@ -69,6 +70,12 @@ $ docker build -t ${IMAGE_NAME:-core-service}:${IMAGE_TAG:-latest} .
 
 # Run the image in production
 $ docker-compose -f docker-compose.yml up
+```
+
+## How to run redis locally
+Run in separate terminal
+```sh
+$ docker run --name redis -p 6379:6379 -d redis
 ```
 
 ## Logging
