@@ -12,7 +12,7 @@ on:
         default: false
         description: Specifies whether production environment should be used for external APIs and services (i.e. database, subgraph, etc)
         required: false
-        type: string
+        type: boolean
       checkout_ref:
         default: ''
         description: The ref argument provided to the checkout action
@@ -113,7 +113,7 @@ jobs:
         token: ${{ secrets.GH_ACCESS_TOKEN }}
     - uses: actions/setup-node@v3
       with:
-        node-version: '17'
+        node-version: '18'
         cache: 'npm'
     - run: npm install && npm run build:test
     - run: npm run test:ci
