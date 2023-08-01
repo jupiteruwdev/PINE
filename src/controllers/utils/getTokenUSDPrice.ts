@@ -29,7 +29,7 @@ export default async function getTokenUSDPrice(token: AvailableToken = Available
     logger.info(`Get token price for ${token}...`)
 
     const price = await PriceModel.findOne({ name: token }).lean()
-    const updatedAt = new Date(_.get(price, 'updatedAt'))
+    const updatedAt = new Date(_.get(price, 'updatedAt') as unknown as string | number)
     const now = Date.now()
 
     if (updatedAt.getTime() >= now - 60 * 5 * 1000) {
