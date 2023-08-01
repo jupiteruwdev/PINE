@@ -12,11 +12,6 @@ import logger from '../../utils/logger'
 import rethrow from '../../utils/rethrow'
 import postRequest from '../utils/postRequest'
 
-enum X2Y2Network {
-  Mainnet = 'mainnet',
-  Goerli = 'goerli'
-}
-
 type Params = {
   blockchain: Blockchain
   body: Record<string, any>
