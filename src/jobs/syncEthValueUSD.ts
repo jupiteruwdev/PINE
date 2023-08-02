@@ -3,6 +3,8 @@ import { AvailableToken } from '../controllers/utils/getTokenUSDPrice'
 import { PriceModel, initDb } from '../db'
 import fault from '../utils/fault'
 import logger from '../utils/logger'
+import { getRedisCache, setRedisCache } from '../utils/redis'
+import _ from 'lodash'
 
 export default async function syncEthValueUSD() {
   try {
@@ -17,8 +19,20 @@ export default async function syncEthValueUSD() {
     })
 
     for (const token of Object.keys(AvailableToken).filter(key => key !== 'PINE')) {
+      const redisKey = `eth:value:usd:${AvailableToken[token as keyof typeof AvailableToken]}`
+
+      const cachedValue = await getRedisCache(redisKey)
+
+      if (cachedValue) {
+        const timestamp = _.get(cachedValue, 'timestamp')
+        if (Date.now() - timestamp <= 60 * 5 * 1000) {
+          logger.info(`Cached ${AvailableToken[token as keyof typeof AvailableToken]} value in USD:`, cachedValue)
+          continue
+        }
+      }
       logger.info(`JOB_SYNC_ETH_VALUE_USD fetching ${AvailableToken[token as keyof typeof AvailableToken]} price in usd`)
       const tokenPrice = await getEthValueUSD(1, AvailableToken[token as keyof typeof AvailableToken])
+      await setRedisCache(redisKey, tokenPrice)
       const price = await PriceModel.findOne({ name: AvailableToken[token as keyof typeof AvailableToken] })
       if (price) {
         await price.update({
