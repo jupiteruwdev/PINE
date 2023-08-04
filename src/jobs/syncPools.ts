@@ -1,5 +1,5 @@
 import { syncPools } from '../controllers'
-import { initDb } from '../db'
+import { initDb } from '../database'
 import fault from '../utils/fault'
 import logger from '../utils/logger'
 

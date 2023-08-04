@@ -1,7 +1,7 @@
 import { expect } from 'chai'
 import { describe, it } from 'mocha'
 import appConf from '../../app.conf'
-import { initDb } from '../../db'
+import { initDb } from '../../database'
 import { Blockchain, NFT, Valuation } from '../../entities'
 import { getEthNFTsByOwner } from '../collaterals'
 import getEthNFTValuation from './getEthNFTValuation'

@@ -1,7 +1,7 @@
 import { expect } from 'chai'
 import _ from 'lodash'
 import appConf from '../../app.conf'
-import { initDb } from '../../db'
+import { initDb } from '../../database'
 import { Blockchain, NFT } from '../../entities'
 import getEthNFTsByOwner from './getEthNFTsByOwner'
 

@@ -1,5 +1,5 @@
 import _ from 'lodash'
-import { PriceModel } from '../../db'
+import { PriceModel } from '../../database'
 import { AnyCurrency, Value } from '../../entities'
 import fault from '../../utils/fault'
 import logger from '../../utils/logger'

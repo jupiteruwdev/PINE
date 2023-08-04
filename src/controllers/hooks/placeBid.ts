@@ -5,7 +5,7 @@ import _ from 'lodash'
 import { Chain, OpenSeaPort } from 'opensea-js'
 import ERC20 from '../../abis/ERC20.json' assert { type: 'json' }
 import appConf from '../../app.conf'
-import { BidOrderModel, NFTCollectionModel } from '../../db'
+import { BidOrderModel, NFTCollectionModel } from '../../database'
 import { Blockchain } from '../../entities'
 import fault from '../../utils/fault'
 import logger from '../../utils/logger'

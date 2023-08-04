@@ -1,5 +1,5 @@
 import getPineValueUSD from '../controllers/utils/getPineValueUSD'
-import { PriceModel, initDb } from '../db'
+import { PriceModel, initDb } from '../database'
 import fault from '../utils/fault'
 import logger from '../utils/logger'
 

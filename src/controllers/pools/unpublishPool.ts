@@ -1,5 +1,5 @@
 import _ from 'lodash'
-import { NFTCollectionModel, PoolModel } from '../../db'
+import { NFTCollectionModel, PoolModel } from '../../database'
 import { Blockchain, Pool } from '../../entities'
 import fault from '../../utils/fault'
 import logger from '../../utils/logger'

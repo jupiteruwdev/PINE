@@ -1,7 +1,7 @@
 import _ from 'lodash'
 import { PipelineStage } from 'mongoose'
 import appConf from '../../app.conf'
-import { NFTCollectionModel, PoolModel } from '../../db'
+import { NFTCollectionModel, PoolModel } from '../../database'
 import { Blockchain, CollectionMetadata } from '../../entities'
 import fault from '../../utils/fault'
 import logger from '../../utils/logger'

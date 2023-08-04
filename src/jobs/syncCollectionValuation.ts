@@ -1,7 +1,7 @@
 import _ from 'lodash'
 import appConf from '../app.conf'
 import { getEthNFTValuation } from '../controllers'
-import { NFTCollectionModel, initDb } from '../db'
+import { NFTCollectionModel, initDb } from '../database'
 import { Blockchain, Valuation } from '../entities'
 import fault from '../utils/fault'
 import logger from '../utils/logger'

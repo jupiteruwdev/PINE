@@ -2,7 +2,7 @@ import { ethers } from 'ethers'
 import MerkleABI from '../abis/Merkle.json' assert { type: 'json' }
 import appConf from '../app.conf'
 import getEthWeb3 from '../controllers/utils/getEthWeb3'
-import { MerkleTreeModel, initDb } from '../db'
+import { MerkleTreeModel, initDb } from '../database'
 import fault from '../utils/fault'
 import logger from '../utils/logger'
 

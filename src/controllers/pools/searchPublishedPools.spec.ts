@@ -3,7 +3,7 @@
  */
 
 import { expect } from 'chai'
-import { initDb } from '../../db'
+import { initDb } from '../../database'
 import { Blockchain, Pool } from '../../entities'
 import searchPublishedPools, { PoolSortDirection, PoolSortType } from './searchPublishedPools'
 

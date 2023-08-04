@@ -3,7 +3,7 @@ import EthDater from 'ethereum-block-by-date'
 import { ethers } from 'ethers'
 import VEPINE_ABI from '../../abis/VePine.json' assert { type: 'json' }
 import appConf from '../../app.conf'
-import { MerkleTreeModel } from '../../db'
+import { MerkleTreeModel } from '../../database'
 import { Blockchain, Value } from '../../entities'
 import Rewards from '../../entities/lib/Rewards'
 import fault from '../../utils/fault'

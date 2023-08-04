@@ -1,7 +1,7 @@
 import BigNumber from 'bignumber.js'
 import { PipelineStage } from 'mongoose'
 import appConf from '../../app.conf'
-import { PoolModel } from '../../db'
+import { PoolModel } from '../../database'
 import { Blockchain, NFT, Pool, PoolGroup, Value } from '../../entities'
 import fault from '../../utils/fault'
 import logger from '../../utils/logger'

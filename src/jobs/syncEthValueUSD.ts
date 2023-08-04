@@ -1,6 +1,6 @@
 import getEthValueUSD from '../controllers/utils/getEthValueUSD'
 import { AvailableToken } from '../controllers/utils/getTokenUSDPrice'
-import { PriceModel, initDb } from '../db'
+import { PriceModel, initDb } from '../database'
 import fault from '../utils/fault'
 import logger from '../utils/logger'
 

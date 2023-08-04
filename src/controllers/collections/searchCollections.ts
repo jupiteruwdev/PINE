@@ -7,7 +7,7 @@ import logger from '../../utils/logger'
 import postRequest from '../utils/postRequest'
 
 import { ethers } from 'ethers'
-import { NFTCollectionModel } from '../../db'
+import { NFTCollectionModel } from '../../database'
 import rethrow from '../../utils/rethrow'
 import DataSource from '../utils/DataSource'
 import getRequest from '../utils/getRequest'
