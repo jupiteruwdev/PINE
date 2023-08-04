@@ -14,6 +14,7 @@ export default function mapCollection(data: Record<string, any>): Collection {
     const verified = _.get(data, 'verified', false)
     const sftMarketId = _.get(data, 'sftMarketId')
     const sftDenomination = _.get(data, 'sftDenomination')
+    const sftMarketName = _.get(data, 'sftMarketName')
 
     if (!_.isString(address)) throw TypeError('Failed to map key "address"')
     if (!_.isString(name)) throw TypeError('Failed to map key "name"')
@@ -30,6 +31,7 @@ export default function mapCollection(data: Record<string, any>): Collection {
       verified,
       sftMarketId,
       sftDenomination,
+      sftMarketName,
     })
   }
   catch (err) {
