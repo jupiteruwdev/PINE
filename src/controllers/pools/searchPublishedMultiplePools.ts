@@ -1,7 +1,7 @@
 import _ from 'lodash'
 import { PipelineStage } from 'mongoose'
 import appConf from '../../app.conf'
-import { PoolModel } from '../../db'
+import { PoolModel } from '../../database'
 import { Blockchain, Pool } from '../../entities'
 import fault from '../../utils/fault'
 import { mapPool } from '../adapters'

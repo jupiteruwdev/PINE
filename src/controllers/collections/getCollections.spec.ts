@@ -1,6 +1,6 @@
 import { expect } from 'chai'
 import { describe, it } from 'mocha'
-import { initDb } from '../../db'
+import { initDb } from '../../database'
 import { Blockchain, Collection } from '../../entities'
 import getCollections from './getCollections'
 

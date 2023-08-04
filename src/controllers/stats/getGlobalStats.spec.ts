@@ -1,5 +1,5 @@
 import { expect } from 'chai'
-import { initDb } from '../../db'
+import { initDb } from '../../database'
 import { Blockchain, GlobalStats } from '../../entities'
 import getGlobalStats from './getGlobalStats'
 

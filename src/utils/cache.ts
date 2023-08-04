@@ -12,6 +12,7 @@ const DEFAULT_CHECK_PERIOD_SECONDS = 60 * 10
 const cache = new NodeCache({
   stdTTL: DEFAULT_TTL_SECONDS,
   checkperiod: DEFAULT_CHECK_PERIOD_SECONDS,
+  useClones: false,
 })
 
 export async function getCache<T>(key: string, setOnMiss?: T | (() => Promise<T>), ttl: number = DEFAULT_TTL_SECONDS): Promise<T> {

@@ -6,7 +6,7 @@ import Web3 from 'web3'
 import VEPINE_ABI from '../abis/VePine.json' assert { type: 'json' }
 import appConf from '../app.conf'
 import getEthWeb3 from '../controllers/utils/getEthWeb3'
-import { MerkleTreeModel, initDb } from '../db'
+import { MerkleTreeModel, initDb } from '../database'
 import { Blockchain, Value } from '../entities'
 import fault from '../utils/fault'
 import logger from '../utils/logger'

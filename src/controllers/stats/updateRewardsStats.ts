@@ -1,7 +1,7 @@
 import { ethers } from 'ethers'
 import MERKLE_ABI from '../../abis/Merkle.json' assert { type: 'json' }
 import appConf from '../../app.conf'
-import { MerkleTreeModel } from '../../db'
+import { MerkleTreeModel } from '../../database'
 import { Blockchain } from '../../entities'
 import fault from '../../utils/fault'
 import logger from '../../utils/logger'

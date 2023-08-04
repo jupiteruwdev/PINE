@@ -1,6 +1,6 @@
 import _ from 'lodash'
 import appConf from '../../app.conf'
-import { NFTCollectionModel, PoolModel } from '../../db'
+import { NFTCollectionModel, PoolModel } from '../../database'
 import { Blockchain, Pool } from '../../entities'
 import { getOnChainPoolByAddress } from '../../subgraph'
 import fault from '../../utils/fault'

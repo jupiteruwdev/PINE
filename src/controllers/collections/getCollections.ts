@@ -1,4 +1,4 @@
-import { NFTCollectionModel } from '../../db'
+import { NFTCollectionModel } from '../../database'
 import { Blockchain, Collection } from '../../entities'
 import fault from '../../utils/fault'
 import logger from '../../utils/logger'

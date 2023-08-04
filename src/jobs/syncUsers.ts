@@ -1,7 +1,7 @@
 import _ from 'lodash'
 import appConf from '../app.conf'
 import getRequest from '../controllers/utils/getRequest'
-import { UserModel, initDb } from '../db'
+import { UserModel, initDb } from '../database'
 import fault from '../utils/fault'
 import logger from '../utils/logger'
 import sleep from '../utils/sleep'

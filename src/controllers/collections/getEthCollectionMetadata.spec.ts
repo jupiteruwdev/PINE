@@ -1,7 +1,7 @@
 import _ from 'lodash'
 import { describe, it } from 'mocha'
 import appConf from '../../app.conf'
-import { initDb } from '../../db'
+import { initDb } from '../../database'
 import { Blockchain, Collection } from '../../entities'
 import { getEthNFTsByOwner } from '../collaterals'
 import getEthCollectionMetadata from './getEthCollectionMetadata'
