@@ -6,20 +6,15 @@ import Web3 from 'web3'
 import VEPINE_ABI from '../abis/VePine.json' assert { type: 'json' }
 import appConf from '../app.conf'
 import getEthWeb3 from '../controllers/utils/getEthWeb3'
-import { MerkleTreeModel, PriceModel, initDb } from '../db'
+import { MerkleTreeModel, initDb } from '../db'
 import { Blockchain, Value } from '../entities'
 import fault from '../utils/fault'
 import logger from '../utils/logger'
+import getTokenUSDPrice, { AvailableToken } from '../controllers/utils/getTokenUSDPrice'
 
 const kk = (x: any) => keccak('keccak256').update(x).digest().toString('hex')
 
-const blockedCollections = [
-  '0x04c003461abc646a5c22353edf8e8edc16837492',
-  '0x5a7869db28eb513945167293638d59a336a89190',
-  '0x87e738a3d5e5345d6212d8982205a564289e6324',
-  '0xdb0373feaa9e2af8515fd2827ef7c4243bdcba07',
-  '0xde494e809e28e70d5e2a26fb402e263030089214',
-]
+const blockedCollections = ['0x04c003461abc646a5c22353edf8e8edc16837492', '0x5a7869db28eb513945167293638d59a336a89190', '0x87e738a3d5e5345d6212d8982205a564289e6324', '0xdb0373feaa9e2af8515fd2827ef7c4243bdcba07', '0xde494e809e28e70d5e2a26fb402e263030089214']
 
 const getStartBlockAndDate = async (web3: Web3) => {
   const today = new Date()
@@ -68,16 +63,16 @@ export default async function syncMerkleTree() {
     })
     const web3 = getEthWeb3(Blockchain.Polygon.Network.MAIN)
     const { startBlock, startDate } = await getStartBlockAndDate(web3)
-    const ethPrice = await PriceModel.findOne({ name: 'eth' }).lean()
-    const maticPrice = await PriceModel.findOne({ name: 'matic' }).lean()
+    const ethPrice = await getTokenUSDPrice()
+    const maticPrice = await getTokenUSDPrice(AvailableToken.MATIC)
 
     tokenUSDPrice[Blockchain.Ethereum.Network.MAIN] = Value.factory({
-      amount: ethPrice?.value?.amount,
-      currency: ethPrice?.value?.currency,
+      amount: ethPrice?.amount,
+      currency: ethPrice.currency,
     })
     tokenUSDPrice[Blockchain.Polygon.Network.MAIN] = Value.factory({
-      amount: maticPrice?.value?.amount,
-      currency: maticPrice?.value?.currency,
+      amount: maticPrice?.amount,
+      currency: maticPrice?.currency,
     })
 
     // const allBorrowingSnapshots = await BorrowSnapshotModel.find({
@@ -114,10 +109,7 @@ export default async function syncMerkleTree() {
     now.setHours(now.getHours() - 1)
     const rewards: Record<string, BigNumber> = {}
 
-    const contract = new web3.eth.Contract(
-      VEPINE_ABI as any[],
-      appConf.vePINEAddress
-    )
+    const contract = new web3.eth.Contract(VEPINE_ABI as any[], appConf.vePINEAddress)
     const currentBlock = await web3.eth.getBlockNumber()
     logger.info(`JOB_SYNC_MERKLE_TREE Merkle tree generation for ${currentBlock}...`)
 
@@ -132,19 +124,11 @@ export default async function syncMerkleTree() {
 
     for (let i = 0; i <= 6; i++) {
       logger.info(`JOB_SYNC_MERKLE_TREE Calculating users share value on block ${block}...`)
-      const totalVeSb = await contract.methods
-        .totalVeSb()
-        .call(undefined, block)
+      const totalVeSb = await contract.methods.totalVeSb().call(undefined, block)
       for (const user of stakedUsers) {
-        logger.info(
-          `JOB_SYNC_MERKLE_TREE Calculating user share value on block ${block} for ${user}...`
-        )
-        const userVeSb = await contract.methods
-          .userVeSb(user)
-          .call(undefined, block)
-        const rate = new BigNumber(userVeSb).dividedBy(
-          new BigNumber(totalVeSb)
-        )
+        logger.info(`JOB_SYNC_MERKLE_TREE Calculating user share value on block ${block} for ${user}...`)
+        const userVeSb = await contract.methods.userVeSb(user).call(undefined, block)
+        const rate = new BigNumber(userVeSb).dividedBy(new BigNumber(totalVeSb))
         if (rate.gt(0)) {
           if (rewards[user]) {
             rewards[user] = rate.times(41666).div(7).plus(rewards[user])
@@ -225,26 +209,16 @@ export default async function syncMerkleTree() {
     // logger.info(`JOB_SYNC_MERKLE_TREE Total incentive rewards: ${totalIncentiveRewards.toString()}`)
 
     const addresses = Array(smallestPowerOfTwoGreaterThan(totalUsers.length))
-      .fill(
-        web3.eth.abi.encodeParameters(
-          ['address', 'uint256'],
-          ['0x0000000000000000000000000000000000000000', '0']
-        )
-      )
+      .fill(web3.eth.abi.encodeParameters(['address', 'uint256'], ['0x0000000000000000000000000000000000000000', '0']))
       .map((e, i) => {
         const curUser: string = totalUsers[i]
         if (rewards[curUser]) {
-          return web3.eth.abi.encodeParameters(
-            ['address', 'uint256'],
-            [curUser, web3.utils.toWei(rewards[curUser].toFixed(10))]
-          )
+          return web3.eth.abi.encodeParameters(['address', 'uint256'], [curUser, web3.utils.toWei(rewards[curUser].toFixed(10))])
         }
         return e
       })
 
-    let leaves = addresses.map(
-      e => '0x' + kk(Buffer.from(e.slice(2), 'hex'))
-    ) // uts.methods.getLeaf(e).call())
+    let leaves = addresses.map(e => '0x' + kk(Buffer.from(e.slice(2), 'hex'))) // uts.methods.getLeaf(e).call())
 
     leaves = leaves.map(e => e.slice(2))
 
@@ -263,10 +237,7 @@ export default async function syncMerkleTree() {
       if (leaves[leafIndex]) {
         const leaf = leaves[leafIndex]
         const proof = tree.getHexProof(leaf)
-        const address = web3.eth.abi.decodeParameters(
-          ['address', 'uint256'],
-          addresses[leafIndex]
-        )
+        const address = web3.eth.abi.decodeParameters(['address', 'uint256'], addresses[leafIndex])
         proofer.proofs[address[0].toLowerCase()] = {
           index: parseInt(leafIndex, 10),
           proof,
@@ -294,9 +265,7 @@ export default async function syncMerkleTree() {
         }))
     )
 
-    logger.info(
-      `JOB_SYNC_MERKLE_TREE Merkle tree generation for ${currentBlock} with reards ${sum.toString()}... OK`
-    )
+    logger.info(`JOB_SYNC_MERKLE_TREE Merkle tree generation for ${currentBlock} with reards ${sum.toString()}... OK`)
   }
   catch (err) {
     logger.error('JOB_SYNC_MERKLE_TREE Handling runtime error... ERR:', err)

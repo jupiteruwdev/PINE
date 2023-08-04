@@ -1,15 +1,15 @@
 import _ from 'lodash'
-import { PriceModel } from '../../db'
 import { AnyCurrency, Value } from '../../entities'
 import fault from '../../utils/fault'
 import logger from '../../utils/logger'
 import getEthValueUSD from './getEthValueUSD'
 import getPineValueUSD from './getPineValueUSD'
+import { getRedisCache, setRedisCache } from '../../utils/redis'
 
 export enum AvailableToken {
   ETH = 'eth',
   PINE = 'pine',
-  MATIC = 'matic'
+  MATIC = 'matic',
 }
 
 async function fetchTokenPrice(token: AvailableToken = AvailableToken.ETH): Promise<Value<AnyCurrency>> {
@@ -28,18 +28,21 @@ export default async function getTokenUSDPrice(token: AvailableToken = Available
   try {
     logger.info(`Get token price for ${token}...`)
 
-    const price = await PriceModel.findOne({ name: token }).lean()
-    const updatedAt = new Date(_.get(price, 'updatedAt') as unknown as string | number)
-    const now = Date.now()
+    const redisKey = `${token}:value:usd`
 
-    if (updatedAt.getTime() >= now - 60 * 5 * 1000) {
-      return Value.factory({
-        amount: price?.value?.amount,
-        currency: price?.value?.currency,
-      })
+    const cachedValue = await getRedisCache(redisKey)
+
+    if (cachedValue) {
+      const timestamp = _.get(cachedValue, 'timestamp')
+      if (Date.now() - timestamp <= 60 * 1 * 1000) {
+        logger.info(`Cached ${token} value in USD:`, cachedValue)
+        return cachedValue
+      }
     }
 
-    return fetchTokenPrice(token)
+    const usdPrice = await fetchTokenPrice(token)
+    await setRedisCache(redisKey, usdPrice)
+    return usdPrice
   }
   catch (err) {
     logger.info(`Get token price for ${token}... ERR:`, err)

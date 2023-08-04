@@ -9,7 +9,6 @@
     "lint-staged": "lint-staged",
     "prebuild": "npm run lint",
     "dev": "nodemon --exec \"node --no-warnings --experimental-specifier-resolution node --loader ts-node/esm -r dotenv/config\" --verbose --watch src --ext ts,json src/app",
-    "job": "nodemon --exec \"node --no-warnings --experimental-specifier-resolution node --loader ts-node/esm -r dotenv/config\" --verbose --watch src --ext ts,json src/jobs/syncEthValueUSD",
     "build": "npm run clean && tsc",
     "build:test": "npm run clean && tsc --project tsconfig.test.json",
     "test": "npm run test:unit && npm run test:int",
