@@ -1,5 +1,5 @@
 # Builds the app with dev dependencies included.
-FROM node:17.9.1 AS build
+FROM node:18.17.0 AS build
 
 WORKDIR /var/app
 
@@ -14,7 +14,7 @@ COPY . .
 
 RUN npm run build && npm prune --production
 
-FROM node:17.9.1-slim
+FROM node:18.17.0-slim
 
 EXPOSE 8080
 

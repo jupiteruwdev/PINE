@@ -4,7 +4,7 @@ import HDWalletProvider from '@truffle/hdwallet-provider'
 import BigNumber from 'bignumber.js'
 import { ethers } from 'ethers'
 import _ from 'lodash'
-import { Network, OpenSeaPort } from 'opensea-js'
+import { Chain, OpenSeaPort } from 'opensea-js'
 import appConf from '../app.conf'
 import { searchPoolGroups } from '../controllers'
 import getRequest from '../controllers/utils/getRequest'
@@ -125,7 +125,7 @@ async function updateOpenseaBidOrder({ blockchain, bidOrder, isCancel }: CancelB
     })
 
     const seaport = new OpenSeaPort(provider as any, {
-      networkName: blockchain.networkId === Blockchain.Ethereum.Network.GOERLI ? Network.Goerli : Network.Main,
+      chain: blockchain.networkId === Blockchain.Ethereum.Network.GOERLI ? Chain.Goerli : Chain.Mainnet,
     })
     let order
     try {

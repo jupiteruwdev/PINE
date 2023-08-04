@@ -1,9 +1,8 @@
 import { addressesByNetwork, generateMakerOrderTypedData, MakerOrder, SupportedChainId } from '@looksrare/sdk'
 import HDWalletProvider from '@truffle/hdwallet-provider'
-import { ethersWallet, init, offer } from '@x2y2-io/sdk'
 import ethers from 'ethers'
 import _ from 'lodash'
-import { Network, OpenSeaPort } from 'opensea-js'
+import { Chain, OpenSeaPort } from 'opensea-js'
 import ERC20 from '../../abis/ERC20.json' assert { type: 'json' }
 import appConf from '../../app.conf'
 import { BidOrderModel, NFTCollectionModel } from '../../db'
@@ -12,11 +11,6 @@ import fault from '../../utils/fault'
 import logger from '../../utils/logger'
 import rethrow from '../../utils/rethrow'
 import postRequest from '../utils/postRequest'
-
-enum X2Y2Network {
-  Mainnet = 'mainnet',
-  Goerli = 'goerli'
-}
 
 type Params = {
   blockchain: Blockchain
@@ -37,7 +31,7 @@ type SaveBidOrderParams = {
   bidPrice: string
   nftAddress: string
   nftId: string
-  marketplace: 'opensea' | 'x2y2' | 'looksrare'
+  marketplace: 'opensea' | 'looksrare'
   listingTime?: string
   expirationTime: number
   orderNonce?: number
@@ -85,7 +79,7 @@ async function openSeaPlaceBid({ blockchain, bidPrice, nftAddress, nftId, attemp
         })
 
         const seaport = new OpenSeaPort(provider as any, {
-          networkName: blockchain.networkId === Blockchain.Ethereum.Network.GOERLI ? Network.Goerli : Network.Main,
+          chain: blockchain.networkId === Blockchain.Ethereum.Network.GOERLI ? Chain.Goerli : Chain.Mainnet,
         })
 
         offer = await seaport.createBuyOrder({
@@ -194,56 +188,6 @@ async function looksrarePlaceBid({ blockchain, bidPrice, nftAddress, nftId, atte
   }
 }
 
-async function x2y2PlaceBid({ blockchain, bidPrice, nftAddress, nftId, attempt, cachedOffer }: MarketplaceParams) {
-  let x2y2Offer = cachedOffer
-  try {
-    logger.info(`X2y2 place bid for collection <${nftAddress}> and nftId <${nftId}> on blockchain <${JSON.stringify(blockchain)}> - Attempt <${attempt}>...`)
-    const now = Math.floor(Date.now() / 1000)
-    switch (blockchain.network) {
-    case 'ethereum':
-      if (!x2y2Offer) {
-        const network = blockchain.networkId === Blockchain.Ethereum.Network.GOERLI ? X2Y2Network.Goerli : X2Y2Network.Mainnet
-        const signerPrivateKey = appConf.signer ?? rethrow('Missing signer private key')
-        const apiKey = appConf.x2y2APIKey ?? rethrow('Missing x2y2 api key')
-
-        const signer = ethersWallet(signerPrivateKey, network as any)
-
-        const wethContract = new ethers.Contract(_.get(appConf.wethAddress, blockchain.networkId), ERC20)
-        await wethContract.connect(signer).approve('0xeF887e8b1C06209F59E8Ae55D0e625C937344376', bidPrice)
-
-        init(apiKey, network as any)
-        x2y2Offer = await offer({
-          network: network as any,
-          signer, // Signer of the buyer
-          isCollection: false, // bool, set true for collection offer
-          tokenAddress: nftAddress, // string, contract address of NFT collection
-          tokenId: nftId, // string, token ID of the NFT, use empty string for collection offer
-          tokenStandard: 'erc721', // 'erc721' | 'erc1155'
-          currency: _.get(appConf.wethAddress, blockchain.networkId), // string, contract address of WETH
-          price: bidPrice, // string, eg. '1000000000000000000' for 1 WETH
-          expirationTime: now + 86400 * 3, // number, the unix timestamp when the listing will expire, in seconds
-        })
-      }
-
-      await saveBidOrder({ blockchain, nftAddress, nftId, marketplace: 'x2y2', listingTime: _.get(x2y2Offer, 'startTime'), bidPrice, expirationTime: now + 86400 * 3 })
-
-      logger.info(`X2y2 place bid for collection <${nftAddress}> and nftId <${nftId}> on blockchain <${JSON.stringify(blockchain)}> - Attempt <${attempt}>... OK`)
-      return
-    default:
-      throw fault('ERR_UNSUPPORTED_BLOCKCHAIN')
-    }
-  }
-  catch (err) {
-    logger.info(`X2y2 place bid for collection <${nftAddress}> and nftId <${nftId}> on blockchain <${JSON.stringify(blockchain)}> - Attempt <${attempt}>... ERR`, err)
-    if (attempt < 2) {
-      x2y2PlaceBid({ blockchain, bidPrice, nftAddress, nftId, attempt: attempt + 1, cachedOffer: x2y2Offer })
-    }
-    else {
-      return
-    }
-  }
-}
-
 export default async function placeBid({ blockchain, body }: Params) {
   try {
     const { marketplace, nftAddress, nftId, bidPrice } = _.get(body, 'returnValues')
@@ -253,8 +197,6 @@ export default async function placeBid({ blockchain, body }: Params) {
       return await openSeaPlaceBid({ blockchain, bidPrice, nftAddress, nftId, attempt: 0 })
     case 'looksrare':
       return await looksrarePlaceBid({ blockchain, bidPrice, nftAddress, nftId, attempt: 0 })
-    case 'x2y2':
-      // return await x2y2PlaceBid({ blockchain, bidPrice, nftAddress, nftId, attempt: 0 })
     default:
     }
   }

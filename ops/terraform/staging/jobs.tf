@@ -1,4 +1,5 @@
 resource "google_cloud_scheduler_job" "sync-collection-valuation" {
+  paused           = false
   schedule         = "*/50 * * * *"
   name             = "sync-collection-valuation-job-trigger-${local.env}"
   attempt_deadline = "900s"
@@ -11,6 +12,7 @@ resource "google_cloud_scheduler_job" "sync-collection-valuation" {
 }
 
 resource "google_cloud_scheduler_job" "sync-eth-value-usd" {
+  paused           = false
   schedule         = "* * * * *"
   name             = "sync-eth-value-usd-job-${local.env}"
   attempt_deadline = "30s"
@@ -48,6 +50,7 @@ resource "google_cloud_scheduler_job" "sync-merkle-tree" {
 }
 
 resource "google_cloud_scheduler_job" "sync-pine-value-usd" {
+  paused           = false
   schedule         = "* * * * *"
   name             = "sync-pine-value-usd-job-${local.env}"
   attempt_deadline = "30s"
@@ -60,6 +63,7 @@ resource "google_cloud_scheduler_job" "sync-pine-value-usd" {
 }
 
 resource "google_cloud_scheduler_job" "sync-pools" {
+  paused           = false
   schedule         = "*/15 * * * *"
   name             = "sync-pools-job-trigger-${local.env}"
   attempt_deadline = "300s"
