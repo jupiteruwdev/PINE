@@ -12,7 +12,7 @@ export enum AvailableToken {
   MATIC = 'matic',
 }
 
-async function fetchTokenPrice(token: AvailableToken = AvailableToken.ETH): Promise<Value<AnyCurrency>> {
+async function fetchTokenPrice(token: AvailableToken): Promise<Value<AnyCurrency>> {
   logger.info(`Fetching token price for ${token}...`)
 
   switch (token) {
@@ -21,27 +21,32 @@ async function fetchTokenPrice(token: AvailableToken = AvailableToken.ETH): Prom
     return getEthValueUSD(undefined, token)
   case AvailableToken.PINE:
     return getPineValueUSD()
+  default:
+    throw new Error(`Unsupported token: ${token}`)
   }
 }
 
-export default async function getTokenUSDPrice(token: AvailableToken = AvailableToken.ETH): Promise<Value<AnyCurrency>> {
+export default async function getTokenUSDPrice(token: AvailableToken): Promise<Value<AnyCurrency>> {
   try {
     logger.info(`Get token price for ${token}...`)
 
     const redisKey = `${token}:value:usd`
-
+    let usdPrice: Value<AnyCurrency>
     const cachedValue = await getRedisCache(redisKey)
 
     if (cachedValue) {
-      const timestamp = _.get(cachedValue, 'timestamp')
-      if (Date.now() - timestamp <= 60 * 1 * 1000) {
-        logger.info(`Cached ${token} value in USD:`, cachedValue)
-        return cachedValue
-      }
+      logger.info(`Cached ${token} value in USD:`, cachedValue)
+      usdPrice = cachedValue
     }
-
-    const usdPrice = await fetchTokenPrice(token)
-    await setRedisCache(redisKey, usdPrice)
+    else {
+      logger.info(`Get ${token} value in USD from coingeco...`)
+      usdPrice = await fetchTokenPrice(token)
+      logger.info(`${token} value from coingeco in USD:`, usdPrice)
+      await setRedisCache(redisKey, usdPrice, {
+        EX: 60,
+        NX: true,
+      })
+    }
     return usdPrice
   }
   catch (err) {

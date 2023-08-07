@@ -63,7 +63,7 @@ export default async function syncMerkleTree() {
     })
     const web3 = getEthWeb3(Blockchain.Polygon.Network.MAIN)
     const { startBlock, startDate } = await getStartBlockAndDate(web3)
-    const ethPrice = await getTokenUSDPrice()
+    const ethPrice = await getTokenUSDPrice(AvailableToken.ETH)
     const maticPrice = await getTokenUSDPrice(AvailableToken.MATIC)
 
     tokenUSDPrice[Blockchain.Ethereum.Network.MAIN] = Value.factory({
