@@ -203,8 +203,10 @@ export function useZyteOnePlanet({ blockchain, collectionAddress, nftId, vendorI
         },
       )
 
-      const regex2 = /[\s\S]*<div class="[^"]*?">(\d+(?:\.\d+)?)\s*<\/div>[\s\S]*<h4>Floor Price<\/h4>[\s\S]*/
-      const floorPrice = new BigNumber(data?.browserHtml?.match(regex2)[1] ?? '0')
+      const regex = /<h4>Floor Price<\/h4>[\s\S]*<div class="TopInformation_desc__[^"]*?">(\d+(?:\.\d+)?)[\s\S]*<h4>Best Offer<\/h4>/
+      const match = data?.browserHtml?.match(regex)[0]
+      const regex2 = />(\d+(?:\.\d+)?)/
+      const floorPrice = new BigNumber(match?.match(regex2)[0].slice(1) ?? '0')
 
       const valuation = Valuation.factory({
         value: Value.$ETH(floorPrice),
