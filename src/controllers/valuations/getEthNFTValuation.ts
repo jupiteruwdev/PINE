@@ -233,8 +233,15 @@ export function useAlchemy({ blockchain, collectionAddress, nftId }: Params): Da
       const res = await getRequest(`${apiMainUrl}/getFloorPrice?contractAddress=${collectionAddress}`, {
         useCache: false,
       })
-      if (res?.openSea?.priceCurrency !== 'ETH') rethrow('Wrong currency')
-      const floorPrice = new BigNumber(_.get(res, 'openSea.floorPrice', '0'))
+
+      const platform = ['openSea', 'looksRare'].find(p => !_.get(res, `${p}.error`))
+
+      if (!platform) rethrow('No floor price available')
+
+      const floorPriceData = _.get(res, platform)
+
+      if (floorPriceData.priceCurrency !== 'ETH') rethrow('Wrong currency')
+      const floorPrice = new BigNumber(_.get(floorPriceData, 'floorPrice', '0'))
 
       const valuation = Valuation.factory({
         value: Value.$ETH(floorPrice),
