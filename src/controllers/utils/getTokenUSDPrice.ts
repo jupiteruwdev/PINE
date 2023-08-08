@@ -1,4 +1,3 @@
-import _ from 'lodash'
 import { AnyCurrency, Value } from '../../entities'
 import fault from '../../utils/fault'
 import logger from '../../utils/logger'
@@ -44,7 +43,6 @@ export default async function getTokenUSDPrice(token: AvailableToken): Promise<V
       logger.info(`${token} value from coingeco in USD:`, usdPrice)
       await setRedisCache(redisKey, usdPrice, {
         EX: 60,
-        NX: true,
       })
     }
     return usdPrice
