@@ -10,6 +10,7 @@ import rethrow from '../../utils/rethrow'
 import DataSource from '../utils/DataSource'
 import getEthWeb3 from '../utils/getEthWeb3'
 import getRequest from '../utils/getRequest'
+import solvConcreteABI from '../../abis/SolvConcrete.json'
 
 type Params = {
   blockchain: Blockchain
@@ -17,13 +18,13 @@ type Params = {
   nftId: string
 }
 
-export function useCoingecko(symbol: string | undefined, amountEth: number | string | BigNumber = 1): DataSource<Value<AnyCurrency>> {
+export function useCoingecko(blockchain: Blockchain, address: string | undefined, amountEth: number | string | BigNumber = 1): DataSource<Value<AnyCurrency>> {
   return async () => {
     try {
-      logger.info(`... using coingecko to fetch ${symbol} price`)
+      logger.info(`... using coingecko to fetch ${address} price`)
 
-      const id = symbol || ''
-      const redisKey = `solv:nft:valuation:${symbol}`
+      const id = address || ''
+      const redisKey = `solv:nft:valuation:${address}`
 
       const redisData = await getRedisCache(redisKey)
       const amount = new BigNumber(amountEth)
@@ -37,7 +38,7 @@ export function useCoingecko(symbol: string | undefined, amountEth: number | str
         }
       }
 
-      const data = await getRequest(`https://api.coingecko.com/api/v3/simple/price?ids=${id}&vs_currencies=eth`)
+      const data = await getRequest(`https://api.coingecko.com/api/v3/simple/token_price/${blockchain.network}?contract_addresses=${address}&vs_currencies=eth`)
         .catch(err => { throw fault('ERR_ETH_FETCH_USD_PRICE', undefined, err) })
 
       const priceData = _.get(data, [id, 'eth'])
@@ -71,9 +72,12 @@ export default async function getSolvSFTValuation({
       logger.error(`Solv SFT <${collection.address}/${nftId}> does not belong to market <${marketId}>`)
       rethrow('ERR_SFT_NOT_IN_MARKET')
     }
-    const sftDenomination = collection.sftDenomination
+    const sftConcrete = await sftContract.methods.concrete().call()
+    const sftConcreteContract = new web3.eth.Contract(solvConcreteABI as any, web3.utils.toChecksumAddress(sftConcrete))
+
+    const sftDenominationAddress = (await sftConcreteContract.methods.slotBaseInfo(marketId).call())[1]
     const tokenValue = await sftContract.methods.balanceOf(nftId).call()
-    const denominationPrice = await DataSource.fetch(useCoingecko(sftDenomination, Number(ethers.utils.formatEther(tokenValue.toString()))))
+    const denominationPrice = await DataSource.fetch(useCoingecko(blockchain, sftDenominationAddress, Number(ethers.utils.formatEther(tokenValue.toString()))))
 
     return Valuation.factory({
       value: Value.$ETH(denominationPrice.amount),
