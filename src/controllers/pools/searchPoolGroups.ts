@@ -78,142 +78,150 @@ function getPipelineStages({
       }],
     ]
 
-    const stages: PipelineStage[] = [{
-      $match: {
-        'retired': { $ne: true },
-        '$or': blockchains.map(blockchain => ({
-          $and: [
-            { 'networkType': blockchain.network },
-            { 'networkId': blockchain.networkId },
-          ],
-        })),
-        'valueLockedEth': {
-          $gte: 0.01,
+    const stages: PipelineStage[] = [
+      {
+        $match: {
+          retired: { $ne: true },
+          $or: blockchains.map(blockchain => ({
+            $and: [{ networkType: blockchain.network }, { networkId: blockchain.networkId }],
+          })),
+          valueLockedEth: {
+            $gte: 0.01,
+          },
         },
       },
-    }, {
-      $addFields: {
-        loanOptions: {
-          $filter: {
-            input: '$loanOptions',
-            as: 'loanOption',
-            cond: {
-              $or: [
-                ...Tenor.convertTenors(appConf.tenors).map(seconds => ({
-                  $eq: ['$$loanOption.loanDurationSecond', seconds],
-                })),
+      {
+        $addFields: {
+          loanOptions: {
+            $filter: {
+              input: '$loanOptions',
+              as: 'loanOption',
+              cond: {
+                $or: [
+                  ...Tenor.convertTenors(appConf.tenors).map(seconds => ({
+                    $eq: ['$$loanOption.loanDurationSecond', seconds],
+                  })),
+                ],
+              },
+            },
+          },
+        },
+      },
+      {
+        $match: {
+          'loanOptions.0': {
+            $exists: true,
+          },
+        },
+      },
+      {
+        $lookup: {
+          from: 'nftCollections',
+          localField: 'nftCollection',
+          foreignField: '_id',
+          as: 'collection',
+        },
+      },
+      {
+        $unwind: '$collection',
+      },
+      ...(collectionFilter.length === 0
+        ? []
+        : [
+          {
+            $match: { $and: collectionFilter },
+          },
+        ]),
+      {
+        $addFields: {
+          name: {
+            $toLower: {
+              $trim: {
+                input: '$collection.displayName',
+                chars: '"',
+              },
+            },
+          },
+          interest: {
+            $min: '$loanOptions.interestBpsBlock',
+          },
+          interestOverride: {
+            $min: '$loanOptions.interestBpsBlockOverride',
+          },
+          maxLTV: {
+            $max: '$loanOptions.maxLtvBps',
+          },
+        },
+      },
+      {
+        $addFields: {
+          lowestAPR: {
+            $cond: {
+              if: {
+                $ne: ['$interestOverride', null],
+              },
+              then: '$interestOverride',
+              else: '$interest',
+            },
+          },
+          valueLockedUSD: {
+            $switch: {
+              branches: [
+                {
+                  case: { $eq: ['$networkId', '1'] },
+                  then: { $multiply: ['$valueLockedEth', ethOneValueUSD?.amount?.toNumber ? ethOneValueUSD.amount.toNumber() : 0] },
+                },
+                {
+                  case: { $eq: ['$networkId', '137'] },
+                  then: { $multiply: ['$valueLockedEth', ethTwoValueUSD?.amount?.toNumber ? ethTwoValueUSD.amount.toNumber() : 0] },
+                },
               ],
+              default: { $multiply: ['$valueLockedEth', ethOneValueUSD?.amount?.toNumber ? ethOneValueUSD.amount.toNumber() : 0] },
             },
           },
         },
       },
-    }, {
-      $match: {
-        'loanOptions.0': {
-          $exists: true,
-        },
-      },
-    }, {
-      $lookup: {
-        from: 'nftCollections',
-        localField: 'nftCollection',
-        foreignField: '_id',
-        as: 'collection',
-      },
-    }, {
-      $unwind: '$collection',
-    },
-    ...collectionFilter.length === 0 ? [] : [{
-      $match: { $and: collectionFilter },
-    }], {
-      $addFields: {
-        name: {
-          $toLower: {
-            $trim: {
-              input: '$collection.displayName',
-              chars: '"',
-            },
+      {
+        $group: {
+          _id: '$collection.address',
+          groupValueLockedUSD: {
+            $sum: '$valueLockedUSD',
+          },
+          groupValueLocked: {
+            $sum: '$valueLockedEth',
+          },
+          groupUtilization: {
+            $sum: '$utilizationEth',
+          },
+          groupLowestARP: {
+            $min: '$lowestAPR',
+          },
+          groupMaxLTV: {
+            $max: '$maxLTV',
+          },
+          pools: {
+            $push: '$$ROOT',
           },
         },
-        interest: {
-          $min: '$loanOptions.interestBpsBlock',
-        },
-        interestOverride: {
-          $min: '$loanOptions.interestBpsBlockOverride',
-        },
-        maxLTV: {
-          $max: '$loanOptions.maxLtvBps',
-        },
       },
-    }, {
-      $addFields: {
-        lowestAPR: {
-          $cond: {
-            if: {
-              $ne: ['$interestOverride', null],
-            },
-            then: '$interestOverride',
-            else: '$interest',
-          },
-        },
-        valueLockedUSD: {
-          $switch: {
-            branches: [
-              {
-                case: { $eq: ['$networkId', '1'] },
-                then: { $multiply: ['$valueLockedEth', ethOneValueUSD?.amount.toNumber()] },
+      {
+        $addFields: {
+          totalUtilization: {
+            $cond: {
+              if: {
+                $ne: ['$groupValueLocked', 0],
               },
-              {
-                case: { $eq: ['$networkId', '137'] },
-                then: { $multiply: ['$valueLockedEth', ethTwoValueUSD?.amount.toNumber()] },
+              then: {
+                $divide: ['$groupUtilization', '$groupValueLocked'],
               },
-            ],
-            default: { $multiply: ['$valueLockedEth', ethOneValueUSD?.amount.toNumber()] },
+              else: 0,
+            },
           },
         },
       },
-    },
-    {
-      $group: {
-        _id: '$collection.address',
-        groupValueLockedUSD: {
-          $sum: '$valueLockedUSD',
-        },
-        groupValueLocked: {
-          $sum: '$valueLockedEth',
-        },
-        groupUtilization: {
-          $sum: '$utilizationEth',
-        },
-        groupLowestARP: {
-          $min: '$lowestAPR',
-        },
-        groupMaxLTV: {
-          $max: '$maxLTV',
-        },
-        pools: {
-          $push: '$$ROOT',
-        },
+      {
+        $unset: '_id',
       },
-    },
-    {
-      $addFields: {
-        totalUtilization: {
-          $cond: {
-            if: {
-              $ne: ['$groupValueLocked', 0],
-            },
-            then: {
-              $divide: ['$groupUtilization', '$groupValueLocked'],
-            },
-            else: 0,
-          },
-        },
-      },
-    },
-    {
-      $unset: '_id',
-    },
     ]
 
     switch (sortBy?.type) {
