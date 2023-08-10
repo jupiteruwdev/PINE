@@ -28,6 +28,7 @@ type Params = {
     type: PoolSortType
     direction: PoolSortDirection
   }
+  filters?: string
 }
 
 async function searchPublishedPoolGroups({
@@ -59,6 +60,7 @@ function getPipelineStages({
   collectionAddress,
   collectionName,
   sortBy,
+  filters,
 }: Params = {}): PipelineStage[] {
   try {
     const blockchains = Blockchain.fromFilter(blockchainFilter)
@@ -76,6 +78,11 @@ function getPipelineStages({
           $options: 'i',
         },
       }],
+      ...filters?.includes('solv') ? [{
+        'collection.sftMarketId': {
+          $ne: null,
+        },
+      }] : [],
     ]
 
     const stages: PipelineStage[] = [{
@@ -286,6 +293,7 @@ export default async function searchPoolGroups({
   collectionName,
   paginateBy,
   sortBy,
+  filters,
 }: Params) {
   logger.info('Searching pool groups...')
 
@@ -305,6 +313,7 @@ export default async function searchPoolGroups({
       ethTwoValueUSD,
       paginateBy,
       sortBy,
+      filters,
     })
 
     let nfts: NFT[] = []
