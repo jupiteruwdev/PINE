@@ -8,7 +8,9 @@ import logger from '../utils/logger'
 import sleep from '../utils/sleep'
 
 async function getAllCollections() {
-  const collections = await NFTCollectionModel.find()
+  const collections = await NFTCollectionModel.find({
+    verified: true,
+  })
   return collections
 }
 
