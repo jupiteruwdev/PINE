@@ -15,7 +15,9 @@ type Params = {
   lenderAddress?: string
   tenors?: number[]
   nftId?: string
-  filters?: string
+  filters?: {
+    solv?: boolean
+  }
 }
 
 export default async function countPoolGroups(params: Params = {}): Promise<number> {
@@ -64,15 +66,16 @@ function getPipelineStages({
           $options: 'i',
         },
       }],
-      ...filters?.includes('solv') ? [{
+      ...filters?.solv === true ? [{
         'collection.sftMarketId': {
           $ne: null,
         },
-      }] : [{
+      }] : [],
+      ...filters?.solv === false ? [{
         'collection.sftMarketId': {
-          $e: null,
+          $eq: null,
         },
-      }],
+      }] : [],
     ]
     const poolFilter = [
       ...address === undefined ? [] : [{

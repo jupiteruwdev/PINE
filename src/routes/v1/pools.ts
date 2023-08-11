@@ -29,7 +29,8 @@ router.get('/groups/search', async (req, res, next) => {
     const blockchainFilter = getBlockchainFilter(req.query, false)
     const collectionAddress = getString(req.query, 'collectionAddress', { optional: true })
     const collectionName = getString(req.query, 'query', { optional: true })
-    const filters = getString(req.query, 'filters', { optional: true })
+    const solv = getBoolean(req.query, 'solv', { optional: true })
+    const filters = { solv }
     const sortByType = getString(req.query, 'sort', { optional: true }) as PoolSortType
     const sortByDirection = getString(req.query, 'direction', { optional: true }) as PoolSortDirection
     const sortBy = sortByType !== undefined ? { type: sortByType, direction: sortByDirection ?? PoolSortDirection.ASC } : undefined

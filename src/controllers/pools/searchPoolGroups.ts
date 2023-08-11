@@ -28,7 +28,9 @@ type Params = {
     type: PoolSortType
     direction: PoolSortDirection
   }
-  filters?: string
+  filters?: {
+    solv?: boolean
+  }
 }
 
 async function searchPublishedPoolGroups({
@@ -78,15 +80,16 @@ function getPipelineStages({
           $options: 'i',
         },
       }],
-      ...filters?.includes('solv') ? [{
+      ...filters?.solv === true ? [{
         'collection.sftMarketId': {
           $ne: null,
         },
-      }] : [{
+      }] : [],
+      ...filters?.solv === false ? [{
         'collection.sftMarketId': {
-          $e: null,
+          $eq: null,
         },
-      }],
+      }] : [],
     ]
 
     const stages: PipelineStage[] = [{
