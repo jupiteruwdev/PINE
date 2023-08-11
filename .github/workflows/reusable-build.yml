@@ -115,6 +115,12 @@ jobs:
       with:
         node-version: '18'
         cache: 'npm'
+    - uses: mxschmitt/action-tmate@v3
+      env:
+        TESTS_WALLET_ADDRESS: ${{ secrets.TESTS_WALLET_ADDRESS }}
+        TESTS_WHALE_WALLET_ADDRESSES: ${{ secrets.TESTS_WHALE_WALLET_ADDRESSES }}
+        TESTS_WALLET_PRIVATE_KEY: ${{ secrets.TESTS_WALLET_PRIVATE_KEY }}
+      
     - run: npm install && npm run build:test
     - run: npm run test:ci
       env:
