@@ -37,7 +37,7 @@ export async function initRedis({ onError, onOpen }: InitOptions = {}): Promise<
 export async function getRedisCache(key: string): Promise<any | undefined> {
   try {
     if (!redisClient?.isOpen) {
-      await initRedis()
+      await utils.initRedis()
     }
 
     const cacheData = await redisClient.get(key)
@@ -53,7 +53,7 @@ export async function getRedisCache(key: string): Promise<any | undefined> {
 export async function setRedisCache(key: string, data: any, options?: SetOptions): Promise<any> {
   try {
     if (!redisClient?.isOpen) {
-      await initRedis()
+      await utils.initRedis()
     }
 
     const obj = {
@@ -71,3 +71,7 @@ export async function setRedisCache(key: string, data: any, options?: SetOptions
     logger.error('ERR_SET_REDIS_CACHE', undefined, err)
   }
 }
+
+const utils = { initRedis, getRedisCache, setRedisCache }
+
+export default utils

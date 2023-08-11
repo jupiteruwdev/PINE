@@ -74,6 +74,7 @@
     "@truffle/hdwallet-provider": "^2.1.7",
     "@types/ethereum-block-by-date": "^1.4.1",
     "@types/object-hash": "^2.2.1",
+    "@types/sinon": "^10.0.16",
     "axios": "^0.27.2",
     "bignumber.js": "^9.1.0",
     "cors": "^2.8.5",
@@ -96,6 +97,7 @@
     "opensea-js": "^6.1.5",
     "rate-limiter-flexible": "^2.4.1",
     "redis": "^4.6.7",
+    "sinon": "^15.2.0",
     "tslib": "^2.4.1",
     "web3": "^1.7.5",
     "winston": "^3.8.1"

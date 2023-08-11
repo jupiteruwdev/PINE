@@ -32,6 +32,6 @@
     "esm": true,
     "experimentalSpecifierResolution": "node",
   },
-  "include": ["src/**/*.ts"],
+  "include": ["src/**/*.ts", "src/controllers/utils/getTokenUSDPrice.spec.ts"],
   "exclude": ["**/*.spec.ts", "node_modules", "build", "tests"]
 }

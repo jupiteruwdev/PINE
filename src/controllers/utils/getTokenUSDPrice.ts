@@ -1,8 +1,8 @@
 import { AnyCurrency, Value } from '../../entities'
 import fault from '../../utils/fault'
 import logger from '../../utils/logger'
-import getEthValueUSD from './getEthValueUSD'
-import getPineValueUSD from './getPineValueUSD'
+import { getEthValueUSD } from './getEthValueUSD'
+import { getPineValueUSD } from './getPineValueUSD'
 import { getRedisCache, setRedisCache } from '../../utils/redis'
 
 export enum AvailableToken {
