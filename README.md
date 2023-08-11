@@ -34,7 +34,7 @@ The following are environment variables used by unit and integration tests:
 
 ```sh
 # .env
-TESTS_WALLET_ADDRESS=<address> # Address of wallet to assume when running unit/integration tests
+TESTS_WALLET_ADDRESS="0xFB9684ec1026513241F777485911043DC2aA9a4f" # Address of wallet to assume when running unit/integration tests
 TESTS_WALLET_PRIVATE_KEY=<key> # Private key of the test wallet above
 TESTS_WHALE_WALLET_ADDRESSES=<address_1>,<address_2>,<address_3> # Addresses of third-party wallets that should be tested against when running unit/integration tests
 ```

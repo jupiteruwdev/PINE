@@ -4,7 +4,6 @@
   "diff": true,
   "exit": true,
   "ignore": [
-    "**/db/**/**",
     "**/entities/**/**"
   ],
   "node-option": [
