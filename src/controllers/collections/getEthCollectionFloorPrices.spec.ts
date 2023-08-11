@@ -16,19 +16,16 @@ describe('controllers/collections/getEthCollectionFloorPrices', () => {
 
   describe('Mainnet', () => {
     const blockchain = Blockchain.Ethereum(Blockchain.Ethereum.Network.MAIN)
-    // let collectionsInTestWallet: Collection[]
+    let collectionsInTestWallet: Collection[]
     let collectionsInWhaleWallets: Collection[][]
 
-    // before('fetch all collections', async () => {
-    // const nfts = await getEthNFTsByOwner({ blockchain, ownerAddress: TEST_WALLET_ADDRESS, populateMetadata: false })
-    // collectionsInTestWallet = _.uniqBy(
-    //   nfts.map(nft => nft.collection),
-    //   collection => collection.address.toLowerCase()
-    // )
+    before('fetch all collections', async () => {
+      const nfts = await getEthNFTsByOwner({ blockchain, ownerAddress: TEST_WALLET_ADDRESS, populateMetadata: false })
+      collectionsInTestWallet = _.uniqBy(nfts.map(nft => nft.collection), collection => collection.address.toLowerCase())
 
-    // const whaleNFTs = await Promise.all(WHALE_WALLET_ADDRESSES.map(address => getEthNFTsByOwner({ blockchain, ownerAddress: address, populateMetadata: false })))
-    // collectionsInWhaleWallets = whaleNFTs.map(nfts => _.uniqBy(nfts.map(nft => nft.collection), collection => collection.address.toLowerCase()))
-    // })
+      const whaleNFTs = await Promise.all(WHALE_WALLET_ADDRESSES.map(address => getEthNFTsByOwner({ blockchain, ownerAddress: address, populateMetadata: false })))
+      collectionsInWhaleWallets = whaleNFTs.map(nfts => _.uniqBy(nfts.map(nft => nft.collection), collection => collection.address.toLowerCase()))
+    })
 
     // it('can get floor price of all collections in test wallet', async () => {
     //   await getEthCollectionFloorPrices({ blockchain, collectionAddresses: collectionsInTestWallet.map(t => t.address) })
