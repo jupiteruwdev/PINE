@@ -34,7 +34,7 @@ describe('controllers/utils/getTokenUSDPrice', () => {
       expect.fail('Expected an error to be thrown')
     }
     catch (err) {
-      expect(err.message).to.include('Unsupported token')
+      expect((err as any).message).to.include('Unsupported token')
     }
   })
 })
