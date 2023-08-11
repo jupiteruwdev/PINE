@@ -82,7 +82,11 @@ function getPipelineStages({
         'collection.sftMarketId': {
           $ne: null,
         },
-      }] : [],
+      }] : [{
+        'collection.sftMarketId': {
+          $e: null,
+        },
+      }],
     ]
 
     const stages: PipelineStage[] = [{

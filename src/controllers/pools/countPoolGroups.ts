@@ -50,7 +50,6 @@ function getPipelineStages({
 }: Params): PipelineStage[] {
   try {
     const blockchains = Blockchain.fromFilter(blockchainFilter)
-    console.log({ blockchains })
 
     const collectionFilter = [
       ...collectionAddress === undefined ? [] : [{
@@ -69,7 +68,11 @@ function getPipelineStages({
         'collection.sftMarketId': {
           $ne: null,
         },
-      }] : [],
+      }] : [{
+        'collection.sftMarketId': {
+          $e: null,
+        },
+      }],
     ]
     const poolFilter = [
       ...address === undefined ? [] : [{
