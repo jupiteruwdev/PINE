@@ -50,6 +50,7 @@ function getPipelineStages({
 }: Params): PipelineStage[] {
   try {
     const blockchains = Blockchain.fromFilter(blockchainFilter)
+    console.log({ blockchains })
 
     const collectionFilter = [
       ...collectionAddress === undefined ? [] : [{
@@ -86,12 +87,13 @@ function getPipelineStages({
 
     const stages: PipelineStage[] = [{
       $match: {
-        '$or': blockchains.map(blockchain => ({
-          $and: [
-            { 'networkType': blockchain.network },
-            { 'networkId': blockchain.networkId },
-          ],
-        })),
+        ...blockchains?.length ? {
+          '$or': blockchains.map(blockchain => ({
+            $and: [
+              { 'networkType': blockchain.network },
+              { 'networkId': blockchain.networkId },
+            ],
+          })) } : {},
         ...lenderAddress === undefined ? {} : { lenderAddress },
         ...includeRetired === true ? {} : { retired: { $ne: true } },
         'valueLockedEth': {
