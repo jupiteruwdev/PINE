@@ -8,7 +8,7 @@
     "clean": "rimraf build",
     "lint-staged": "lint-staged",
     "prebuild": "npm run lint",
-    "dev": "nodemon --exec \"node --no-warnings --experimental-specifier-resolution node --loader ts-node/esm -r dotenv/config\" --verbose --watch src --ext ts,json src/app",
+    "dev": "cross-env NODE_OPTIONS='--no-warnings' nodemon src/app",
     "job": "nodemon --exec \"node --no-warnings --experimental-specifier-resolution node --loader ts-node/esm -r dotenv/config\" --verbose --watch src --ext ts,json src/jobs/syncCollectionValuation",
     "build": "npm run clean && tsc",
     "build:test": "npm run clean && tsc --project tsconfig.test.json",
@@ -105,5 +105,13 @@
   ],
   "lint-staged": {
     "*.ts": "npm run lint"
+  },
+  "nodemonConfig": {
+    "watch": [
+      "src"
+    ],
+    "verbose": true,
+    "ext": "ts,json",
+    "exec": "ts-node"
   }
 }
