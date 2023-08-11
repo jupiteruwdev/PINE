@@ -10,10 +10,10 @@ type InitOptions = {
 }
 
 export async function initRedis({ onError, onOpen }: InitOptions = {}): Promise<RedisClientType | undefined> {
-  if (appConf.env === 'test') {
-    logger.warn('Redis disabled on testing')
-    return
-  }
+  // if (appConf.env === 'test') {
+  //   logger.warn('Redis disabled on testing')
+  //   return
+  // }
   const uri = appConf.redisHost
 
   if (!uri) throw Error('No valid Redis Server URI provided')
@@ -22,8 +22,8 @@ export async function initRedis({ onError, onOpen }: InitOptions = {}): Promise<
     url: uri,
   })
 
-  redisClient.on('error', err => onError ? onError(err) : logger.error(`Redis Error: ${err}`))
-  redisClient.on('connect', () => onOpen ? onOpen() : logger.info('Redis connected ...'))
+  redisClient.on('error', err => (onError ? onError(err) : logger.error(`Redis Error: ${err}`)))
+  redisClient.on('connect', () => (onOpen ? onOpen() : logger.info('Redis connected ...')))
   redisClient.on('reconnecting', () => logger.info('Redis reconnecting ...'))
   redisClient.on('ready', () => {
     logger.info('Redis ready!')

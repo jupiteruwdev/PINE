@@ -14,7 +14,7 @@ import getTokenUSDPrice, { AvailableToken } from '../controllers/utils/getTokenU
 
 const kk = (x: any) => keccak('keccak256').update(x).digest().toString('hex')
 
-const blockedCollections = ['0x04c003461abc646a5c22353edf8e8edc16837492', '0x5a7869db28eb513945167293638d59a336a89190', '0x87e738a3d5e5345d6212d8982205a564289e6324', '0xdb0373feaa9e2af8515fd2827ef7c4243bdcba07', '0xde494e809e28e70d5e2a26fb402e263030089214']
+// const blockedCollections = ['0x04c003461abc646a5c22353edf8e8edc16837492', '0x5a7869db28eb513945167293638d59a336a89190', '0x87e738a3d5e5345d6212d8982205a564289e6324', '0xdb0373feaa9e2af8515fd2827ef7c4243bdcba07', '0xde494e809e28e70d5e2a26fb402e263030089214']
 
 const getStartBlockAndDate = async (web3: Web3) => {
   const today = new Date()
@@ -62,7 +62,7 @@ export default async function syncMerkleTree() {
       },
     })
     const web3 = getEthWeb3(Blockchain.Polygon.Network.MAIN)
-    const { startBlock, startDate } = await getStartBlockAndDate(web3)
+    const { startBlock } = await getStartBlockAndDate(web3)
     const ethPrice = await getTokenUSDPrice(AvailableToken.ETH)
     const maticPrice = await getTokenUSDPrice(AvailableToken.MATIC)
 
