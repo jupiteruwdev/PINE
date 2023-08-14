@@ -28,9 +28,7 @@ type Params = {
     type: PoolSortType
     direction: PoolSortDirection
   }
-  filters?: {
-    solv?: boolean
-  }
+  filters?: string
 }
 
 async function searchPublishedPoolGroups({
@@ -67,6 +65,25 @@ function getPipelineStages({
   try {
     const blockchains = Blockchain.fromFilter(blockchainFilter)
 
+    let orFilter: any = []
+    if (blockchains.length) {
+      orFilter = blockchains.map(blockchain => ({
+        $and: [
+          { 'collection.networkType': blockchain.network },
+          { 'collection.networkId': blockchain.networkId },
+          { 'collection.sftMarketId': { $eq: null } },
+        ],
+      }))
+    }
+
+    if (filters?.includes('solv')) {
+      orFilter.push({
+        'collection.sftMarketId': {
+          $ne: null,
+        },
+      })
+    }
+
     const collectionFilter = [
       ...collectionAddress === undefined ? [] : [{
         'collection.address': {
@@ -80,28 +97,14 @@ function getPipelineStages({
           $options: 'i',
         },
       }],
-      ...filters?.solv === true ? [{
-        'collection.sftMarketId': {
-          $ne: null,
-        },
-      }] : [],
-      ...filters?.solv === false ? [{
-        'collection.sftMarketId': {
-          $eq: null,
-        },
+      ...orFilter?.length ? [{
+        $or: orFilter,
       }] : [],
     ]
 
     const stages: PipelineStage[] = [{
       $match: {
         'retired': { $ne: true },
-        ...blockchains?.length ? {
-          '$or': blockchains.map(blockchain => ({
-            $and: [
-              { 'networkType': blockchain.network },
-              { 'networkId': blockchain.networkId },
-            ],
-          })) } : {},
         'valueLockedEth': {
           $gte: 0.01,
         },

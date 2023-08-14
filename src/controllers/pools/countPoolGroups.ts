@@ -15,9 +15,7 @@ type Params = {
   lenderAddress?: string
   tenors?: number[]
   nftId?: string
-  filters?: {
-    solv?: boolean
-  }
+  filters?: string
 }
 
 export default async function countPoolGroups(params: Params = {}): Promise<number> {
@@ -53,6 +51,25 @@ function getPipelineStages({
   try {
     const blockchains = Blockchain.fromFilter(blockchainFilter)
 
+    let orFilter: any = []
+    if (blockchains.length) {
+      orFilter = blockchains.map(blockchain => ({
+        $and: [
+          { 'networkType': blockchain.network },
+          { 'networkId': blockchain.networkId },
+          { 'collection.sftMarketId': { $eq: null } },
+        ],
+      }))
+    }
+
+    if (filters?.includes('solv')) {
+      orFilter.push({
+        'collection.sftMarketId': {
+          $ne: null,
+        },
+      })
+    }
+
     const collectionFilter = [
       ...collectionAddress === undefined ? [] : [{
         'collection.address': {
@@ -66,15 +83,8 @@ function getPipelineStages({
           $options: 'i',
         },
       }],
-      ...filters?.solv === true ? [{
-        'collection.sftMarketId': {
-          $ne: null,
-        },
-      }] : [],
-      ...filters?.solv === false ? [{
-        'collection.sftMarketId': {
-          $eq: null,
-        },
+      ...orFilter?.length ? [{
+        $or: orFilter,
       }] : [],
     ]
     const poolFilter = [
@@ -93,13 +103,6 @@ function getPipelineStages({
 
     const stages: PipelineStage[] = [{
       $match: {
-        ...blockchains?.length ? {
-          '$or': blockchains.map(blockchain => ({
-            $and: [
-              { 'networkType': blockchain.network },
-              { 'networkId': blockchain.networkId },
-            ],
-          })) } : {},
         ...lenderAddress === undefined ? {} : { lenderAddress },
         ...includeRetired === true ? {} : { retired: { $ne: true } },
         'valueLockedEth': {
