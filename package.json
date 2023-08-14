@@ -24,7 +24,8 @@
     "lint:fix": "npm run lint -- --fix",
     "test:ci": "npm run test:unit:ci ; npm run test:int:ts:ci",
     "test:unit:ci": "cross-env NODE_ENV=test mocha --config .mocharc --extension spec.js \"build/$npm_config_files\" -R json -O output=test-results/unit-tests.json",
-    "test:int:ts:ci": "cross-env NODE_ENV=test mocha --config .mocharc -r ts-node/register -n loader=ts-node/esm --extension ts \"tests/$npm_config_files\" -R json -O output=test-results/integration-tests.json"
+    "test:int:ts:ci": "cross-env NODE_ENV=test mocha --config .mocharc -r ts-node/register -n loader=ts-node/esm --extension ts \"tests/$npm_config_files\" -R json -O output=test-results/integration-tests.json",
+    "test:my": "cross-env NODE_ENV=test mocha --config .mocharc -r ts-node/register -n loader=ts-node/esm --extension spec.ts \"src/controllers/utils/getTokenUSDPrice.spec.ts\""
   },
   "license": "NOLICENSE",
   "repository": {

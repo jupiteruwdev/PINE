@@ -1,9 +1,9 @@
 import { AnyCurrency, Value } from '../../entities'
 import fault from '../../utils/fault'
 import logger from '../../utils/logger'
-import { getEthValueUSD } from './getEthValueUSD'
+import getEthValueUSD from './getEthValueUSD'
 import { getPineValueUSD } from './getPineValueUSD'
-import { getRedisCache, setRedisCache } from '../../utils/redis'
+import redis from '../../utils/redis'
 
 export enum AvailableToken {
   ETH = 'eth',
@@ -17,7 +17,7 @@ async function fetchTokenPrice(token: AvailableToken): Promise<Value<AnyCurrency
   switch (token) {
   case AvailableToken.ETH:
   case AvailableToken.MATIC:
-    return getEthValueUSD(undefined, token)
+    return getEthValueUSD.getEthValueUSD(undefined, token)
   case AvailableToken.PINE:
     return getPineValueUSD()
   default:
@@ -31,7 +31,7 @@ export default async function getTokenUSDPrice(token: AvailableToken): Promise<V
 
     const redisKey = `${token}:value:usd`
     let usdPrice: Value<AnyCurrency>
-    const cachedValue = await getRedisCache(redisKey)
+    const cachedValue = await redis.getRedisCache(redisKey)
 
     if (cachedValue) {
       logger.info(`Cached ${token} value in USD:`, cachedValue)
@@ -41,7 +41,7 @@ export default async function getTokenUSDPrice(token: AvailableToken): Promise<V
       logger.info(`Get ${token} value in USD from coingeco...`)
       usdPrice = await fetchTokenPrice(token)
       logger.info(`${token} value from coingeco in USD:`, usdPrice)
-      await setRedisCache(redisKey, usdPrice, {
+      await redis.setRedisCache(redisKey, usdPrice, {
         EX: 60,
       })
     }

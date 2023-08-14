@@ -42,5 +42,4 @@ describe('getTokenUSDPrice', () => {
     expect((setRedisCacheStub as sinon.SinonStub).calledWith('eth:value:usd', ethValue, { EX: 60 })).to.be.true
   })
 
-  // Додайте аналогічні тести для інших типів токенів та випадків
 })
