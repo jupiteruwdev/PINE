@@ -102,14 +102,14 @@ function getPipelineStages({
       }] : [],
     ]
 
-    const stages: PipelineStage[] = [{
-      $match: {
-        'retired': { $ne: true },
-        'valueLockedEth': {
-          $gte: 0.01,
-        },
-      },
+    const stages: PipelineStage[] = [
       {
+        $match: {
+          retired: { $ne: true },
+          valueLockedEth: {
+            $gte: 0.01,
+          },
+        },
         $addFields: {
           loanOptions: {
             $filter: {
