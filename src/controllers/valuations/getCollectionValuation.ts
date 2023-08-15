@@ -38,7 +38,7 @@ export default async function getCollectionValuation({
 
       if (!collectionId) rethrow(`Extracting collection id for collection ${collectionAddress} and nftId ${nftId} failed`)
 
-      collectionInfo = await getRequest(`${apiBaseUrl}/collections/v5`, {
+      collectionInfo = await getRequest(`${apiBaseUrl}/collections/v6`, {
         headers: {
           Authorization: apiKey,
         },
@@ -48,7 +48,7 @@ export default async function getCollectionValuation({
       })
     }
     else {
-      collectionInfo = await getRequest(`${apiBaseUrl}/collections/v5`, {
+      collectionInfo = await getRequest(`${apiBaseUrl}/collections/v6`, {
         headers: {
           Authorization: apiKey,
         },
