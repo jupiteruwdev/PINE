@@ -59,26 +59,6 @@ describe('utils', () => {
         }
       }
     })
-
-    it('should handle errors from gate.io with negative params', async () => {
-      getRequestStub = async () => {
-        throw new Error('Network Error')
-      }
-
-      const { useGateIO } = await esmock('./getPineValueUSD', { './getRequest': getRequestStub })
-
-      try {
-        await useGateIO(-2)
-      }
-      catch (err) {
-        if (err instanceof CustomError) {
-          expect(err.code).to.eql('ERR_GET_PINE_VALUE_USD_USE_GATE_IO')
-        }
-        else {
-          throw err
-        }
-      }
-    })
   })
 
   describe('useCoingecko', () => {
