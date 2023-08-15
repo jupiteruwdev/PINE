@@ -3,23 +3,8 @@
   "color": true,
   "diff": true,
   "exit": true,
-  "ignore": [
-    "**/entities/**/**"
-  ],
-  "node-option": [
-    "experimental-specifier-resolution=node",
-    "loader=ts-node/esm",
-    "loader=esmock"
-  ],
-  "require": [
-    "ts-node/register"
-  ],
-  "extensions": [
-    "ts"
-  ],
-  "watch-extensions": [
-    "ts"
-  ],
+  "ignore": ["**/entities/**/**"],
+  "node-option": ["experimental-specifier-resolution=node", "loader=ts-node/esm", "loader=esmock"],
   "full-trace": true,
   "recursive": true,
   "reporter": "spec",
