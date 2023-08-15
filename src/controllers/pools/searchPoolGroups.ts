@@ -110,6 +110,8 @@ function getPipelineStages({
             $gte: 0.01,
           },
         },
+      },
+      {
         $addFields: {
           loanOptions: {
             $filter: {
