@@ -28,6 +28,7 @@ type Params = {
     type: PoolSortType
     direction: PoolSortDirection
   }
+  filters?: string
 }
 
 async function searchPublishedPoolGroups({
@@ -59,9 +60,29 @@ function getPipelineStages({
   collectionAddress,
   collectionName,
   sortBy,
+  filters,
 }: Params = {}): PipelineStage[] {
   try {
     const blockchains = Blockchain.fromFilter(blockchainFilter)
+
+    let orFilter: any = []
+    if (blockchains.length) {
+      orFilter = blockchains.map(blockchain => ({
+        $and: [
+          { 'collection.networkType': blockchain.network },
+          { 'collection.networkId': blockchain.networkId },
+          { 'collection.sftMarketId': { $eq: null } },
+        ],
+      }))
+    }
+
+    if (filters?.includes('solv')) {
+      orFilter.push({
+        'collection.sftMarketId': {
+          $ne: null,
+        },
+      })
+    }
 
     const collectionFilter = [
       ...collectionAddress === undefined ? [] : [{
@@ -76,18 +97,16 @@ function getPipelineStages({
           $options: 'i',
         },
       }],
+      ...orFilter?.length ? [{
+        $or: orFilter,
+      }] : [],
     ]
 
-    const stages: PipelineStage[] = [
-      {
-        $match: {
-          retired: { $ne: true },
-          $or: blockchains.map(blockchain => ({
-            $and: [{ networkType: blockchain.network }, { networkId: blockchain.networkId }],
-          })),
-          valueLockedEth: {
-            $gte: 0.01,
-          },
+    const stages: PipelineStage[] = [{
+      $match: {
+        'retired': { $ne: true },
+        'valueLockedEth': {
+          $gte: 0.01,
         },
       },
       {
@@ -294,6 +313,7 @@ export default async function searchPoolGroups({
   collectionName,
   paginateBy,
   sortBy,
+  filters,
 }: Params) {
   logger.info('Searching pool groups...')
 
@@ -313,6 +333,7 @@ export default async function searchPoolGroups({
       ethTwoValueUSD,
       paginateBy,
       sortBy,
+      filters,
     })
 
     let nfts: NFT[] = []
