@@ -49,11 +49,7 @@ $ docker compose up -d redis
 $ npm run dev
 
 # Run tests in TypeScript
-$ npm run test:ts
-
-# Build for production and run tests
-$ npm run build:test
-$ npm test
+$ npm run test
 
 # Build for production and run in production
 $ npm run build
