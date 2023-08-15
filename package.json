@@ -99,7 +99,6 @@
     "opensea-js": "^6.1.5",
     "rate-limiter-flexible": "^2.4.1",
     "redis": "^4.6.7",
-    "rewire": "^7.0.0",
     "sinon": "^15.2.0",
     "tslib": "^2.4.1",
     "web3": "^1.7.5",
