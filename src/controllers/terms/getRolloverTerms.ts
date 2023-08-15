@@ -7,9 +7,9 @@ import { getEthNFTMetadata } from '../collaterals'
 import { verifyCollectionWithMatcher } from '../collections'
 import { getLoan, isLoanExtendable } from '../loans'
 import searchPublishedMultiplePools from '../pools/searchPublishedMultiplePools'
-import { getEthNFTValuation, signValuation } from '../valuations'
-import getFlashLoanSource from './getFlashLoanSource'
+import { getCollectionValuation, signValuation } from '../valuations'
 import getSolvSFTValuation from '../valuations/getSolvSFTValuation'
+import getFlashLoanSource from './getFlashLoanSource'
 
 type Params = {
   blockchain: Blockchain
@@ -77,7 +77,7 @@ export default async function getRolloverTerms({
         }
         else if (pool.collection.valuation) resolve(pool)
         else {
-          const valuation = await getEthNFTValuation({ blockchain: blockchain as Blockchain, collectionAddress: collectionAddresses[index], nftId: nftIds[index] })
+          const valuation = await getCollectionValuation({ blockchain: blockchain as Blockchain, collectionAddress: collectionAddresses[index], nftId: nftIds[index] })
           resolve({
             ...pool,
             collection: {

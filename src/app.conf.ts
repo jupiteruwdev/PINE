@@ -42,6 +42,14 @@ export default {
   requestTimeoutMs: Number(process.env.REQUEST_TIMEOUT_MS ?? 30000),
   metaquantsAPIKey: process.env.METAQUANTS_API_KEY,
   ethBlocksPerSecond: 14,
+  reservoirAPIBaseUrl: {
+    [Blockchain.Ethereum.Network.MAIN]: 'https://api.reservoir.tools',
+    [Blockchain.Polygon.Network.MAIN]: 'https://api-polygon.reservoir.tools',
+  },
+  reservoirAPIKey: {
+    [Blockchain.Ethereum.Network.MAIN]: process.env.RESERVOIR_MAINNET_API_KEY,
+    [Blockchain.Polygon.Network.MAIN]: process.env.RESERVOIR_POLYGON_API_KEY,
+  },
   alchemyAPIUrl: {
     [Blockchain.Ethereum.Network.MAIN]: `https://eth-mainnet.g.alchemy.com/v2/${process.env.ALCHEMY_API_KEY_MAINNET}`,
     [Blockchain.Ethereum.Network.GOERLI]: `https://eth-goerli.g.alchemy.com/v2/${process.env.ALCHEMY_API_KEY_GOERLI}`,
