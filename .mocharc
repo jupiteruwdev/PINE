@@ -7,11 +7,21 @@
     "**/entities/**/**"
   ],
   "node-option": [
-    "experimental-specifier-resolution=node"
+    "experimental-specifier-resolution=node",
+    "loader=ts-node/esm",
+    "loader=esmock"
+  ],
+  "require": [
+    "ts-node/register"
+  ],
+  "extensions": [
+    "ts"
+  ],
+  "watch-extensions": [
+    "ts"
   ],
   "full-trace": true,
   "recursive": true,
   "reporter": "spec",
-  "require": "ts-node/register",
   "timeout": 100000
 }

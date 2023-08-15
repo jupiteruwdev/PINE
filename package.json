@@ -25,7 +25,7 @@
     "test:ci": "npm run test:unit:ci ; npm run test:int:ts:ci",
     "test:unit:ci": "cross-env NODE_ENV=test mocha --config .mocharc --extension spec.js \"build/$npm_config_files\" -R json -O output=test-results/unit-tests.json",
     "test:int:ts:ci": "cross-env NODE_ENV=test mocha --config .mocharc -r ts-node/register -n loader=ts-node/esm --extension ts \"tests/$npm_config_files\" -R json -O output=test-results/integration-tests.json",
-    "test:my": "cross-env NODE_ENV=test mocha --config .mocharc -r ts-node/register -n loader=ts-node/esm --extension spec.ts \"src/controllers/utils/getTokenUSDPrice.spec.ts\""
+    "test:my": "cross-env NODE_ENV=test mocha --config .mocharc --extension spec.ts \"src/controllers/utils/getPineValueUSD.spec.ts\""
   },
   "license": "NOLICENSE",
   "repository": {
@@ -55,6 +55,7 @@
     "chai": "^4.3.6",
     "cross-env": "^7.0.3",
     "eslint": "^8.22.0",
+    "esmock": "^2.3.6",
     "lint-staged": "^13.1.0",
     "mocha": "^10.0.0",
     "nodemon": "^2.0.19",
@@ -98,6 +99,7 @@
     "opensea-js": "^6.1.5",
     "rate-limiter-flexible": "^2.4.1",
     "redis": "^4.6.7",
+    "rewire": "^7.0.0",
     "sinon": "^15.2.0",
     "tslib": "^2.4.1",
     "web3": "^1.7.5",
