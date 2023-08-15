@@ -160,12 +160,13 @@ function getPipelineStages({
 
     const stages: PipelineStage[] = [{
       $match: {
-        $or: blockchains.map(blockchain => ({
-          $and: [
-            { 'networkType': blockchain.network },
-            { 'networkId': blockchain.networkId },
-          ],
-        })),
+        ...blockchains?.length ? {
+          '$or': blockchains.map(blockchain => ({
+            $and: [
+              { 'networkType': blockchain.network },
+              { 'networkId': blockchain.networkId },
+            ],
+          })) } : {},
         ...lenderAddress === undefined ? {} : { lenderAddress },
         ...includeRetired === true ? {} : { retired: { $ne: true } },
       },
