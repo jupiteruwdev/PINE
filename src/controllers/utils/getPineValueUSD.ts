@@ -6,8 +6,8 @@ import fault from '../../utils/fault'
 import DataSource from './DataSource'
 import getRequest from './getRequest'
 
-export default async function getPineValueUSD(amountPine: number | string | BigNumber = 1): Promise<Value<AnyCurrency>> {
-  return DataSource.fetch(useGateIO(amountPine), useCoingecko(amountPine))
+export async function getPineValueUSD(amountPine: number | string | BigNumber = 1): Promise<Value<AnyCurrency>> {
+  return DataSource.fetch(utils.useGateIO(amountPine), utils.useCoingecko(amountPine))
 }
 
 export function useGateIO(amountPine: number | string | BigNumber = 1): DataSource<Value<AnyCurrency>> {
@@ -47,3 +47,11 @@ export function useCoingecko(amountPine: number | string | BigNumber = 1): DataS
     }
   }
 }
+
+const utils = {
+  useGateIO,
+  useCoingecko,
+  getPineValueUSD,
+}
+
+export default utils

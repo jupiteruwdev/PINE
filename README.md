@@ -6,40 +6,35 @@ This is Pine's core web service/API gateway.
 
 This project requires the following environment variables defined in `.env`. In most cases there are separate keys for development/staging and production environments. Always use development/staging keys for local development or testing purposes.
 
+Required environment variables for local development:
 ```sh
 # .env
-
-LOG_LEVEL # Log level (see Logging section below, logging is disabled if unspecified)
-REQUEST_TIMEOUT_MS # Default timeout for all external API requests, in milliseconds
-
-ALCHEMY_API_KEY # API key for Alchemy
-MORALIS_API_KEY # API key for Moralis
-NFTBANK_API_KEY # API key for NFTBank
+# REQUIRED keys:
+MONGO_URI # URI of MongoDB
 OPENSEA_API_KEY # API key for OpenSea
+MORALIS_API_KEY # API key for Moralis
 GEMXYZ_API_KEY # API key for Gem.xyz
 LUNARCRUSH_API_KEY # API key for LunarCrush
+COIN_API_KEY # API key for CoinAPI
+ZYTE_API_KEY # API key for Zyte
+NFT_PERP_API_KEY # API key for NFTPerp
+ALCHEMY_SIGNING_KEY # Key for signing NFT valuations
+METAQUANTS_API_KEY # API key for MetaQuants
+ALCHEMY_API_KEY_MAINNET # API key for Alchemy Mainnet app
+ALCHEMY_API_KEY_GOERLI # API key for Alchemy Goerli app
+ALCHEMY_API_KEY_POLYGON_MAINNET # API key for Alchemy Polygon Mainnet app
+ALCHEMY_API_KEY_POLYGON_MUMBAI # API key for Alchemy Polygon Mumbai app
 
-ETH_RPC_MAINNET # URL to the RPC node for Ethereum Rinkeby
-ETH_RPC_RINKEBY # URL to the RPC node for Ethereum Mainnet
-ETH_RPC_GOERLI
-
-MONGO_URI # URI of MongoDB
-WORKER_URL # URL of the worker
-ALCHEMY_API_MAINNET_URL # URL of Mainnet Alchemy API
-ALCHEMY_API_RINKEBY_URL # URL of Rinkeby Alchemy API
-SUBGRAPH_API_MAINNET_URL # URL of Mainnet subgraph
-SUBGRAPH_API_RINKEBY_URL # URL of Rinkeby subgraph
-
+# OPTIONAL keys:
+LOG_LEVEL # Log level for the app
 VALUATION_SIGNER # Key for signing NFT valuations
-REDISHOST # Redis host, use "localhost" for local development
 ```
 
 The following are environment variables used by unit and integration tests:
 
 ```sh
 # .env
-
-TESTS_WALLET_ADDRESS=<address> # Address of wallet to assume when running unit/integration tests
+TESTS_WALLET_ADDRESS="0xFB9684ec1026513241F777485911043DC2aA9a4f" # Address of wallet to assume when running unit/integration tests
 TESTS_WALLET_PRIVATE_KEY=<key> # Private key of the test wallet above
 TESTS_WHALE_WALLET_ADDRESSES=<address_1>,<address_2>,<address_3> # Addresses of third-party wallets that should be tested against when running unit/integration tests
 ```
@@ -47,35 +42,24 @@ TESTS_WHALE_WALLET_ADDRESSES=<address_1>,<address_2>,<address_3> # Addresses of 
 ## Usage
 
 ```sh
-# Run in dev in port 8000
-$ PORT=8000 npm run dev
+# Start local redis instance in Docker
+$ docker compose up -d redis
+
+# Run locally on port 8080
+$ npm run dev
 
 # Run tests in TypeScript
-$ npm run test:ts
-
-# Build for production and run tests
-$ npm run build:test
-$ npm test
+$ npm run test
 
 # Build for production and run in production
 $ npm run build
 $ npm start
-
-# Build the image for test and run integration/unit tests
-$ docker build -t ${IMAGE_NAME:-core-service}:${IMAGE_TAG:-test} .
-$ docker-compose -f docker-compose.test.yml up --abort-on-container-exit
 
 # Build the image for production
 $ docker build -t ${IMAGE_NAME:-core-service}:${IMAGE_TAG:-latest} .
 
 # Run the image in production
 $ docker-compose -f docker-compose.yml up
-```
-
-## How to run redis locally
-Run in separate terminal
-```sh
-$ docker run --name redis -p 6379:6379 -d redis
 ```
 
 ## Logging

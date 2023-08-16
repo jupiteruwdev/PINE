@@ -1,45 +1,51 @@
-import _ from 'lodash'
-import { PriceModel } from '../../database'
 import { AnyCurrency, Value } from '../../entities'
 import fault from '../../utils/fault'
 import logger from '../../utils/logger'
 import getEthValueUSD from './getEthValueUSD'
-import getPineValueUSD from './getPineValueUSD'
+import { getPineValueUSD } from './getPineValueUSD'
+import redis from '../../utils/redis'
 
 export enum AvailableToken {
   ETH = 'eth',
   PINE = 'pine',
-  MATIC = 'matic'
+  MATIC = 'matic',
 }
 
-async function fetchTokenPrice(token: AvailableToken = AvailableToken.ETH): Promise<Value<AnyCurrency>> {
+async function fetchTokenPrice(token: AvailableToken): Promise<Value<AnyCurrency>> {
   logger.info(`Fetching token price for ${token}...`)
 
   switch (token) {
   case AvailableToken.ETH:
   case AvailableToken.MATIC:
-    return getEthValueUSD(undefined, token)
+    return getEthValueUSD.getEthValueUSD(undefined, token)
   case AvailableToken.PINE:
     return getPineValueUSD()
+  default:
+    throw new Error(`Unsupported token: ${token}`)
   }
 }
 
-export default async function getTokenUSDPrice(token: AvailableToken = AvailableToken.ETH): Promise<Value<AnyCurrency>> {
+export default async function getTokenUSDPrice(token: AvailableToken): Promise<Value<AnyCurrency>> {
   try {
     logger.info(`Get token price for ${token}...`)
 
-    const price = await PriceModel.findOne({ name: token }).lean()
-    const updatedAt = new Date(_.get(price, 'updatedAt') as unknown as string | number)
-    const now = Date.now()
+    const redisKey = `${token}:value:usd`
+    let usdPrice: Value<AnyCurrency>
+    const cachedValue = await redis.getRedisCache(redisKey)
 
-    if (updatedAt.getTime() >= now - 60 * 5 * 1000) {
-      return Value.factory({
-        amount: price?.value?.amount,
-        currency: price?.value?.currency,
+    if (cachedValue) {
+      logger.info(`Cached ${token} value in USD:`, cachedValue)
+      usdPrice = cachedValue
+    }
+    else {
+      logger.info(`Get ${token} value in USD from coingeco...`)
+      usdPrice = await fetchTokenPrice(token)
+      logger.info(`${token} value from coingeco in USD:`, usdPrice)
+      await redis.setRedisCache(redisKey, usdPrice, {
+        EX: 60,
       })
     }
-
-    return fetchTokenPrice(token)
+    return usdPrice
   }
   catch (err) {
     logger.info(`Get token price for ${token}... ERR:`, err)
