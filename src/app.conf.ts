@@ -36,7 +36,6 @@ export default {
   lunarCrushAPIKey: process.env.LUNARCRUSH_API_KEY,
   looksrareAPIKey: process.env.LOOKSRARE_API_KEY,
   spicyestAPIKey: process.env.SPICYEST_API_KEY,
-  x2y2APIKey: process.env.X2Y2_API_KEY,
   zyteAPIKey: process.env.ZYTE_API_KEY,
   nftPerpAPIKey: process.env.NFT_PERP_API_KEY,
   requestTimeoutMs: Number(process.env.REQUEST_TIMEOUT_MS ?? 30000),
@@ -63,17 +62,17 @@ export default {
     [Blockchain.Polygon.Network.MUMBAI]: `https://polygon-mumbai.g.alchemy.com/nft/v2/${process.env.ALCHEMY_API_KEY_POLYGON_MUMBAI}`,
   },
   subgraphAPIUrl: {
-    [Blockchain.Ethereum.Network.RINKEBY]: process.env.SUBGRAPH_API_RINKEBY_URL,
-    [Blockchain.Ethereum.Network.MAIN]: process.env.SUBGRAPH_API_MAINNET_URL,
+    [Blockchain.Ethereum.Network.RINKEBY]: process.env.SUBGRAPH_API_RINKEBY_URL ?? 'https://api.thegraph.com/subgraphs/name/pinedefi/open-loans-four',
+    [Blockchain.Ethereum.Network.MAIN]: process.env.SUBGRAPH_API_MAINNET_URL ?? 'https://api.thegraph.com/subgraphs/name/pinedefi/open-loans-staging',
     [Blockchain.Polygon.Network.MUMBAI]: process.env.SUBGRAPH_API_POLYGON_MUMBAI_URL,
-    [Blockchain.Polygon.Network.MAIN]: process.env.SUBGRAPH_API_POLYGON_MAINNET_URL,
+    [Blockchain.Polygon.Network.MAIN]: process.env.SUBGRAPH_API_POLYGON_MAINNET_URL ?? 'https://api.thegraph.com/subgraphs/name/pinedefi/open-loans-polygon',
   },
   ethRPC: {
+    [Blockchain.Ethereum.Network.MAIN]: `https://eth-mainnet.g.alchemy.com/v2/${process.env.ALCHEMY_API_KEY_MAINNET}`,
+    [Blockchain.Ethereum.Network.GOERLI]: `https://eth-goerli.g.alchemy.com/v2/${process.env.ALCHEMY_API_KEY_GOERLI}`,
     [Blockchain.Ethereum.Network.RINKEBY]: process.env.ETH_RPC_RINKEBY,
-    [Blockchain.Ethereum.Network.MAIN]: process.env.ETH_RPC_MAINNET,
-    [Blockchain.Ethereum.Network.GOERLI]: process.env.ETH_RPC_GOERLI,
-    [Blockchain.Polygon.Network.MAIN]: process.env.POLYGON_RPC_MAINNET,
-    [Blockchain.Polygon.Network.MUMBAI]: process.env.POLYGON_RPC_MUMBAI,
+    [Blockchain.Polygon.Network.MAIN]: `https://polygon-mainnet.g.alchemy.com/v2/${process.env.ALCHEMY_API_KEY_POLYGON_MAINNET}`,
+    [Blockchain.Polygon.Network.MUMBAI]: `https://polygon-mumbai.g.alchemy.com/v2/${process.env.ALCHEMY_API_KEY_POLYGON_MUMBAI}`,
   },
   ethValuationExpiryBlocks: 64, // quote expires in 15 mins
   ethValuationSigner: process.env.VALUATION_SIGNER,
@@ -161,15 +160,14 @@ export default {
   },
   signer: process.env.SIGNER,
   looksrareAPIUrl: {
-    [Blockchain.Ethereum.Network.MAIN]: process.env.LOOKSRARE_API_URL_MAINNET,
-    [Blockchain.Ethereum.Network.GOERLI]: process.env.LOOKSRARE_API_URL_GOERLI,
+    [Blockchain.Ethereum.Network.MAIN]: process.env.LOOKSRARE_API_URL_MAINNET ?? 'https://api.looksrare.org/',
+    [Blockchain.Ethereum.Network.GOERLI]: process.env.LOOKSRARE_API_URL_GOERLI ?? 'https://api-goerli.looksrare.org/',
   },
   wethAddress: {
     [Blockchain.Ethereum.Network.MAIN]: '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2',
     [Blockchain.Ethereum.Network.GOERLI]: '0xB4FBF271143F4FBf7B91A5ded31805e42b2208d6',
     [Blockchain.Polygon.Network.MAIN]: '0x0d500B1d8E8eF31E21C99d1Db9A6444d3ADf1270',
   },
-  turnstileSecretKey: process.env.TURNSTILE_SECRET_KEY,
   sentryApiDsn: process.env.SENTRY_API_DSN,
   alchemySigningKey: process.env.ALCHEMY_SIGNING_KEY ?? '',
   incentiveRewards: 0, // rewards amount for incentive
@@ -178,5 +176,5 @@ export default {
     [Blockchain.Ethereum.Network.MAIN]: '',
     [Blockchain.Ethereum.Network.GOERLI]: '0x9e70ef3cd5565f4eb78996eb037765d759cc257b',
   },
-  redisHost: `redis://${process.env.REDISHOST}:6379`,
+  redisHost: process.env.REDISHOST ? `redis://${process.env.REDISHOST}:6379` : 'redis://localhost:6379',
 }

@@ -8,8 +8,8 @@ import DataSource from './DataSource'
 import getRequest from './getRequest'
 import { AvailableToken } from './getTokenUSDPrice'
 
-export default async function getEthValueUSD(amountEth: number | string | BigNumber = 1, symbol: Omit<AvailableToken, 'PINE'> = AvailableToken.ETH): Promise<Value<AnyCurrency>> {
-  return DataSource.fetch(useCoingecko(symbol, amountEth), useBinance(symbol, amountEth), useCoinAPI(symbol, amountEth))
+export async function getEthValueUSD(amountEth: number | string | BigNumber = 1, symbol: Omit<AvailableToken, 'PINE'> = AvailableToken.ETH): Promise<Value<AnyCurrency>> {
+  return DataSource.fetch(utils.useCoingecko(symbol, amountEth), utils.useBinance(symbol, amountEth), utils.useCoinAPI(symbol, amountEth))
 }
 
 export function useBinance(symbol: Omit<AvailableToken, 'PINE'> = 'eth', amountEth: number | string | BigNumber = 1): DataSource<Value<AnyCurrency>> {
@@ -76,3 +76,12 @@ export function useCoinAPI(symbol: Omit<AvailableToken, 'PINE'> = 'eth', amountE
     }
   }
 }
+
+const utils = {
+  useBinance,
+  useCoingecko,
+  useCoinAPI,
+  getEthValueUSD,
+}
+
+export default utils
