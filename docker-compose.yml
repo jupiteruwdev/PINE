@@ -1,15 +1,21 @@
 version: "3.8"
 services:
-  app:
-    command: npm start
-    container_name: core-service
-    env_file: .env
-    image: ${IMAGE_NAME:-core-service}:${IMAGE_TAG:-latest}
+  redis: 
+    image: redis:6
+    container_name: redis
     restart: always
+    ports:
+      - 6379:6379
+  app:
+    container_name: core-service
+    image: ${IMAGE_NAME:-core-service}:${IMAGE_TAG:-latest}
     build:
       context: .
+    env_file: .env
+    restart: always
     ports:
       - 8080:8080
+    command: npm start
     environment:
       NODE_ENV: production
       ALCHEMY_API_KEY: ${ALCHEMY_API_KEY}

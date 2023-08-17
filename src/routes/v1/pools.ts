@@ -29,15 +29,16 @@ router.get('/groups/search', async (req, res, next) => {
     const blockchainFilter = getBlockchainFilter(req.query, false)
     const collectionAddress = getString(req.query, 'collectionAddress', { optional: true })
     const collectionName = getString(req.query, 'query', { optional: true })
+    const filters = getString(req.query, 'filters', { optional: true })
     const sortByType = getString(req.query, 'sort', { optional: true }) as PoolSortType
     const sortByDirection = getString(req.query, 'direction', { optional: true }) as PoolSortDirection
     const sortBy = sortByType !== undefined ? { type: sortByType, direction: sortByDirection ?? PoolSortDirection.ASC } : undefined
     const paginateByOffset = getNumber(req.query, 'offset', { optional: true })
     const paginateByCount = getNumber(req.query, 'count', { optional: true })
     const paginateBy = paginateByOffset !== undefined && paginateByCount !== undefined ? { count: paginateByCount, offset: paginateByOffset } : undefined
-    const totalCount = await countPoolGroups({ collectionAddress, blockchainFilter, collectionName, includeRetired: false })
-    const totalPoolGroupsCount = await countPoolGroups({ collectionAddress, blockchainFilter, includeRetired: false })
-    const poolGroups = await searchPoolGroups({ collectionAddress, collectionName, blockchainFilter, paginateBy, sortBy })
+    const totalCount = await countPoolGroups({ collectionAddress, blockchainFilter, collectionName, includeRetired: false, filters })
+    const totalPoolGroupsCount = await countPoolGroups({ collectionAddress, blockchainFilter, includeRetired: false, filters })
+    const poolGroups = await searchPoolGroups({ collectionAddress, collectionName, blockchainFilter, paginateBy, sortBy, filters })
     const poolsOfferCount = await countPoolOffers({ collectionAddress, blockchainFilter, collectionName, includeRetired: false })
     const payload = serializeEntityArray(poolGroups, PoolGroup.codingResolver)
     const nextOffset = (paginateBy?.offset ?? 0) + poolGroups.length

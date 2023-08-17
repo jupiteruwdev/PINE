@@ -1,6 +1,6 @@
 import BigNumber from 'bignumber.js'
 import { assert, expect } from 'chai'
-import getEthValueUSD from './getEthValueUSD'
+import { getEthValueUSD } from './getEthValueUSD'
 
 describe('controllers/utils/getEthValueUSD', () => {
   it('can get current ETH price in USD', async () => {
