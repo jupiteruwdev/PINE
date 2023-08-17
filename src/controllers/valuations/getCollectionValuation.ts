@@ -2,6 +2,8 @@ import _ from 'lodash'
 import appConf from '../../app.conf'
 import { Blockchain, Valuation, Value } from '../../entities'
 import fault from '../../utils/fault'
+import logger from '../../utils/logger'
+import redis from '../../utils/redis'
 import rethrow from '../../utils/rethrow'
 import getRequest from '../utils/getRequest'
 
@@ -84,8 +86,20 @@ export default async function getCollectionValuation({
   try {
     const apiKey = _.get(appConf.reservoirAPIKey, blockchain.networkId) ?? rethrow('Missing Reservoir API key')
     const apiBaseUrl = _.get(appConf.reservoirAPIBaseUrl, blockchain.networkId) ?? rethrow('Missing Reservoir Base Url')
+    const redisKey = `${collectionAddress}:valuation:eth`
+    const cachedValue = await redis.getRedisCache(redisKey)
 
-    return useReservoir({ collectionAddress, nftId, apiBaseUrl, apiKey })
+    if (cachedValue) {
+      logger.info(`Cached ${collectionAddress} valuation in ETH:`, cachedValue)
+      return cachedValue as Valuation
+    }
+
+    const newValue = await useReservoir({ collectionAddress, nftId, apiBaseUrl, apiKey })
+    await redis.setRedisCache(redisKey, newValue, {
+      EX: 600,
+    })
+
+    return newValue
   }
   catch (err) {
     throw fault('ERR_GET_COLLECTION_VALUATION', undefined, err)
