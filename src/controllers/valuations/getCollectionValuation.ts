@@ -11,21 +11,22 @@ type Params = {
   nftId?: string
 }
 
-export default async function getCollectionValuation({
-  blockchain,
-  collectionAddress,
-  nftId,
-}: Params): Promise<Valuation> {
+type UseReservoirParams = {
+  collectionAddress: string
+  nftId?: string
+  apiBaseUrl: string
+  apiKey: string
+}
+
+export async function useReservoir({ collectionAddress, apiBaseUrl, apiKey, nftId }: UseReservoirParams): Promise<Valuation> {
   try {
-    const apiKey = _.get(appConf.reservoirAPIKey, blockchain.networkId) ?? rethrow('Missing Reservoir API key')
-    const apiBaseUrl = _.get(appConf.reservoirAPIBaseUrl, blockchain.networkId) ?? rethrow('Missing Reservoir Base Url')
 
     let collectionInfo
 
     if (nftId) {
       const res = await getRequest(`${apiBaseUrl}/tokens/v6`, {
         headers: {
-          Authorization: apiKey,
+          'x-api-key': apiKey,
         },
         params: {
           tokens: `${collectionAddress}:${nftId}`,
@@ -40,7 +41,7 @@ export default async function getCollectionValuation({
 
       collectionInfo = await getRequest(`${apiBaseUrl}/collections/v6`, {
         headers: {
-          Authorization: apiKey,
+          'x-api-key': apiKey,
         },
         params: {
           id: collectionId,
@@ -50,7 +51,7 @@ export default async function getCollectionValuation({
     else {
       collectionInfo = await getRequest(`${apiBaseUrl}/collections/v6`, {
         headers: {
-          Authorization: apiKey,
+          'x-api-key': apiKey,
         },
         params: {
           contract: collectionAddress,
@@ -69,6 +70,22 @@ export default async function getCollectionValuation({
     })
 
     return valuation
+  }
+  catch (err) {
+    throw fault('ERR_USE_RESERVOIR', undefined, err)
+  }
+}
+
+export default async function getCollectionValuation({
+  blockchain,
+  collectionAddress,
+  nftId,
+}: Params): Promise<Valuation> {
+  try {
+    const apiKey = _.get(appConf.reservoirAPIKey, blockchain.networkId) ?? rethrow('Missing Reservoir API key')
+    const apiBaseUrl = _.get(appConf.reservoirAPIBaseUrl, blockchain.networkId) ?? rethrow('Missing Reservoir Base Url')
+
+    return useReservoir({ collectionAddress, nftId, apiBaseUrl, apiKey })
   }
   catch (err) {
     throw fault('ERR_GET_COLLECTION_VALUATION', undefined, err)
