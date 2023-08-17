@@ -1,11 +1,36 @@
 import { Router } from 'express'
 import _ from 'lodash'
-import { getEthCollectionFloorPrices, getEthNFTValuation, getNFTOTD, searchCollections } from '../../controllers'
+import { getEthCollectionFloorPrices, getEthNFTValuation, getNFTOTD, saveCollection, searchCollections } from '../../controllers'
 import { Blockchain, Collection, serializeEntityArray, Value } from '../../entities'
 import fault from '../../utils/fault'
 import { getBlockchain, getBlockchainFilter, getString } from '../utils/query'
+import appConf from '../../app.conf'
 
 const router = Router()
+
+if (appConf.env === 'development') {
+  router.post('/add', async (req, res, next) => {
+    try {
+      const collectionAddress = getString(req.query, 'collectionAddress')
+      const blockchain = getBlockchain(req.query)
+
+      if (!collectionAddress || !blockchain) {
+        throw fault('ERR_MISSING_COLLECTION_DATA')
+      }
+
+      if (!blockchain.network || !blockchain.networkId) {
+        throw fault('ERR_MISSING_BLOCKCHAIN_DATA')
+      }
+
+      const newCollection = await saveCollection({ collectionAddress, blockchain })
+
+      res.status(200).json(newCollection)
+    }
+    catch (err) {
+      next(fault('ERR_API_CREATE_COLLECTION', undefined, err))
+    }
+  })
+}
 
 router.get('/search', async (req, res, next) => {
   try {
