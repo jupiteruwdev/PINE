@@ -19,6 +19,7 @@ export default async function getOnChainPoolByAddress({ poolAddress }: Params, {
         duration
         interestBPS1000000XBlock
         collateralFactorBPS
+        sftMarketId
         lenderAddress
       }
     }
