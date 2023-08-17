@@ -24,6 +24,7 @@ export default async function saveCollection({ collectionAddress, blockchain }: 
       imageUrl: collectionMetadata.imageUrl ?? '',
       networkType: blockchain.network,
       networkId: blockchain.networkId,
+      hidden: false,
     })
 
     return res.toObject()
