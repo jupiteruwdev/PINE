@@ -35,7 +35,7 @@ async function savePool({ poolData, blockchain, ethLimit }: SavePoolParams) {
     }).lean()
 
     if (collection === undefined) {
-      collection = await saveCollection({ collectionAddress: poolData.collection, blockchain })
+      collection = await saveCollection({ collectionAddress: poolData.collection, blockchain, sftMarketId: poolData.sftMarketId })
     }
 
     syncPools()

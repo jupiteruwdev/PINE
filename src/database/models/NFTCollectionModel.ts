@@ -36,6 +36,7 @@ const schema = new Schema({
   networkType: Schema.Types.String,
   networkId: Schema.Types.String,
   imageUrl: Schema.Types.String,
+  sftMarketId: Schema.Types.String,
   verified: Schema.Types.Boolean,
 }, { timestamps: true })
 
