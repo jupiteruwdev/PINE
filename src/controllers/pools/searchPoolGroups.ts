@@ -76,7 +76,7 @@ function getPipelineStages({
       }))
     }
 
-    if (filters?.includes('solv')) {
+    if (filters?.includes('solv') || filters?.includes('all')) {
       orFilter.push({
         'collection.sftMarketId': {
           $ne: null,
