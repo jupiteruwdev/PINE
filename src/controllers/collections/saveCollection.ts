@@ -26,6 +26,7 @@ export default async function saveCollection({ collectionAddress, blockchain, sf
       networkType: blockchain.network,
       networkId: blockchain.networkId,
       hidden: false,
+      type: sftMarketId ? 'SFT' : 'NFT',
       sftMarketId,
     })
 
