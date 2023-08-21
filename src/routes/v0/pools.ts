@@ -15,7 +15,7 @@ router.get('/groups/collection', async (req, res, next) => {
     const blockchainFilter = getBlockchainFilter(req.query, false)
     const collectionAddress = getString(req.query, 'collectionAddress')
     const ownerAddress = getString(req.query, 'ownerAddress', { optional: true })
-    const poolGroups = await searchPoolGroups({ blockchainFilter, collectionAddress, ownerAddress })
+    const poolGroups = await searchPoolGroups({ blockchainFilter, collectionAddress, ownerAddress, filters: 'all' })
     const payload = serializeEntityArray(poolGroups, PoolGroup.codingResolver)
 
     res.status(200).json(payload)

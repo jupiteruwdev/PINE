@@ -59,7 +59,7 @@ export default async function getEthCollectionMetadata({
     logger.info(`Fetching metadata for collection using params <${JSON.stringify(params)}> on blockchain <${JSON.stringify(blockchain)}>... OK`)
     logger.debug(JSON.stringify(metadata, undefined, 2))
 
-    await setRedisCache(redisKey, metadata)
+    await setRedisCache(redisKey, metadata, { EX: 900 })
 
     return metadata
   }
@@ -90,6 +90,9 @@ export function useDb({ blockchain, collectionAddress, matchSubcollectionBy }: P
           name: _.get(doc, 'displayName'),
           imageUrl: _.get(doc, 'imageUrl'),
           vendorIds: _.get(doc, 'vendorIds'),
+          sftMarketId: _.get(doc, 'sftMarketId'),
+          sftDenomination: _.get(doc, 'sftDenomination'),
+          sftMarketName: _.get(doc, 'sftMarketName'),
         }
       }
 
@@ -169,6 +172,9 @@ export function useDb({ blockchain, collectionAddress, matchSubcollectionBy }: P
               name: _.get(doc, 'displayName'),
               imageUrl: _.get(doc, 'imageUrl'),
               vendorIds: _.get(doc, 'vendorIds'),
+              sftMarketId: _.get(doc, 'sftMarketId'),
+              sftDenomination: _.get(doc, 'sftDenomination'),
+              sftMarketName: _.get(doc, 'sftMarketName'),
             }
 
             break
@@ -189,6 +195,9 @@ export function useDb({ blockchain, collectionAddress, matchSubcollectionBy }: P
           name: _.get(doc, 'displayName'),
           imageUrl: _.get(doc, 'imageUrl'),
           vendorIds: _.get(doc, 'vendorIds'),
+          sftMarketId: _.get(doc, 'sftMarketId'),
+          sftDenomination: _.get(doc, 'sftDenomination'),
+          sftMarketName: _.get(doc, 'sftMarketName'),
         }
       }
 

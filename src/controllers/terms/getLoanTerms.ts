@@ -28,7 +28,7 @@ export default async function getLoanTerms({ blockchain, collectionAddresses, nf
       const pools = (await searchPublishedMultiplePools({ addresses: poolAddresses, nftIds, collectionAddresses, blockchainFilter: Blockchain.parseFilter(blockchain), includeInvalidTenors: false })).filter(pool => pool.valueLocked.amount.gt(pool.utilization.amount ?? '0'))
 
       if (!pools) throw fault('ERR_NO_POOLS_AVAILABLE')
-      if (pools.find(pool => pool.collection.valuation && (pool.collection.valuation?.timestamp || 0) < new Date().getTime() - appConf.valuationLimitation)) {
+      if (pools.find(pool => !pool.collection.sftMarketId && pool.collection.valuation && (pool.collection.valuation?.timestamp || 0) < new Date().getTime() - appConf.valuationLimitation)) {
         throw fault('INVALID_VALUATION_TIMESTAMP')
       }
 
