@@ -20,35 +20,46 @@ type UseReservoirParams = {
   apiKey: string
 }
 
+async function useReservoirByTokenDetails({ collectionAddress, nftId, apiBaseUrl, apiKey }: UseReservoirParams) {
+  try {
+    const res = await getRequest(`${apiBaseUrl}/tokens/v6`, {
+      headers: {
+        'x-api-key': apiKey,
+      },
+      params: {
+        tokens: `${collectionAddress}:${nftId}`,
+      },
+    })
+
+    if (!res.tokens?.length) rethrow(`Fetching token info for collection ${collectionAddress} and nftId ${nftId} failed`)
+
+    const collectionId = _.get(res.tokens[0], 'token.collection.id')
+
+    if (!collectionId) rethrow(`Extracting collection id for collection ${collectionAddress} and nftId ${nftId} failed`)
+
+    const collectionInfo = await getRequest(`${apiBaseUrl}/collections/v6`, {
+      headers: {
+        'x-api-key': apiKey,
+      },
+      params: {
+        id: collectionId,
+      },
+    })
+
+    return collectionInfo
+  }
+  catch (err) {
+    throw fault('ERR_USE_RESERVOIR_TOKEN_DETAILS', undefined, err)
+  }
+}
+
 export async function useReservoir({ collectionAddress, apiBaseUrl, apiKey, nftId }: UseReservoirParams): Promise<Valuation> {
   try {
 
     let collectionInfo
 
     if (nftId) {
-      const res = await getRequest(`${apiBaseUrl}/tokens/v6`, {
-        headers: {
-          'x-api-key': apiKey,
-        },
-        params: {
-          tokens: `${collectionAddress}:${nftId}`,
-        },
-      })
-
-      if (!res.tokens?.length) rethrow(`Fetching token info for collection ${collectionAddress} and nftId ${nftId} failed`)
-
-      const collectionId = _.get(res.tokens[0], 'token.collection.id')
-
-      if (!collectionId) rethrow(`Extracting collection id for collection ${collectionAddress} and nftId ${nftId} failed`)
-
-      collectionInfo = await getRequest(`${apiBaseUrl}/collections/v6`, {
-        headers: {
-          'x-api-key': apiKey,
-        },
-        params: {
-          id: collectionId,
-        },
-      })
+      collectionInfo = await useReservoirByTokenDetails({ collectionAddress, apiBaseUrl, apiKey, nftId })
     }
     else {
       collectionInfo = await getRequest(`${apiBaseUrl}/collections/v6`, {
