@@ -27,6 +27,7 @@ export default async function getOnChainPools({ lenderAddress, address, excludeA
         interestBPS1000000XBlock
         collateralFactorBPS
         lenderAddress
+        sftMarketId
       }
     }
   `)
