@@ -8,7 +8,7 @@ import appConf from '../../app.conf'
 
 const router = Router()
 
-// Using this route, you can create a new collection for database development using Postman without any blockchain transaction.
+// Using this route, you can create a new collection for database development using Postman without any blockchain transactions.
 if (appConf.env === 'development') {
   router.post('/add', async (req, res, next) => {
     try {
