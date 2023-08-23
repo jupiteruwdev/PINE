@@ -10,7 +10,7 @@ import rethrow from '../../utils/rethrow'
 import DataSource from '../utils/DataSource'
 import getEthWeb3 from '../utils/getEthWeb3'
 import getRequest from '../utils/getRequest'
-import solvConcreteABI from '../../abis/SolvConcrete.json'
+import solvConcreteABI from '../../abis/SolvConcrete.json' assert { type: 'json' }
 
 type Params = {
   blockchain: Blockchain
