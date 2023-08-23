@@ -8,23 +8,16 @@
     "clean": "rimraf build",
     "lint-staged": "lint-staged",
     "prebuild": "npm run lint",
-    "dev": "nodemon --exec \"node --no-warnings --experimental-specifier-resolution node --loader ts-node/esm -r dotenv/config\" --verbose --watch src --ext ts,json src/app",
-    "job": "nodemon --exec \"node --no-warnings --experimental-specifier-resolution node --loader ts-node/esm -r dotenv/config\" --verbose --watch src --ext ts,json src/jobs/syncEthValueUSD",
+    "dev": "cross-env NODE_OPTIONS='--no-warnings' nodemon src/app",
+    "job": "nodemon --exec \"node --no-warnings --experimental-specifier-resolution node --loader ts-node/esm -r dotenv/config\" --verbose --watch src --ext ts,json src/jobs/syncCollectionValuation",
     "build": "npm run clean && tsc",
-    "build:test": "npm run clean && tsc --project tsconfig.test.json",
     "test": "npm run test:unit && npm run test:int",
-    "test:unit": "cross-env NODE_ENV=test mocha --config .mocharc --extension spec.js \"build/$npm_config_files\"",
-    "test:int": "npm run test:int:ts",
-    "test:ts": "npm run test:unit:ts && npm run test:int:ts",
-    "test:unit:ts": "cross-env NODE_ENV=test mocha --config .mocharc -r ts-node/register -n loader=ts-node/esm --extension spec.ts \"src/$npm_config_files\"",
-    "test:int:ts": "cross-env NODE_ENV=test mocha --config .mocharc -r ts-node/register -n loader=ts-node/esm --extension ts \"tests/$npm_config_files\"",
-    "ship:start": "docker-compose -f docker-compose.yml up --build",
-    "ship:test": "docker-compose -f docker-compose.test.yml up --build --exit-code-from app",
+    "test:unit": "cross-env NODE_ENV=test mocha \"src/**/*.spec.ts\"",
+    "test:int": "cross-env NODE_ENV=test mocha \"tests/**/*.ts\"",
+    "test:ci": "cross-env NODE_ENV=test mocha \"src/**/*.spec.ts\" -R json -O output=test-results/unit-tests.json && cross-env NODE_ENV=test mocha \"tests/**/*.ts\" -R json -O output=test-results/integration-tests.json",
+    "test:local": "cross-env NODE_ENV=test mocha \"src/controllers/utils/getPineValueUSD.spec.ts\"",
     "lint": "eslint --ext .ts --ignore-pattern entities --ignore-pattern db src",
-    "lint:fix": "npm run lint -- --fix",
-    "test:ci": "npm run test:unit:ci ; npm run test:int:ts:ci",
-    "test:unit:ci": "cross-env NODE_ENV=test mocha --config .mocharc --extension spec.js \"build/$npm_config_files\" -R json -O output=test-results/unit-tests.json",
-    "test:int:ts:ci": "cross-env NODE_ENV=test mocha --config .mocharc -r ts-node/register -n loader=ts-node/esm --extension ts \"tests/$npm_config_files\" -R json -O output=test-results/integration-tests.json"
+    "lint:fix": "npm run lint -- --fix"
   },
   "license": "NOLICENSE",
   "repository": {
@@ -54,6 +47,7 @@
     "chai": "^4.3.6",
     "cross-env": "^7.0.3",
     "eslint": "^8.22.0",
+    "esmock": "^2.3.6",
     "lint-staged": "^13.1.0",
     "mocha": "^10.0.0",
     "nodemon": "^2.0.19",
@@ -74,6 +68,7 @@
     "@truffle/hdwallet-provider": "^2.1.7",
     "@types/ethereum-block-by-date": "^1.4.1",
     "@types/object-hash": "^2.2.1",
+    "@types/sinon": "^10.0.16",
     "axios": "^0.27.2",
     "bignumber.js": "^9.1.0",
     "cors": "^2.8.5",
@@ -96,6 +91,7 @@
     "opensea-js": "^6.1.5",
     "rate-limiter-flexible": "^2.4.1",
     "redis": "^4.6.7",
+    "sinon": "^15.2.0",
     "tslib": "^2.4.1",
     "web3": "^1.7.5",
     "winston": "^3.8.1"
@@ -105,5 +101,35 @@
   ],
   "lint-staged": {
     "*.ts": "npm run lint"
+  },
+  "nodemonConfig": {
+    "watch": [
+      "src"
+    ],
+    "verbose": true,
+    "ext": "ts,json",
+    "exec": "ts-node"
+  },
+  "mocha": {
+    "exit": true,
+    "color": true,
+    "ignore": [
+      "**/entities/**/**",
+      "**/abis/**/**"
+    ],
+    "node-option": [
+      "experimental-specifier-resolution=node",
+      "loader=ts-node/esm",
+      "loader=esmock"
+    ],
+    "require": [
+      "ts-node/register"
+    ],
+    "recursive": true,
+    "extensions": [
+      "ts",
+      "spec.ts"
+    ],
+    "timeout": 100000
   }
 }

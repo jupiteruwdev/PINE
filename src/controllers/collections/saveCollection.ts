@@ -8,9 +8,10 @@ import getEthCollectionMetadata from './getEthCollectionMetadata'
 type Params = {
   collectionAddress: string
   blockchain: Blockchain
+  sftMarketId?: string
 }
 
-export default async function saveCollection({ collectionAddress, blockchain }: Params): Promise<any> {
+export default async function saveCollection({ collectionAddress, blockchain, sftMarketId }: Params): Promise<any> {
   logger.info(`Saving collection for address <${collectionAddress}>`)
   try {
     const collectionMetadata = await getEthCollectionMetadata({ collectionAddress, blockchain })
@@ -24,6 +25,9 @@ export default async function saveCollection({ collectionAddress, blockchain }: 
       imageUrl: collectionMetadata.imageUrl ?? '',
       networkType: blockchain.network,
       networkId: blockchain.networkId,
+      hidden: false,
+      type: sftMarketId ? 'SFT' : 'NFT',
+      sftMarketId,
     })
 
     return res.toObject()
