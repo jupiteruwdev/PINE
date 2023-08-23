@@ -53,7 +53,7 @@ async function useReservoirByTokenDetails({ collectionAddress, nftId, apiBaseUrl
   }
 }
 
-export async function useReservoir({ collectionAddress, apiBaseUrl, apiKey, nftId }: UseReservoirParams): Promise<Valuation> {
+export async function useReservoirCollectionValuation({ collectionAddress, apiBaseUrl, apiKey, nftId }: UseReservoirParams): Promise<Valuation> {
   try {
 
     let collectionInfo
@@ -105,7 +105,7 @@ export default async function getCollectionValuation({
       return cachedValue as Valuation
     }
 
-    const newValue = await useReservoir({ collectionAddress, nftId, apiBaseUrl, apiKey })
+    const newValue = await useReservoirCollectionValuation({ collectionAddress, nftId, apiBaseUrl, apiKey })
     await redis.setRedisCache(redisKey, newValue, {
       EX: 600,
     })
