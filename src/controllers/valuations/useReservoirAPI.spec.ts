@@ -1,6 +1,7 @@
 import BigNumber from 'bignumber.js'
 import { expect } from 'chai'
 import esmock from 'esmock'
+import { Blockchain } from '../../entities'
 
 describe('valuations', () => {
   let getRequestStub: (url?: string) => Promise<any>
@@ -26,7 +27,7 @@ describe('valuations', () => {
       }
       getRequestStub = async () => fakeData
       const { useReservoirCollectionValuation } = await esmock('./useReservoirAPI', { '../utils/getRequest': getRequestStub })
-      const valuation = await useReservoirCollectionValuation({ collectionAddress: 'test', apiBaseUrl: 'test', apiKey: 'test' })
+      const valuation = await useReservoirCollectionValuation({ collectionAddress: 'test', blockchain: Blockchain.Ethereum() })
 
       expect(valuation.value.amount).to.eql(new BigNumber(1))
       expect(valuation.value.currency).to.eql('ETH')
@@ -65,7 +66,7 @@ describe('valuations', () => {
         return fakeData
       }
       const { useReservoirCollectionValuation } = await esmock('./useReservoirAPI', { '../utils/getRequest': getRequestStub })
-      const valuation = await useReservoirCollectionValuation({ collectionAddress: 'test', apiBaseUrl: 'test', apiKey: 'test', nftId: 'test' })
+      const valuation = await useReservoirCollectionValuation({ collectionAddress: 'test', blockchain: Blockchain.Ethereum() })
 
       expect(valuation.value.amount).to.eql(new BigNumber(10.4))
       expect(valuation.value.currency).to.eql('ETH')

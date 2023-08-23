@@ -1,10 +1,7 @@
-import _ from 'lodash'
-import appConf from '../../app.conf'
 import { Blockchain, Valuation } from '../../entities'
 import fault from '../../utils/fault'
 import logger from '../../utils/logger'
 import redis from '../../utils/redis'
-import rethrow from '../../utils/rethrow'
 import { useReservoirCollectionValuation } from './useReservoirAPI'
 
 type Params = {
@@ -19,8 +16,6 @@ export default async function getCollectionValuation({
   nftId,
 }: Params): Promise<Valuation> {
   try {
-    const apiKey = _.get(appConf.reservoirAPIKey, blockchain.networkId) ?? rethrow('Missing Reservoir API key')
-    const apiBaseUrl = _.get(appConf.reservoirAPIBaseUrl, blockchain.networkId) ?? rethrow('Missing Reservoir Base Url')
     const redisKey = `${collectionAddress}:valuation:eth`
     const cachedValue = await redis.getRedisCache(redisKey)
 
@@ -29,7 +24,7 @@ export default async function getCollectionValuation({
       return cachedValue as Valuation
     }
 
-    const newValue = await useReservoirCollectionValuation({ collectionAddress, nftId, apiBaseUrl, apiKey })
+    const newValue = await useReservoirCollectionValuation({ collectionAddress, nftId, blockchain })
     await redis.setRedisCache(redisKey, newValue, {
       EX: 600,
     })

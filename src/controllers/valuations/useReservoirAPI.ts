@@ -1,5 +1,6 @@
 import _ from 'lodash'
-import { Valuation, Value } from '../../entities'
+import appConf from '../../app.conf'
+import { Blockchain, Valuation, Value } from '../../entities'
 import fault from '../../utils/fault'
 import rethrow from '../../utils/rethrow'
 import getRequest from '../utils/getRequest'
@@ -7,12 +8,14 @@ import getRequest from '../utils/getRequest'
 type UseReservoirParams = {
   collectionAddress: string
   nftId?: string
-  apiBaseUrl: string
-  apiKey: string
+  blockchain: Blockchain
 }
 
-export async function useReservoirByTokenDetails({ collectionAddress, nftId, apiBaseUrl, apiKey }: UseReservoirParams) {
+export async function useReservoirByTokenDetails({ collectionAddress, nftId, blockchain }: UseReservoirParams) {
   try {
+    const apiKey = _.get(appConf.reservoirAPIKey, blockchain.networkId) ?? rethrow('Missing Reservoir API key')
+    const apiBaseUrl = _.get(appConf.reservoirAPIBaseUrl, blockchain.networkId) ?? rethrow('Missing Reservoir Base Url')
+
     const res = await getRequest(`${apiBaseUrl}/tokens/v6`, {
       headers: {
         'x-api-key': apiKey,
@@ -44,13 +47,14 @@ export async function useReservoirByTokenDetails({ collectionAddress, nftId, api
   }
 }
 
-export async function useReservoirCollectionValuation({ collectionAddress, apiBaseUrl, apiKey, nftId }: UseReservoirParams): Promise<Valuation> {
+export async function useReservoirCollectionValuation({ collectionAddress, nftId, blockchain }: UseReservoirParams): Promise<Valuation> {
   try {
-
+    const apiKey = _.get(appConf.reservoirAPIKey, blockchain.networkId) ?? rethrow('Missing Reservoir API key')
+    const apiBaseUrl = _.get(appConf.reservoirAPIBaseUrl, blockchain.networkId) ?? rethrow('Missing Reservoir Base Url')
     let collectionInfo
 
     if (nftId) {
-      collectionInfo = await useReservoirByTokenDetails({ collectionAddress, apiBaseUrl, apiKey, nftId })
+      collectionInfo = await useReservoirByTokenDetails({ collectionAddress, nftId, blockchain })
     }
     else {
       collectionInfo = await getRequest(`${apiBaseUrl}/collections/v6`, {
