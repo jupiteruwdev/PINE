@@ -68,11 +68,7 @@ function getPipelineStages({
     let orFilter: any = []
     if (blockchains.length) {
       orFilter = blockchains.map(blockchain => ({
-        $and: [
-          { 'collection.networkType': blockchain.network },
-          { 'collection.networkId': blockchain.networkId },
-          { 'collection.sftMarketId': { $eq: null } },
-        ],
+        $and: [{ 'collection.hidden': { $ne: true } }, { 'collection.networkType': blockchain.network }, { 'collection.networkId': blockchain.networkId }, { 'collection.sftMarketId': { $eq: null } }],
       }))
     }
 

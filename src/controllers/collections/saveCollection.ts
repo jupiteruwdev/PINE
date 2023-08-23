@@ -25,6 +25,8 @@ export default async function saveCollection({ collectionAddress, blockchain, sf
       imageUrl: collectionMetadata.imageUrl ?? '',
       networkType: blockchain.network,
       networkId: blockchain.networkId,
+      hidden: false,
+      type: sftMarketId ? 'SFT' : 'NFT',
       sftMarketId,
     })
 
