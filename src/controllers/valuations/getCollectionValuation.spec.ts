@@ -9,7 +9,7 @@ describe('valuations', () => {
     esmock.purge('../utils/getRequest')
   })
 
-  describe('useReservoir', () => {
+  describe('useReservoirCollectionValuation', () => {
     it('should fetch collection valuation with collection address', async () => {
       const fakeData = {
         'collections': [
@@ -25,8 +25,8 @@ describe('valuations', () => {
         ],
       }
       getRequestStub = async () => fakeData
-      const { useReservoir } = await esmock('./getCollectionValuation', { '../utils/getRequest': getRequestStub })
-      const valuation = await useReservoir({ collectionAddress: 'test', apiBaseUrl: 'test', apiKey: 'test' })
+      const { useReservoirCollectionValuation } = await esmock('./getCollectionValuation', { '../utils/getRequest': getRequestStub })
+      const valuation = await useReservoirCollectionValuation({ collectionAddress: 'test', apiBaseUrl: 'test', apiKey: 'test' })
 
       expect(valuation.value.amount).to.eql(new BigNumber(1))
       expect(valuation.value.currency).to.eql('ETH')
@@ -64,8 +64,8 @@ describe('valuations', () => {
         }
         return fakeData
       }
-      const { useReservoir } = await esmock('./getCollectionValuation', { '../utils/getRequest': getRequestStub })
-      const valuation = await useReservoir({ collectionAddress: 'test', apiBaseUrl: 'test', apiKey: 'test', nftId: 'test' })
+      const { useReservoirCollectionValuation } = await esmock('./getCollectionValuation', { '../utils/getRequest': getRequestStub })
+      const valuation = await useReservoirCollectionValuation({ collectionAddress: 'test', apiBaseUrl: 'test', apiKey: 'test', nftId: 'test' })
 
       expect(valuation.value.amount).to.eql(new BigNumber(10.4))
       expect(valuation.value.currency).to.eql('ETH')
