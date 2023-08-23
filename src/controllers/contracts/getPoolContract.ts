@@ -16,29 +16,23 @@ type VersionedContract = Contract & { poolVersion?: number }
 
 export default async function getPoolContract({ blockchain, poolAddress }: Params): Promise<VersionedContract> {
   try {
-    switch (blockchain.network) {
-    case 'ethereum':
-    case 'polygon': {
-      if (ethPoolContracts[poolAddress] && (ethPoolContracts[poolAddress].poolVersion ?? 0) > 0) {
-        return ethPoolContracts[poolAddress]
-      }
-      const web3 = getEthWeb3(blockchain.networkId)
-      const contractTest: VersionedContract = new web3.eth.Contract(ERC721LendingABIV2 as any, poolAddress)
-      try {
-        await contractTest.methods._controlPlane().call()
-        contractTest.poolVersion = 2
-        ethPoolContracts[poolAddress] = contractTest
-        return contractTest
-      }
-      catch (e) {
-        const contract: VersionedContract = new web3.eth.Contract(ERC721LendingABI as any, poolAddress)
-        contract.poolVersion = 1
-        ethPoolContracts[poolAddress] = contract
-        return contract
-      }
+    if (!Blockchain.isEVMChain(blockchain)) throw fault('ERR_UNSUPPORTED_BLOCKCHAIN')
+    if (ethPoolContracts[poolAddress] && (ethPoolContracts[poolAddress].poolVersion ?? 0) > 0) {
+      return ethPoolContracts[poolAddress]
     }
-    default:
-      throw fault('ERR_UNSUPPORTED_BLOCKCHAIN')
+    const web3 = getEthWeb3(blockchain.networkId)
+    const contractTest: VersionedContract = new web3.eth.Contract(ERC721LendingABIV2 as any, poolAddress)
+    try {
+      await contractTest.methods._controlPlane().call()
+      contractTest.poolVersion = 2
+      ethPoolContracts[poolAddress] = contractTest
+      return contractTest
+    }
+    catch (e) {
+      const contract: VersionedContract = new web3.eth.Contract(ERC721LendingABI as any, poolAddress)
+      contract.poolVersion = 1
+      ethPoolContracts[poolAddress] = contract
+      return contract
     }
   }
   catch (err) {

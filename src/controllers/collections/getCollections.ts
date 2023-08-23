@@ -38,6 +38,7 @@ export function useDb({
     ethereum: Blockchain.Ethereum.Network.MAIN,
     solana: Blockchain.Solana.Network.MAINNET,
     polygon: Blockchain.Polygon.Network.MAIN,
+    arbitrum: Blockchain.Arbitrum.Network.MAINNET,
   },
   collectionAddresses,
   collectionNames,

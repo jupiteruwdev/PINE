@@ -11,16 +11,10 @@ type Params = {
 
 export default function getContract({ blockchain, address, abi }: Params): Contract {
   try {
-    switch (blockchain.network) {
-    case 'ethereum':
-    case 'polygon': {
-      const web3 = getEthWeb3(blockchain.networkId)
-      const contract: Contract = new web3.eth.Contract(abi as any, address)
-      return contract
-    }
-    default:
-      throw fault('ERR_UNSUPPORTED_BLOCKCHAIN')
-    }
+    if (!Blockchain.isEVMChain(blockchain)) throw fault('ERR_UNSUPPORTED_BLOCKCHAIN')
+    const web3 = getEthWeb3(blockchain.networkId)
+    const contract: Contract = new web3.eth.Contract(abi as any, address)
+    return contract
   }
   catch (err) {
     throw fault('ERR_GET_POOL_CONTRACT', undefined, err)

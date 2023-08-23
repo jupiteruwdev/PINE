@@ -27,7 +27,7 @@ type AlchemyParams = Params & {
 
 export default async function getEthNFTsByOwner({ blockchain, ownerAddress, populateMetadata, collectionAddress }: Params): Promise<NFT[]> {
   try {
-    if (blockchain.network !== 'ethereum' && blockchain.network !== 'polygon') rethrow(`Unsupported blockchain <${JSON.stringify(blockchain)}>`)
+    if (!Blockchain.isEVMChain(blockchain)) rethrow(`Unsupported blockchain <${JSON.stringify(blockchain)}>`)
 
     logger.info(`Fetching Ethereum NFTs by owner <${ownerAddress}> on network <${blockchain.networkId}>...`)
 
@@ -61,7 +61,7 @@ export function useAlchemy({ blockchain, ownerAddress, populateMetadata, collect
     try {
       logger.info(`...using Alchemy to look up NFTs for owner <${ownerAddress}>`)
 
-      if (blockchain.network !== 'ethereum' && blockchain.network !== 'polygon') rethrow(`Unsupported blockchain <${JSON.stringify(blockchain)}>`)
+      if (!Blockchain.isEVMChain(blockchain)) rethrow(`Unsupported blockchain <${JSON.stringify(blockchain)}>`)
 
       const apiMainUrl = _.get(appConf.alchemyAPIUrl, blockchain.networkId) ?? rethrow(`Missing Alchemy API URL for blockchain ${JSON.stringify(blockchain)}`)
       const res = []
@@ -160,7 +160,7 @@ export function useMoralis({ blockchain, ownerAddress, populateMetadata }: Param
   return async () => {
     try {
       logger.info(`...using Moralis to look up NFTs for owner <${ownerAddress}>`)
-      if (blockchain.network !== 'ethereum' && blockchain.network !== 'polygon') throw fault('ERR_UNSUPPORTED_BLOCKCHAIN')
+      if (!Blockchain.isEVMChain(blockchain)) throw fault('ERR_UNSUPPORTED_BLOCKCHAIN')
 
       const apiKey = appConf.moralisAPIKey ?? rethrow('Missing Moralis API key')
       const res = []

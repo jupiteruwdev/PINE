@@ -34,13 +34,8 @@ type Params = {
  */
 export default async function getNFTsByOwner({ blockchain, ownerAddress, populateMetadata = false, collectionAddress }: Params): Promise<NFT[]> {
   try {
-    switch (blockchain.network) {
-    case 'ethereum':
-    case 'polygon':
-      return getEthNFTsByOwner({ blockchain, ownerAddress, populateMetadata, collectionAddress })
-    default:
-      throw fault('ERR_UNSUPPORTED_BLOCKCHAIN')
-    }
+    if (!Blockchain.isEVMChain(blockchain)) throw fault('ERR_UNSUPPORTED_BLOCKCHAIN')
+    return getEthNFTsByOwner({ blockchain, ownerAddress, populateMetadata, collectionAddress })
   }
   catch (err) {
     throw fault('ERR_GET_NFTS_BY_OWNER', undefined, err)

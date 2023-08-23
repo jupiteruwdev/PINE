@@ -68,7 +68,7 @@ export function useAlchemy({ blockchain, collectionAddress, nftId }: Omit<Params
     try {
       logger.info(`...using Alchemy to look up metadata for NFT <${collectionAddress}/${nftId}}>`)
 
-      if (blockchain?.network !== 'ethereum' && blockchain?.network !== 'polygon') rethrow(`Unsupported blockchain <${JSON.stringify(blockchain)}>`)
+      if (!blockchain || !Blockchain.isEVMChain(blockchain)) rethrow(`Unsupported blockchain <${JSON.stringify(blockchain)}>`)
 
       const apiMainUrl = _.get(appConf.alchemyAPIUrl, blockchain.networkId) ?? rethrow(`Missing Alchemy API URL for blockchain <${JSON.stringify(blockchain)}>`)
 
@@ -107,7 +107,7 @@ export function useContract({ blockchain, collectionAddress, nftId }: Omit<Param
     try {
       logger.info(`...using contract to look up metadata for NFT <${collectionAddress}/${nftId}}>`)
 
-      if (blockchain?.network !== 'ethereum' && blockchain?.network !== 'polygon') rethrow(`Unsupported blockchain <${JSON.stringify(blockchain)}>`)
+      if (!blockchain || !Blockchain.isEVMChain(blockchain)) rethrow(`Unsupported blockchain <${JSON.stringify(blockchain)}>`)
 
       const web3 = getEthWeb3(blockchain.networkId)
       const contract = new web3.eth.Contract(ERC721EnumerableABI as any, collectionAddress)
