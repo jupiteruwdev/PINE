@@ -25,7 +25,7 @@ describe('valuations', () => {
         ],
       }
       getRequestStub = async () => fakeData
-      const { useReservoirCollectionValuation } = await esmock('./useReserovirAPI', { '../utils/getRequest': getRequestStub })
+      const { useReservoirCollectionValuation } = await esmock('./useReservoirAPI', { '../utils/getRequest': getRequestStub })
       const valuation = await useReservoirCollectionValuation({ collectionAddress: 'test', apiBaseUrl: 'test', apiKey: 'test' })
 
       expect(valuation.value.amount).to.eql(new BigNumber(1))
@@ -64,7 +64,7 @@ describe('valuations', () => {
         }
         return fakeData
       }
-      const { useReservoirCollectionValuation } = await esmock('./useReserovirAPI', { '../utils/getRequest': getRequestStub })
+      const { useReservoirCollectionValuation } = await esmock('./useReservoirAPI', { '../utils/getRequest': getRequestStub })
       const valuation = await useReservoirCollectionValuation({ collectionAddress: 'test', apiBaseUrl: 'test', apiKey: 'test', nftId: 'test' })
 
       expect(valuation.value.amount).to.eql(new BigNumber(10.4))
