@@ -31,9 +31,11 @@ describe('valuations', () => {
         '../../app.conf': {
           reservoirAPIKey: {
             [Blockchain.Ethereum().networkId]: '',
+            [Blockchain.Polygon().networkId]: '',
           },
           reservoirAPIBaseUrl: {
             [Blockchain.Ethereum().networkId]: '',
+            [Blockchain.Polygon().networkId]: '',
           },
         },
       })
@@ -80,9 +82,11 @@ describe('valuations', () => {
         '../../app.conf': {
           reservoirAPIKey: {
             [Blockchain.Ethereum().networkId]: '',
+            [Blockchain.Polygon().networkId]: '',
           },
           reservoirAPIBaseUrl: {
             [Blockchain.Ethereum().networkId]: '',
+            [Blockchain.Polygon().networkId]: '',
           },
         },
       })
@@ -112,9 +116,11 @@ describe('valuations', () => {
         '../../app.conf': {
           reservoirAPIKey: {
             [Blockchain.Ethereum().networkId]: '',
+            [Blockchain.Polygon().networkId]: '',
           },
           reservoirAPIBaseUrl: {
             [Blockchain.Ethereum().networkId]: '',
+            [Blockchain.Polygon().networkId]: '',
           },
         },
       })
