@@ -26,7 +26,17 @@ describe('valuations', () => {
         ],
       }
       getRequestStub = async () => fakeData
-      const { useReservoirCollectionValuation } = await esmock('./useReservoirAPI', { '../utils/getRequest': getRequestStub })
+      const { useReservoirCollectionValuation } = await esmock('./useReservoirAPI', {
+        '../utils/getRequest': getRequestStub,
+        '../../app.conf': {
+          reservoirAPIKey: {
+            [Blockchain.Ethereum().networkId]: '',
+          },
+          reservoirAPIBaseUrl: {
+            [Blockchain.Ethereum().networkId]: '',
+          },
+        },
+      })
       const valuation = await useReservoirCollectionValuation({ collectionAddress: 'test', blockchain: Blockchain.Ethereum() })
 
       expect(valuation.value.amount).to.eql(new BigNumber(1))
@@ -65,7 +75,17 @@ describe('valuations', () => {
         }
         return fakeData
       }
-      const { useReservoirCollectionValuation } = await esmock('./useReservoirAPI', { '../utils/getRequest': getRequestStub })
+      const { useReservoirCollectionValuation } = await esmock('./useReservoirAPI', {
+        '../utils/getRequest': getRequestStub,
+        '../../app.conf': {
+          reservoirAPIKey: {
+            [Blockchain.Ethereum().networkId]: '',
+          },
+          reservoirAPIBaseUrl: {
+            [Blockchain.Ethereum().networkId]: '',
+          },
+        },
+      })
       const valuation = await useReservoirCollectionValuation({ collectionAddress: 'test', blockchain: Blockchain.Ethereum() })
 
       expect(valuation.value.amount).to.eql(new BigNumber(10.4))
