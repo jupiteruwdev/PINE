@@ -13,8 +13,8 @@ type UseReservoirParams = {
 
 export async function useReservoirByTokenDetails({ collectionAddress, nftId, blockchain }: UseReservoirParams) {
   try {
-    const apiKey = _.get(appConf.reservoirAPIKey, blockchain.networkId) ?? rethrow('Missing Reservoir API key')
-    const apiBaseUrl = _.get(appConf.reservoirAPIBaseUrl, blockchain.networkId) ?? rethrow('Missing Reservoir Base Url')
+    const apiKey = _.get(appConf.reservoirAPIKey, blockchain.networkId)
+    const apiBaseUrl = _.get(appConf.reservoirAPIBaseUrl, blockchain.networkId)
 
     const res = await getRequest(`${apiBaseUrl}/tokens/v6`, {
       headers: {
@@ -49,8 +49,8 @@ export async function useReservoirByTokenDetails({ collectionAddress, nftId, blo
 
 export async function useReservoirCollectionValuation({ collectionAddress, nftId, blockchain }: UseReservoirParams): Promise<Valuation> {
   try {
-    const apiKey = _.get(appConf.reservoirAPIKey, blockchain.networkId) ?? rethrow('Missing Reservoir API key')
-    const apiBaseUrl = _.get(appConf.reservoirAPIBaseUrl, blockchain.networkId) ?? rethrow('Missing Reservoir Base Url')
+    const apiKey = _.get(appConf.reservoirAPIKey, blockchain.networkId)
+    const apiBaseUrl = _.get(appConf.reservoirAPIBaseUrl, blockchain.networkId)
     let collectionInfo
 
     if (nftId) {

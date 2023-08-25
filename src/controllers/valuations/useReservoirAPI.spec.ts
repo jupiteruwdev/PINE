@@ -91,5 +91,39 @@ describe('valuations', () => {
       expect(valuation.value.amount).to.eql(new BigNumber(10.4))
       expect(valuation.value.currency).to.eql('ETH')
     })
+
+    it('should revert when reservoir returns wrong data', async () => {
+      const fakeData = {
+        'collections': [
+          {
+            'floorAsk': {
+              'price': {
+                'amount': {
+                  'native': null,
+                },
+              },
+            },
+          },
+        ],
+      }
+      getRequestStub = async () => fakeData
+      const { useReservoirCollectionValuation } = await esmock('./useReservoirAPI', {
+        '../utils/getRequest': getRequestStub,
+        '../../app.conf': {
+          reservoirAPIKey: {
+            [Blockchain.Ethereum().networkId]: '',
+          },
+          reservoirAPIBaseUrl: {
+            [Blockchain.Ethereum().networkId]: '',
+          },
+        },
+      })
+      try {
+        await useReservoirCollectionValuation({ collectionAddress: 'test', blockchain: Blockchain.Ethereum() })
+      }
+      catch (err: any) {
+        expect(err.message).to.equal('ERR_USE_RESERVOIR')
+      }
+    })
   })
 })

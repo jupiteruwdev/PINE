@@ -4,6 +4,7 @@ import _ from 'lodash'
 import path from 'path'
 import { fileURLToPath } from 'url'
 import { Blockchain } from './entities'
+import rethrow from './utils/rethrow'
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
@@ -46,8 +47,8 @@ export default {
     [Blockchain.Polygon.Network.MAIN]: 'https://api-polygon.reservoir.tools',
   },
   reservoirAPIKey: {
-    [Blockchain.Ethereum.Network.MAIN]: process.env.RESERVOIR_MAINNET_API_KEY,
-    [Blockchain.Polygon.Network.MAIN]: process.env.RESERVOIR_POLYGON_API_KEY,
+    [Blockchain.Ethereum.Network.MAIN]: process.env.RESERVOIR_MAINNET_API_KEY ?? rethrow('Missing Reservoir API key'),
+    [Blockchain.Polygon.Network.MAIN]: process.env.RESERVOIR_POLYGON_API_KEY ?? rethrow('Missing Reservoir Base Url'),
   },
   alchemyAPIUrl: {
     [Blockchain.Ethereum.Network.MAIN]: `https://eth-mainnet.g.alchemy.com/v2/${process.env.ALCHEMY_API_KEY_MAINNET}`,
