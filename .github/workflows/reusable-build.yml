@@ -140,6 +140,8 @@ jobs:
         TESTS_WALLET_ADDRESS: ${{ secrets.TESTS_WALLET_ADDRESS }}
         TESTS_WHALE_WALLET_ADDRESSES: ${{ secrets.TESTS_WHALE_WALLET_ADDRESSES }}
         TESTS_WALLET_PRIVATE_KEY: ${{ secrets.TESTS_WALLET_PRIVATE_KEY }}
+        RESERVOIR_MAINNET_API_KEY: ${{ secrets.RESERVOIR_MAINNET_API_KEY }}
+        RESERVOIR_POLYGON_API_KEY: ${{ secrets.RESERVOIR_POLYGON_API_KEY }}
     
     - name: Test Report
       uses: dorny/test-reporter@v1.6.0

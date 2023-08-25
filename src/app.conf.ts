@@ -47,8 +47,8 @@ export default {
     [Blockchain.Polygon.Network.MAIN]: 'https://api-polygon.reservoir.tools',
   },
   reservoirAPIKey: {
-    [Blockchain.Ethereum.Network.MAIN]: process.env.RESERVOIR_MAINNET_API_KEY ?? rethrow('Missing Reservoir API key'),
-    [Blockchain.Polygon.Network.MAIN]: process.env.RESERVOIR_POLYGON_API_KEY ?? rethrow('Missing Reservoir Base Url'),
+    [Blockchain.Ethereum.Network.MAIN]: process.env.RESERVOIR_MAINNET_API_KEY ?? rethrow('Missing Reservoir API key for ethereum'),
+    [Blockchain.Polygon.Network.MAIN]: process.env.RESERVOIR_POLYGON_API_KEY ?? rethrow('Missing Reservoir API key for polygon'),
   },
   alchemyAPIUrl: {
     [Blockchain.Ethereum.Network.MAIN]: `https://eth-mainnet.g.alchemy.com/v2/${process.env.ALCHEMY_API_KEY_MAINNET}`,

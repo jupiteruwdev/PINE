@@ -28,16 +28,6 @@ describe('valuations', () => {
       getRequestStub = async () => fakeData
       const { useReservoirCollectionValuation } = await esmock('./useReservoirAPI', {
         '../utils/getRequest': getRequestStub,
-        '../../app.conf': {
-          reservoirAPIKey: {
-            [Blockchain.Ethereum().networkId]: '',
-            [Blockchain.Polygon().networkId]: '',
-          },
-          reservoirAPIBaseUrl: {
-            [Blockchain.Ethereum().networkId]: '',
-            [Blockchain.Polygon().networkId]: '',
-          },
-        },
       })
       const valuation = await useReservoirCollectionValuation({ collectionAddress: 'test', blockchain: Blockchain.Ethereum() })
 
@@ -79,16 +69,6 @@ describe('valuations', () => {
       }
       const { useReservoirCollectionValuation } = await esmock('./useReservoirAPI', {
         '../utils/getRequest': getRequestStub,
-        '../../app.conf': {
-          reservoirAPIKey: {
-            [Blockchain.Ethereum().networkId]: '',
-            [Blockchain.Polygon().networkId]: '',
-          },
-          reservoirAPIBaseUrl: {
-            [Blockchain.Ethereum().networkId]: '',
-            [Blockchain.Polygon().networkId]: '',
-          },
-        },
       })
       const valuation = await useReservoirCollectionValuation({ collectionAddress: 'test', blockchain: Blockchain.Ethereum() })
 
@@ -113,16 +93,6 @@ describe('valuations', () => {
       getRequestStub = async () => fakeData
       const { useReservoirCollectionValuation } = await esmock('./useReservoirAPI', {
         '../utils/getRequest': getRequestStub,
-        '../../app.conf': {
-          reservoirAPIKey: {
-            [Blockchain.Ethereum().networkId]: '',
-            [Blockchain.Polygon().networkId]: '',
-          },
-          reservoirAPIBaseUrl: {
-            [Blockchain.Ethereum().networkId]: '',
-            [Blockchain.Polygon().networkId]: '',
-          },
-        },
       })
       try {
         await useReservoirCollectionValuation({ collectionAddress: 'test', blockchain: Blockchain.Ethereum() })
