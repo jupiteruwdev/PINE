@@ -257,6 +257,11 @@ export default async function syncPools() {
     await patchLoanOptions(Blockchain.Polygon.Network.MAIN)
     await updatePoolEthLimmits(Blockchain.Polygon.Network.MAIN)
     await updatePoolValueLocked(Blockchain.Polygon.Network.MAIN)
+
+    await retireInvalidPools(Blockchain.Arbitrum.Network.MAINNET)
+    await patchLoanOptions(Blockchain.Arbitrum.Network.MAINNET)
+    await updatePoolEthLimmits(Blockchain.Arbitrum.Network.MAINNET)
+    await updatePoolValueLocked(Blockchain.Arbitrum.Network.MAINNET)
   }
   catch (err) {
     logger.error('JOB_SYNC_POOLS Handling runtime error... ERR:', err)

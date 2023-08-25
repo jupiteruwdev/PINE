@@ -24,6 +24,7 @@ type GetUsageValuesParams = {
 const tokenUSDPrice: Record<string, Value | null> = {
   [Blockchain.Ethereum.Network.MAIN]: null,
   [Blockchain.Polygon.Network.MAIN]: null,
+  [Blockchain.Arbitrum.Network.MAINNET]: null,
 }
 
 const blockedCollections = [

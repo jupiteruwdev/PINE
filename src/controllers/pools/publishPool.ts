@@ -85,33 +85,29 @@ export default async function publishPool({
   logger.info(`Publishing pools for address <${poolAddress}>`)
   let pool: Pool
   try {
-    switch (blockchain.network) {
-    case 'ethereum':
-    case 'polygon':
-      switch (blockchain.networkId) {
-      case Blockchain.Ethereum.Network.MAIN:
-      case Blockchain.Polygon.Network.MAIN:
-        // await authenticatePoolPublisher({ poolAddress, payload, signature, networkId: blockchain.networkId })
-        const { pool: poolMainnet } = await getOnChainPoolByAddress({ poolAddress }, { networkId: blockchain.networkId })
-        pool = await savePool({
-          poolData: poolMainnet,
-          blockchain,
-          ethLimit,
-        })
-        break
-      case Blockchain.Ethereum.Network.GOERLI:
-      case Blockchain.Polygon.Network.MUMBAI:
-        await authenticatePoolPublisher({ poolAddress, payload, signature, networkId: blockchain.networkId })
-        const { pool: poolRinkeby } = await getOnChainPoolByAddress({ poolAddress }, { networkId: blockchain.networkId })
-        pool = await savePool({
-          poolData: poolRinkeby,
-          blockchain,
-          ethLimit,
-        })
-        break
-      default:
-        throw fault('ERR_UNSUPPORTED_BLOCKCHAIN')
-      }
+    if (!Blockchain.isEVMChain(blockchain)) throw fault('ERR_UNSUPPORTED_BLOCKCHAIN')
+
+    switch (blockchain.networkId) {
+    case Blockchain.Ethereum.Network.MAIN:
+    case Blockchain.Polygon.Network.MAIN:
+    case Blockchain.Arbitrum.Network.MAINNET:
+      // await authenticatePoolPublisher({ poolAddress, payload, signature, networkId: blockchain.networkId })
+      const { pool: poolMainnet } = await getOnChainPoolByAddress({ poolAddress }, { networkId: blockchain.networkId })
+      pool = await savePool({
+        poolData: poolMainnet,
+        blockchain,
+        ethLimit,
+      })
+      break
+    case Blockchain.Ethereum.Network.GOERLI:
+    case Blockchain.Polygon.Network.MUMBAI:
+      await authenticatePoolPublisher({ poolAddress, payload, signature, networkId: blockchain.networkId })
+      const { pool: poolRinkeby } = await getOnChainPoolByAddress({ poolAddress }, { networkId: blockchain.networkId })
+      pool = await savePool({
+        poolData: poolRinkeby,
+        blockchain,
+        ethLimit,
+      })
       break
     default:
       throw fault('ERR_UNSUPPORTED_BLOCKCHAIN')

@@ -86,6 +86,7 @@ export default async function getPools({
     ethereum: Blockchain.Ethereum.Network.MAIN,
     solana: Blockchain.Solana.Network.MAINNET,
     polygon: Blockchain.Polygon.Network.MAIN,
+    arbitrum: Blockchain.Arbitrum.Network.MAINNET,
   },
   lenderAddress,
   address,
@@ -95,42 +96,40 @@ export default async function getPools({
     logger.info(`Fetching unpublished pools by lender address <${lenderAddress}>, collection address <${collectionAddress}> and address <${address}> on blockchain ${JSON.stringify(blockchainFilter)}`)
     let poolsData: Pool[] = []
 
-    if (blockchainFilter.ethereum !== undefined || blockchainFilter.polygon !== undefined) {
-      const blockchain = Blockchain.parseBlockchain(blockchainFilter)
-      const publishedPools = await searchPublishedPools({
-        blockchainFilter,
-        lenderAddress,
-        address,
-        collectionAddress,
-        minorPools: true,
-        convertToUSD: false,
-      })
+    const blockchain = Blockchain.parseBlockchain(blockchainFilter)
 
-      const excludeAddresses = publishedPools.map(pool => pool.address.toLowerCase())
+    if (!Blockchain.isEVMChain(blockchain)) throw fault('ERR_UNSUPPORTED_BLOCKCHAIN')
+    const publishedPools = await searchPublishedPools({
+      blockchainFilter,
+      lenderAddress,
+      address,
+      collectionAddress,
+      minorPools: true,
+      convertToUSD: false,
+    })
 
-      switch (blockchain.networkId) {
-      case Blockchain.Ethereum.Network.MAIN:
-      case Blockchain.Polygon.Network.MAIN:
-        const { pools: poolsMainnet } = await getOnChainPools({ lenderAddress, address, excludeAddresses, collectionAddress }, { networkId: blockchain.networkId })
+    const excludeAddresses = publishedPools.map(pool => pool.address.toLowerCase())
 
-        const loanOptionsDict = await getOnChainLoanOptions({ addresses: poolsMainnet.map((p: any) => p.id), networkId: blockchain.networkId })
+    switch (blockchain.networkId) {
+    case Blockchain.Ethereum.Network.MAIN:
+    case Blockchain.Polygon.Network.MAIN:
+    case Blockchain.Arbitrum.Network.MAINNET:
+      const { pools: poolsMainnet } = await getOnChainPools({ lenderAddress, address, excludeAddresses, collectionAddress }, { networkId: blockchain.networkId })
 
-        poolsData = [
-          ...publishedPools,
-          ...await mapPool({ blockchain, pools: poolsMainnet, loanOptionsDict }),
-        ]
-        break
-      case Blockchain.Ethereum.Network.GOERLI:
-      case Blockchain.Polygon.Network.MUMBAI:
-        const { pools: poolsRinkeby } = await getOnChainPools({ lenderAddress, address, excludeAddresses, collectionAddress }, { networkId: blockchain.networkId })
-        poolsData = [
-          ...publishedPools,
-          ...await mapPool({ blockchain, pools: poolsRinkeby, loanOptionsDict: {} }),
-        ]
-      }
-    }
-    else {
-      throw fault('ERR_UNSUPPORTED_BLOCKCHAIN')
+      const loanOptionsDict = await getOnChainLoanOptions({ addresses: poolsMainnet.map((p: any) => p.id), networkId: blockchain.networkId })
+
+      poolsData = [
+        ...publishedPools,
+        ...await mapPool({ blockchain, pools: poolsMainnet, loanOptionsDict }),
+      ]
+      break
+    case Blockchain.Ethereum.Network.GOERLI:
+    case Blockchain.Polygon.Network.MUMBAI:
+      const { pools: poolsRinkeby } = await getOnChainPools({ lenderAddress, address, excludeAddresses, collectionAddress }, { networkId: blockchain.networkId })
+      poolsData = [
+        ...publishedPools,
+        ...await mapPool({ blockchain, pools: poolsRinkeby, loanOptionsDict: {} }),
+      ]
     }
 
     return poolsData

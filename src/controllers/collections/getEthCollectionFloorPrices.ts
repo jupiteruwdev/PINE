@@ -47,13 +47,14 @@ function useAlchemy({ blockchain, collectionAddresses, dbCollections }: UseAlche
     try {
       logger.info(`...using Alchemy to look up floor prices for collections <${collectionAddresses}>`)
 
-      if (blockchain.network !== 'ethereum' && blockchain.network !== 'polygon') rethrow(`Unsupported blockchain <${JSON.stringify(blockchain)}>`)
+      if (!Blockchain.isEVMChain(blockchain)) rethrow(`Unsupported blockchain <${JSON.stringify(blockchain)}>`)
 
       const apiMainUrl = _.get(appConf.alchemyNFTAPIUrl, blockchain.networkId) ?? rethrow(`Missing alchemy url for blockchain ${JSON.stringify(blockchain)}`)
 
       switch (blockchain.networkId) {
       case Blockchain.Ethereum.Network.MAIN:
       case Blockchain.Polygon.Network.MAIN:
+      case Blockchain.Arbitrum.Network.MAINNET:
         const res: any[] = await Promise.all(_.chunk(collectionAddresses, 100).map(addresses => new Promise((resolve, reject) => {
           postRequest(`${apiMainUrl}/getContractMetadataBatch`, {
             contractAddresses: addresses,

@@ -14,19 +14,13 @@ export default async function verifyPool({ blockchain, address, collectionAddres
   logger.info(`Verifying pool with address <${address}> on blockchain <${JSON.stringify(blockchain)}>`)
 
   try {
-    switch (blockchain.network) {
-    case 'ethereum':
-    case 'polygon':
-      const web3 = getEthWeb3(blockchain.networkId)
-      const contract = new web3.eth.Contract(ERC721LendingAPI as any, address)
-      const onChainCollectionAddress = await contract.methods._supportedCollection().call()
+    if (!Blockchain.isEVMChain(blockchain)) throw fault('ERR_UNSUPPORTED_BLOCKCHAIN')
+    const web3 = getEthWeb3(blockchain.networkId)
+    const contract = new web3.eth.Contract(ERC721LendingAPI as any, address)
+    const onChainCollectionAddress = await contract.methods._supportedCollection().call()
 
-      if (onChainCollectionAddress.toLowerCase() !== collectionAddress.toLowerCase()) {
-        throw fault('ERR_VERIFING_POOL', undefined, 'ZOMBIE_POOL')
-      }
-      break
-    default:
-      throw fault('ERR_UNSUPPORTED_BLOCKCHAIN')
+    if (onChainCollectionAddress.toLowerCase() !== collectionAddress.toLowerCase()) {
+      throw fault('ERR_VERIFING_POOL', undefined, 'ZOMBIE_POOL')
     }
 
     logger.info(`Verifying pool with address <${address}> on blockchain <${JSON.stringify(blockchain)}>... OK`)
