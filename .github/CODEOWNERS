@@ -1,12 +1,1 @@
-* @pinedefi/qa
-
-# Dirs without owner
-/.github/
-/ops/
-/.dockerignore
-/.gitignore
-/.gitmodules
-docker-compose*.yml
-/skaffold.yml
-/package*.json
-/.vscode/
+* @pinedefi/dev

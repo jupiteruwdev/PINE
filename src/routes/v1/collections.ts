@@ -1,10 +1,10 @@
 import { Router } from 'express'
 import _ from 'lodash'
-import { getEthCollectionFloorPrices, getEthNFTValuation, getNFTOTD, saveCollection, searchCollections } from '../../controllers'
-import { Blockchain, Collection, serializeEntityArray, Value } from '../../entities'
+import appConf from '../../app.conf'
+import { getCollectionValuation, getEthCollectionFloorPrices, getNFTOTD, saveCollection, searchCollections } from '../../controllers'
+import { Blockchain, Collection, Value, serializeEntityArray } from '../../entities'
 import fault from '../../utils/fault'
 import { getBlockchain, getBlockchainFilter, getString } from '../utils/query'
-import appConf from '../../app.conf'
 
 const router = Router()
 
@@ -82,7 +82,7 @@ router.get('/valuation', async (req, res, next) => {
     const collectionAddress = getString(req.query, 'collectionAddress')
     const nftId = getString(req.query, 'nftId')
 
-    const valuation = await getEthNFTValuation({ blockchain, collectionAddress, nftId })
+    const valuation = await getCollectionValuation({ blockchain, collectionAddress, nftId })
 
     res.status(200).json({ valuation })
   }

@@ -1,6 +1,6 @@
 import _ from 'lodash'
 import appConf from '../app.conf'
-import { getEthNFTValuation } from '../controllers'
+import { getCollectionValuation } from '../controllers/valuations'
 import { NFTCollectionModel, initDb } from '../database'
 import { Blockchain, Valuation } from '../entities'
 import fault from '../utils/fault'
@@ -29,7 +29,7 @@ export default async function syncCollectionValuation() {
 
     for (const collection of collections) {
       if (collection.networkType === 'ethereum' || collection.networkType === 'polygon') {
-        const nftId = collection.matcher ? _.get(appConf.nftIds, collection.address ?? '', 0) : 0
+        const nftId: string | number = collection.matcher ? _.get(appConf.nftIds, collection.address ?? '', 0) : 0
 
         logger.info(`JOB_SYNC_COLLECTION_VALUATION Updating valuation for collection ${collection.address} and nftId ${nftId}`)
 
@@ -42,7 +42,7 @@ export default async function syncCollectionValuation() {
 
             const oldValuation = JSON.parse(JSON.stringify(collection.toObject().valuation?.value || {}))
 
-            const valuation = await getEthNFTValuation({ blockchain, collectionAddress: collection.address, nftId: nftId.toString(), vendorIds: collection.vendorIds })
+            const valuation = await getCollectionValuation({ blockchain, collectionAddress: collection.address, nftId: nftId ? nftId.toString() : undefined })
             collection.valuation = {
               ...Valuation.serialize(valuation),
               lastValue: oldValuation,

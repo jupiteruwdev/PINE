@@ -6,7 +6,7 @@ import logger from '../../utils/logger'
 import { getEthNFTMetadata } from '../collaterals'
 import { getEthCollectionMetadata, verifyCollectionWithMatcher } from '../collections'
 import searchPublishedMultiplePools from '../pools/searchPublishedMultiplePools'
-import { getEthNFTValuation, signValuation } from '../valuations'
+import { getCollectionValuation, signValuation } from '../valuations'
 import getSolvSFTValuation from '../valuations/getSolvSFTValuation'
 
 type Params = {
@@ -61,7 +61,7 @@ export default async function getLoanTerms({ blockchain, collectionAddresses, nf
       }
       else if (pool.collection.valuation) resolve(pool)
       else {
-        const valuation = await getEthNFTValuation({ blockchain: blockchain as Blockchain<'ethereum'>, collectionAddress: collectionAddresses[index], nftId: nftIds[index] })
+        const valuation = await getCollectionValuation({ blockchain: blockchain as Blockchain<'ethereum'>, collectionAddress: collectionAddresses[index], nftId: nftIds[index] })
         resolve({
           ...pool,
           collection: {

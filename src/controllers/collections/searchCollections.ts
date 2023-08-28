@@ -11,8 +11,8 @@ import { NFTCollectionModel } from '../../database'
 import rethrow from '../../utils/rethrow'
 import DataSource from '../utils/DataSource'
 import getRequest from '../utils/getRequest'
+import { getCollectionValuation } from '../valuations'
 import getCollections from './getCollections'
-import getFloorPrice from './getFloorPrice'
 import getNFTSales from './getNFTSales'
 import getSpamContracts from './getSpamContracts'
 
@@ -46,7 +46,7 @@ async function aggregateCollectionResults(collections: Collection[], blockchain:
         const sales = await getNFTSales({ blockchain, contractAddress: collection.address, marketplace: convertAlchemySupportMarketplace(_.keys(collection.vendorIds)?.[0] ?? undefined) })
         let floorPrice
         try {
-          floorPrice = await getFloorPrice({ blockchain, contractAddress: collection.address })
+          floorPrice = (await getCollectionValuation({ blockchain, collectionAddress: collection.address })).value
         }
         catch (err) {
           floorPrice = Value.$ETH(0)

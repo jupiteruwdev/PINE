@@ -1,6 +1,6 @@
 import BigNumber from 'bignumber.js'
 import _ from 'lodash'
-import { getEthNFTValuation } from '../controllers'
+import { getCollectionValuation } from '../controllers'
 import getEthWeb3 from '../controllers/utils/getEthWeb3'
 import { BorrowSnapshotModel, LendingSnapshotModel, PoolModel, initDb } from '../database'
 import { Blockchain } from '../entities'
@@ -19,7 +19,7 @@ async function syncBorrowSnapshot(blockchain: Blockchain) {
 
     for (const loan of loans) {
       try {
-        const floorPrice = await getEthNFTValuation({
+        const floorPrice = await getCollectionValuation({
           blockchain,
           collectionAddress: _.get(loan, 'erc721'),
           nftId: _.get(loan, 'id').split('/')[1],
