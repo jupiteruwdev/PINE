@@ -41,6 +41,7 @@ const schema = new Schema(
     verified: Schema.Types.Boolean,
     type: Schema.Types.String,
     hidden: Schema.Types.Boolean,
+    sftMarketId: Schema.Types.String,
   },
   { timestamps: true }
 )
