@@ -1,7 +1,6 @@
 export { default as getCollections } from './getCollections'
 export { default as getEthCollectionFloorPrices } from './getEthCollectionFloorPrices'
 export { default as getEthCollectionMetadata } from './getEthCollectionMetadata'
-export { default as getFloorPrice } from './getFloorPrice'
 export { default as getMagicEdenCollectionFloorPrice } from './getMagicEdenCollectionFloorPrice'
 export { default as getNFTOTD } from './getNFTOTD'
 export { default as getNFTSales } from './getNFTSales'
