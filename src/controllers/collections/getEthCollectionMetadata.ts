@@ -46,6 +46,7 @@ export default async function getEthCollectionMetadata({
       )
       break
     case 'polygon':
+    case 'arbitrum':
       metadata = await DataSource.fetch(
         useDb({ blockchain, ...params }),
         useAlchemy({ blockchain, ...params }),
@@ -76,7 +77,7 @@ export function useDb({ blockchain, collectionAddress, matchSubcollectionBy }: P
     try {
       logger.info('...using db to look up metadata for collection')
 
-      if (blockchain?.network !== 'ethereum' && blockchain.network !== 'polygon') rethrow(`Unsupported blockchain <${JSON.stringify(blockchain)}>`)
+      if (!Blockchain.isEVMChain(blockchain)) rethrow(`Unsupported blockchain <${JSON.stringify(blockchain)}>`)
 
       let docs
 
@@ -257,7 +258,7 @@ export function useAlchemy({ blockchain, collectionAddress }: Params): DataSourc
       logger.info(`...using Alchemy to look up metadata for collection <${collectionAddress}>`)
 
       if (collectionAddress === undefined) rethrow('Collection address must be provided')
-      if (blockchain?.network !== 'ethereum' && blockchain?.network !== 'polygon') rethrow(`Unsupported blockchain <${JSON.stringify(blockchain)}>`)
+      if (!Blockchain.isEVMChain(blockchain)) rethrow(`Unsupported blockchain <${JSON.stringify(blockchain)}>`)
 
       const apiMainUrl = _.get(appConf.alchemyAPIUrl, blockchain.networkId) ?? rethrow(`Missing Alchemy API URL for blockchain <${JSON.stringify(blockchain)}>`)
 
@@ -287,7 +288,7 @@ export function useMoralis({ blockchain, collectionAddress }: Params): DataSourc
       logger.info(`...using Moralis to look up metadata for collection <${collectionAddress}>`)
 
       if (collectionAddress === undefined) rethrow('Collection address must be provided')
-      if (blockchain?.network !== 'ethereum' && blockchain?.network !== 'polygon') rethrow(`Unsupported blockchain <${JSON.stringify(blockchain)}>`)
+      if (!Blockchain.isEVMChain(blockchain)) rethrow(`Unsupported blockchain <${JSON.stringify(blockchain)}>`)
 
       const apiKey = appConf.moralisAPIKey ?? rethrow('Missing Moralis API key')
 

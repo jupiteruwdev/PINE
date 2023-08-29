@@ -20,7 +20,7 @@ export default async function verifyCollectionWithMatcher({ blockchain, collecti
   try {
     logger.info('...using db to look up metadata for collection')
 
-    if (blockchain?.network !== 'ethereum' && blockchain.network !== 'polygon') rethrow(`Unsupported blockchain <${JSON.stringify(blockchain)}>`)
+    if (!Blockchain.isEVMChain(blockchain)) rethrow(`Unsupported blockchain <${JSON.stringify(blockchain)}>`)
 
     if (collectionAddresses === undefined) rethrow('Parameter `collectionAddresses` is required unless pool address is provided')
 

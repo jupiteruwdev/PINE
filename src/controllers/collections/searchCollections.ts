@@ -106,15 +106,16 @@ export default async function searchCollections({ query, blockchain }: Params): 
 
       return aggregateCollectionResults(collections, blockchain)
     case Blockchain.Polygon.Network.MAIN:
-      const collectionsPolygon = await DataSource.fetch(
+    case Blockchain.Arbitrum.Network.MAINNET:
+      const collectionsEVM = await DataSource.fetch(
         useAlchemyContract({ query, blockchain }),
         useAlchemy({ query, blockchain }),
         useGemXYZ({ query, blockchain }),
       )
 
-      const polygonContracts = await getCollections({ blockchainFilter: Blockchain.parseFilter(blockchain) })
+      const evmContracts = await getCollections({ blockchainFilter: Blockchain.parseFilter(blockchain) })
 
-      return aggregateCollectionResults(collectionsPolygon.filter(collection => polygonContracts.find(con => con.address.toLowerCase() === collection.address.toLowerCase())), blockchain)
+      return aggregateCollectionResults(collectionsEVM.filter(collection => evmContracts.find(con => con.address.toLowerCase() === collection.address.toLowerCase())), blockchain)
     case Blockchain.Ethereum.Network.GOERLI:
     case Blockchain.Polygon.Network.MUMBAI:
       const collectionsGoerli = await DataSource.fetch(

@@ -16,7 +16,7 @@ export default async function populateEthCollectionMetadataForNFTs({
   nfts,
 }: Params): Promise<NFT[]> {
   try {
-    if (blockchain.network !== 'ethereum' && blockchain.network !== 'polygon') rethrow(`Unsupported blockchain <${JSON.stringify(blockchain)}>`)
+    if (!Blockchain.isEVMChain(blockchain)) rethrow(`Unsupported blockchain <${JSON.stringify(blockchain)}>`)
 
     const uniqAddrs = _.uniq(nfts.map(t => t.collection.address.toLowerCase()))
     const addresInDb = (await getCollections({ blockchainFilter: Blockchain.parseFilter(blockchain), collectionAddresses: uniqAddrs })).map(t => t.address.toLowerCase())

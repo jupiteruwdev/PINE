@@ -10,5 +10,7 @@ export function convertToMoralisChain(networkId: string) {
     return 'polygon'
   case Blockchain.Polygon.Network.MUMBAI:
     return 'mumbai'
+  case Blockchain.Arbitrum.Network.MAINNET:
+    return 'arbitrum'
   }
 }
