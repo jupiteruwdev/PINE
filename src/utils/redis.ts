@@ -72,6 +72,21 @@ export async function setRedisCache(key: string, data: any, options?: SetOptions
   }
 }
 
+export async function deleteRedisCache(key: string) {
+  try {
+    if (!redisClient?.isOpen) {
+      await utils.initRedis()
+    }
+
+    await redisClient.del(key)
+
+    logger.info(`Delete redis cache for key ${key}... OK`)
+  }
+  catch (err) {
+    logger.error('ERR_DELETE_REDIS_CACHE', undefined, err)
+  }
+}
+
 const utils = { initRedis, getRedisCache, setRedisCache }
 
 export default utils
