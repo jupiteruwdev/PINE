@@ -55,18 +55,21 @@ export default {
     [Blockchain.Ethereum.Network.GOERLI]: `https://eth-goerli.g.alchemy.com/v2/${process.env.ALCHEMY_API_KEY_GOERLI}`,
     [Blockchain.Polygon.Network.MAIN]: `https://polygon-mainnet.g.alchemy.com/v2/${process.env.ALCHEMY_API_KEY_POLYGON_MAINNET}`,
     [Blockchain.Polygon.Network.MUMBAI]: `https://polygon-mumbai.g.alchemy.com/v2/${process.env.ALCHEMY_API_KEY_POLYGON_MUMBAI}`,
+    [Blockchain.Arbitrum.Network.MAINNET]: `https://arb-mainnet.g.alchemy.com/v2/${process.env.ALCHEMY_API_KEY_ARBITRUM_MAINNET}`,
   },
   alchemyNFTAPIUrl: {
     [Blockchain.Ethereum.Network.MAIN]: `https://eth-mainnet.g.alchemy.com/nft/v2/${process.env.ALCHEMY_API_KEY_MAINNET}`,
     [Blockchain.Ethereum.Network.GOERLI]: `https://eth-goerli.g.alchemy.com/nft/v2/${process.env.ALCHEMY_API_KEY_GOERLI}`,
     [Blockchain.Polygon.Network.MAIN]: `https://polygon-mainnet.g.alchemy.com/nft/v2/${process.env.ALCHEMY_API_KEY_POLYGON_MAINNET}`,
     [Blockchain.Polygon.Network.MUMBAI]: `https://polygon-mumbai.g.alchemy.com/nft/v2/${process.env.ALCHEMY_API_KEY_POLYGON_MUMBAI}`,
+    [Blockchain.Arbitrum.Network.MAINNET]: `https://arb-mainnet.g.alchemy.com/nft/v2/${process.env.ALCHEMY_API_KEY_ARBITRUM_MAINNET}`,
   },
   subgraphAPIUrl: {
     [Blockchain.Ethereum.Network.RINKEBY]: process.env.SUBGRAPH_API_RINKEBY_URL ?? 'https://api.thegraph.com/subgraphs/name/pinedefi/open-loans-four',
     [Blockchain.Ethereum.Network.MAIN]: process.env.SUBGRAPH_API_MAINNET_URL ?? 'https://api.thegraph.com/subgraphs/name/pinedefi/open-loans-staging',
     [Blockchain.Polygon.Network.MUMBAI]: process.env.SUBGRAPH_API_POLYGON_MUMBAI_URL,
     [Blockchain.Polygon.Network.MAIN]: process.env.SUBGRAPH_API_POLYGON_MAINNET_URL ?? 'https://api.thegraph.com/subgraphs/name/pinedefi/open-loans-polygon',
+    [Blockchain.Arbitrum.Network.MAINNET]: process.env.SUBGRAPH_API_ARBITRUM_MAINNET_URL ?? 'https://api.thegraph.com/subgraphs/name/pinedefi/arbitrum-pine',
   },
   ethRPC: {
     [Blockchain.Ethereum.Network.MAIN]: `https://eth-mainnet.g.alchemy.com/v2/${process.env.ALCHEMY_API_KEY_MAINNET}`,
@@ -74,6 +77,7 @@ export default {
     [Blockchain.Ethereum.Network.RINKEBY]: process.env.ETH_RPC_RINKEBY,
     [Blockchain.Polygon.Network.MAIN]: `https://polygon-mainnet.g.alchemy.com/v2/${process.env.ALCHEMY_API_KEY_POLYGON_MAINNET}`,
     [Blockchain.Polygon.Network.MUMBAI]: `https://polygon-mumbai.g.alchemy.com/v2/${process.env.ALCHEMY_API_KEY_POLYGON_MUMBAI}`,
+    [Blockchain.Arbitrum.Network.MAINNET]: `https://arb-mainnet.g.alchemy.com/v2/${process.env.ALCHEMY_API_KEY_ARBITRUM_MAINNET}`,
   },
   ethValuationExpiryBlocks: 64, // quote expires in 15 mins
   ethValuationSigner: process.env.VALUATION_SIGNER,
@@ -81,11 +85,13 @@ export default {
     [Blockchain.Ethereum.Network.RINKEBY]: '0x1Bf5d5051eA8025B41e69C139E5fE5d6499A9077',
     [Blockchain.Ethereum.Network.MAIN]: '0x63ca18f8cb75e28f94cf81901caf1e39657ea256',
     [Blockchain.Polygon.Network.MAIN]: '0xb93bc157771e701452f0e4521a580c4552b55abc',
+    [Blockchain.Arbitrum.Network.MAINNET]: '',
   },
   controlPlaneContractAddress: {
     [Blockchain.Ethereum.Network.RINKEBY]: '0x5E282F68a7CD593609C05AbCA32482395968d885',
     [Blockchain.Ethereum.Network.MAIN]: '0x9C2780F9e427E29Ba77EDC34C3F42e0865C3FBDF',
     [Blockchain.Polygon.Network.MAIN]: '0x85B609F4724860feAd57e16175e66CF1F51bF72D',
+    [Blockchain.Arbitrum.Network.MAINNET]: '0x46031553804e733dF8a38FaBE319bB7C888771D7',
   },
   openseaContractAddress: {
     [Blockchain.Ethereum.Network.RINKEBY]: '0xdD54D660178B28f6033a953b0E55073cFA7e3744',
@@ -108,25 +114,30 @@ export default {
     [Blockchain.Ethereum.Network.MAIN]: '0x90dFb72736481BBacc7938d2D3673590B92647AE',
     [Blockchain.Ethereum.Network.GOERLI]: '0xfce1DFFE2A382f66ebD01F39b4e20d97B8110895',
     [Blockchain.Polygon.Network.MAIN]: '0xc8A5181f1E4A83e631aa88E3e3d7b860b4A1C314',
+    [Blockchain.Arbitrum.Network.MAINNET]: '0x90dFb72736481BBacc7938d2D3673590B92647AE',
   },
   routerAddress: {
     [Blockchain.Ethereum.Network.MAIN]: '0x7a517e8bd374565615c043C32760ba4BD9982219',
     [Blockchain.Ethereum.Network.RINKEBY]: '0xFC6c6e4727DA5E1bF79aC9C96155B4cD2faC54E6',
     [Blockchain.Polygon.Network.MAIN]: '0x125488d05fe1D48A8B9053b7C1B021aEF08f1c02',
+    [Blockchain.Arbitrum.Network.MAINNET]: '0x194af05afa4ae2f8411c80056e146f6397436b58',
   },
   repayRouterAddress: {
     [Blockchain.Ethereum.Network.MAIN]: '0x2B5DC8223D0aD809607f36a1D8A3A11bf20d595e',
     [Blockchain.Ethereum.Network.RINKEBY]: '0xFC6c6e4727DA5E1bF79aC9C96155B4cD2faC54E6',
     [Blockchain.Polygon.Network.MAIN]: '0x125488d05fe1D48A8B9053b7C1B021aEF08f1c02',
+    [Blockchain.Arbitrum.Network.MAINNET]: '0x194af05afa4ae2f8411c80056e146f6397436b58',
   },
   rolloverAddress: {
     [Blockchain.Ethereum.Network.MAIN]: '0xA5835dB17E67c8D55c472Bb1B1711ccf4D91Bcd6',
     [Blockchain.Ethereum.Network.RINKEBY]: '0xC796d62fB1927a13D7E41eBd0c8eA80fdA5Ef80a',
     [Blockchain.Polygon.Network.MAIN]: '0x03542e5D86e39304FE347c779De78F3157ca3e6f',
+    [Blockchain.Arbitrum.Network.MAINNET]: '0x86db5a0feB709199AF6686c71c19cD17057Bd55E',
   },
   poolHelperAddress: {
     [Blockchain.Ethereum.Network.MAIN]: process.env.SENTRY_ENVIRONMENT !== 'prod' ? '0x979F81e74609A589623a3250147AEc3423A8483D' : '0x0aab1368f6704e8403105162690bdf6ee75305c0',
     [Blockchain.Polygon.Network.MAIN]: process.env.SENTRY_ENVIRONMENT !== 'prod' ? '0x5EAD97b1171B1062A2740a1e972BE8fdC7C23701' : '0xd8785Fa74dc7D94558c62D0ba9e6452437aC967B',
+    [Blockchain.Arbitrum.Network.MAINNET]: process.env.SENTRY_ENVIRONMENT !== 'prod' ? '0xE2d2f74FA11B9F60bc8D887e0861fb162a6DAc7f' : '0x078Cc37f3039A8bf52544Ab66e410e6D777cAdF1',
   },
   pinePieceGenesisAddress: {
     [Blockchain.Ethereum.Network.MAIN]: '0xacadb3c6290392f59f45dddacca8add2cec24366',
@@ -168,6 +179,7 @@ export default {
     [Blockchain.Ethereum.Network.MAIN]: '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2',
     [Blockchain.Ethereum.Network.GOERLI]: '0xB4FBF271143F4FBf7B91A5ded31805e42b2208d6',
     [Blockchain.Polygon.Network.MAIN]: '0x0d500B1d8E8eF31E21C99d1Db9A6444d3ADf1270',
+    [Blockchain.Arbitrum.Network.MAINNET]: '0x82af49447d8a07e3bd95bd0d56f35241523fbab1',
   },
   sentryApiDsn: process.env.SENTRY_API_DSN,
   alchemySigningKey: process.env.ALCHEMY_SIGNING_KEY ?? '',
