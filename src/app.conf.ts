@@ -178,4 +178,5 @@ export default {
     [Blockchain.Ethereum.Network.GOERLI]: '0x9e70ef3cd5565f4eb78996eb037765d759cc257b',
   },
   redisHost: process.env.REDISHOST ? `redis://${process.env.REDISHOST}:6379` : 'redis://localhost:6379',
+  redisAuthKey: process.env.REDIS_AUTH_KEY,
 }
