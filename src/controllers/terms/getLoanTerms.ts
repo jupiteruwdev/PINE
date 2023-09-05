@@ -1,4 +1,5 @@
 import BigNumber from 'bignumber.js'
+import sftABI from '../../abis/SolvSft.json' assert { type: 'json' }
 import appConf from '../../app.conf'
 import { Blockchain, Collection, LoanTerms, NFT, Pool, Value } from '../../entities'
 import fault from '../../utils/fault'
@@ -6,6 +7,7 @@ import logger from '../../utils/logger'
 import { getEthNFTMetadata } from '../collaterals'
 import { getEthCollectionMetadata, verifyCollectionWithMatcher } from '../collections'
 import searchPublishedMultiplePools from '../pools/searchPublishedMultiplePools'
+import getEthWeb3 from '../utils/getEthWeb3'
 import { getCollectionValuation, signValuation } from '../valuations'
 import getSolvSFTValuation from '../valuations/getSolvSFTValuation'
 
@@ -25,7 +27,21 @@ export default async function getLoanTerms({ blockchain, collectionAddresses, nf
     case 'polygon': {
       // verify collection is valid one with matcher
       await verifyCollectionWithMatcher({ blockchain, collectionAddresses, matchSubcollectionBy: { type: 'nftId', values: nftIds } })
-      const pools = (await searchPublishedMultiplePools({ addresses: poolAddresses, nftIds, collectionAddresses, blockchainFilter: Blockchain.parseFilter(blockchain), includeInvalidTenors: false })).filter(pool => pool.valueLocked.amount.gt(pool.utilization.amount ?? '0'))
+      let pools = (await searchPublishedMultiplePools({ addresses: poolAddresses, nftIds, collectionAddresses, blockchainFilter: Blockchain.parseFilter(blockchain), includeInvalidTenors: false })).filter(pool => pool.valueLocked.amount.gt(pool.utilization.amount ?? '0'))
+      const web3 = getEthWeb3(blockchain.networkId)
+
+      const sftPools = pools.filter(pool => !!pool.collection.sftMarketId)
+
+      for (const pool of sftPools) {
+        const collectionIndex = collectionAddresses.findIndex(address => address === pool.collection.address)
+        const sftContract = new web3.eth.Contract(sftABI as any, web3.utils.toChecksumAddress(pool.collection.address))
+
+        // Check if the nftId belongs to the marketId
+        const nftMarketId = await sftContract.methods.slotOf(nftIds[collectionIndex]).call()
+        if (nftMarketId !== pool.collection.sftMarketId) {
+          pools = pools.filter(p => p.address !== pool.address)
+        }
+      }
 
       if (!pools) throw fault('ERR_NO_POOLS_AVAILABLE')
       if (pools.find(pool => !pool.collection.sftMarketId && pool.collection.valuation && (pool.collection.valuation?.timestamp || 0) < new Date().getTime() - appConf.valuationLimitation)) {
