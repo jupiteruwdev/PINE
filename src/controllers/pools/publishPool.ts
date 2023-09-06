@@ -31,6 +31,7 @@ async function savePool({ poolData, blockchain, ethLimit }: SavePoolParams) {
         '$regex': poolData.collection,
         '$options': 'i',
       },
+      sftMarketId: poolData.sftMarketId,
       matcher: null,
     }).lean()
 
