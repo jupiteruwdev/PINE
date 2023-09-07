@@ -32,7 +32,7 @@ export function useCoingecko(blockchain: Blockchain, address: string | undefined
       if (redisData) {
         const timestamp = _.get(redisData, 'timestamp')
 
-        if (Date.now() - timestamp <= 60 * 5 * 1000) {
+        if (Date.now() - timestamp <= 60 * 3 * 1000) {
           const price = new BigNumber(_.get(redisData, 'price'))
           return Value.$USD(amount.times(price))
         }
@@ -41,7 +41,7 @@ export function useCoingecko(blockchain: Blockchain, address: string | undefined
       const data = await getRequest(`https://api.coingecko.com/api/v3/simple/token_price/${blockchain.network}?contract_addresses=${address}&vs_currencies=eth`)
         .catch(err => { throw fault('ERR_ETH_FETCH_USD_PRICE', undefined, err) })
 
-      const priceData = _.get(data, [id, 'eth'])
+      const priceData = data[id.toLowerCase()]['eth']
 
       setRedisCache(redisKey, { price: priceData })
 

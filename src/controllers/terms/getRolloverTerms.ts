@@ -1,4 +1,5 @@
 import BigNumber from 'bignumber.js'
+import sftABI from '../../abis/SolvSft.json' assert { type: 'json' }
 import appConf from '../../app.conf'
 import { Blockchain, Collection, NFT, Pool, RolloverTerms, Value } from '../../entities'
 import fault from '../../utils/fault'
@@ -7,6 +8,7 @@ import { getEthNFTMetadata } from '../collaterals'
 import { verifyCollectionWithMatcher } from '../collections'
 import { getLoan, isLoanExtendable } from '../loans'
 import searchPublishedMultiplePools from '../pools/searchPublishedMultiplePools'
+import getEthWeb3 from '../utils/getEthWeb3'
 import { getCollectionValuation, signValuation } from '../valuations'
 import getSolvSFTValuation from '../valuations/getSolvSFTValuation'
 import getFlashLoanSource from './getFlashLoanSource'
@@ -37,6 +39,21 @@ export default async function getRolloverTerms({
     if (pools.filter(pool => poolAddresses?.find(poolAddress => pool.address === poolAddress.toLowerCase())).length) {
       pools = pools.filter(pool => poolAddresses?.find(poolAddress => pool.address === poolAddress.toLowerCase()))
     }
+    const web3 = getEthWeb3(blockchain.networkId)
+
+    const sftPools = pools.filter(pool => !!pool.collection.sftMarketId)
+
+    for (const pool of sftPools) {
+      const collectionIndex = collectionAddresses.findIndex(address => address === pool.collection.address)
+      const sftContract = new web3.eth.Contract(sftABI as any, web3.utils.toChecksumAddress(pool.collection.address))
+
+      // Check if the nftId belongs to the marketId
+      const nftMarketId = await sftContract.methods.slotOf(nftIds[collectionIndex]).call()
+      if (nftMarketId !== pool.collection.sftMarketId) {
+        pools = pools.filter(p => p.address !== pool.address)
+      }
+    }
+
     if (!pools) throw fault('ERR_NO_POOLS_AVAILABLE')
     if (pools.find(pool => pool.collection.valuation && (pool.collection.valuation?.timestamp || 0) < new Date().getTime() - appConf.valuationLimitation)) {
       throw fault('INVALID_VALUATION_TIMESTAMP')
