@@ -100,6 +100,10 @@ export function getBlockchainFilter<T extends boolean>(query: Query, autofillDef
     ? autofillDefaults ? Blockchain.Ethereum() : undefined
     : Blockchain.Ethereum(parseEthNetworkId(query.ethereum))
 
+  const arbBlockchain = _.get(query, 'arbitrum', _.get(query, 'arb')) === undefined
+    ? autofillDefaults ? Blockchain.Arbitrum() : undefined
+    : Blockchain.Arbitrum(parseEthNetworkId(query.arbitrum))
+
   const solBlockchain = _.get(query, 'solana', _.get(query, 'sol')) === undefined
     ? autofillDefaults ? Blockchain.Solana() : undefined
     : Blockchain.Solana(query.solana?.toString())
@@ -112,6 +116,7 @@ export function getBlockchainFilter<T extends boolean>(query: Query, autofillDef
     ethereum: ethBlockchain?.networkId,
     solana: solBlockchain?.networkId,
     polygon: polyBlockchain?.networkId,
+    arbitrum: arbBlockchain?.networkId,
   }
 }
 
