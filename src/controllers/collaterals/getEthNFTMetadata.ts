@@ -1,6 +1,5 @@
 import _ from 'lodash'
 import ERC721EnumerableABI from '../../abis/ERC721Enumerable.json' assert { type: 'json' }
-import appConf from '../../app.conf'
 import { Blockchain, NFTMetadata } from '../../entities'
 import fault from '../../utils/fault'
 import logger from '../../utils/logger'
@@ -10,6 +9,7 @@ import DataSource from '../utils/DataSource'
 import getEthWeb3 from '../utils/getEthWeb3'
 import getRequest from '../utils/getRequest'
 import normalizeIPFSUri from '../utils/normalizeIPFSUri'
+import { useReservoirByTokenDetails } from '../utils/useReservoirAPI'
 
 type Params = {
   blockchain?: Blockchain
@@ -49,7 +49,7 @@ export default async function getEthNFTMetadata({
 
     const metadata = await DataSource.fetch(
       useTokenUri({ tokenUri }),
-      useAlchemy({ blockchain, collectionAddress, nftId }),
+      useReservoir({ blockchain, collectionAddress, nftId }),
       useContract({ blockchain, collectionAddress, nftId }),
     )
 
@@ -63,41 +63,25 @@ export default async function getEthNFTMetadata({
   }
 }
 
-export function useAlchemy({ blockchain, collectionAddress, nftId }: Omit<Params, 'tokenUri'>): DataSource<NFTMetadata> {
+export function useReservoir({ blockchain, collectionAddress, nftId }: Omit<Params, 'tokenUri'>): DataSource<NFTMetadata> {
   return async () => {
     try {
-      logger.info(`...using Alchemy to look up metadata for NFT <${collectionAddress}/${nftId}}>`)
+      logger.info(`...using Reservoir to look up metadata for NFT <${collectionAddress}/${nftId}}>`)
 
       if (!blockchain || !Blockchain.isEVMChain(blockchain)) rethrow(`Unsupported blockchain <${JSON.stringify(blockchain)}>`)
 
-      const apiMainUrl = _.get(appConf.alchemyAPIUrl, blockchain.networkId) ?? rethrow(`Missing Alchemy API URL for blockchain <${JSON.stringify(blockchain)}>`)
+      const collectionInfo = await useReservoirByTokenDetails({ collectionAddress: collectionAddress ?? '', nftId, blockchain })
 
-      const res = await getRequest(`${apiMainUrl}/getNFTMetadata`, {
-        params: {
-          contractAddress: collectionAddress,
-          tokenId: nftId,
-        },
-      })
+      const name = _.get(collectionInfo, 'name', '')
+      const imageUrl = _.get(collectionInfo, 'image', '')
 
-      const name = _.get(res, 'metadata.name')
-      const imageUrl = ['media.0.gateway', 'metadata.image', 'metadata.image_url'].reduceRight((prev, curr) => !_.isEmpty(prev) ? prev : _.get(res, curr), '')
-
-      if (_.isEmpty(name) && _.isEmpty(imageUrl)) {
-        const tokenUri = _.get(res, 'tokenUri.gateway')
-        const dataSource = useTokenUri({ tokenUri })
-        const metadata = await dataSource.apply(undefined)
-
-        return metadata
-      }
-      else {
-        return {
-          imageUrl: normalizeIPFSUri(imageUrl),
-          name,
-        }
+      return {
+        imageUrl: normalizeIPFSUri(imageUrl),
+        name,
       }
     }
     catch (err) {
-      throw fault('ERR_GET_ETH_NFT_METADATA_USE_ALCHEMY', undefined, err)
+      throw fault('ERR_GET_ETH_NFT_METADATA_USE_RESERVOIR', undefined, err)
     }
   }
 }

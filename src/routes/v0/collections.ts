@@ -1,7 +1,8 @@
 import { Router } from 'express'
 import _ from 'lodash'
-import { getCollectionValuation, getEthCollectionFloorPrices, getNFTOTD, searchCollections } from '../../controllers'
+import { getCollectionValuation, getCollections, getEthCollectionFloorPrices, getNFTOTD, searchCollections } from '../../controllers'
 import getNFTsForCollection from '../../controllers/collections/getNFTsForCollection'
+import { useReservoirCreateCollectionSet } from '../../controllers/utils/useReservoirAPI'
 import { Blockchain, Collection, NFT, Pagination, Value, serializeEntityArray } from '../../entities'
 import fault from '../../utils/fault'
 import { getBlockchain, getBlockchainFilter, getNumber, getString } from '../utils/query'
@@ -88,6 +89,21 @@ router.get('/nfts', async (req, res, next) => {
   }
   catch (err) {
     next(fault('ERR_API_FETCH_COLLECTION_NFTS', undefined, err))
+  }
+})
+
+router.post('/collection-set', async (req, res, next) => {
+  try {
+    const blockchain = getBlockchain(req.query)
+    const collections = await getCollections({ blockchainFilter: Blockchain.parseFilter(blockchain) })
+    const collectionAddresses = collections.map(collection => collection.address)
+
+    const collectionSetId = await useReservoirCreateCollectionSet({ collectionAddresses, blockchain })
+
+    res.status(200).json(collectionSetId)
+  }
+  catch (err) {
+    next(fault('ERR_API_CREATE_COLLECTION_SET', undefined, err))
   }
 })
 

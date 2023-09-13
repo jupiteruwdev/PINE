@@ -8,42 +8,27 @@ import postRequest from '../utils/postRequest'
 
 import { ethers } from 'ethers'
 import { NFTCollectionModel } from '../../database'
-import rethrow from '../../utils/rethrow'
 import DataSource from '../utils/DataSource'
-import getRequest from '../utils/getRequest'
+import { useReservoirCollections } from '../utils/useReservoirAPI'
 import { getCollectionValuation } from '../valuations'
 import getCollections from './getCollections'
 import getNFTSales from './getNFTSales'
-import getSpamContracts from './getSpamContracts'
 
 type Params = {
   query?: string
   blockchain?: Blockchain
 }
 
-const convertAlchemySupportMarketplace = (vendor?: string): string | undefined => {
-  if (!vendor) return undefined
-
-  switch (vendor.toLowerCase()) {
-  case 'opensea':
-    return 'seaport'
-  default:
-    return vendor.toLowerCase()
-  }
-}
-
 async function aggregateCollectionResults(collections: Collection[], blockchain: Blockchain): Promise<Collection[]> {
   try {
-    const spamContracts = blockchain.network === 'ethereum' ? await getSpamContracts({ blockchain }) : []
-    const nonSpamCollections = collections.filter((c: Collection) => !spamContracts.find(ad => ad.toLowerCase() === c.address.toLowerCase()))
-    const addresses = nonSpamCollections.map(collection => collection.address.toLowerCase())
+    const addresses = collections.map(collection => collection.address.toLowerCase())
     const dbCollections = await NFTCollectionModel.find({ address: {
       $in: addresses,
     } })
 
     const collectionResults = await Promise.all(
-      nonSpamCollections.map(async (collection: Collection) => {
-        const sales = await getNFTSales({ blockchain, contractAddress: collection.address, marketplace: convertAlchemySupportMarketplace(_.keys(collection.vendorIds)?.[0] ?? undefined) })
+      collections.map(async (collection: Collection) => {
+        const sales = await getNFTSales({ blockchain, contractAddress: collection.address })
         let floorPrice
         try {
           floorPrice = (await getCollectionValuation({ blockchain, collectionAddress: collection.address })).value
@@ -57,13 +42,13 @@ async function aggregateCollectionResults(collections: Collection[], blockchain:
           ...collection,
           ...dbCollection ? { imageUrl: dbCollection.imageUrl, name: dbCollection.displayName, verified: dbCollection.verified } : {},
           sales: sales.map((sale: any) => NFTSale.factory({
-            marketplace: _.get(sale, 'marketplace'),
-            collectionAddress: _.get(sale, 'contractAddress'),
-            buyerAddress: _.get(sale, 'buyerAddress'),
-            sellerAddress: _.get(sale, 'sellerAddress'),
-            nftId: _.get(sale, 'tokenId'),
-            transactionHash: _.get(sale, 'transactionHash'),
-            quantity: _.get(sale, 'quantity'),
+            marketplace: _.get(sale, 'orderSource'),
+            collectionAddress: collection.address,
+            buyerAddress: _.get(sale, 'to'),
+            sellerAddress: _.get(sale, 'from'),
+            nftId: _.get(sale, 'token.tokenId'),
+            transactionHash: _.get(sale, 'txHash'),
+            quantity: _.get(sale, 'amount'),
           })),
           floorPrice,
         }
@@ -99,28 +84,29 @@ export default async function searchCollections({ query, blockchain }: Params): 
     switch (blockchain.networkId) {
     case Blockchain.Ethereum.Network.MAIN:
       const collections = await DataSource.fetch(
-        useAlchemyContract({ query, blockchain }),
-        useAlchemy({ query, blockchain }),
+        useReservoirContract({ query, blockchain }),
+        useReservoir({ query, blockchain }),
         useGemXYZ({ query, blockchain }),
       )
 
       return aggregateCollectionResults(collections, blockchain)
     case Blockchain.Polygon.Network.MAIN:
     case Blockchain.Arbitrum.Network.MAINNET:
+    case Blockchain.Avalanche.Network.MAINNET:
       const collectionsEVM = await DataSource.fetch(
-        useAlchemyContract({ query, blockchain }),
-        useAlchemy({ query, blockchain }),
+        useReservoirContract({ query, blockchain }),
+        useReservoir({ query, blockchain }),
         useGemXYZ({ query, blockchain }),
       )
 
-      const evmContracts = await getCollections({ blockchainFilter: Blockchain.parseFilter(blockchain) })
+      const evmContracts = await getCollections({ blockchainFilter: Blockchain.parseFilter(blockchain), verifiedOnly: false })
 
       return aggregateCollectionResults(collectionsEVM.filter(collection => evmContracts.find(con => con.address.toLowerCase() === collection.address.toLowerCase())), blockchain)
     case Blockchain.Ethereum.Network.GOERLI:
     case Blockchain.Polygon.Network.MUMBAI:
       const collectionsGoerli = await DataSource.fetch(
-        useAlchemyContract({ query, blockchain }),
-        useAlchemy({ query, blockchain }),
+        useReservoirContract({ query, blockchain }),
+        useReservoir({ query, blockchain }),
       )
       return collectionsGoerli
     default:
@@ -134,55 +120,42 @@ export default async function searchCollections({ query, blockchain }: Params): 
   }
 }
 
-function useAlchemy({ query, blockchain }: { query: string; blockchain: Blockchain }): DataSource<Collection[]> {
+function useReservoir({ query, blockchain }: { query: string; blockchain: Blockchain }): DataSource<Collection[]> {
   return async () => {
     try {
-      const apiMainUrl = _.get(appConf.alchemyNFTAPIUrl, blockchain.networkId) ?? rethrow(`Missing Alchemy API URL for blockchain <${JSON.stringify(blockchain)}>`)
+      const collectionsInfo = await useReservoirCollections({ name: query, blockchain })
 
-      const collectionData = await getRequest(`${apiMainUrl}/searchContractMetadata`,
-        {
-          params: {
-            query,
-          },
-          timeout: 10000,
-        })
-      return collectionData.filter((cd: any) => cd?.contractMetadata?.tokenType === 'ERC721' && cd?.address && cd?.contractMetadata?.name && cd?.contractMetadata?.openSea?.collectionName).map((cd: any) => Collection.factory({
-        address: cd?.address,
-        blockchain,
-        vendorIds: { opensea: cd?.contractMetadata?.openSea?.collectionName },
-        name: cd?.contractMetadata?.name,
-        imageUrl: cd?.contractMetadata?.openSea?.imageUrl ?? '',
-      }))
+      return collectionsInfo.collections
+        .filter((cd: any) => cd.contractKind === 'erc721' && cd.openseaVerificationStatus === 'verified')
+        .map((cd: any) => Collection.factory({
+          address: cd.primaryContract,
+          blockchain,
+          vendorIds: { opensea: cd.slug },
+          name: cd.name,
+          imageUrl: cd.image ?? '',
+        }))
     }
     catch (err) {
-      throw fault('ERR_SEARCH_COLLECTIONS_USE_ALCHEMY', undefined, err)
+      throw fault('ERR_SEARCH_COLLECTIONS_USE_RESERVOIR', undefined, err)
     }
   }
 }
 
-function useAlchemyContract({ query, blockchain }: { query: string; blockchain: Blockchain }): DataSource<Collection[]> {
+function useReservoirContract({ query, blockchain }: { query: string; blockchain: Blockchain }): DataSource<Collection[]> {
   return async () => {
     try {
-      const apiMainUrl = _.get(appConf.alchemyNFTAPIUrl, blockchain.networkId) ?? rethrow(`Missing Alchemy API URL for blockchain <${JSON.stringify(blockchain)}>`)
+      const collectionsInfo = await useReservoirCollections({ collectionAddresses: [query], blockchain })
 
-      const cd = await getRequest(`${apiMainUrl}/getContractMetadata`,
-        {
-          params: {
-            contractAddress: query,
-          },
-          timeout: 10000,
-        })
-      if (!cd) throw fault('NO_SUCH_CONTRACT')
-      return [Collection.factory({
-        address: cd?.address,
+      return collectionsInfo.collections.map((collection: any) => Collection.factory({
+        address: collection.primaryContract,
         blockchain,
-        vendorIds: { opensea: cd?.contractMetadata?.openSea?.collectionName },
-        name: cd?.contractMetadata?.name,
-        imageUrl: cd?.contractMetadata?.imageUrl ?? '',
-      })]
+        vendorIds: { opensea: collection.slug },
+        name: collection.name,
+        imageUrl: collection.image ?? '',
+      }))
     }
     catch (err) {
-      throw fault('ERR_SEARCH_COLLECTIONS_USE_ALCHEMY_CONTRACT', undefined, err)
+      throw fault('ERR_SEARCH_COLLECTIONS_USE_RESERVOIR_CONTRACT', undefined, err)
     }
   }
 }

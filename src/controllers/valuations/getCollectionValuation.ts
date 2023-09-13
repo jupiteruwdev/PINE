@@ -2,7 +2,7 @@ import { Blockchain, Valuation } from '../../entities'
 import fault from '../../utils/fault'
 import logger from '../../utils/logger'
 import redis from '../../utils/redis'
-import { useReservoirCollectionValuation } from './useReservoirAPI'
+import { useReservoirCollectionValuation } from '../utils/useReservoirAPI'
 
 type Params = {
   blockchain: Blockchain

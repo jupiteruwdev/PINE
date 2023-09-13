@@ -114,6 +114,7 @@ export default async function getPools({
     case Blockchain.Ethereum.Network.MAIN:
     case Blockchain.Polygon.Network.MAIN:
     case Blockchain.Arbitrum.Network.MAINNET:
+    case Blockchain.Avalanche.Network.MAINNET:
       const { pools: poolsMainnet } = await getOnChainPools({ lenderAddress, address, excludeAddresses, collectionAddress }, { networkId: blockchain.networkId })
 
       const loanOptionsDict = await getOnChainLoanOptions({ addresses: poolsMainnet.map((p: any) => p.id), networkId: blockchain.networkId })

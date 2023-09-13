@@ -92,6 +92,7 @@ export default async function publishPool({
     case Blockchain.Ethereum.Network.MAIN:
     case Blockchain.Polygon.Network.MAIN:
     case Blockchain.Arbitrum.Network.MAINNET:
+    case Blockchain.Avalanche.Network.MAINNET:
       // await authenticatePoolPublisher({ poolAddress, payload, signature, networkId: blockchain.networkId })
       const { pool: poolMainnet } = await getOnChainPoolByAddress({ poolAddress }, { networkId: blockchain.networkId })
       pool = await savePool({

@@ -11,6 +11,7 @@ import rethrow from '../../utils/rethrow'
 import { getEthNFTMetadata } from '../collaterals'
 import DataSource from '../utils/DataSource'
 import getRequest from '../utils/getRequest'
+import { useReservoirCollections } from '../utils/useReservoirAPI'
 
 type Params = {
   blockchain: Blockchain
@@ -41,7 +42,7 @@ export default async function getEthCollectionMetadata({
       metadata = await DataSource.fetch(
         useDb({ blockchain, ...params }),
         useOpenSea({ blockchain, ...params }),
-        useAlchemy({ blockchain, ...params }),
+        useReservoir({ blockchain, ...params }),
         useMoralis({ blockchain, ...params }),
       )
       break
@@ -49,7 +50,7 @@ export default async function getEthCollectionMetadata({
     case 'arbitrum':
       metadata = await DataSource.fetch(
         useDb({ blockchain, ...params }),
-        useAlchemy({ blockchain, ...params }),
+        useReservoir({ blockchain, ...params }),
         useMoralis({ blockchain, ...params }),
       )
       break
@@ -252,24 +253,18 @@ export function useOpenSea({ blockchain, collectionAddress }: Params): DataSourc
   }
 }
 
-export function useAlchemy({ blockchain, collectionAddress }: Params): DataSource<CollectionMetadata> {
+export function useReservoir({ blockchain, collectionAddress }: Params): DataSource<CollectionMetadata> {
   return async () => {
     try {
-      logger.info(`...using Alchemy to look up metadata for collection <${collectionAddress}>`)
+      logger.info(`...using Reservoir to look up metadata for collection <${collectionAddress}>`)
 
       if (collectionAddress === undefined) rethrow('Collection address must be provided')
       if (!Blockchain.isEVMChain(blockchain)) rethrow(`Unsupported blockchain <${JSON.stringify(blockchain)}>`)
 
-      const apiMainUrl = _.get(appConf.alchemyAPIUrl, blockchain.networkId) ?? rethrow(`Missing Alchemy API URL for blockchain <${JSON.stringify(blockchain)}>`)
+      const collectionInfo = await useReservoirCollections({ collectionAddresses: [collectionAddress], blockchain })
 
-      const res = await getRequest(`${apiMainUrl}/getContractMetadata`, {
-        params: {
-          contractAddress: collectionAddress,
-        },
-      }).catch(err => rethrow(`Failed to fetch metadata from Alchemy for collection <${collectionAddress}>: ${err}`))
-
-      const name = _.get(res, 'contractMetadata.name')
-      const imageUrl = ['contractMetadata.opensea.imageUrl', 'contractMetadata.looksrare.imageUrl'].reduceRight((prev, curr) => !_.isEmpty(prev) ? prev : _.get(res, curr), '') // Alchemy API does not provide collection image
+      const name = _.get(collectionInfo.collections[0], 'name')
+      const imageUrl = _.get(collectionInfo.collections[0], 'image')
 
       return {
         name,
@@ -277,7 +272,7 @@ export function useAlchemy({ blockchain, collectionAddress }: Params): DataSourc
       }
     }
     catch (err) {
-      throw fault('ERR_GET_COLLECTION_METADATA_USE_ALCHEMY', undefined, err)
+      throw fault('ERR_GET_COLLECTION_METADATA_USE_RESERVOIR', undefined, err)
     }
   }
 }
