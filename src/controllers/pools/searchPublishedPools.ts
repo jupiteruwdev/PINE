@@ -101,6 +101,8 @@ async function searchPublishedPools({
 
     let pools = docs.map(mapPool)
 
+    console.log({ pools })
+
     if (convertToUSD) {
       const ethValueUSD = await getTokenUSDPrice(Blockchain.parseNativeToken(blockchain) as AvailableToken)
 
@@ -141,6 +143,7 @@ function getPipelineStages({
     solana: Blockchain.Solana.Network.MAINNET,
     polygon: Blockchain.Polygon.Network.MAIN,
     arbitrum: Blockchain.Arbitrum.Network.MAINNET,
+    avalanche: Blockchain.Avalanche.Network.MAINNET,
   },
   collectionAddress,
   collectionName,
