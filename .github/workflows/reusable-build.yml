@@ -142,6 +142,8 @@ jobs:
         TESTS_WALLET_PRIVATE_KEY: ${{ secrets.TESTS_WALLET_PRIVATE_KEY }}
         RESERVOIR_MAINNET_API_KEY: ${{ secrets.RESERVOIR_MAINNET_API_KEY }}
         RESERVOIR_POLYGON_API_KEY: ${{ secrets.RESERVOIR_POLYGON_API_KEY }}
+        RESERVOIR_ARBITRUM_API_KEY: ${{ secrets.RESERVOIR_ARBITRUM_API_KEY }}
+        RESERVOIR_AVALANCHE_API_KEY: ${{ secrets.RESERVOIR_AVALANCHE_API_KEY }}
     
     - name: Test Report
       uses: dorny/test-reporter@v1.6.0
