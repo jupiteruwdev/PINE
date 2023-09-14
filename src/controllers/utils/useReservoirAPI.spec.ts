@@ -98,7 +98,7 @@ describe('valuations', () => {
         await useReservoirCollectionValuation({ collectionAddress: 'test', blockchain: Blockchain.Ethereum() })
       }
       catch (err: any) {
-        expect(err.message).to.equal('ERR_USE_RESERVOIR')
+        expect(err.message).to.equal('ERR_USE_RESERVOIR_COLLECTION_VALUATION')
       }
     })
   })

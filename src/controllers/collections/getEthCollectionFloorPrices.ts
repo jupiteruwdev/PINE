@@ -1,19 +1,18 @@
 import _ from 'lodash'
-import appConf from '../../app.conf'
 import { NFTCollectionModel } from '../../database'
 import { Blockchain, Value } from '../../entities'
 import fault from '../../utils/fault'
 import logger from '../../utils/logger'
 import rethrow from '../../utils/rethrow'
 import DataSource from '../utils/DataSource'
-import postRequest from '../utils/postRequest'
+import { useReservoirCollections } from '../utils/useReservoirAPI'
 
 type Params = {
   blockchain: Blockchain
   collectionAddresses: string[]
 }
 
-type UseAlchemyParams = Params & {
+type UseReservoirParams = Params & {
   dbCollections: any[]
 }
 
@@ -29,7 +28,7 @@ export default async function getEthCollectionFloorPrices({
 
   try {
     const floorPrices = await DataSource.fetch(
-      useAlchemy({ blockchain, collectionAddresses, dbCollections }),
+      useReservoir({ blockchain, collectionAddresses, dbCollections }),
     )
 
     logger.info(`Fetching floor prices for collections <${collectionAddresses}> on network <${blockchain.networkId}>... OK: ${floorPrices.map(t => t.amount.toFixed())}`)
@@ -42,34 +41,32 @@ export default async function getEthCollectionFloorPrices({
   }
 }
 
-function useAlchemy({ blockchain, collectionAddresses, dbCollections }: UseAlchemyParams): DataSource<Value<'ETH'>[]> {
+function useReservoir({ blockchain, collectionAddresses, dbCollections }: UseReservoirParams): DataSource<Value<'ETH'>[]> {
   return async () => {
     try {
-      logger.info(`...using Alchemy to look up floor prices for collections <${collectionAddresses}>`)
+      logger.info(`...using Reservoir to look up floor prices for collections <${collectionAddresses}>`)
 
       if (!Blockchain.isEVMChain(blockchain)) rethrow(`Unsupported blockchain <${JSON.stringify(blockchain)}>`)
-
-      const apiMainUrl = _.get(appConf.alchemyNFTAPIUrl, blockchain.networkId) ?? rethrow(`Missing alchemy url for blockchain ${JSON.stringify(blockchain)}`)
 
       switch (blockchain.networkId) {
       case Blockchain.Ethereum.Network.MAIN:
       case Blockchain.Polygon.Network.MAIN:
       case Blockchain.Arbitrum.Network.MAINNET:
-        const res: any[] = await Promise.all(_.chunk(collectionAddresses, 100).map(addresses => new Promise((resolve, reject) => {
-          postRequest(`${apiMainUrl}/getContractMetadataBatch`, {
-            contractAddresses: addresses,
-          })
-            .then(res => resolve(res))
-            .catch(err => reject(err))
-        })))
-
+      case Blockchain.Avalanche.Network.MAINNET:
+        const chunks = _.chunk(collectionAddresses, 50)
         let collections: any[] = []
-        res.forEach(item => {
-          collections = [...collections, ...item]
-        })
+        for (let i = 0; i < chunks.length; i++) {
+          try {
+            const collectionsInfo = await useReservoirCollections({ collectionAddresses: chunks[i], blockchain })
+            collections = [...collections, _.get(collectionsInfo, 'collections', [])]
+          }
+          catch (err) {
+            logger.error(`Fetching collections info for chunk ${i} ERR: `, err)
+          }
+        }
 
         return collections.map((collection: any, index: number) => {
-          const price = _.get(collection, 'contractMetadata.openSea.floorPrice')
+          const price = _.get(collection, 'floorAsk.price.amount.native')
           const dbCollection = dbCollections.find(dbC => _.get(dbC, 'address').toLowerCase() === collectionAddresses[index].toLowerCase())
 
           if (dbCollection && _.get(dbCollection, 'valuation.value.amount')) {
@@ -86,7 +83,7 @@ function useAlchemy({ blockchain, collectionAddresses, dbCollections }: UseAlche
       }
     }
     catch (err) {
-      throw fault('ERR_FETCH_COLLECTION_FLOOR_PRICES_USE_ALCHEMY', undefined, err)
+      throw fault('ERR_FETCH_COLLECTION_FLOOR_PRICES_USE_RESERVOIR', undefined, err)
     }
   }
 }

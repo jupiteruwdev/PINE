@@ -12,5 +12,7 @@ export function convertToMoralisChain(networkId: string) {
     return 'mumbai'
   case Blockchain.Arbitrum.Network.MAINNET:
     return 'arbitrum'
+  case Blockchain.Avalanche.Network.MAINNET:
+    return 'avalanche'
   }
 }

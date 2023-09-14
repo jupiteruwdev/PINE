@@ -9,7 +9,8 @@ export enum AvailableToken {
   ETH = 'eth',
   PINE = 'pine',
   MATIC = 'matic',
-  ARB = 'arb'
+  ARB = 'arb',
+  AVAX = 'avax'
 }
 
 async function fetchTokenPrice(token: AvailableToken): Promise<Value<AnyCurrency>> {
@@ -19,6 +20,7 @@ async function fetchTokenPrice(token: AvailableToken): Promise<Value<AnyCurrency
   case AvailableToken.ETH:
   case AvailableToken.MATIC:
   case AvailableToken.ARB:
+  case AvailableToken.AVAX:
     return getEthValueUSD.getEthValueUSD(undefined, token)
   case AvailableToken.PINE:
     return getPineValueUSD()

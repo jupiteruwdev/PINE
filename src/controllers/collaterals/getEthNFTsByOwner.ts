@@ -1,17 +1,16 @@
-import BigNumber from 'bignumber.js'
 import _ from 'lodash'
 import appConf from '../../app.conf'
 import { Blockchain, Collection, NFT } from '../../entities'
 import fault from '../../utils/fault'
 import logger from '../../utils/logger'
 import { convertToMoralisChain } from '../../utils/moralis'
-import { retryPromise } from '../../utils/repeatAsync'
 import rethrow from '../../utils/rethrow'
-import { getCollections, populateEthCollectionMetadataForNFTs } from '../collections'
+import { populateEthCollectionMetadataForNFTs } from '../collections'
 import populatePoolAvailabilityForNFTs from '../pools/populatePoolAvailabilityForNFTs'
 import DataSource from '../utils/DataSource'
 import getRequest from '../utils/getRequest'
 import normalizeIPFSUri from '../utils/normalizeIPFSUri'
+import { useReservoirUserTokens } from '../utils/useReservoirAPI'
 import { useContract, useTokenUri } from './getEthNFTMetadata'
 
 type Params = {
@@ -21,20 +20,14 @@ type Params = {
   collectionAddress?: string
 }
 
-type AlchemyParams = Params & {
-  collectionAddresses?: string[]
-}
-
 export default async function getEthNFTsByOwner({ blockchain, ownerAddress, populateMetadata, collectionAddress }: Params): Promise<NFT[]> {
   try {
     if (!Blockchain.isEVMChain(blockchain)) rethrow(`Unsupported blockchain <${JSON.stringify(blockchain)}>`)
 
     logger.info(`Fetching Ethereum NFTs by owner <${ownerAddress}> on network <${blockchain.networkId}>...`)
 
-    const supportedCollections = await getCollections({ blockchainFilter: Blockchain.parseFilter(blockchain), verifiedOnly: false })
-
     let nfts = await DataSource.fetch(
-      useAlchemy({ blockchain, ownerAddress, populateMetadata, collectionAddresses: !collectionAddress ? supportedCollections.map(collection => collection.address) : [collectionAddress] }),
+      useReservoir({ blockchain, ownerAddress, populateMetadata }),
       // useMoralis({ blockchain, ownerAddress, populateMetadata }),
     )
 
@@ -56,46 +49,34 @@ export default async function getEthNFTsByOwner({ blockchain, ownerAddress, popu
   }
 }
 
-export function useAlchemy({ blockchain, ownerAddress, populateMetadata, collectionAddresses }: AlchemyParams): DataSource<NFT[]> {
+export function useReservoir({ blockchain, ownerAddress, populateMetadata }: Params): DataSource<NFT[]> {
   return async () => {
     try {
-      logger.info(`...using Alchemy to look up NFTs for owner <${ownerAddress}>`)
+      logger.info(`...using Reservoir to look up NFTs for owner <${ownerAddress}>`)
 
       if (!Blockchain.isEVMChain(blockchain)) rethrow(`Unsupported blockchain <${JSON.stringify(blockchain)}>`)
 
-      const apiMainUrl = _.get(appConf.alchemyAPIUrl, blockchain.networkId) ?? rethrow(`Missing Alchemy API URL for blockchain ${JSON.stringify(blockchain)}`)
       const res = []
 
-      let currPageKey: string | undefined
+      let continuation: string | undefined
 
-      while (true) {
-        const collectionAddressesChunk = collectionAddresses?.splice(0, 45)
-        currPageKey = undefined
-        while (true) {
-          const { ownedNfts: partialRes, pageKey }: any = await retryPromise(() => getRequest(`${apiMainUrl}/getNFTs`, {
-            params: {
-              owner: ownerAddress,
-              withMetadata: populateMetadata,
-              pageKey: currPageKey,
-              contractAddresses: collectionAddressesChunk ? collectionAddressesChunk : undefined,
-            },
-          })).catch(err => rethrow(`Failed to fetch NFTs for owner <${ownerAddress}> using Alchemy: ${err}`))
+      const collectionSetId = _.get(appConf.reservoirCollectionSetId, blockchain.networkId)
 
-          if (!_.isArray(partialRes)) rethrow('Bad request or unrecognized payload when fetching NFTs from Alchemy API')
-          res.push(...partialRes)
+      do {
+        const tokensData = await useReservoirUserTokens({ ownerAddress, blockchain, collectionSetId, continuation })
 
-          if (_.isNil(pageKey)) break
-          currPageKey = pageKey
-        }
-        if (!collectionAddresses?.length) break
-      }
+        continuation = _.get(tokensData, 'continuation')
+        const tokens = _.get(tokensData, 'tokens')
+
+        res.push(...tokens)
+      } while (continuation)
 
       const unsanitizedNFTs = await Promise.all(res.map(async entry => {
-        const tokenId = new BigNumber(_.get(entry, 'id.tokenId')).toFixed() // IDs from Alchemy are hex strings, convert to integer
-        const collectionAddress = _.get(entry, 'contract.address')
+        const tokenId = _.get(entry, 'token.tokenId')
+        const collectionAddress = _.get(entry, 'token.contract')
 
-        if (tokenId === 'NaN' || collectionAddress === undefined) {
-          logger.warn(`...using Alchemy to look up NFTs for owner <${ownerAddress}>... WARN: Dropping NFT ${JSON.stringify(entry)} due to missing address or token ID`)
+        if (tokenId === undefined || collectionAddress === undefined) {
+          logger.warn(`...using Reservoir to look up NFTs for owner <${ownerAddress}>... WARN: Dropping NFT ${JSON.stringify(entry)} due to missing address or token ID`)
           return undefined
         }
 
@@ -104,34 +85,12 @@ export function useAlchemy({ blockchain, ownerAddress, populateMetadata, collect
         if (populateMetadata === true) {
           logger.warn(`...inferring metadata for NFT <${collectionAddress}/${tokenId}>`)
 
-          const name = _.get(entry, 'metadata.name')
-          const imageUrl = ['media.0.gateway', 'metadata.image', 'metadata.image_url'].reduceRight((prev, curr) => !_.isEmpty(prev) ? prev : _.get(entry, curr), '')
+          const name = _.get(entry, 'token.name', '')
+          const imageUrl = _.get(entry, 'token.image')
 
-          if (_.isEmpty(name) && _.isEmpty(imageUrl)) {
-            const tokenUri = _.get(entry, 'tokenUri.gateway')
-
-            try {
-              metadata = await DataSource.fetch(
-                useTokenUri({ tokenUri }),
-                useContract({ blockchain, collectionAddress, nftId: tokenId }),
-              )
-
-              logger.info(`...fetching metadata for NFT <${collectionAddress}/${tokenId}>... OK`)
-              logger.debug(JSON.stringify(metadata, undefined, 2))
-            }
-            catch (err) {
-              logger.warn(`...fetching metadata for NFT <${collectionAddress}/${tokenId}>... WARN`)
-              if (logger.isWarnEnabled() && !logger.silent) console.warn(err)
-            }
-          }
-          else {
-            metadata = {
-              name,
-              imageUrl: !_.isNil(imageUrl) ? normalizeIPFSUri(imageUrl) : undefined,
-            }
-
-            logger.info(`...fetching metadata for NFT <${collectionAddress}/${tokenId}>... OK`)
-            logger.debug(JSON.stringify(metadata, undefined, 2))
+          metadata = {
+            name,
+            imageUrl: !_.isNil(imageUrl) ? normalizeIPFSUri(imageUrl) : undefined,
           }
         }
 
@@ -151,7 +110,7 @@ export function useAlchemy({ blockchain, ownerAddress, populateMetadata, collect
       return nfts
     }
     catch (err) {
-      throw fault('GET_ETH_NFTS_BY_OWNER_USE_ALCHEMY', undefined, err)
+      throw fault('GET_ETH_NFTS_BY_OWNER_USE_RESERVOIR', undefined, err)
     }
   }
 }

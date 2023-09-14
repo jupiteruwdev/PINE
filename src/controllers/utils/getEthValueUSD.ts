@@ -36,7 +36,7 @@ export function useCoingecko(symbol: Omit<AvailableToken, 'PINE'> = 'eth', amoun
     try {
       logger.info(`... using coingecko to fetch ${symbol} price`)
 
-      const id = symbol === 'eth' ? 'ethereum' : symbol === 'matic' ? 'matic-network' : symbol === 'arb' ? 'arbitrum' : ''
+      const id = symbol === 'eth' ? 'ethereum' : symbol === 'matic' ? 'matic-network' : symbol === 'arb' ? 'arbitrum' : symbol === 'avax' ? 'avalanche-2' : ''
 
       const data = await getRequest(`https://api.coingecko.com/api/v3/simple/price?ids=${id}&vs_currencies=usd`)
         .catch(err => { throw fault('ERR_ETH_FETCH_USD_PRICE', undefined, err) })
