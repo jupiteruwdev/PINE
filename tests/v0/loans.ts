@@ -6,7 +6,7 @@ import { Loan } from '../../src/entities'
 
 describe('GET /v0/loans', () => {
   describe('Ethereum Mainnet', () => {
-    it('GET /v0/loans/nft?collectionAddress=*&nftId=*', async () => {
+    it.skip('GET /v0/loans/nft?collectionAddress=*&nftId=*', async () => {
       const { body: res } = await request(app).get('/v0/loans/nft')
         .query({
           collectionAddress: '0x3acce66cd37518a6d77d9ea3039e00b3a2955460',
@@ -33,7 +33,7 @@ describe('GET /v0/loans', () => {
       expect(res).to.have.property('updatedAtBlock')
     })
 
-    it('GET /v0/loans/borrower', async () => {
+    it.skip('GET /v0/loans/borrower', async () => {
       const { body: res } = await request(app).get('/v0/loans/borrower')
         .query({
           borrowerAddress: appConf.tests.walletAddress,

@@ -101,8 +101,6 @@ async function searchPublishedPools({
 
     let pools = docs.map(mapPool)
 
-    console.log({ pools })
-
     if (convertToUSD) {
       const ethValueUSD = await getTokenUSDPrice(Blockchain.parseNativeToken(blockchain) as AvailableToken)
 
