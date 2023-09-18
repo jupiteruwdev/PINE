@@ -84,7 +84,7 @@ export default {
     [Blockchain.Ethereum.Network.RINKEBY]: '0x1Bf5d5051eA8025B41e69C139E5fE5d6499A9077',
     [Blockchain.Ethereum.Network.MAIN]: '0x63ca18f8cb75e28f94cf81901caf1e39657ea256',
     [Blockchain.Polygon.Network.MAIN]: '0xb93bc157771e701452f0e4521a580c4552b55abc',
-    [Blockchain.Arbitrum.Network.MAINNET]: '',
+    [Blockchain.Arbitrum.Network.MAINNET]: '0x64500df2f85440f3fe738b1e249c66f76e0ea2c0',
     [Blockchain.Avalanche.Network.MAINNET]: '',
   },
   controlPlaneContractAddress: {
