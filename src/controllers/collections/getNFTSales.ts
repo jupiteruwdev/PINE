@@ -1,18 +1,12 @@
-import _ from 'lodash'
-import appConf from '../../app.conf'
 import { Blockchain } from '../../entities'
 import fault from '../../utils/fault'
 import logger from '../../utils/logger'
-import rethrow from '../../utils/rethrow'
-import getRequest from '../utils/getRequest'
+import { useReservoirSales } from '../utils/useReservoirAPI'
 
 type Params = {
   contractAddress: string
   blockchain: Blockchain
-  marketplace?: string
   tokenId?: string
-  buyerAddress?: string
-  sellerAddress?: string
 }
 
 export default async function getNFTSales({ contractAddress, blockchain, ...props }: Params): Promise<Record<string, any>> {
@@ -21,17 +15,11 @@ export default async function getNFTSales({ contractAddress, blockchain, ...prop
     switch (blockchain.networkId) {
     case Blockchain.Ethereum.Network.MAIN:
     case Blockchain.Polygon.Network.MAIN:
-      const apiMainUrl = _.get(appConf.alchemyNFTAPIUrl, blockchain.networkId) ?? rethrow(`Missing Alchemy API URL for blockchain <${JSON.stringify(blockchain)}>`)
+    case Blockchain.Arbitrum.Network.MAINNET:
+    case Blockchain.Avalanche.Network.MAINNET:
+      const salesInfo = await useReservoirSales({ collectionAddress: contractAddress, blockchain, ...props })
 
-      const { nftSales } = await getRequest(`${apiMainUrl}/getNFTSales`, {
-        params: {
-          contractAddress,
-          ...props,
-          limit: 10,
-        },
-      })
-
-      return nftSales
+      return salesInfo.sales
     default:
       const err = fault('ERR_UNSUPPORTED_BLOCKCHAIN')
       logger.error(`Fetching nft sales for contract <${contractAddress}>... ERR:`, err)

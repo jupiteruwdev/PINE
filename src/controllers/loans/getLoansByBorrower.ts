@@ -86,7 +86,7 @@ export function useGraph({ blockchain, borrowerAddress }: Params): DataSource<Lo
     try {
       logger.info(`...using Graph to look up loans by borrower <${borrowerAddress}>`)
 
-      if (blockchain.network !== 'ethereum' && blockchain.network !== 'polygon') rethrow(`Unsupported blockchain <${JSON.stringify(blockchain)}>`)
+      if (!Blockchain.isEVMChain(blockchain)) rethrow(`Unsupported blockchain <${JSON.stringify(blockchain)}>`)
 
       const onChainLoans = await getOnChainLoans({ borrowerAddress }, { networkId: blockchain.networkId })
 

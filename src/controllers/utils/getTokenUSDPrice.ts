@@ -1,14 +1,16 @@
 import { AnyCurrency, Value } from '../../entities'
 import fault from '../../utils/fault'
 import logger from '../../utils/logger'
+import redis from '../../utils/redis'
 import getEthValueUSD from './getEthValueUSD'
 import { getPineValueUSD } from './getPineValueUSD'
-import redis from '../../utils/redis'
 
 export enum AvailableToken {
   ETH = 'eth',
   PINE = 'pine',
   MATIC = 'matic',
+  ARB = 'arb',
+  AVAX = 'avax'
 }
 
 async function fetchTokenPrice(token: AvailableToken): Promise<Value<AnyCurrency>> {
@@ -17,6 +19,8 @@ async function fetchTokenPrice(token: AvailableToken): Promise<Value<AnyCurrency
   switch (token) {
   case AvailableToken.ETH:
   case AvailableToken.MATIC:
+  case AvailableToken.ARB:
+  case AvailableToken.AVAX:
     return getEthValueUSD.getEthValueUSD(undefined, token)
   case AvailableToken.PINE:
     return getPineValueUSD()

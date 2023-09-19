@@ -54,6 +54,8 @@ function getPipelineStages({
     ethereum: Blockchain.Ethereum.Network.MAIN,
     solana: Blockchain.Solana.Network.MAINNET,
     polygon: Blockchain.Polygon.Network.MAIN,
+    arbitrum: Blockchain.Arbitrum.Network.MAINNET,
+    avalanche: Blockchain.Avalanche.Network.MAINNET,
   },
   ethOneValueUSD,
   ethTwoValueUSD,
@@ -68,7 +70,12 @@ function getPipelineStages({
     let orFilter: any = []
     if (blockchains.length) {
       orFilter = blockchains.map(blockchain => ({
-        $and: [{ 'collection.hidden': { $ne: true } }, { 'collection.networkType': blockchain.network }, { 'collection.networkId': blockchain.networkId }, { 'collection.sftMarketId': { $eq: null } }],
+        $and: [
+          { 'collection.hidden': { $ne: true } },
+          { 'collection.networkType': blockchain.network },
+          { 'collection.networkId': blockchain.networkId },
+          { 'collection.sftMarketId': { $eq: null } },
+        ],
       }))
     }
 
@@ -305,6 +312,8 @@ export default async function searchPoolGroups({
     ethereum: Blockchain.Ethereum.Network.MAIN,
     solana: Blockchain.Solana.Network.MAINNET,
     polygon: Blockchain.Polygon.Network.MAIN,
+    arbitrum: Blockchain.Arbitrum.Network.MAINNET,
+    avalanche: Blockchain.Avalanche.Network.MAINNET,
   },
   ownerAddress,
   collectionAddress,

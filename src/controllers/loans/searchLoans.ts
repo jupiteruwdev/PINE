@@ -94,59 +94,55 @@ export default async function searchLoans({
   const blockchain = Blockchain.parseBlockchain(blockchainFilter)
 
   try {
-    if (blockchainFilter.ethereum !== undefined || blockchainFilter.polygon !== undefined) {
-      let allCollectionAddresses: string[] = []
-      if (collectionNames !== undefined) {
-        const collectionsByNames = await getCollections({ blockchainFilter, collectionNames })
-        allCollectionAddresses = collectionsByNames.map(collection => collection.address.toLowerCase())
-      }
-      if (collectionAddresses !== undefined) {
-        allCollectionAddresses = [
-          ...allCollectionAddresses,
-          ...collectionAddresses.map(address => address.toLowerCase()),
-        ]
-      }
-      let loans = await DataSource.fetch(useGraph({ blockchainFilter, collectionAddresses: allCollectionAddresses, lenderAddresses, sortBy, paginateBy }))
+    if (!Blockchain.isEVMChain(blockchain)) throw fault('ERR_UNSUPPORTED_BLOCKCHAIN')
+    let allCollectionAddresses: string[] = []
+    if (collectionNames !== undefined) {
+      const collectionsByNames = await getCollections({ blockchainFilter, collectionNames })
+      allCollectionAddresses = collectionsByNames.map(collection => collection.address.toLowerCase())
+    }
+    if (collectionAddresses !== undefined) {
+      allCollectionAddresses = [
+        ...allCollectionAddresses,
+        ...collectionAddresses.map(address => address.toLowerCase()),
+      ]
+    }
+    let loans = await DataSource.fetch(useGraph({ blockchainFilter, collectionAddresses: allCollectionAddresses, lenderAddresses, sortBy, paginateBy }))
 
-      const uniqCollectionAddresses = _.uniq(loans.map(loan => loan.nft.collection.address.toLowerCase()))
+    const uniqCollectionAddresses = _.uniq(loans.map(loan => loan.nft.collection.address.toLowerCase()))
 
-      const [allCollectionMetadata, allNFTMetadata] = await Promise.all([
-        Promise.all(uniqCollectionAddresses.map(async address => ({
-          [address]: await getEthCollectionMetadata({ blockchain, collectionAddress: address }),
-        }))),
-        Promise.all(loans.map(loan => getEthNFTMetadata({
-          blockchain,
-          collectionAddress: loan.nft.collection.address,
-          nftId: loan.nft.id,
-        }))),
-      ])
+    const [allCollectionMetadata, allNFTMetadata] = await Promise.all([
+      Promise.all(uniqCollectionAddresses.map(async address => ({
+        [address]: await getEthCollectionMetadata({ blockchain, collectionAddress: address }),
+      }))),
+      Promise.all(loans.map(loan => getEthNFTMetadata({
+        blockchain,
+        collectionAddress: loan.nft.collection.address,
+        nftId: loan.nft.id,
+      }))),
+    ])
 
-      const collectionMetadataDict = allCollectionMetadata.reduce((prev, curr) => ({ ...prev, ...curr }), {})
+    const collectionMetadataDict = allCollectionMetadata.reduce((prev, curr) => ({ ...prev, ...curr }), {})
 
-      loans = loans.map((loan, idx) => {
-        const collectionMetadata = collectionMetadataDict[loan.nft.collection.address.toLowerCase()]
-        const nftMetadata = allNFTMetadata[idx]
+    loans = loans.map((loan, idx) => {
+      const collectionMetadata = collectionMetadataDict[loan.nft.collection.address.toLowerCase()]
+      const nftMetadata = allNFTMetadata[idx]
 
-        return {
-          ...loan,
-          nft: {
-            ...loan.nft,
-            ...nftMetadata,
-            collection: {
-              ...loan.nft.collection,
-              ...collectionMetadata ?? {},
-            },
+      return {
+        ...loan,
+        nft: {
+          ...loan.nft,
+          ...nftMetadata,
+          collection: {
+            ...loan.nft.collection,
+            ...collectionMetadata ?? {},
           },
-        }
-      })
+        },
+      }
+    })
 
-      logger.info(`Searching loans for collection addresses <${collectionAddresses?.join(',')}>, lender addresses<${lenderAddresses?.join(',')}>, collection names <${collectionNames?.join(',')} and blockchain <${JSON.stringify(blockchainFilter)}>... OK`)
+    logger.info(`Searching loans for collection addresses <${collectionAddresses?.join(',')}>, lender addresses<${lenderAddresses?.join(',')}>, collection names <${collectionNames?.join(',')} and blockchain <${JSON.stringify(blockchainFilter)}>... OK`)
 
-      return loans
-    }
-    else {
-      throw fault('ERR_UNSUPPORTED_BLOCKCHAIN')
-    }
+    return loans
   }
   catch (err) {
     logger.error(`Searching loans for collection addresses <${collectionAddresses?.join(',')}>, lender addresses<${lenderAddresses?.join(',')}>, collection names <${collectionNames?.join(',')} and blockchain <${JSON.stringify(blockchainFilter)}>... ERR:`, err)

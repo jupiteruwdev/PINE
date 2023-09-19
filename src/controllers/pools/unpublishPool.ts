@@ -22,29 +22,24 @@ export default async function unpublishPool({
   logger.info(`Unpublishing pool for address <${poolAddress}>`)
 
   try {
-    switch (blockchain.network) {
-    case 'ethereum':
-    case 'polygon':
-      await authenticatePoolPublisher({ poolAddress, payload, signature, networkId: blockchain.networkId })
+    if (!Blockchain.isEVMChain(blockchain)) throw fault('ERR_UNSUPPORTED_BLOCKCHAIN')
+    await authenticatePoolPublisher({ poolAddress, payload, signature, networkId: blockchain.networkId })
 
-      const res = await PoolModel.findOneAndDelete({
-        address: {
-          '$regex': poolAddress,
-          '$options': 'i',
-        },
-      }).exec()
+    const res = await PoolModel.findOneAndDelete({
+      address: {
+        '$regex': poolAddress,
+        '$options': 'i',
+      },
+    }).exec()
 
-      const collection = await NFTCollectionModel.findById(res?.nftCollection)
+    const collection = await NFTCollectionModel.findById(res?.nftCollection)
 
-      if (_.isNull(res)) throw fault('ERR_UNPUBLISH_POOL_POOL_NOT_FOUND')
+    if (_.isNull(res)) throw fault('ERR_UNPUBLISH_POOL_POOL_NOT_FOUND')
 
-      return mapPool({
-        ...res.toObject(),
-        collection: collection?.toObject(),
-      })
-    default:
-      throw fault('ERR_UNSUPPORTED_BLOCKCHAIN')
-    }
+    return mapPool({
+      ...res.toObject(),
+      collection: collection?.toObject(),
+    })
   }
   catch (err) {
     throw fault('ERR_UNPUBLISH_POOL', undefined, err)

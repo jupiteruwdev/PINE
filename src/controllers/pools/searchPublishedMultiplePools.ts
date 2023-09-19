@@ -118,6 +118,8 @@ function getPipelineStages({
     ethereum: Blockchain.Ethereum.Network.MAIN,
     polygon: Blockchain.Polygon.Network.MAIN,
     solana: Blockchain.Solana.Network.MAINNET,
+    arbitrum: Blockchain.Arbitrum.Network.MAINNET,
+    avalanche: Blockchain.Avalanche.Network.MAINNET,
   },
   collectionAddresses,
   collectionName,

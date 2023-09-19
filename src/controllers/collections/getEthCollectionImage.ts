@@ -3,10 +3,11 @@ import appConf from '../../app.conf'
 import { Blockchain } from '../../entities'
 import fault from '../../utils/fault'
 import logger from '../../utils/logger'
-import { getRedisCache } from '../../utils/redis'
+import { getRedisCache, setRedisCache } from '../../utils/redis'
 import rethrow from '../../utils/rethrow'
 import DataSource from '../utils/DataSource'
 import getRequest from '../utils/getRequest'
+import { useReservoirCollections } from '../utils/useReservoirAPI'
 
 type Params = {
   blockchain: Blockchain
@@ -29,24 +30,27 @@ export default async function getEthCollectionImage({
     let imageUrl = await getRedisCache(redisKey)
 
     if (imageUrl) {
-      return imageUrl
+      return imageUrl.imageUrl
     }
 
     switch (blockchain.network) {
     case 'ethereum':
       imageUrl = await DataSource.fetch(
         useOpenSea({ blockchain, ...params }),
-        useAlchemy({ blockchain, ...params }),
+        useReservoir({ blockchain, ...params }),
       )
       break
     case 'polygon':
+    case 'arbitrum':
       imageUrl = await DataSource.fetch(
-        useAlchemy({ blockchain, ...params }),
+        useReservoir({ blockchain, ...params }),
       )
       break
     default:
       throw fault('ERR_UNSUPPORTED_BLOCKCHAIN')
     }
+
+    await setRedisCache(redisKey, { imageUrl })
 
     logger.info(`Fetching imageUrl for collection using params <${JSON.stringify(params)}> on blockchain <${JSON.stringify(blockchain)}>... OK`)
 
@@ -94,30 +98,24 @@ export function useOpenSea({ blockchain, collectionAddress }: Params): DataSourc
   }
 }
 
-export function useAlchemy({ blockchain, collectionAddress }: Params): DataSource<string> {
+export function useReservoir({ blockchain, collectionAddress }: Params): DataSource<string> {
   return async () => {
     try {
-      logger.info(`...using Alchemy to look up imageUrl for collection <${collectionAddress}>`)
+      logger.info(`...using Reservoir to look up imageUrl for collection <${collectionAddress}>`)
 
       if (collectionAddress === undefined) rethrow('Collection address must be provided')
-      if (blockchain?.network !== 'ethereum' && blockchain?.network !== 'polygon') rethrow(`Unsupported blockchain <${JSON.stringify(blockchain)}>`)
+      if (!Blockchain.isEVMChain(blockchain)) rethrow(`Unsupported blockchain <${JSON.stringify(blockchain)}>`)
 
-      const apiMainUrl = _.get(appConf.alchemyAPIUrl, blockchain.networkId) ?? rethrow(`Missing Alchemy API URL for blockchain <${JSON.stringify(blockchain)}>`)
+      const collectionsInfo = await useReservoirCollections({ collectionAddresses: [collectionAddress], blockchain })
 
-      const res = await getRequest(`${apiMainUrl}/getContractMetadata`, {
-        params: {
-          contractAddress: collectionAddress,
-        },
-      }).catch(err => rethrow(`Failed to fetch imageUrl from Alchemy for collection <${collectionAddress}>: ${err}`))
-
-      const imageUrl = ['contractMetadata.openSea.imageUrl', 'contractMetadata.looksrare.imageUrl'].reduceRight((prev, curr) => !_.isEmpty(prev) ? prev : _.get(res, curr), '') // Alchemy API does not provide collection image
+      const imageUrl = _.get(collectionsInfo, 'collections[0].image')
 
       if (!imageUrl?.length) rethrow('Unknown collection image')
 
       return imageUrl
     }
     catch (err) {
-      throw fault('GET_ETH_COLLECTION_IMAGE_USE_ALCHEMY', undefined, err)
+      throw fault('GET_ETH_COLLECTION_IMAGE_USE_RESERVOIR', undefined, err)
     }
   }
 }

@@ -28,18 +28,17 @@ export default async function syncCollectionValuation() {
     const collections = await getAllCollections()
 
     for (const collection of collections) {
-      if (collection.networkType === 'ethereum' || collection.networkType === 'polygon') {
+      const blockchain = Blockchain.factory({
+        network: collection.networkType,
+        networkId: collection.networkId,
+      }) as Blockchain
+      if (Blockchain.isEVMChain(blockchain)) {
         const nftId: string | number = collection.matcher ? _.get(appConf.nftIds, collection.address ?? '', 0) : 0
 
         logger.info(`JOB_SYNC_COLLECTION_VALUATION Updating valuation for collection ${collection.address} and nftId ${nftId}`)
 
         if (collection.address) {
           try {
-            const blockchain = Blockchain.factory({
-              network: collection.networkType,
-              networkId: collection.networkId,
-            }) as Blockchain
-
             const oldValuation = JSON.parse(JSON.stringify(collection.toObject().valuation?.value || {}))
 
             const valuation = await getCollectionValuation({ blockchain, collectionAddress: collection.address, nftId: nftId ? nftId.toString() : undefined })
