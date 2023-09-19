@@ -115,8 +115,8 @@ export default {
     [Blockchain.Ethereum.Network.MAIN]: '0x90dFb72736481BBacc7938d2D3673590B92647AE',
     [Blockchain.Ethereum.Network.GOERLI]: '0xfce1DFFE2A382f66ebD01F39b4e20d97B8110895',
     [Blockchain.Polygon.Network.MAIN]: '0xc8A5181f1E4A83e631aa88E3e3d7b860b4A1C314',
-    [Blockchain.Arbitrum.Network.MAINNET]: '0x90dFb72736481BBacc7938d2D3673590B92647AE',
-    [Blockchain.Avalanche.Network.MAINNET]: '0x90dFb72736481BBacc7938d2D3673590B92647AE',
+    [Blockchain.Arbitrum.Network.MAINNET]: '0x86E2d5e6d77B985C3f68b65aF910aea5cdc196d3',
+    [Blockchain.Avalanche.Network.MAINNET]: '0xa525549b5b4cc27eea5909e63448ff58df25db5e',
   },
   routerAddress: {
     [Blockchain.Ethereum.Network.MAIN]: '0x7a517e8bd374565615c043C32760ba4BD9982219',
